@@ -101,15 +101,13 @@ export default function ProjektePage() {
                         <p className="text-muted-foreground font-medium mt-1">Wählen Sie ein Projekt aus, um mit der Verwaltung zu beginnen.</p>
                     </div>
 
-                    {isAdmin && (
-                        <Button
-                            className="font-bold gap-2 shadow-lg shadow-primary/20"
-                            onClick={() => router.push('/projekte/erfassen')}
-                        >
-                            <Plus className="h-5 w-5" />
-                            Neues Projekt
-                        </Button>
-                    )}
+                    <Button
+                        className="font-bold gap-2 shadow-lg shadow-primary/20"
+                        onClick={() => router.push('/projekte/erfassen')}
+                    >
+                        <Plus className="h-5 w-5" />
+                        Neues Projekt
+                    </Button>
                 </div>
 
                 {loadingData ? (
@@ -131,33 +129,31 @@ export default function ProjektePage() {
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-50" />
 
                                     {/* Action buttons overlay */}
-                                    {isAdmin && (
-                                        <div className="absolute top-3 left-3 flex gap-2">
-                                            <Button
-                                                variant="secondary"
-                                                size="icon"
-                                                className="h-8 w-8 rounded-lg bg-white/90 hover:bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                                                onClick={(e) => handleEdit(e, p)}
-                                                title="Projekt bearbeiten"
-                                            >
-                                                <Pencil className="h-4 w-4 text-slate-700" />
-                                            </Button>
-                                            <Button
-                                                variant="danger"
-                                                size="icon"
-                                                className="h-8 w-8 rounded-lg bg-red-600/80 hover:bg-red-600 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                                                onClick={(e) => handleExportAndDelete(e, p)}
-                                                title="Exportieren und Löschen"
-                                                disabled={deletingId === p.id}
-                                            >
-                                                {deletingId === p.id ? (
-                                                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                                ) : (
-                                                    <Trash2 className="h-4 w-4 text-white" />
-                                                )}
-                                            </Button>
-                                        </div>
-                                    )}
+                                    <div className="absolute top-3 left-3 flex gap-2">
+                                        <Button
+                                            variant="secondary"
+                                            size="icon"
+                                            className="h-8 w-8 rounded-lg bg-white/90 hover:bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                            onClick={(e) => handleEdit(e, p)}
+                                            title="Projekt bearbeiten"
+                                        >
+                                            <Pencil className="h-4 w-4 text-slate-700" />
+                                        </Button>
+                                        <Button
+                                            variant="danger"
+                                            size="icon"
+                                            className="h-8 w-8 rounded-lg bg-red-600/80 hover:bg-red-600 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                            onClick={(e) => handleExportAndDelete(e, p)}
+                                            title="Exportieren und Löschen"
+                                            disabled={deletingId === p.id}
+                                        >
+                                            {deletingId === p.id ? (
+                                                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                            ) : (
+                                                <Trash2 className="h-4 w-4 text-white" />
+                                            )}
+                                        </Button>
+                                    </div>
 
                                     <div className="absolute top-4 right-4">
                                         <Badge variant={p.status === 'in arbeit' ? 'info' : 'warning'} className="shadow-sm">

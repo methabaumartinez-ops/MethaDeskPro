@@ -58,7 +58,7 @@ export const SubsystemService = {
         }
         const newSystem: Teilsystem = {
             ...teilsystem,
-            id: teilsystem.id || uuidv4(),
+            id: teilsystem.teilsystemNummer || teilsystem.id || uuidv4(),
         } as Teilsystem;
         return DatabaseService.upsert('teilsysteme', newSystem);
     },
