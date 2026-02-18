@@ -9,8 +9,9 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { mockStore } from '@/lib/mock/store';
+import { SubsystemService } from '@/lib/services/subsystemService';
 import { EmployeeService } from '@/lib/services/employeeService';
+import { Teilsystem } from '@/types';
 import { ArrowLeft, Save, Calendar as CalendarIcon } from 'lucide-react';
 import Link from 'next/link';
 
@@ -128,46 +129,61 @@ export default function TeilsystemEditPage() {
     }, []);
 
     useEffect(() => {
-        const item = mockStore.getTeilsysteme().find((t: any) => t.id === id);
-        if (item) {
-            setValue('teilsystemNummer', item.teilsystemNummer || '');
-            setValue('ks', item.ks || '');
-            setValue('name', item.name);
-            setValue('beschreibung', item.beschreibung || '');
-            setValue('bemerkung', item.bemerkung || '');
-            setValue('eroeffnetAm', germanDateToISO(item.eroeffnetAm));
-            setValue('eroeffnetDurch', item.eroeffnetDurch || '');
-            setValue('montagetermin', germanDateToISO(item.montagetermin));
-            setValue('lieferfrist', item.lieferfrist || '');
-            setValue('abgabePlaner', germanDateToISO(item.abgabePlaner));
-            setValue('planStatus', item.planStatus || 'offen');
-            setValue('wemaLink', item.wemaLink || '');
-            setValue('status', item.status);
-            setLoading(false);
-        } else {
-            router.push(`/${projektId}/teilsysteme`);
-        }
+        const loadItem = async () => {
+            try {
+                const item = await SubsystemService.getTeilsystemById(id);
+                if (item) {
+                    setValue('teilsystemNummer', item.teilsystemNummer || '');
+                    setValue('ks', item.ks || '');
+                    setValue('name', item.name);
+                    setValue('beschreibung', item.beschreibung || '');
+                    setValue('bemerkung', item.bemerkung || '');
+                    setValue('eroeffnetAm', germanDateToISO(item.eroeffnetAm));
+                    setValue('eroeffnetDurch', item.eroeffnetDurch || '');
+                    setValue('montagetermin', germanDateToISO(item.montagetermin));
+                    setValue('lieferfrist', item.lieferfrist || '');
+                    setValue('abgabePlaner', germanDateToISO(item.abgabePlaner));
+                    setValue('planStatus', item.planStatus || 'offen');
+                    setValue('wemaLink', item.wemaLink || '');
+                    setValue('status', item.status);
+                } else {
+                    router.push(`/${projektId}/teilsysteme`);
+                }
+            } catch (error) {
+                console.error("Failed to load teilsystem:", error);
+                router.push(`/${projektId}/teilsysteme`);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadItem();
     }, [id, projektId, setValue, router]);
 
     const onSubmit = async (data: TeilsystemValues) => {
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        try {
+            await new Promise((resolve) => setTimeout(resolve, 800));
 
-        // Convert ISO dates back to German format for storage
-        const toSave = {
-            ...data,
-            eroeffnetAm: isoToGermanDate(data.eroeffnetAm),
-            montagetermin: isoToGermanDate(data.montagetermin),
-            abgabePlaner: isoToGermanDate(data.abgabePlaner),
-        };
+            // Convert ISO dates back to German format for storage
+            const toSave = {
+                ...data,
+                eroeffnetAm: isoToGermanDate(data.eroeffnetAm),
+                montagetermin: isoToGermanDate(data.montagetermin),
+                abgabePlaner: isoToGermanDate(data.abgabePlaner),
+            };
 
-        const all = mockStore.getTeilsysteme();
-        const updated = all.map((t: any) => t.id === id ? { ...t, ...toSave } : t);
-
-        mockStore.saveTeilsysteme(updated);
-        router.push(`/${projektId}/teilsysteme`);
+            await SubsystemService.updateTeilsystem(id, toSave as unknown as Partial<Teilsystem>);
+            router.push(`/${projektId}/teilsysteme/${id}`);
+        } catch (error) {
+            console.error("Failed to update teilsystem:", error);
+            alert("Fehler beim Speichern des Teilsystems.");
+        }
     };
 
-    if (loading) return <div>Laden...</div>;
+    if (loading) return (
+        <div className="h-96 flex items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        </div>
+    );
 
     const statusOptions = [
         { label: 'Offen', value: 'offen' },
@@ -186,9 +202,6 @@ export default function TeilsystemEditPage() {
         { label: 'Bitte wählen...', value: '' },
         ...mitarbeiter.map(m => ({ label: `${m.vorname} ${m.nachname}`, value: `${m.vorname} ${m.nachname}` })),
     ];
-
-    // If Mitarbeiter not loaded yet but we have a current value, add it as option
-    const currentEroeffnetDurch = control._formValues?.eroeffnetDurch;
 
     return (
         <div className="max-w-5xl mx-auto space-y-6 pb-8">

@@ -165,6 +165,11 @@ export default function TabellenPage() {
                         keys = [...essential, ...keys.filter(k => !essential.includes(k.toLowerCase()))];
                     }
 
+                    if (activeTable === 'mitarbeiter') {
+                        // Hide ID and sensitive fields for employees
+                        keys = keys.filter(k => !['id', 'passwordHash', 'confirmationToken'].includes(k));
+                    }
+
                     // Reorder to put labels first if they exist
                     const cols = keys.sort((a, b) => {
                         if (a === 'Projekt' || a === 'bezeichnung' || a === 'name') return -1;

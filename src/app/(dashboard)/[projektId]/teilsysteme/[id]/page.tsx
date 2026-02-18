@@ -6,7 +6,9 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { BimViewer } from '@/components/shared/BimViewer';
-import { mockStore } from '@/lib/mock/store';
+import { SubsystemService } from '@/lib/services/subsystemService';
+import { ProjectService } from '@/lib/services/projectService';
+import { PositionService } from '@/lib/services/positionService';
 import { Teilsystem, Position, Projekt } from '@/types';
 import {
     ArrowLeft, Edit, ListTodo, Plus, FileText,
@@ -29,23 +31,24 @@ export default function TeilsystemDetailPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            const allTs = mockStore.getTeilsysteme();
-            const foundTs = allTs.find((t: any) => t.id === id);
+        const loadData = async () => {
+            try {
+                const [ts, ks, pos] = await Promise.all([
+                    SubsystemService.getTeilsystemById(id),
+                    ProjectService.getProjektById(projektId),
+                    PositionService.getPositionenByTeilsystem(id)
+                ]);
 
-            const allProjekte = mockStore.getProjekte();
-            const foundProj = allProjekte.find((p: any) => p.id === projektId);
-
-            if (foundTs) {
-                setItem(foundTs);
-                setPositionen(mockStore.getPositionen(id));
+                if (ts) setItem(ts);
+                if (ks) setProject(ks);
+                if (pos) setPositionen(pos);
+            } catch (error) {
+                console.error("Failed to load details:", error);
+            } finally {
+                setLoading(false);
             }
-            if (foundProj) {
-                setProject(foundProj);
-            }
-            setLoading(false);
-        }, 500);
-        return () => clearTimeout(timer);
+        };
+        loadData();
     }, [id, projektId]);
 
     if (loading) return (
@@ -216,12 +219,16 @@ export default function TeilsystemDetailPage() {
                                                             variant="ghost"
                                                             size="icon"
                                                             className="h-8 w-8 text-muted-foreground/50 hover:text-red-600 hover:bg-red-50 hover:shadow-sm"
-                                                            onClick={(e) => {
+                                                            onClick={async (e) => {
                                                                 e.stopPropagation();
                                                                 if (confirm(`Sind Sie sicher, dass Sie "${pos.name}" löschen möchten?`)) {
-                                                                    const currentPositions = mockStore.getPositionen(id);
-                                                                    const newPositions = currentPositions.filter((p: Position) => p.id !== pos.id);
-                                                                    setPositionen(newPositions);
+                                                                    try {
+                                                                        await PositionService.deletePosition(pos.id);
+                                                                        setPositionen(prev => prev.filter(p => p.id !== pos.id));
+                                                                    } catch (error) {
+                                                                        console.error("Failed to delete position:", error);
+                                                                        alert("Fehler beim Löschen der Position.");
+                                                                    }
                                                                 }
                                                             }}
                                                         >
