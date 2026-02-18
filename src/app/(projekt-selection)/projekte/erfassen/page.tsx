@@ -151,7 +151,36 @@ export default function ProjektErfassenPage() {
 
     const mitarbeiterOptions = [
         { label: 'Bitte wählen...', value: '' },
-        ...mitarbeiter.map(m => ({ label: `${m.vorname} ${m.nachname} (${m.rolle})`, value: m.id }))
+        ...mitarbeiter.sort((a, b) => a.vorname.localeCompare(b.vorname)).map(m => ({ label: `${m.vorname} ${m.nachname} (${m.rolle})`, value: m.id }))
+    ];
+
+    const cantonOptions = [
+        { label: 'Zürich', value: 'ZH' },
+        { label: 'Bern', value: 'BE' },
+        { label: 'Luzern', value: 'LU' },
+        { label: 'Uri', value: 'UR' },
+        { label: 'Schwyz', value: 'SZ' },
+        { label: 'Obwalden', value: 'OW' },
+        { label: 'Nidwalden', value: 'NW' },
+        { label: 'Glarus', value: 'GL' },
+        { label: 'Zug', value: 'ZG' },
+        { label: 'Freiburg', value: 'FR' },
+        { label: 'Solothurn', value: 'SO' },
+        { label: 'Basel-Stadt', value: 'BS' },
+        { label: 'Basel-Landschaft', value: 'BL' },
+        { label: 'Schaffhausen', value: 'SH' },
+        { label: 'Appenzell Ausserrhoden', value: 'AR' },
+        { label: 'Appenzell Innerrhoden', value: 'AI' },
+        { label: 'St. Gallen', value: 'SG' },
+        { label: 'Graubünden', value: 'GR' },
+        { label: 'Aargau', value: 'AG' },
+        { label: 'Thurgau', value: 'TG' },
+        { label: 'Tessin', value: 'TI' },
+        { label: 'Waadt', value: 'VD' },
+        { label: 'Wallis', value: 'VS' },
+        { label: 'Neuenburg', value: 'NE' },
+        { label: 'Genf', value: 'GE' },
+        { label: 'Jura', value: 'JU' },
     ];
 
     return (
@@ -242,9 +271,9 @@ export default function ProjektErfassenPage() {
                                     {...register('ort')}
                                     error={errors.ort?.message}
                                 />
-                                <FormInput
+                                <FormSelect
                                     label="Kanton *"
-                                    placeholder="ZH"
+                                    options={cantonOptions}
                                     {...register('kanton')}
                                     error={errors.kanton?.message}
                                 />
