@@ -21,13 +21,19 @@ export async function POST(
         }
 
         // 2. Get all related data
-        const teilsysteme = await DatabaseService.list('teilsysteme', {
-            must: [{ key: 'projektId', match: { value: id } }]
-        });
+        let teilsysteme: any[] = [];
+        try {
+            teilsysteme = await DatabaseService.list('teilsysteme', {
+                must: [{ key: 'projektId', match: { value: id } }]
+            });
+        } catch { console.warn('Teilsysteme collection may be missing or empty'); }
 
-        const positionen = await DatabaseService.list('positionen', {
-            must: [{ key: 'projektId', match: { value: id } }]
-        });
+        let positionen: any[] = [];
+        try {
+            positionen = await DatabaseService.list('positionen', {
+                must: [{ key: 'projektId', match: { value: id } }]
+            });
+        } catch { console.warn('Positionen collection may be missing or empty'); }
 
         // Also try to get any other project-scoped collections
         let ausfuehrungen: any[] = [];

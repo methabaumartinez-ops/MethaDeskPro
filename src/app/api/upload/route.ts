@@ -18,9 +18,21 @@ export async function POST(req: Request) {
         }
 
         if (!project.driveFolderId) {
-            // Try to find/create folder if missing (should be handled by service but good fallback)
-            // For now error if no folder, or we could call ensureProjectFolder here too
-            return NextResponse.json({ error: 'Project has no Drive folder assigned' }, { status: 400 });
+            // Try to find/create folder if missing (self-healing)
+            console.log('Project has no Drive folder assigned, attempting to create one...');
+            const { ensureProjectFolder } = await import('@/lib/services/googleDriveService');
+            const folderId = await ensureProjectFolder({
+                projektnummer: project.projektnummer,
+                projektname: project.projektname
+            });
+
+            if (folderId) {
+                // Update project with new folder ID
+                project.driveFolderId = folderId;
+                await ProjectService.updateProjekt(projektId, { driveFolderId: folderId });
+            } else {
+                return NextResponse.json({ error: 'Failed to create Drive folder for project' }, { status: 500 });
+            }
         }
 
         // Determine subfolder based on type
