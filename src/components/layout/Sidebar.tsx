@@ -50,7 +50,7 @@ export function Sidebar({ projektId, className }: { projektId: string; className
     ];
 
     return (
-        <aside className={cn("relative flex flex-col h-[calc(100vh-4rem)] w-64 border-r bg-white dark:bg-slate-950 transition-colors", className)}>
+        <aside className={cn("relative flex flex-col h-[calc(100vh-4rem)] w-64 border-r bg-white dark:bg-slate-950 dark:border-slate-800 transition-colors", className)}>
             <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2 pb-40">
                 {menuItems.map((item) => {
                     const isProjectRoot = item.href === `/${projektId}`;
@@ -66,7 +66,7 @@ export function Sidebar({ projektId, className }: { projektId: string; className
                                     'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all group',
                                     isActive && !item.subItems
                                         ? 'bg-primary text-primary-foreground shadow-sm'
-                                        : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+                                        : 'text-muted-foreground hover:bg-accent hover:text-foreground dark:text-slate-400 dark:hover:text-slate-100',
                                     isActive && item.subItems ? 'text-foreground bg-accent' : ''
                                 )}
                             >
