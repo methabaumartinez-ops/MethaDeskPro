@@ -33,30 +33,48 @@ export class DatabaseService {
         if (this.useMock) {
             console.log(`Using mock data for collection: ${collectionName} with filter:`, filter);
 
-            // Basic support for filtering by projektId in mock mode
+            let result: any[] = [];
             let projektId: string | undefined;
+            let email: string | undefined;
+            let confirmationToken: string | undefined;
+
             if (filter?.must) {
                 const pIdMatch = filter.must.find((m: any) => m.key === 'projektId' || m.key === 'projekt_id');
-                if (pIdMatch) {
-                    projektId = pIdMatch.match?.value;
-                }
+                if (pIdMatch) projektId = pIdMatch.match?.value;
+
+                const emailMatch = filter.must.find((m: any) => m.key === 'email');
+                if (emailMatch) email = emailMatch.match?.value;
+
+                const tokenMatch = filter.must.find((m: any) => m.key === 'confirmationToken');
+                if (tokenMatch) confirmationToken = tokenMatch.match?.value;
             }
 
             switch (collectionName) {
-                case 'projekte': return (mockStore.getProjekte() || []) as unknown as T[];
-                case 'teilsysteme': return (mockStore.getTeilsysteme(projektId) || []) as unknown as T[];
+                case 'projekte': result = mockStore.getProjekte() || []; break;
+                case 'teilsysteme': result = mockStore.getTeilsysteme(projektId) || []; break;
                 case 'positionen': {
                     let tsIdMatch = filter?.must?.find((m: any) => m.key === 'teilsystemId');
                     let tsId = tsIdMatch?.match?.value;
-                    return (mockStore.getPositionen(tsId) || []) as unknown as T[];
+                    result = mockStore.getPositionen(tsId) || [];
+                    break;
                 }
-                case 'material': return (mockStore.getMaterial() || []) as unknown as T[];
-                case 'mitarbeiter': return (mockStore.getMitarbeiter() || []) as unknown as T[];
-                case 'fahrzeuge': return (mockStore.getFahrzeuge() || []) as unknown as T[];
-                case 'reservierungen': return (mockStore.getReservierungen() || []) as unknown as T[];
-                case 'lieferanten': return (mockStore.getLieferanten() || []) as unknown as T[];
-                default: return [] as T[];
+                case 'material': result = mockStore.getMaterial() || []; break;
+                case 'mitarbeiter': result = mockStore.getMitarbeiter() || []; break;
+                case 'fahrzeuge': result = mockStore.getFahrzeuge() || []; break;
+                case 'reservierungen': result = mockStore.getReservierungen() || []; break;
+                case 'lieferanten': result = mockStore.getLieferanten() || []; break;
+                case 'users': result = mockStore.getUsers() || []; break;
+                default: result = [];
             }
+
+            if (email) {
+                result = result.filter(u => u.email === email);
+            }
+            if (confirmationToken) {
+                result = result.filter(u => u.confirmationToken === confirmationToken);
+            }
+
+            return result as unknown as T[];
         }
 
         try {

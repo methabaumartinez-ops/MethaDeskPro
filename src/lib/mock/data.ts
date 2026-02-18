@@ -1,12 +1,14 @@
 import { User, Projekt, Teilsystem, Position, Material, Lieferant, Mitarbeiter, Fahrzeug, FahrzeugReservierung } from '@/types';
 
-export const mockUser: User = {
+export const mockUser: User & { passwordHash: string, confirmed: boolean } = {
     id: 'u1',
     vorname: 'Admin',
     nachname: 'Methabau',
     email: 'admin@methabau.ch',
     department: 'IT / Management',
     role: 'admin',
+    passwordHash: '00000000000000000000000000000000:510c749b88d3c1a5dc2d171b17851ef7b3ad2a526ca12fe8d4784776cf7b8ecd5f5b4b74543f2ed79b9acb4bb40c3463399d0363083024c384eff3a29f3ce14a',
+    confirmed: true,
 };
 
 export const mockProjekte: Projekt[] = [
