@@ -5,7 +5,7 @@ import { mockStore } from '@/lib/mock/store';
 export class DatabaseService {
     // Flag to toggle between mock data and real Qdrant DB
     // Flag to toggle between mock data and real Qdrant DB
-    private static useMock = true; // Set to true by default for local stability
+    private static useMock = false; // Set to false to use the real Qdrant database
 
     /**
      * Helper to ensure ID is a valid Qdrant ID (UUID or int64)
