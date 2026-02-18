@@ -74,6 +74,6 @@ export async function POST(req: Request) {
 
     } catch (error) {
         console.error('Upload API Error:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ error: `Internal Server Error: ${error instanceof Error ? error.message : String(error)}` }, { status: 500 });
     }
 }

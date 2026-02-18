@@ -69,7 +69,8 @@ export default function ProjektePage() {
             setProjekte(prev => prev.filter(x => x.id !== p.id));
         } catch (error) {
             console.error("Failed to export/delete project:", error);
-            alert("Fehler beim Exportieren und Löschen des Projekts.");
+            // Show detailed error to user for debugging
+            alert(`Fehler beim Exportieren und Löschen: ${error instanceof Error ? error.message : String(error)}`);
         } finally {
             setDeletingId(null);
         }

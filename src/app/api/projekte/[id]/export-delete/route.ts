@@ -93,7 +93,7 @@ export async function POST(
     } catch (error) {
         console.error('Export-delete error:', error);
         return NextResponse.json(
-            { error: 'Export und Löschung fehlgeschlagen.' },
+            { error: `Export und Löschung fehlgeschlagen: ${error instanceof Error ? error.message : String(error)}` },
             { status: 500 }
         );
     }
