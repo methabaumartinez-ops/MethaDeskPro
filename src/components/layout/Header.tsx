@@ -84,7 +84,11 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
 
                 <div className="flex items-center gap-4 relative">
                     {currentUser && (
-                        <div className="flex items-center gap-3 pr-2 border-r h-8">
+                        <div
+                            className="flex items-center gap-3 pr-2 border-r h-8 cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => router.push('/profil')}
+                            title="Profil öffnen"
+                        >
                             <div className="flex flex-col items-end">
                                 <span className="text-sm font-bold text-foreground leading-none">{currentUser.vorname} {currentUser.nachname}</span>
                                 <span className="text-[10px] font-medium text-muted-foreground uppercase">{currentUser.role}</span>

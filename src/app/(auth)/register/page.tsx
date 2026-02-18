@@ -8,10 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { useProjekt } from '@/lib/context/ProjektContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, MailCheck } from 'lucide-react';
 
 const registerSchema = z.object({
     vorname: z.string().min(2, 'Vorname ist erforderlich'),
@@ -24,9 +23,10 @@ const registerSchema = z.object({
 type RegisterValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
-    const { setCurrentUser } = useProjekt();
     const router = useRouter();
     const [serverError, setServerError] = useState<string | null>(null);
+    const [registered, setRegistered] = useState(false);
+    const [confirmToken, setConfirmToken] = useState<string | null>(null);
 
     const {
         register,
@@ -52,8 +52,11 @@ export default function RegisterPage() {
                 return;
             }
 
-            setCurrentUser(result.user);
-            router.push('/projekte');
+            // Show confirmation pending view
+            setRegistered(true);
+            if (result.confirmationToken) {
+                setConfirmToken(result.confirmationToken);
+            }
         } catch {
             setServerError('Verbindungsfehler. Bitte versuchen Sie es erneut.');
         }
@@ -62,12 +65,58 @@ export default function RegisterPage() {
     const departments = [
         { label: 'Bitte wählen...', value: '' },
         { label: 'Projektleitung', value: 'Projektleitung' },
-        { label: 'Planung', value: 'Planung' },
+        { label: 'Planer', value: 'Planer' },
         { label: 'Produktion', value: 'Produktion' },
-        { label: 'Montage', value: 'Montage' },
-        { label: 'Administration', value: 'Administration' },
+        { label: 'Ausführung', value: 'Ausführung' },
+        { label: 'Werkhof', value: 'Werkhof' },
+        { label: 'Fuhrpark', value: 'Fuhrpark' },
     ];
 
+    // ─── Confirmation pending view ──────────────────────
+    if (registered) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
+                <Card className="w-full max-w-md shadow-2xl border-none text-center">
+                    <CardContent className="p-10">
+                        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-orange-50 mb-6">
+                            <MailCheck className="h-10 w-10 text-primary" />
+                        </div>
+                        <h2 className="text-2xl font-bold text-slate-800 mb-2">Fast geschafft!</h2>
+                        <p className="text-slate-500 leading-relaxed mb-6">
+                            Wir haben Ihnen eine Bestätigungs-E-Mail gesendet.
+                            Bitte klicken Sie auf den Link in der E-Mail, um Ihr Konto zu aktivieren.
+                        </p>
+
+                        <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 mb-6">
+                            <p className="text-[11px] font-bold uppercase text-slate-400 mb-1">Hinweis</p>
+                            <p className="text-sm text-slate-600">
+                                Überprüfen Sie auch Ihren Spam-Ordner.
+                            </p>
+                        </div>
+
+                        {/* Dev mode: show direct confirm link */}
+                        {confirmToken && (
+                            <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 mb-6">
+                                <p className="text-[11px] font-bold uppercase text-amber-600 mb-2">🛠 Entwicklungsmodus</p>
+                                <Button
+                                    className="w-full"
+                                    onClick={() => router.push(`/confirm?token=${confirmToken}`)}
+                                >
+                                    E-Mail jetzt bestätigen
+                                </Button>
+                            </div>
+                        )}
+
+                        <Link href="/login" className="text-sm font-bold text-primary hover:underline">
+                            Zurück zur Anmeldung
+                        </Link>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+
+    // ─── Registration form ──────────────────────────────
     return (
         <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
             <Card className="w-full max-w-lg shadow-2xl">

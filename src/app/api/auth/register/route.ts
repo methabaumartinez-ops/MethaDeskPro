@@ -18,16 +18,14 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: result.error }, { status: 400 });
         }
 
-        const response = NextResponse.json({ user: result.user });
-        response.cookies.set('methabau_token', result.token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            path: '/',
-            maxAge: 60 * 60 * 24,
+        // Registration successful — user needs to confirm email
+        // The confirmation token is logged to the server console
+        return NextResponse.json({
+            success: true,
+            message: 'Registrierung erfolgreich. Bitte bestätigen Sie Ihre E-Mail-Adresse.',
+            // En desarrollo, retornar token para facilitar pruebas
+            ...(process.env.NODE_ENV !== 'production' ? { confirmationToken: result.confirmationToken } : {}),
         });
-
-        return response;
     } catch (error) {
         console.error('Register API error:', error);
         return NextResponse.json(

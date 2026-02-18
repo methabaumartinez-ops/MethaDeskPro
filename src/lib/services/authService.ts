@@ -155,6 +155,8 @@ export interface StoredUser {
     department?: string;
     role: 'admin' | 'projektleiter' | 'mitarbeiter';
     createdAt: string;
+    confirmed: boolean;
+    confirmationToken?: string;
 }
 
 export interface SafeUser {
@@ -199,17 +201,21 @@ export async function ensureUsersCollection(): Promise<void> {
     }
 }
 
-export async function login(email: string, password: string): Promise<{ token: string; user: SafeUser } | null> {
+export async function login(email: string, password: string): Promise<{ token: string; user: SafeUser } | { error: string }> {
     try {
         const users = await DatabaseService.list<StoredUser>(COLLECTION, {
             must: [{ key: 'email', match: { value: email } }]
         });
 
-        if (users.length === 0) return null;
+        if (users.length === 0) return { error: 'Ungültige Anmeldedaten.' };
         const user = users[0];
 
         const valid = await verifyPassword(password, user.passwordHash);
-        if (!valid) return null;
+        if (!valid) return { error: 'Ungültige Anmeldedaten.' };
+
+        if (!user.confirmed) {
+            return { error: 'Bitte bestätigen Sie zuerst Ihre E-Mail-Adresse.' };
+        }
 
         const safeUser = toSafeUser(user);
         const token = await generateToken({ userId: user.id, email: user.email, role: user.role });
@@ -217,7 +223,7 @@ export async function login(email: string, password: string): Promise<{ token: s
         return { token, user: safeUser };
     } catch (error) {
         console.error('Login error:', error);
-        return null;
+        return { error: 'Anmeldung fehlgeschlagen.' };
     }
 }
 
@@ -227,7 +233,7 @@ export async function registerUser(data: {
     email: string;
     password: string;
     department?: string;
-}): Promise<{ token: string; user: SafeUser } | { error: string }> {
+}): Promise<{ confirmationToken: string; user: SafeUser } | { error: string }> {
     try {
         await ensureUsersCollection();
 
@@ -240,6 +246,7 @@ export async function registerUser(data: {
         }
 
         const passwordHash = await hashPassword(data.password);
+        const confirmationToken = uuidv4();
         const newUser: StoredUser = {
             id: uuidv4(),
             vorname: data.vorname,
@@ -249,17 +256,89 @@ export async function registerUser(data: {
             department: data.department,
             role: 'mitarbeiter',
             createdAt: new Date().toISOString(),
+            confirmed: false,
+            confirmationToken,
         };
 
         await DatabaseService.upsert(COLLECTION, newUser);
 
-        const safeUser = toSafeUser(newUser);
-        const token = await generateToken({ userId: newUser.id, email: newUser.email, role: newUser.role });
+        // ============================================================
+        // SIMULACIÓN DE EMAIL - En producción usar un servicio real
+        // ============================================================
+        console.log('\n══════════════════════════════════════════════════════════');
+        console.log('  📧 METHABAU — Bestätigungs-E-Mail (simuliert)');
+        console.log('══════════════════════════════════════════════════════════');
+        console.log(`  An: ${data.email}`);
+        console.log(`  Betreff: Willkommen bei METHADesk Pro — E-Mail bestätigen`);
+        console.log('');
+        console.log(`  Hallo ${data.vorname} ${data.nachname},`);
+        console.log('');
+        console.log('  Vielen Dank für Ihre Registrierung bei METHADesk Pro.');
+        console.log('  Bitte bestätigen Sie Ihre E-Mail-Adresse:');
+        console.log('');
+        console.log(`  🔗 Bestätigungslink:`);
+        console.log(`     /confirm?token=${confirmationToken}`);
+        console.log('');
+        console.log('  Mit freundlichen Grüssen,');
+        console.log('  METHABAU AG');
+        console.log('══════════════════════════════════════════════════════════\n');
 
-        return { token, user: safeUser };
+        const safeUser = toSafeUser(newUser);
+        return { confirmationToken, user: safeUser };
     } catch (error) {
         console.error('Register error:', error);
         return { error: 'Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.' };
+    }
+}
+
+export async function confirmEmail(token: string): Promise<{ token: string; user: SafeUser } | { error: string }> {
+    try {
+        const users = await DatabaseService.list<StoredUser>(COLLECTION, {
+            must: [{ key: 'confirmationToken', match: { value: token } }]
+        });
+
+        if (users.length === 0) {
+            return { error: 'Ungültiger Bestätigungstoken.' };
+        }
+
+        const user = users[0];
+        if (user.confirmed) {
+            return { error: 'Diese E-Mail-Adresse wurde bereits bestätigt.' };
+        }
+
+        // Confirm user
+        const updatedUser: StoredUser = {
+            ...user,
+            confirmed: true,
+            confirmationToken: undefined,
+        };
+        await DatabaseService.upsert(COLLECTION, updatedUser);
+
+        const safeUser = toSafeUser(updatedUser);
+        const jwtToken = await generateToken({ userId: user.id, email: user.email, role: user.role });
+
+        return { token: jwtToken, user: safeUser };
+    } catch (error) {
+        console.error('Confirm email error:', error);
+        return { error: 'Bestätigung fehlgeschlagen.' };
+    }
+}
+
+export async function changePassword(userId: string, currentPassword: string, newPassword: string): Promise<{ success: boolean } | { error: string }> {
+    try {
+        const user = await DatabaseService.get<StoredUser>(COLLECTION, userId);
+        if (!user) return { error: 'Benutzer nicht gefunden.' };
+
+        const valid = await verifyPassword(currentPassword, user.passwordHash);
+        if (!valid) return { error: 'Aktuelles Passwort ist falsch.' };
+
+        const newHash = await hashPassword(newPassword);
+        await DatabaseService.upsert(COLLECTION, { ...user, passwordHash: newHash });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Change password error:', error);
+        return { error: 'Passwortänderung fehlgeschlagen.' };
     }
 }
 
