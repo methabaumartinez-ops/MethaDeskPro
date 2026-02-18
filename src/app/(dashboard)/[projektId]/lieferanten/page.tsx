@@ -48,8 +48,8 @@ export default function LieferantenListPage() {
     });
 
     return (
-        <div className="flex flex-col h-[calc(100vh-6rem)] space-y-4">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex flex-col h-[calc(100vh-6rem)] space-y-4 max-w-none">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 px-2">
                 <div>
                     <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Lieferanten</h1>
                     <p className="text-muted-foreground font-medium mt-1">Kontaktliste der Partner und Lieferanten.</p>
@@ -75,33 +75,35 @@ export default function LieferantenListPage() {
             </div>
 
             {error && (
-                <div className="p-4 bg-red-50 text-red-600 rounded-md border border-red-200">
+                <div className="p-4 bg-red-50 text-red-600 rounded-md border border-red-200 mx-2">
                     {error}
                 </div>
             )}
 
-            <Card className="overflow-hidden border-none shadow-xl bg-card/50 backdrop-blur-sm flex-1">
+            <Card className="overflow-hidden border-none shadow-xl bg-card/50 backdrop-blur-sm flex-1 w-full">
                 <CardContent className="p-0 h-full overflow-auto">
                     {loading ? (
                         <div className="py-20 flex justify-center">
                             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <Table className="border-none rounded-none">
+                        <div className="overflow-x-auto w-full">
+                            <Table className="border-none rounded-none w-full min-w-full">
                                 <TableHeader>
                                     <TableRow className="hover:bg-transparent border-b border-border/50">
+                                        <TableHead className="font-bold text-foreground py-4 w-20">ID</TableHead>
                                         <TableHead className="font-bold text-foreground py-4">Firma</TableHead>
                                         <TableHead className="font-bold text-foreground">Kontaktperson</TableHead>
                                         <TableHead className="font-bold text-foreground">E-Mail</TableHead>
                                         <TableHead className="font-bold text-foreground">Telefon</TableHead>
                                         <TableHead className="font-bold text-foreground">Adresse</TableHead>
+                                        <TableHead className="font-bold text-foreground">Status</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {filteredItems.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={5} className="h-32 text-center text-muted-foreground font-medium">
+                                            <TableCell colSpan={7} className="h-32 text-center text-muted-foreground font-medium">
                                                 Keine Lieferanten gefunden.
                                             </TableCell>
                                         </TableRow>
@@ -109,9 +111,14 @@ export default function LieferantenListPage() {
                                         filteredItems.map((item) => (
                                             <TableRow key={item.id} className="group hover:bg-muted/50 transition-colors">
                                                 <TableCell className="py-4">
+                                                    <span className="font-mono text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                                                        {item.id.substring(0, 3)}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="py-4">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center border border-primary/10 shadow-sm">
-                                                            <Truck className="h-5 w-5 text-primary" />
+                                                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center border border-primary/10 shadow-sm shrink-0">
+                                                            <Truck className="h-4 w-4 text-primary" />
                                                         </div>
                                                         <span className="font-bold text-foreground text-sm tracking-tight">{item.name}</span>
                                                     </div>
@@ -138,12 +145,15 @@ export default function LieferantenListPage() {
                                                 <TableCell>
                                                     {item.adresse ? (
                                                         <div className="flex items-center gap-2 text-muted-foreground font-medium text-sm">
-                                                            <MapPin className="h-3.5 w-3.5" />
-                                                            <span>{item.adresse}</span>
+                                                            <MapPin className="h-3.5 w-3.5 shrink-0" />
+                                                            <span className="truncate max-w-[200px]">{item.adresse}</span>
                                                         </div>
                                                     ) : (
                                                         <span className="text-muted-foreground text-sm">—</span>
                                                     )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" title="Aktiv" />
                                                 </TableCell>
                                             </TableRow>
                                         ))

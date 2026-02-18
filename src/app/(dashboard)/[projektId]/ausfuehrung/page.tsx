@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useProjekt } from '@/lib/context/ProjektContext';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +22,7 @@ import Link from 'next/link';
 
 export default function AusfuehrungPage() {
     const { projektId } = useParams() as { projektId: string };
+    const { currentUser } = useProjekt();
     const router = useRouter();
 
     // Data States
@@ -28,6 +30,7 @@ export default function AusfuehrungPage() {
     const [employees, setEmployees] = useState<Mitarbeiter[]>([]);
     const [vehicles, setVehicles] = useState<Fahrzeug[]>([]);
 
+    const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'projektleiter' || currentUser?.role === 'mitarbeiter';
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [activeTab, setActiveTab] = useState('teilsysteme');
@@ -225,9 +228,9 @@ export default function AusfuehrungPage() {
                                                     <TableRow className="bg-muted/50 hover:bg-muted/50">
                                                         <TableHead className="h-8 px-4 font-bold text-foreground text-xs">Inv-Nr.</TableHead>
                                                         <TableHead className="h-8 px-4 font-bold text-foreground text-xs">Bezeichnung</TableHead>
+                                                        <TableHead className="h-8 px-4 font-bold text-foreground text-xs">Fabrikat / Typ</TableHead>
                                                         <TableHead className="h-8 px-4 font-bold text-foreground text-xs">Kennzeichen</TableHead>
                                                         <TableHead className="h-8 px-4 font-bold text-foreground text-xs">Kategorie</TableHead>
-                                                        <TableHead className="h-8 px-4 font-bold text-foreground text-xs">Gruppe</TableHead>
                                                         <TableHead className="h-8 px-4 font-bold text-foreground text-xs">Status</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
@@ -236,9 +239,11 @@ export default function AusfuehrungPage() {
                                                         <TableRow key={veh.id} className="hover:bg-muted/50">
                                                             <TableCell className="p-2 px-4 font-black text-xs text-foreground font-mono">{veh.inventarnummer}</TableCell>
                                                             <TableCell className="p-2 px-4 font-bold text-sm text-foreground">{veh.bezeichnung}</TableCell>
+                                                            <TableCell className="p-2 px-4 text-xs font-semibold text-muted-foreground">
+                                                                {veh.fabrikat || '—'} {veh.typ ? `/ ${veh.typ}` : ''}
+                                                            </TableCell>
                                                             <TableCell className="p-2 px-4 text-xs font-semibold text-muted-foreground">{veh.kennzeichen || '—'}</TableCell>
                                                             <TableCell className="p-2 px-4 text-xs text-muted-foreground">{veh.kategorie}</TableCell>
-                                                            <TableCell className="p-2 px-4 text-xs font-bold text-primary bg-primary/10 rounded px-2 w-fit">{veh.gruppe || 'Sonstige'}</TableCell>
                                                             <TableCell className="p-2 px-4">
                                                                 <span className={cn(
                                                                     "text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded",

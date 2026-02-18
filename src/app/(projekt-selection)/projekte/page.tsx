@@ -88,7 +88,7 @@ export default function ProjektePage() {
 
     if (authLoading) return null;
 
-    const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'projektleiter';
+    const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'projektleiter' || currentUser?.role === 'mitarbeiter';
 
     return (
         <div className="min-h-screen bg-background pt-16">

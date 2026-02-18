@@ -153,20 +153,27 @@ export default function TabellenPage() {
                 setData(result);
                 if (result.length > 0) {
                     const first = result[0];
-                    // Prioritize 'Projekt' column if exists
-                    const keys = Object.keys(first).filter(k =>
-                        !k.startsWith('_') && // Filter internal keys
+                    // Prioritize specific columns for certain tables
+                    let keys = Object.keys(first).filter(k =>
+                        !k.startsWith('_') &&
                         (typeof first[k] !== 'object' || first[k] === null || Array.isArray(first[k]) === false)
                     );
 
-                    // Reorder to put Projekt first if it exists
+                    if (activeTable === 'fahrzeuge') {
+                        // Ensure essential columns are present and at the start
+                        const essential = ['bezeichnung', 'inventarnummer', 'fabrikat', 'typ', 'status'];
+                        keys = [...essential, ...keys.filter(k => !essential.includes(k.toLowerCase()))];
+                    }
+
+                    // Reorder to put labels first if they exist
                     const cols = keys.sort((a, b) => {
-                        if (a === 'Projekt') return -1;
-                        if (b === 'Projekt') return 1;
+                        if (a === 'Projekt' || a === 'bezeichnung' || a === 'name') return -1;
+                        if (b === 'Projekt' || b === 'bezeichnung' || b === 'name') return 1;
+                        if (a === 'status') return 1; // Put status near end
                         return 0;
                     });
 
-                    setColumns(cols.slice(0, 8));
+                    setColumns(cols.slice(0, 10)); // Show more columns
                 }
             } catch (error) {
                 console.error("Failed to load table data:", error);
