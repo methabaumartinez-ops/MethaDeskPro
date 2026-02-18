@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -26,6 +26,7 @@ type RegisterValues = z.infer<typeof registerSchema>;
 export default function RegisterPage() {
     const { setCurrentUser } = useProjekt();
     const router = useRouter();
+    const [serverError, setServerError] = useState<string | null>(null);
 
     const {
         register,
@@ -36,20 +37,26 @@ export default function RegisterPage() {
     });
 
     const onSubmit = async (data: RegisterValues) => {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setServerError(null);
+        try {
+            const res = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
 
-        const newUser: any = {
-            id: Math.random().toString(36).substr(2, 9),
-            vorname: data.vorname,
-            nachname: data.nachname,
-            email: data.email,
-            department: data.department,
-            role: 'mitarbeiter' as const,
-        };
+            const result = await res.json();
 
-        // In a real app we'd save it to store too
-        setCurrentUser(newUser);
-        router.push('/projekte');
+            if (!res.ok) {
+                setServerError(result.error || 'Registrierung fehlgeschlagen.');
+                return;
+            }
+
+            setCurrentUser(result.user);
+            router.push('/projekte');
+        } catch {
+            setServerError('Verbindungsfehler. Bitte versuchen Sie es erneut.');
+        }
     };
 
     const departments = [
@@ -77,6 +84,11 @@ export default function RegisterPage() {
                 </CardHeader>
                 <CardContent className="p-8">
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                        {serverError && (
+                            <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700 font-medium">
+                                {serverError}
+                            </div>
+                        )}
                         <div className="grid grid-cols-2 gap-4">
                             <Input
                                 label="Vorname"

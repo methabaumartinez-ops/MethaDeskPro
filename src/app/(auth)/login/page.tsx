@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useProjekt } from '@/lib/context/ProjektContext';
-import { mockStore } from '@/lib/mock/store';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { LogIn } from 'lucide-react';
@@ -23,6 +22,7 @@ type LoginValues = z.infer<typeof loginSchema>;
 export default function LoginPage() {
     const { setCurrentUser } = useProjekt();
     const router = useRouter();
+    const [serverError, setServerError] = useState<string | null>(null);
 
     const {
         register,
@@ -31,21 +31,31 @@ export default function LoginPage() {
     } = useForm<LoginValues>({
         resolver: zodResolver(loginSchema),
         defaultValues: {
-            email: 'admin@methabau.ch',
-            password: 'admin',
+            email: '',
+            password: '',
         },
     });
 
     const onSubmit = async (data: LoginValues) => {
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setServerError(null);
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
 
-        const user = mockStore.login(data.email);
-        if (user) {
-            setCurrentUser(user);
+            const result = await res.json();
+
+            if (!res.ok) {
+                setServerError(result.error || 'Anmeldung fehlgeschlagen.');
+                return;
+            }
+
+            setCurrentUser(result.user);
             router.push('/projekte');
-        } else {
-            alert('Ungültige Anmeldedaten. Versuchen Sie es mit admin@methabau.ch');
+        } catch {
+            setServerError('Verbindungsfehler. Bitte versuchen Sie es erneut.');
         }
     };
 
@@ -65,6 +75,11 @@ export default function LoginPage() {
                 </CardHeader>
                 <CardContent className="p-8">
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                        {serverError && (
+                            <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700 font-medium">
+                                {serverError}
+                            </div>
+                        )}
                         <Input
                             label="E-Mail-Adresse"
                             placeholder="name@methabau.ch"

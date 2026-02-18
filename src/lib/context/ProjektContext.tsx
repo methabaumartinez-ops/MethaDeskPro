@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Projekt, User } from '@/types';
-// import { mockStore } from '@/lib/mock/store'; // Removed
 import { useRouter, usePathname } from 'next/navigation';
 
 interface ProjektContextType {
@@ -11,6 +10,7 @@ interface ProjektContextType {
     currentUser: User | null;
     setCurrentUser: (user: User | null) => void;
     loading: boolean;
+    logout: () => Promise<void>;
 }
 
 const ProjektContext = createContext<ProjektContextType | undefined>(undefined);
@@ -22,26 +22,35 @@ export function ProjektProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
 
+    // Load user from session cookie on mount
     useEffect(() => {
-        const storedUserIdx = localStorage.getItem('methabau_currentUser');
-        const storedProjektIdx = localStorage.getItem('methabau_activeProjekt');
-
-        if (storedUserIdx) {
+        async function loadUser() {
             try {
-                _setCurrentUser(JSON.parse(storedUserIdx));
-            } catch (e) {
-                console.error("Failed to parse user", e);
+                const res = await fetch('/api/auth/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.user) {
+                        _setCurrentUser(data.user);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load user session:', error);
             }
-        }
-        if (storedProjektIdx) {
-            try {
-                _setActiveProjekt(JSON.parse(storedProjektIdx));
-            } catch (e) {
-                console.error("Failed to parse project", e);
+
+            // Load project from localStorage
+            const storedProjekt = localStorage.getItem('methabau_activeProjekt');
+            if (storedProjekt) {
+                try {
+                    _setActiveProjekt(JSON.parse(storedProjekt));
+                } catch (e) {
+                    console.error("Failed to parse project", e);
+                }
             }
+
+            setLoading(false);
         }
 
-        setLoading(false);
+        loadUser();
     }, []);
 
     const setActiveProjekt = useCallback((projekt: Projekt | null) => {
@@ -55,19 +64,19 @@ export function ProjektProvider({ children }: { children: React.ReactNode }) {
 
     const setCurrentUser = useCallback((user: User | null) => {
         _setCurrentUser(user);
-        if (user) {
-            localStorage.setItem('methabau_currentUser', JSON.stringify(user));
-        } else {
-            localStorage.removeItem('methabau_currentUser');
-        }
     }, []);
 
-    // Auth Guard (simulated)
-    useEffect(() => {
-        if (!loading && !currentUser && pathname !== '/' && pathname !== '/login' && pathname !== '/register') {
-            router.push('/login');
+    const logout = useCallback(async () => {
+        try {
+            await fetch('/api/auth/logout', { method: 'POST' });
+        } catch (error) {
+            console.error('Logout error:', error);
         }
-    }, [currentUser, loading, pathname, router]);
+        _setCurrentUser(null);
+        _setActiveProjekt(null);
+        localStorage.removeItem('methabau_activeProjekt');
+        router.push('/login');
+    }, [router]);
 
     return (
         <ProjektContext.Provider value={{
@@ -75,7 +84,8 @@ export function ProjektProvider({ children }: { children: React.ReactNode }) {
             setActiveProjekt,
             currentUser,
             setCurrentUser,
-            loading
+            loading,
+            logout,
         }}>
             {children}
         </ProjektContext.Provider>

@@ -8,14 +8,11 @@ import { useRouter } from 'next/navigation';
 // import { mockStore } from '@/lib/mock/store'; // Removed
 
 export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
-    const { activeProjekt, currentUser, setCurrentUser, setActiveProjekt } = useProjekt();
+    const { activeProjekt, currentUser, logout } = useProjekt();
     const router = useRouter();
 
     const handleLogout = () => {
-        // mockStore.logout(); // Removed
-        setCurrentUser(null);
-        setActiveProjekt(null);
-        router.push('/login');
+        logout();
     };
 
     const [showConfig, setShowConfig] = React.useState(false);
