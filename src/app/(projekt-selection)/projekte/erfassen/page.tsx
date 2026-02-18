@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import { v4 as uuidv4 } from 'uuid';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -111,10 +112,11 @@ export default function ProjektErfassenPage() {
     const onSubmit = async (data: ProjektValues) => {
         try {
             let uploadedImageUrl = undefined;
+            const projectId = uuidv4(); // Generate ID in advance
 
             if (imageFile) {
                 try {
-                    uploadedImageUrl = await ProjectService.uploadImage(imageFile);
+                    uploadedImageUrl = await ProjectService.uploadImage(imageFile, projectId);
                 } catch (uploadError) {
                     console.error('Image upload failed:', uploadError);
                     window.alert('Bild-Upload fehlgeschlagen. Projekt wird ohne Bild erstellt.');
@@ -129,6 +131,7 @@ export default function ProjektErfassenPage() {
 
             await ProjectService.createProjekt({
                 ...data,
+                id: projectId,
                 projektleiter: resolveName(data.projektleiter),
                 bauleiter: data.bauleiter ? resolveName(data.bauleiter) : undefined,
                 polier: data.polier ? resolveName(data.polier) : undefined,

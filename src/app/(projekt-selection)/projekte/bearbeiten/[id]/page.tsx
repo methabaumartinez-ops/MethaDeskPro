@@ -178,7 +178,7 @@ export default function ProjektBearbeitenPage() {
             let imageUrl = data.imageUrl;
             if (imageFile) {
                 // In a real app, this would be an upload call to a storage service
-                imageUrl = await ProjectService.uploadImage(imageFile);
+                imageUrl = await ProjectService.uploadImage(imageFile, id);
             }
 
             await ProjectService.updateProjekt(id, {

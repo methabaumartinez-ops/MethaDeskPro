@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { DatabaseService } from '@/lib/services/db';
+import { ensureProjectFolder } from '@/lib/services/googleDriveService';
 
 export async function GET(req: Request, { params }: { params: Promise<{ collection: string, id: string }> }) {
     try {
@@ -12,7 +13,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ collecti
 
         return NextResponse.json(item);
     } catch (error) {
-        console.error(`API Error fetching ${id} from ${collection}:`, error);
+        console.error(`API Error fetching item from collection:`, error);
         return NextResponse.json({ error: 'Failed to fetch' }, { status: 500 });
     }
 }
@@ -21,10 +22,27 @@ export async function PUT(req: Request, { params }: { params: Promise<{ collecti
     try {
         const { collection, id } = await params;
         const body = await req.json();
+
+        // If updating a project, ensure Drive folder is in sync
+        if (collection === 'projekte' && (body.projektname || body.projektnummer)) {
+            try {
+                if (process.env.GOOGLE_CLIENT_ID) {
+                    const folderId = await ensureProjectFolder({
+                        projektnummer: body.projektnummer,
+                        projektname: body.projektname,
+                        driveFolderId: body.driveFolderId
+                    });
+                    if (folderId) body.driveFolderId = folderId;
+                }
+            } catch (e) {
+                console.error('Drive sync error on PUT:', e);
+            }
+        }
+
         const updated = await DatabaseService.upsert(collection, { ...body, id });
         return NextResponse.json(updated);
     } catch (error) {
-        console.error(`API Error updating ${id} in ${collection}:`, error);
+        console.error(`API Error updating item in collection:`, error);
         return NextResponse.json({ error: 'Failed to update' }, { status: 500 });
     }
 }
@@ -35,7 +53,8 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ colle
         await DatabaseService.delete(collection, id);
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error(`API Error deleting ${id} from ${collection}:`, error);
+        console.error(`API Error deleting item from collection:`, error);
         return NextResponse.json({ error: 'Failed to delete' }, { status: 500 });
     }
 }
+

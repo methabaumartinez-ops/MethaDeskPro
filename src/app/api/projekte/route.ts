@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { DatabaseService } from '@/lib/services/db';
 import { v4 as uuidv4 } from 'uuid';
+import { ensureProjectFolder } from '@/lib/services/googleDriveService';
 
 export async function GET() {
     try {
@@ -28,6 +29,21 @@ export async function POST(req: Request) {
             createdAt: body.createdAt || new Date().toISOString(),
             status: body.status || 'offen',
         };
+
+        // Create Drive Folder
+        try {
+            if (process.env.GOOGLE_CLIENT_ID) {
+                const folderId = await ensureProjectFolder({
+                    projektnummer: newProject.projektnummer,
+                    projektname: newProject.projektname
+                });
+                if (folderId) {
+                    newProject.driveFolderId = folderId;
+                }
+            }
+        } catch (e) {
+            console.error('Failed to create Drive folder:', e);
+        }
 
         const result = await DatabaseService.upsert('projekte', newProject);
         return NextResponse.json(result);
