@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { DatabaseService } from '@/lib/services/db';
-import { ensureProjectFolder } from '@/lib/services/googleDriveService';
 
 export async function GET(req: Request, { params }: { params: Promise<{ collection: string, id: string }> }) {
     try {
@@ -27,6 +26,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ collecti
         if (collection === 'projekte' && (body.projektname || body.projektnummer)) {
             try {
                 if (process.env.GOOGLE_CLIENT_ID) {
+                    const { ensureProjectFolder } = await import('@/lib/services/googleDriveService');
                     const folderId = await ensureProjectFolder({
                         projektnummer: body.projektnummer,
                         projektname: body.projektname,

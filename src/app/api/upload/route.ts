@@ -1,7 +1,4 @@
-
 import { NextResponse } from 'next/server';
-import { uploadFileToDrive } from '@/lib/services/googleDriveService';
-import { ProjectService } from '@/lib/services/projectService';
 
 export async function POST(req: Request) {
     try {
@@ -14,6 +11,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'File and ProjektID required' }, { status: 400 });
         }
 
+        const { ProjectService } = await import('@/lib/services/projectService');
         const project = await ProjectService.getProjektById(projektId);
         if (!project) {
             return NextResponse.json({ error: 'Project not found' }, { status: 404 });
@@ -38,6 +36,7 @@ export async function POST(req: Request) {
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
+        const { uploadFileToDrive } = await import('@/lib/services/googleDriveService');
         const result = await uploadFileToDrive(
             buffer,
             file.name,

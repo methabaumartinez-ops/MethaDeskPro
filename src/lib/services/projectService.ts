@@ -46,24 +46,6 @@ export const ProjectService = {
             status: projekt.status || 'offen',
         } as Projekt;
 
-        // Create Drive Folder if credentials exist
-        try {
-            if (process.env.GOOGLE_CLIENT_ID) {
-                const { ensureProjectFolder } = await import('./googleDriveService');
-                const folderId = await ensureProjectFolder({
-                    projektnummer: newProject.projektnummer,
-                    projektname: newProject.projektname,
-                    driveFolderId: newProject.driveFolderId
-                });
-                if (folderId) {
-                    newProject.driveFolderId = folderId;
-                }
-            }
-        } catch (error) {
-            console.error('Failed to create Drive folder:', error);
-            // Continue creating project even if Drive fails
-        }
-
         return DatabaseService.upsert('projekte', newProject);
     },
 
@@ -80,26 +62,7 @@ export const ProjectService = {
         const existing = await this.getProjektById(id);
         if (!existing) throw new Error('Project not found');
 
-        // Check if we need to create/update folder (e.g. if name changed or missing folder)
-        let driveFolderId = existing.driveFolderId;
-        if (process.env.GOOGLE_CLIENT_ID) {
-            // Only if name/number changed or folder missing
-            if (!driveFolderId || (updates.projektname && updates.projektname !== existing.projektname)) {
-                try {
-                    const { ensureProjectFolder } = await import('./googleDriveService');
-                    const folderId = await ensureProjectFolder({
-                        projektnummer: updates.projektnummer || existing.projektnummer,
-                        projektname: updates.projektname || existing.projektname,
-                        driveFolderId: existing.driveFolderId
-                    });
-                    if (folderId) driveFolderId = folderId;
-                } catch (e) {
-                    console.error('Error ensuring drive folder on update:', e);
-                }
-            }
-        }
-
-        const updatedProject = { ...existing, ...updates, driveFolderId };
+        const updatedProject = { ...existing, ...updates };
         return DatabaseService.upsert('projekte', updatedProject);
     },
 
