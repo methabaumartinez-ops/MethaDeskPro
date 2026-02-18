@@ -57,7 +57,19 @@ export default function TeilsystemDetailPage() {
         </div>
     );
 
-    if (!item || !project) return <div className="text-center py-20 font-bold text-muted-foreground">Daten nicht gefunden</div>;
+    if (!item || !project) return (
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <div className="text-center font-bold text-muted-foreground">
+                {!item ? `Teilsystem nicht gefunden (ID: ${id})` : `Projekt nicht gefunden (ID: ${projektId})`}
+            </div>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+                Seite aktualisieren
+            </Button>
+            <Link href={`/${projektId}/teilsysteme`}>
+                <Button variant="ghost">Zurück zur Übersicht</Button>
+            </Link>
+        </div>
+    );
 
     const detailFields = [
         { label: 'System-Nr.', value: item.teilsystemNummer, icon: Hash },

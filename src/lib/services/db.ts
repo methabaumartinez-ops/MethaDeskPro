@@ -197,6 +197,7 @@ export class DatabaseService {
 
             // Ensure Qdrant vector is handled if required
             await qdrantClient.upsert(collectionName, {
+                wait: true,
                 points: [
                     {
                         id: id,
