@@ -2,7 +2,6 @@
 import { DatabaseService } from '@/lib/services/db';
 import { Projekt } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
-import { ensureProjectFolder, uploadFileToDrive } from './googleDriveService';
 
 export const ProjectService = {
     async getProjekte(): Promise<Projekt[]> {
@@ -50,6 +49,7 @@ export const ProjectService = {
         // Create Drive Folder if credentials exist
         try {
             if (process.env.GOOGLE_CLIENT_ID) {
+                const { ensureProjectFolder } = await import('./googleDriveService');
                 const folderId = await ensureProjectFolder({
                     projektnummer: newProject.projektnummer,
                     projektname: newProject.projektname,
@@ -86,6 +86,7 @@ export const ProjectService = {
             // Only if name/number changed or folder missing
             if (!driveFolderId || (updates.projektname && updates.projektname !== existing.projektname)) {
                 try {
+                    const { ensureProjectFolder } = await import('./googleDriveService');
                     const folderId = await ensureProjectFolder({
                         projektnummer: updates.projektnummer || existing.projektnummer,
                         projektname: updates.projektname || existing.projektname,

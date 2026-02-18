@@ -29,6 +29,7 @@ export interface Projekt {
   einkauf?: string;
   status: ProjektStatus;
   imageUrl?: string;
+  driveFolderId?: string;
   createdBy?: string;
   createdAt: string;
 }
