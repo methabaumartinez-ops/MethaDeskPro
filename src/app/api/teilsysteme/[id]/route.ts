@@ -4,7 +4,20 @@ import { DatabaseService } from '@/lib/services/db';
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
-        const item = await DatabaseService.get('teilsysteme', id);
+        let item = await DatabaseService.get('teilsysteme', id);
+
+        // If not found by direct ID (UUID), try to find by teilsystemNummer
+        if (!item) {
+            // Check if it might be a nummer (string/int)
+            const list = await DatabaseService.list<any>('teilsysteme', {
+                must: [
+                    { key: "teilsystemNummer", match: { value: id } }
+                ]
+            });
+            if (list.length > 0) {
+                item = list[0];
+            }
+        }
 
         if (!item) {
             return NextResponse.json({ error: 'Not found' }, { status: 404 });
