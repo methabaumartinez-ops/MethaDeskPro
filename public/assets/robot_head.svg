@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Head -->
+  <rect x="25" y="35" width="50" height="45" rx="10" fill="#94A3B8" stroke="#475569" stroke-width="2"/>
+  <!-- Eyes -->
+  <circle cx="40" cy="55" r="5" fill="#3B82F6" class="animate-pulse">
+    <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite" />
+  </circle>
+  <circle cx="60" cy="55" r="5" fill="#3B82F6" class="animate-pulse">
+    <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite" />
+  </circle>
+  <!-- Mouth -->
+  <path d="M40 70 Q50 78 60 70" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
+  <!-- Helmet -->
+  <path d="M20 35 H80 Q80 15 50 15 Q20 15 20 35 Z" fill="#FACC15" stroke="#EAB308" stroke-width="2"/>
+  <rect x="15" y="32" width="70" height="8" rx="2" fill="#FACC15" stroke="#EAB308" stroke-width="2"/>
+  <!-- Reflection on helmet -->
+  <path d="M30 20 Q40 18 50 18" stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+</svg>

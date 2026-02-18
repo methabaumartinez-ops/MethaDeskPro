@@ -1,0 +1,128 @@
+Adrian | Bauleiter Service und Kundendienst | nan |
+a.sennhauser@methabau.ch Alain | Projektplaner | nan |
+a.bruhin@methabau.ch Aldin | Lernender Mediamatiker | nan |
+a.mehmedagic@methabau.ch Alexander | Gewerbebau Polier | nan |
+a.hikade@methabau.ch Alper | Technischer Assistent Bauleitung | nan |
+a.yildirim@methabau.ch Andreas | AVOR Produktion / Ausführung | nan |
+a.linder@methabau.ch Andreas | Leiter Fuhrpark / Wartung | nan |
+a.bruderer@methabau.ch Andrej | Projektverantwortlicher BIM Konstrukteur
+| nan | a.binz@methabau.ch Antonio | Vorarbeiter Maler | nan |
+a.grillo@methabau.ch Arben | Mitarbeiter Service & Technik | nan |
+a.mustafa@methabau.ch Balázs | Ausführungsplaner BIM | nan |
+b.barna@methabau.ch Blechwerkstatt | nan | nan |
+blechwerkstatt@methabau.ch Burak | AVOR Metallbau / Schlosserei | nan |
+b.eyiden@methabau.ch Carmen | Sekretariat und Empfang | nan |
+c.kirchner@methabau.ch Christian | Baubuchhaltung / Rechnungswesen | nan
+| c.hendel@methabau.ch Christian | Hochbauzeichner / Projektplaner | nan
+| c.gustavs@methabau.ch Christiane | Assistentin Projektleitung | nan |
+c.hever@methabau.ch Colin | Polier Hochbau / Gewerbebau | nan |
+c.woodtli@methabau.ch Cornelia | Juristin M.A. HSG | nan |
+c.wallner@methabau.ch Cristian | Maler S&K | nan | c.grillo@methabau.ch
+Damara | Assistentin Leitung/ Immobilienbewirtschafterin | nan |
+d.ferrise@methabau.ch Daniel | Brandschutzexperte VKF / Kader | nan |
+d.schumacher@methabau.ch Daniel | Payroll Specialist | nan |
+d.hungerbuehler@methabau.ch Daniel | Teamleiter Projektplanung | nan |
+d.iten@methabau.ch Dashmir | Fachplaner Haustechnik | nan |
+d.emini@methabau.ch Devran | Lernender KV | nan | d.altun@methabau.ch
+Driton | Polier Hochbau | nan | d.memeti@methabau.ch Elisabeth |
+Assistentin Service & Kundendienst | nan | e.hunziker@methabau.ch Enrico
+| Projektverantwortliche BIM Konstrukteur | nan | e.hansel@methabau.ch
+Erika | Ausführungsplaner BIM | nan | e.constant@methabau.ch Fabian |
+Lernender Informatiker | nan | f.manser@methabau.ch Fabiano |
+Projektleiter Lüftung | nan | f.pompadur@methabau.ch Fatih |
+IT-Administrator | nan | f.aktepe@methabau.ch Felix | Hochbau Polier |
+nan | f.indergand@methabau.ch Felix | Senior Bauleiter / Dipl. Bauführer
+| nan | f.stoerchli@methabau.ch Florian | Informatiker | nan |
+f.wohnhaas@methabau.ch Gerda | Leiterin Immobilienverwaltung | nan |
+g.buergi@methabau.ch Gerhard | Projektverantwortlicher BIM Konstrukteur
+| nan | g.frick@methabau.ch Gianluca | Mitarbeiter Werkhof / Stv. Leiter
+Werkhof / Magazin | nan | g.barbieri@methabau.ch Hans | Leiter
+Blechbearbeitung/Stv. Produktionsleiter | nan | h.gantenbein@methabau.ch
+IT | nan | nan | itsupport@methabau.ch Ildiko | Baukostenplanerin | nan
+| i.birclin@methabau.ch Jakub | Projektleiter Wohn-/Gewerbebau | nan |
+j.manis@methabau.ch Jan | Praktikant Projektentwicklung | nan |
+j.joos@methabau.ch Jaroslav | Bauarbeiter A | nan | j.semjan@methabau.ch
+Jochen | techn. Leiter Gewerbebau, Mitglied der Geschäftsbereichsleitung
+| nan | j.voehringer@methabau.ch Joel | Immobilienbewirtschafter | nan |
+j.brotzge@methabau.ch Judith | Bauleiterin | nan |
+j.grosseaschoff@methabau.ch Jörg | Geschäftsbereichsleitung
+Totalunternehmung | nan | j.mathis@methabau.ch Jürg |
+Geschäftsbereichsleiter Bau/Produktion und Service/Kundenarbeiten | nan
+| j.wagner@methabau.ch Karin | Teamleiterin Haustechnik | nan |
+k.sennhauser@methabau.ch Karin | Technische Assistentin Ausführung | nan
+| k.dadamo@methabau.ch Karol | Monteur Stahlbau | nan |
+k.tendera@methabau.ch Konrad | Monteur Metallbau | nan |
+k.cichon@methabau.ch Lars | Immobilienbewirtschafter | nan |
+l.wiederkehr@methabau.ch Lazar | Ausführungsplaner BIM | nan |
+l.lukic@methabau.ch Leonardo | Fachplaner Sanitär | nan |
+l.battaglia@methabau.ch Lisa | Bauleiterin | nan | l.blenk@methabau.ch
+Luana | Zeichnerin Fachrichtung Architektur EFZ | nan |
+l.cavallaro@methabau.ch Marco | Devisierung | nan |
+m.schuessler@methabau.ch Marco | Leiter Projekt- und Ausführungsplanung
+| nan | m.andermatt@methabau.ch Maria | Assistentin
+Geschäftsbereichsleiter Bau / Produktion / Service & Kundenarbeiten |
+nan | m.lutz@methabau.ch Mariana | Allrounderin | nan |
+m.felhauer@methabau.ch Mario | Mitarbeiter Service & Technik | nan |
+m.brkljaca@methabau.ch Mark | Leiter Controlling / Kader | nan |
+m.fleming@methabau.ch Markus | Organisatorischer Leiter Bau | nan |
+m.fitzi@methabau.ch Markus | Projektleiter Metallbau / Kader | nan |
+m.hauser@methabau.ch Martin | Projektleiter Gewerbebau | nan |
+m.richtfeld@methabau.ch Matthew | Projektleiter | nan |
+m.dean@methabau.ch Michael | Bauleiter | nan | m.grob@methabau.ch
+Michael | CFO | nan | m.schneider@methabau.ch Michael | Leiter
+Projektentwicklung / Auftragsgewinnung Mitglied der Gruppenleitung /
+Mitglied des Verwaltungsrates | nan | m.scheiwiller@methabau.ch Michael
+| Projektverantwortlicher BIM Konstrukteur | nan |
+m.steinacher@methabau.ch Mirjam | Administrative Leiterin S&K Bau/Immo |
+nan | m.duenner@methabau.ch Mohsen | Heizungsplaner | nan |
+m.babakhani@methabau.ch Moritz | Projektverantwortlicher BIM
+Konstrukteur | nan | m.munz@methabau.ch Nadine | Fachverantwortliche
+Projektentwicklung / Bewilligungsverfahren | nan |
+n.solenthaler@methabau.ch Nazife | HR - Assistentin | nan |
+n.useini@methabau.ch Nicole | Liegenschaftsbuchhalterin | nan |
+n.pfister@methabau.ch Nicole | Sekretariat und Empfang | nan |
+n.wahlen@methabau.ch Nilgün | Architektin Projektplanung | nan |
+n.kuscu@methabau.ch Patrick | Projektverantwortlicher BIM Konstrukteur /
+Stv. GBL Planung Ausführung | nan | p.oberwiler@methabau.ch Patrick |
+Leiter Werkhof | nan | p.delloca@methabau.ch Personal | nan | nan |
+hr@methabau.ch Peter | Teamleiter BIM Konstrukteur Metallbau | nan |
+p.hary@methabau.ch Piotr | Mitarbeiter Service & Technik | nan |
+p.jablonski@methabau.ch Ramon | Bauleiter / Kader | nan |
+r.bockmuehl@methabau.ch Regula | Assistenz Immobilienverwaltung /
+Sekretariat | nan | r.gallmann@methabau.ch Reto | Ausführungsplaner BIM
+| nan | r.huerst@methabau.ch Roland | Hauswart | nan |
+r.gruetter@methabau.ch Roland | Leiter Service und Kundenarbeiten / Stv.
+GBL Service und Kundenarbeiten/Mitglied der Geschäftsbereichsleitung |
+nan | r.stark@methabau.ch Ronja | Bauleiterin | nan |
+r.kriech@methabau.ch Sabrina | Projektleiterin / QM | nan |
+s.luetkens@methabau.ch Sandra | Fachfrau Finanz- und Rechnungswesen |
+nan | sa.schmid@methabau.ch Sanursan | Informatiker | nan |
+s.atputharajah@methabau.ch Sara | Assistentin Projektleitung | nan |
+s.keller@methabau.ch Sara | Fachverantwortliche Projektentwicklung | nan
+| s.gmuender@methabau.ch Sarah | Assistentin Service & Kundendienst |
+nan | s.hintner@methabau.ch Sascha | Projektverantwortlicher BIM
+Konstrukteur | nan | s.weber@methabau.ch Saskia | Mitarbeiterin
+Administration Projektentwicklung | nan | s.krucker@methabau.ch
+Schlosserei | nan | nan | schlosserei@methabau.ch Sebastian |
+Technischer Einkäufer | nan | s.wallmann@methabau.ch Sekretariat | nan |
+nan | sekretariat@methabau.ch Senad | Mitarbeiter Service & Technik |
+nan | s.muhedinovic@methabau.ch Shirin | Hochbauzeichnerin /
+Projektplanerin | nan | s.beutler@methabau.ch Simon | Assistentin
+Service & Kundendienst | nan | s.kruese@methabau.ch Siro | Informatiker
+| nan | s.egli@methabau.ch Stefan | Ausführungsplaner Metallbau | nan |
+s.signer@methabau.ch Stefan | Kalkulator / Kostenplaner | nan |
+s.risch@methabau.ch Stefan | techn. Leiter Wohnbau, Mitglied der
+Geschäftsbereichsleitung | nan | s.forster@methabau.ch Stefanie |
+Fachverantwortliche Projektentwicklung / Bewilligungsverfahren | nan |
+s.bula@methabau.ch Sükran | Architektin Projektplanung / Teamleiterin
+Wohnbau | nan | s.oezdere@methabau.ch Takuya | Ausführungsplaner BIM |
+nan | t.suehiro@methabau.ch Tanja | Bauleitung Cleverfit | nan |
+t.brandenberger@methabau.ch Tenhar | Vorarbeiter Hochbau | nan |
+t.abazi@methabau.ch Thomas | Bauleiter | nan | t.schaller@methabau.ch
+Thomas | Mitarbeiter Service & Technik | nan | t.jablinski@methabau.ch
+Tobias | Head of Legal and Compliance | nan | t.mueller@methabau.ch Uwe
+| Assistent / Standortleiter Amriswil | nan | u.hendel@methabau.ch Vadim
+| Lernender KV | nan | v.zutter@methabau.ch Vanessa |
+Immobilienbewirtschafterin | nan | v.wienrich@methabau.ch Yasin |
+Systemadministrator | nan | y.tuna@methabau.ch nan | Leiter Einkauf /
+Kader | nan | s.stefanovic@methabau.ch

@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+@theme {
+  /* METHABAU Brand Colors - Slate and Orange */
+  --color-primary: #ff6b35;
+  --color-primary-foreground: #ffffff;
+
+  --color-slate-50: #fcfcfd;
+  /* Even lighter */
+  --color-slate-100: #f8fafc;
+  --color-slate-200: #f1f5f9;
+  --color-slate-300: #e2e8f0;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+  --color-slate-950: #020617;
+
+  /* Typography */
+  --font-inter: "Inter", system-ui, -apple-system, sans-serif;
+
+  /* Design Tokens - Lightened shadows for a more premium/airy feel */
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+
+  --shadow-soft: 0 2px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+  --shadow-strong: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+  --shadow-primary: 0 10px 15px -3px rgba(255, 107, 53, 0.15);
+}
+
+/* 
+ * THEME VARIABLES
+ * Optimized for maximum brightness in Light Mode
+ */
+:root {
+  --background: #ffffff;
+  --foreground: #334155;
+  /* Slate 700 - Suavizado desde negro puro */
+  --card: #ffffff;
+  --card-foreground: #334155;
+  --popover: #ffffff;
+  --popover-foreground: #09090b;
+  --primary: #ff6b35;
+  --primary-foreground: #ffffff;
+  --secondary: #ffffff;
+  --secondary-foreground: #18181b;
+  --muted: #f8fafc;
+  /* Slate 50 - Muy sutil para diferenciación */
+  --muted-foreground: #64748b;
+  /* Slate 500 */
+  --accent: #fff7ed;
+  --accent-foreground: #c2410c;
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  --border: #ff6b35;
+  --input: #ff6b35;
+  --ring: #ff6b35;
+  --sidebar: #ffffff;
+}
+
+.dark {
+  --background: #09090b;
+  --foreground: #fafafa;
+  --card: #09090b;
+  --card-foreground: #fafafa;
+  --popover: #09090b;
+  --popover-foreground: #fafafa;
+  --primary: #ff6b35;
+  --primary-foreground: #ffffff;
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  --muted: #18181b;
+  --muted-foreground: #a1a1aa;
+  --accent: #18181b;
+  --accent-foreground: #fafafa;
+  --destructive: #7f1d1d;
+  --destructive-foreground: #fafafa;
+  --border: #27272a;
+  --input: #27272a;
+  --ring: #ff6b35;
+  --sidebar: #09090b;
+}
+
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    @apply antialiased transition-colors duration-300 min-h-screen;
+    font-family: var(--font-inter);
+  }
+
+  /* Default border color using variable */
+  * {
+    border-color: var(--border);
+  }
+}
+
+/* Custom utility classes */
+@layer utilities {
+  .glass {
+    @apply bg-white/60 dark:bg-slate-950/70 backdrop-blur-xl border border-white/20 dark:border-slate-800;
+  }
+
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-strong {
+    box-shadow: var(--shadow-strong);
+  }
+
+  .bg-primary-gradient {
+    background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+  }
+}
+
+/* Browser color-scheme support */
+html:not(.dark) {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
