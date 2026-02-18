@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { SupplierService } from '@/lib/services/supplierService';
 import { Lieferant } from '@/types';
-import { Plus, Mail, Phone, Truck, MapPin } from 'lucide-react';
+import { Plus, Truck, Mail, Phone, MapPin, Search } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LieferantenListPage() {
@@ -14,13 +15,17 @@ export default function LieferantenListPage() {
     const [items, setItems] = useState<Lieferant[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         const loadData = async () => {
             setLoading(true);
             try {
                 const data = await SupplierService.getLieferanten();
-                setItems(data);
+                const sorted = [...data].sort((a, b) =>
+                    (a.name || '').localeCompare(b.name || '')
+                );
+                setItems(sorted);
             } catch (err) {
                 console.error('Failed to load suppliers:', err);
                 setError('Fehler beim Laden der Lieferanten.');
@@ -31,19 +36,42 @@ export default function LieferantenListPage() {
         loadData();
     }, []);
 
+    const filteredItems = items.filter(item => {
+        const search = searchTerm.toLowerCase();
+        return (
+            (item.name?.toLowerCase() || '').includes(search) ||
+            (item.kontakt?.toLowerCase() || '').includes(search) ||
+            (item.email?.toLowerCase() || '').includes(search) ||
+            (item.telefon?.toLowerCase() || '').includes(search) ||
+            (item.adresse?.toLowerCase() || '').includes(search)
+        );
+    });
+
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
+        <div className="flex flex-col h-[calc(100vh-6rem)] space-y-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Lieferanten</h1>
                     <p className="text-muted-foreground font-medium mt-1">Kontaktliste der Partner und Lieferanten.</p>
                 </div>
-                <Link href={`/${projektId}/lieferanten/erfassen`}>
-                    <Button className="font-bold shadow-lg shadow-primary/20">
-                        <Plus className="h-5 w-5 mr-2" />
-                        Lieferant hinzufügen
-                    </Button>
-                </Link>
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="relative w-full md:w-72">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <input
+                            type="text"
+                            placeholder="Lieferant suchen..."
+                            className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 transition-all"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <Link href={`/${projektId}/lieferanten/erfassen`}>
+                        <Button className="font-bold shadow-lg shadow-primary/20 whitespace-nowrap">
+                            <Plus className="h-5 w-5 mr-2" />
+                            Hinzufügen
+                        </Button>
+                    </Link>
+                </div>
             </div>
 
             {error && (
@@ -52,49 +80,80 @@ export default function LieferantenListPage() {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {loading ? (
-                    Array(3).fill(0).map((_, i) => (
-                        <Card key={i} className="animate-pulse bg-muted h-48" />
-                    ))
-                ) : items.length === 0 ? (
-                    <div className="col-span-full text-center py-10 text-muted-foreground">
-                        Keine Lieferanten gefunden.
-                    </div>
-                ) : items.map((item) => (
-                    <Card key={item.id} className="hover:shadow-lg transition-all group">
-                        <CardHeader className="pb-2">
-                            <div className="flex justify-between items-start">
-                                <div className="p-2 rounded-xl bg-orange-50 text-primary dark:bg-orange-950/30">
-                                    <Truck className="h-6 w-6" />
-                                </div>
-                            </div>
-                            <CardTitle className="mt-4 text-xl font-bold text-foreground">{item.name}</CardTitle>
-                            <p className="text-sm font-bold text-muted-foreground">{item.kontakt}</p>
-                        </CardHeader>
-                        <CardContent className="space-y-3 pt-4">
-                            <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
-                                <Mail className="h-4 w-4 text-muted-foreground/70" />
-                                <a href={`mailto:${item.email}`} className="hover:text-primary transition-colors">{item.email}</a>
-                            </div>
-                            <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
-                                <Phone className="h-4 w-4 text-muted-foreground/70" />
-                                <a href={`tel:${item.telefon}`} className="hover:text-primary transition-colors">{item.telefon}</a>
-                            </div>
-                            {item.adresse && (
-                                <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
-                                    <MapPin className="h-4 w-4 text-muted-foreground/70" />
-                                    <span>{item.adresse}</span>
-                                </div>
-                            )}
-                        </CardContent>
-                        <div className="p-4 bg-muted/30 border-t border-border mt-2">
-                            {/* TODO: Implement Detail View or Edit */}
-                            <Button variant="ghost" className="w-full font-bold text-primary h-8">Profil ansehen</Button>
+            <Card className="overflow-hidden border-none shadow-xl bg-card/50 backdrop-blur-sm flex-1">
+                <CardContent className="p-0 h-full overflow-auto">
+                    {loading ? (
+                        <div className="py-20 flex justify-center">
+                            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
                         </div>
-                    </Card>
-                ))}
-            </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <Table className="border-none rounded-none">
+                                <TableHeader>
+                                    <TableRow className="hover:bg-transparent border-b border-border/50">
+                                        <TableHead className="font-bold text-foreground py-4">Firma</TableHead>
+                                        <TableHead className="font-bold text-foreground">Kontaktperson</TableHead>
+                                        <TableHead className="font-bold text-foreground">E-Mail</TableHead>
+                                        <TableHead className="font-bold text-foreground">Telefon</TableHead>
+                                        <TableHead className="font-bold text-foreground">Adresse</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {filteredItems.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={5} className="h-32 text-center text-muted-foreground font-medium">
+                                                Keine Lieferanten gefunden.
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        filteredItems.map((item) => (
+                                            <TableRow key={item.id} className="group hover:bg-muted/50 transition-colors">
+                                                <TableCell className="py-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center border border-primary/10 shadow-sm">
+                                                            <Truck className="h-5 w-5 text-primary" />
+                                                        </div>
+                                                        <span className="font-bold text-foreground text-sm tracking-tight">{item.name}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className="text-sm font-medium text-foreground">{item.kontakt || '—'}</span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2 text-muted-foreground font-medium text-sm">
+                                                        <Mail className="h-3.5 w-3.5" />
+                                                        {item.email ? (
+                                                            <a href={`mailto:${item.email}`} className="hover:text-primary transition-colors">{item.email}</a>
+                                                        ) : '—'}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2 text-muted-foreground font-medium text-sm">
+                                                        <Phone className="h-3.5 w-3.5" />
+                                                        {item.telefon ? (
+                                                            <a href={`tel:${item.telefon}`} className="hover:text-primary transition-colors">{item.telefon}</a>
+                                                        ) : '—'}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {item.adresse ? (
+                                                        <div className="flex items-center gap-2 text-muted-foreground font-medium text-sm">
+                                                            <MapPin className="h-3.5 w-3.5" />
+                                                            <span>{item.adresse}</span>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-muted-foreground text-sm">—</span>
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
         </div>
     );
 }

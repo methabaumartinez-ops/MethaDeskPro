@@ -11,6 +11,7 @@ interface StatusBadgeProps {
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
     const getVariant = (s: string) => {
+        if (!s) return 'outline';
         switch (s.toLowerCase()) {
             case 'offen': return 'success';
             case 'bestellt': return 'warning';

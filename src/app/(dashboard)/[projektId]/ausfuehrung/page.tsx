@@ -59,15 +59,15 @@ export default function AusfuehrungPage() {
     );
 
     const filteredEmployees = employees.filter(emp =>
-        (emp.vorname.toLowerCase() || '').includes(search.toLowerCase()) ||
-        (emp.nachname.toLowerCase() || '').includes(search.toLowerCase()) ||
+        (emp.vorname?.toLowerCase() || '').includes(search.toLowerCase()) ||
+        (emp.nachname?.toLowerCase() || '').includes(search.toLowerCase()) ||
         (emp.rolle?.toLowerCase() || '').includes(search.toLowerCase()) ||
         (emp.email?.toLowerCase() || '').includes(search.toLowerCase())
     );
 
     const filteredVehicles = vehicles.filter(veh =>
-        (veh.bezeichnung.toLowerCase() || '').includes(search.toLowerCase()) ||
-        (veh.inventarnummer.toLowerCase() || '').includes(search.toLowerCase()) ||
+        (veh.bezeichnung?.toLowerCase() || '').includes(search.toLowerCase()) ||
+        (veh.inventarnummer?.toLowerCase() || '').includes(search.toLowerCase()) ||
         (veh.kennzeichen?.toLowerCase() || '').includes(search.toLowerCase())
     );
 

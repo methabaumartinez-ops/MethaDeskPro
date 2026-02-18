@@ -9,12 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/layout/Header';
 import { useRouter } from 'next/navigation';
-import { Plus, MapPin, Calendar, ArrowRight, Trash2, Download } from 'lucide-react';
+import { Plus, MapPin, Calendar, ArrowRight, Trash2, Pencil } from 'lucide-react';
 
 export default function ProjektePage() {
     const { setActiveProjekt, currentUser, loading: authLoading } = useProjekt();
     const [projekte, setProjekte] = useState<Projekt[]>([]);
     const [loadingData, setLoadingData] = useState(true);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -40,20 +41,54 @@ export default function ProjektePage() {
         router.push(`/${p.id}`);
     };
 
-    const handleDelete = async (e: React.MouseEvent, id: string, name: string) => {
+    const handleExportAndDelete = async (e: React.MouseEvent, p: Projekt) => {
         e.stopPropagation();
-        if (!confirm(`Möchten Sie das Projekt "${name}" wirklich löschen?`)) return;
+        if (!confirm(`Möchten Sie das Projekt "${p.projektname}" wirklich exportieren und löschen?\n\nAlle Projektdaten (Teilsysteme, Positionen etc.) werden als JSON exportiert und anschliessend aus der Datenbank entfernt.`)) return;
 
+        setDeletingId(p.id);
         try {
-            await ProjectService.deleteProjekt(id);
-            setProjekte(prev => prev.filter(p => p.id !== id));
+            const res = await fetch(`/api/projekte/${p.id}/export-delete`, { method: 'POST' });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Export fehlgeschlagen');
+            }
+
+            // Download the exported JSON
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `projekt_${p.projektnummer || p.id}_export.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+
+            // Remove from local state
+            setProjekte(prev => prev.filter(x => x.id !== p.id));
         } catch (error) {
-            console.error("Failed to delete project:", error);
-            alert("Fehler beim Löschen des Projekts.");
+            console.error("Failed to export/delete project:", error);
+            alert("Fehler beim Exportieren und Löschen des Projekts.");
+        } finally {
+            setDeletingId(null);
         }
     };
 
+    const handleEdit = (e: React.MouseEvent, p: Projekt) => {
+        e.stopPropagation();
+        router.push(`/projekte/bearbeiten/${p.id}`);
+    };
+
+    const getProjectImage = (p: Projekt) => {
+        if (p.imageUrl) return p.imageUrl;
+        // Default to Methabau building photo
+        return '/images/Foto.png';
+    };
+
     if (authLoading) return null;
+
+    const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'projektleiter';
 
     return (
         <div className="min-h-screen bg-background pt-16">
@@ -66,7 +101,7 @@ export default function ProjektePage() {
                         <p className="text-muted-foreground font-medium mt-1">Wählen Sie ein Projekt aus, um mit der Verwaltung zu beginnen.</p>
                     </div>
 
-                    {(currentUser?.role === 'admin' || currentUser?.role === 'projektleiter') && (
+                    {isAdmin && (
                         <Button
                             className="font-bold gap-2 shadow-lg shadow-primary/20"
                             onClick={() => router.push('/projekte/erfassen')}
@@ -89,46 +124,40 @@ export default function ProjektePage() {
                             <Card key={p.id} className="group hover:border-primary/30 transition-all hover:shadow-xl hover:-translate-y-1 duration-300 overflow-hidden relative">
                                 <div className="h-32 w-full overflow-hidden relative">
                                     <img
-                                        src={p.status === 'abgeschlossen' ? "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop" : "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=800&auto=format&fit=crop"}
+                                        src={getProjectImage(p)}
                                         alt="Projektbild"
                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-50" />
 
-                                    <div className="absolute top-3 left-3 flex gap-2">
-                                        {(currentUser?.role === 'admin' || currentUser?.role === 'projektleiter') && (
-                                            <div className="flex gap-2">
-                                                <Button
-                                                    variant="danger"
-                                                    size="icon"
-                                                    className="h-8 w-8 rounded-lg bg-orange-600/80 hover:bg-orange-600 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(p, null, 2));
-                                                        const downloadAnchorNode = document.createElement('a');
-                                                        downloadAnchorNode.setAttribute("href", dataStr);
-                                                        downloadAnchorNode.setAttribute("download", `projekt_${p.projektnummer}.json`);
-                                                        document.body.appendChild(downloadAnchorNode);
-                                                        downloadAnchorNode.click();
-                                                        downloadAnchorNode.remove();
-                                                        handleDelete(e, p.id, p.projektname);
-                                                    }}
-                                                    title="Exportar y Eliminar"
-                                                >
-                                                    <Download className="h-4 w-4 text-white" />
-                                                </Button>
-                                                <Button
-                                                    variant="danger"
-                                                    size="icon"
-                                                    className="h-8 w-8 rounded-lg bg-red-600/80 hover:bg-red-600 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    onClick={(e) => handleDelete(e, p.id, p.projektname)}
-                                                    title="Projekt löschen"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </div>
+                                    {/* Action buttons overlay */}
+                                    {isAdmin && (
+                                        <div className="absolute top-3 left-3 flex gap-2">
+                                            <Button
+                                                variant="secondary"
+                                                size="icon"
+                                                className="h-8 w-8 rounded-lg bg-white/90 hover:bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                                onClick={(e) => handleEdit(e, p)}
+                                                title="Projekt bearbeiten"
+                                            >
+                                                <Pencil className="h-4 w-4 text-slate-700" />
+                                            </Button>
+                                            <Button
+                                                variant="danger"
+                                                size="icon"
+                                                className="h-8 w-8 rounded-lg bg-red-600/80 hover:bg-red-600 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                                onClick={(e) => handleExportAndDelete(e, p)}
+                                                title="Exportieren und Löschen"
+                                                disabled={deletingId === p.id}
+                                            >
+                                                {deletingId === p.id ? (
+                                                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                                ) : (
+                                                    <Trash2 className="h-4 w-4 text-white" />
+                                                )}
+                                            </Button>
+                                        </div>
+                                    )}
 
                                     <div className="absolute top-4 right-4">
                                         <Badge variant={p.status === 'in arbeit' ? 'info' : 'warning'} className="shadow-sm">

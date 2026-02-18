@@ -89,7 +89,7 @@ export default function TeilsystemDetailPage() {
                 {/* Left: System Details */}
                 <div className="flex flex-col gap-6 h-full overflow-y-auto pr-1">
                     {/* Header Card */}
-                    <div className="flex justify-between items-start bg-card p-6 rounded-2xl shadow-sm border border-border">
+                    <div className="flex justify-between items-start bg-card p-6 rounded-2xl shadow-sm border-2 border-border">
                         <div className="space-y-1">
                             <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">TEILSYSTEM</span>
                             <div className="flex items-baseline gap-3">
@@ -117,16 +117,15 @@ export default function TeilsystemDetailPage() {
                     </div>
 
                     {/* Details Grid */}
-                    <Card className="shadow-sm border-none flex-1">
+                    <Card className="shadow-sm border-2 border-border flex-1">
                         <CardHeader className="py-3 px-4 bg-muted/30 border-b border-border">
                             <CardTitle className="text-xs font-black uppercase tracking-wider text-muted-foreground">System Details</CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border/50">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border">
                                 {detailFields.map((field, i) => (
                                     <div key={i} className={cn(
-                                        "px-4 py-3 flex items-center justify-between hover:bg-muted/30 transition-colors",
-                                        i % 2 === 0 ? "sm:border-b" : "sm:border-b border-l-0"
+                                        "px-4 py-3 flex items-center justify-between hover:bg-muted/30 transition-colors border-b border-border",
                                     )}>
                                         <div className="flex items-center gap-3">
                                             <div className="p-1.5 bg-muted rounded-md">
@@ -152,7 +151,7 @@ export default function TeilsystemDetailPage() {
                     </Card>
 
                     {/* Remark (Compact) */}
-                    <div className="bg-orange-50/50 dark:bg-orange-950/10 border-l-4 border-primary/20 p-4 rounded-r-lg text-sm text-muted-foreground italic">
+                    <div className="bg-orange-50/50 dark:bg-orange-950/10 border-2 border-primary/30 p-4 rounded-lg text-sm text-muted-foreground italic">
                         <span className="font-bold text-primary not-italic text-xs uppercase mr-2">Bemerkung:</span>
                         {item.bemerkung || 'Keine Bemerkung vorhanden.'}
                     </div>
@@ -165,7 +164,7 @@ export default function TeilsystemDetailPage() {
             </div>
 
             {/* Bottom Section: Positions */}
-            <Card className="shadow-lg border-none">
+            <Card className="shadow-lg border-2 border-border">
                 <CardHeader className="border-b border-border flex flex-row justify-between items-center py-4 bg-muted/30">
                     <CardTitle className="text-lg flex items-center gap-2 font-black">
                         <ListTodo className="h-5 w-5 text-primary" />

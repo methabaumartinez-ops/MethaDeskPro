@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
@@ -10,7 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { mockStore } from '@/lib/mock/store';
-import { ArrowLeft, Save } from 'lucide-react';
+import { EmployeeService } from '@/lib/services/employeeService';
+import { ArrowLeft, Save, Calendar as CalendarIcon } from 'lucide-react';
 import Link from 'next/link';
 
 const teilsystemSchema = z.object({
@@ -31,19 +32,100 @@ const teilsystemSchema = z.object({
 
 type TeilsystemValues = z.infer<typeof teilsystemSchema>;
 
+// Date input component with calendar icon
+const DateInput = React.forwardRef<HTMLInputElement, { label: string; error?: string; value?: string; onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void } & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'>>(
+    ({ label, error, className, ...props }, ref) => (
+        <div className="space-y-1.5">
+            <label className="text-sm font-semibold text-foreground ml-1">{label}</label>
+            <div className="relative">
+                <input
+                    ref={ref}
+                    type="date"
+                    className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 pr-10 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-accent"
+                    {...props}
+                />
+                <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60 pointer-events-none" />
+            </div>
+            {error && <p className="text-xs font-medium text-red-500 ml-1">{error}</p>}
+        </div>
+    )
+);
+DateInput.displayName = "DateInput";
+
+// Simple select for use in form
+const FormSelect = React.forwardRef<
+    HTMLSelectElement,
+    { label: string; error?: string; options: { label: string; value: string }[] } & React.SelectHTMLAttributes<HTMLSelectElement>
+>(({ label, error, options, ...props }, ref) => (
+    <div className="space-y-1.5">
+        <label className="text-sm font-semibold text-foreground ml-1">{label}</label>
+        <select
+            ref={ref}
+            className="flex h-10 w-full items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:border-accent"
+            {...props}
+        >
+            {options.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+        </select>
+        {error && <p className="text-xs font-medium text-red-500 ml-1">{error}</p>}
+    </div>
+));
+FormSelect.displayName = "FormSelect";
+
+// Helper to parse German date "Do 04.12.2025" or "17.07.2025" to ISO "2025-12-04"
+function germanDateToISO(dateStr?: string): string {
+    if (!dateStr) return '';
+    // Remove day prefix like "Do " "Mi " etc.
+    const cleaned = dateStr.replace(/^[A-Za-z]{2,3}\s+/, '');
+    const match = cleaned.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+    if (match) {
+        return `${match[3]}-${match[2]}-${match[1]}`;
+    }
+    return dateStr;
+}
+
+// Helper to format ISO "2025-12-04" to German "04.12.2025"
+function isoToGermanDate(isoStr?: string): string {
+    if (!isoStr) return '';
+    const match = isoStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+        return `${match[3]}.${match[2]}.${match[1]}`;
+    }
+    return isoStr;
+}
+
 export default function TeilsystemEditPage() {
     const { projektId, id } = useParams() as { projektId: string; id: string };
     const router = useRouter();
     const [loading, setLoading] = useState(true);
+    const [mitarbeiter, setMitarbeiter] = useState<any[]>([]);
+    const [loadingMitarbeiter, setLoadingMitarbeiter] = useState(true);
 
     const {
         register,
         handleSubmit,
         setValue,
+        control,
         formState: { errors, isSubmitting },
     } = useForm<TeilsystemValues>({
         resolver: zodResolver(teilsystemSchema),
     });
+
+    // Load mitarbeiter for dropdown
+    useEffect(() => {
+        const loadMitarbeiter = async () => {
+            try {
+                const data = await EmployeeService.getMitarbeiter();
+                setMitarbeiter(data);
+            } catch (error) {
+                console.error('Failed to load mitarbeiter', error);
+            } finally {
+                setLoadingMitarbeiter(false);
+            }
+        };
+        loadMitarbeiter();
+    }, []);
 
     useEffect(() => {
         const item = mockStore.getTeilsysteme().find((t: any) => t.id === id);
@@ -53,17 +135,16 @@ export default function TeilsystemEditPage() {
             setValue('name', item.name);
             setValue('beschreibung', item.beschreibung || '');
             setValue('bemerkung', item.bemerkung || '');
-            setValue('eroeffnetAm', item.eroeffnetAm || '');
+            setValue('eroeffnetAm', germanDateToISO(item.eroeffnetAm));
             setValue('eroeffnetDurch', item.eroeffnetDurch || '');
-            setValue('montagetermin', item.montagetermin || '');
+            setValue('montagetermin', germanDateToISO(item.montagetermin));
             setValue('lieferfrist', item.lieferfrist || '');
-            setValue('abgabePlaner', item.abgabePlaner || '');
+            setValue('abgabePlaner', germanDateToISO(item.abgabePlaner));
             setValue('planStatus', item.planStatus || 'offen');
             setValue('wemaLink', item.wemaLink || '');
             setValue('status', item.status);
             setLoading(false);
         } else {
-            // Handle error or redirect
             router.push(`/${projektId}/teilsysteme`);
         }
     }, [id, projektId, setValue, router]);
@@ -71,8 +152,16 @@ export default function TeilsystemEditPage() {
     const onSubmit = async (data: TeilsystemValues) => {
         await new Promise((resolve) => setTimeout(resolve, 800));
 
+        // Convert ISO dates back to German format for storage
+        const toSave = {
+            ...data,
+            eroeffnetAm: isoToGermanDate(data.eroeffnetAm),
+            montagetermin: isoToGermanDate(data.montagetermin),
+            abgabePlaner: isoToGermanDate(data.abgabePlaner),
+        };
+
         const all = mockStore.getTeilsysteme();
-        const updated = all.map((t: any) => t.id === id ? { ...t, ...data } : t);
+        const updated = all.map((t: any) => t.id === id ? { ...t, ...toSave } : t);
 
         mockStore.saveTeilsysteme(updated);
         router.push(`/${projektId}/teilsysteme`);
@@ -93,6 +182,14 @@ export default function TeilsystemEditPage() {
         { label: 'Fertig', value: 'fertig' },
     ];
 
+    const mitarbeiterOptions = [
+        { label: 'Bitte wählen...', value: '' },
+        ...mitarbeiter.map(m => ({ label: `${m.vorname} ${m.nachname}`, value: `${m.vorname} ${m.nachname}` })),
+    ];
+
+    // If Mitarbeiter not loaded yet but we have a current value, add it as option
+    const currentEroeffnetDurch = control._formValues?.eroeffnetDurch;
+
     return (
         <div className="max-w-5xl mx-auto space-y-6 pb-8">
             <Link href={`/${projektId}/teilsysteme`} className="inline-flex items-center text-sm font-bold text-muted-foreground hover:text-primary transition-colors">
@@ -105,12 +202,12 @@ export default function TeilsystemEditPage() {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)}>
-                <Card className="shadow-xl">
+                <Card className="shadow-xl border-2 border-border">
                     <CardHeader className="bg-muted/30 border-b">
                         <CardTitle className="text-lg">Teilsystem-Informationen</CardTitle>
                     </CardHeader>
                     <CardContent className="p-6 space-y-6">
-                        {/* First Row: System-Nr, KS, Name */}
+                        {/* First Row: System-Nr, KS */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <Input
                                 label="System-Nummer"
@@ -133,7 +230,7 @@ export default function TeilsystemEditPage() {
                             error={errors.name?.message}
                         />
 
-                        {/* Second Row: Beschreibung */}
+                        {/* Beschreibung */}
                         <div className="space-y-1.5">
                             <label className="text-sm font-semibold text-foreground ml-1">Beschreibung</label>
                             <textarea
@@ -144,7 +241,7 @@ export default function TeilsystemEditPage() {
                             {errors.beschreibung && <p className="text-xs font-medium text-red-500 ml-1">{errors.beschreibung.message}</p>}
                         </div>
 
-                        {/* Third Row: Bemerkung */}
+                        {/* Bemerkung */}
                         <div className="space-y-1.5">
                             <label className="text-sm font-semibold text-foreground ml-1">Bemerkung</label>
                             <textarea
@@ -154,27 +251,23 @@ export default function TeilsystemEditPage() {
                             />
                         </div>
 
-                        {/* Fourth Row: Opening info */}
+                        {/* Opening info - date picker + mitarbeiter dropdown */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Input
+                            <DateInput
                                 label="Eröffnet am"
-                                type="text"
-                                placeholder="DD.MM.YYYY"
                                 {...register('eroeffnetAm')}
                             />
-                            <Input
+                            <FormSelect
                                 label="Eröffnet durch"
-                                placeholder="Name"
+                                options={mitarbeiterOptions}
                                 {...register('eroeffnetDurch')}
                             />
                         </div>
 
-                        {/* Fifth Row: Dates */}
+                        {/* Dates row with calendar pickers */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <Input
+                            <DateInput
                                 label="Montagetermin"
-                                type="text"
-                                placeholder="z.B. Do 04.12.2025"
                                 {...register('montagetermin')}
                             />
                             <Input
@@ -183,17 +276,15 @@ export default function TeilsystemEditPage() {
                                 placeholder="Tage oder Datum"
                                 {...register('lieferfrist')}
                             />
-                            <Input
+                            <DateInput
                                 label="Plan-Abgabe"
-                                type="text"
-                                placeholder="DD.MM.YYYY"
                                 {...register('abgabePlaner')}
                             />
                         </div>
 
-                        {/* Sixth Row: Status fields */}
+                        {/* Status fields */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <Select
+                            <FormSelect
                                 label="Plan-Status"
                                 options={planStatusOptions}
                                 {...register('planStatus')}
@@ -203,7 +294,7 @@ export default function TeilsystemEditPage() {
                                 placeholder="Pfad oder URL"
                                 {...register('wemaLink')}
                             />
-                            <Select
+                            <FormSelect
                                 label="Status *"
                                 options={statusOptions}
                                 {...register('status')}
@@ -226,6 +317,6 @@ export default function TeilsystemEditPage() {
                     </CardFooter>
                 </Card>
             </form>
-        </div >
+        </div>
     );
 }
