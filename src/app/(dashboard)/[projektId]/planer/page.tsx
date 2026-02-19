@@ -2,14 +2,15 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import {
     Calendar, Search, Filter,
     Clock, CheckCircle2, FileText,
-    Download, UploadCloud, FileType, X
+    Download, UploadCloud, FileType, X,
+    ChevronRight, Save, Image as ImageIcon, File
 } from 'lucide-react';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { ProjectService } from '@/lib/services/projectService';
@@ -25,7 +26,11 @@ export default function PlannerPage() {
 
     // File Upload States
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [dragActive, setDragActive] = useState(false);
+    const ifcInputRef = useRef<HTMLInputElement>(null);
+    const docInputRef = useRef<HTMLInputElement>(null);
+
+    // Track drag state for specific drop zones
+    const [dragActive, setDragActive] = useState<string | null>(null); // 'image', 'ifc', 'doc' or null
     const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
@@ -51,50 +56,60 @@ export default function PlannerPage() {
         }
     };
 
-    const handleFileUpload = async (file: File) => {
+    const handleFileUpload = async (file: File, type: 'image' | 'plan' | 'ifc' | 'document') => {
         if (!selectedId) return;
         setUploading(true);
         try {
-            // Upload as 'plan' type (goes to 02_Pläne folder)
-            const url = await ProjectService.uploadImage(file, projektId, 'plan');
+            // Map 'document' to 'plan' type for backend upload if backend doesn't support 'document' yet,
+            // or assume we use 'plan' folder for docs. 
+            // 'plan' -> 02_Pläne, 'image' -> 03_Fotos, 'ifc' -> 04_IFC.
+            // For Documents, ideally '01_Dokumente'. 
+            // If backend doesn't support 'document', 'plan' is safest fallback.
+            // Using 'plan' for now for docs to ensure it saves somewhere.
+            const uploadType = type === 'document' ? 'plan' : type;
 
-            // Update the subsystem with the image URL
-            await updateItem(selectedId, 'imageUrl', url);
+            const url = await ProjectService.uploadImage(file, projektId, uploadType as any);
 
-            // Show preview immediately
+            // Determine which field to update on Teilsystem
+            const updateField = type === 'ifc' ? 'ifcUrl' : type === 'document' ? 'documentUrl' : 'imageUrl';
+
+            await updateItem(selectedId, updateField, url);
+
+            // Update local state immediately
             setItems(prev => prev.map(item =>
-                item.id === selectedId ? { ...item, imageUrl: url } : item
+                item.id === selectedId ? { ...item, [updateField]: url } : item
             ));
         } catch (error) {
             console.error("Upload failed:", error);
             alert("Upload fehlgeschlagen");
         } finally {
             setUploading(false);
+            setDragActive(null);
         }
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'plan' | 'ifc' | 'document') => {
         if (e.target.files && e.target.files[0]) {
-            handleFileUpload(e.target.files[0]);
+            handleFileUpload(e.target.files[0], type);
         }
     };
 
-    const handleDrag = (e: React.DragEvent) => {
+    const handleDrag = (e: React.DragEvent, type: string) => {
         e.preventDefault();
         e.stopPropagation();
         if (e.type === "dragenter" || e.type === "dragover") {
-            setDragActive(true);
+            setDragActive(type);
         } else if (e.type === "dragleave") {
-            setDragActive(false);
+            setDragActive(null);
         }
     };
 
-    const handleDrop = (e: React.DragEvent) => {
+    const handleDrop = (e: React.DragEvent, type: 'image' | 'plan' | 'ifc' | 'document') => {
         e.preventDefault();
         e.stopPropagation();
-        setDragActive(false);
+        setDragActive(null);
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            handleFileUpload(e.dataTransfer.files[0]);
+            handleFileUpload(e.dataTransfer.files[0], type);
         }
     };
 
@@ -119,9 +134,17 @@ export default function PlannerPage() {
         return url;
     };
 
+    // Helper to sync date input with text input
+    const handleDateSelect = (field: keyof Teilsystem, dateString: string) => {
+        if (!selectedId || !dateString) return;
+        const date = new Date(dateString);
+        const formatted = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        updateItem(selectedId, field, formatted);
+    };
+
     return (
-        <div className="space-y-6 animate-in fade-in duration-500 pb-10">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="h-[calc(100vh-6rem)] flex flex-col gap-6 animate-in fade-in duration-500 pb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
                 <div>
                     <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Planer</h1>
                     <p className="text-slate-500 font-medium mt-1">Überwachen Sie Meilensteine, Planabgaben und Lieferfristen.</p>
@@ -134,221 +157,326 @@ export default function PlannerPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[
-                    { label: 'Offene Pläne', value: items.filter(i => i.planStatus !== 'fertig' && i.planStatus !== 'abgeschlossen').length, icon: FileText, color: 'text-orange-600', bg: 'bg-orange-50' },
-                    { label: 'Fristen diese Woche', value: '2', icon: Clock, color: 'text-red-600', bg: 'bg-red-50' },
-                    { label: 'Abgeschlossen', value: items.filter(i => i.planStatus === 'fertig' || i.planStatus === 'abgeschlossen').length, icon: CheckCircle2, color: 'text-green-600', bg: 'bg-green-50' },
-                ].map((stat, i) => (
-                    <Card key={i} className="border-none shadow-sm bg-white">
-                        <CardContent className="p-6 flex items-center gap-4">
-                            <div className={cn("p-4 rounded-2xl", stat.bg)}>
-                                <stat.icon className={cn("h-6 w-6", stat.color)} />
+            {/* Master-Detail Layout */}
+            <div className="flex flex-1 gap-6 min-h-0 overflow-hidden">
+                {/* Column 1: List (25%) */}
+                <Card className="w-1/4 flex flex-col border-none shadow-md bg-white h-full">
+                    <CardHeader className="p-4 border-b bg-slate-50/50">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                            <Input
+                                placeholder="Suche..."
+                                className="pl-9 h-9 border-slate-200 bg-white"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                        </div>
+                    </CardHeader>
+                    <CardContent className="p-0 flex-1 overflow-y-auto">
+                        {loading ? (
+                            <div className="p-4 space-y-3">
+                                {[1, 2, 3].map(i => <div key={i} className="h-16 bg-slate-100 rounded-lg animate-pulse" />)}
                             </div>
-                            <div>
-                                <p className="text-xs font-black uppercase tracking-widest text-slate-400">{stat.label}</p>
-                                <p className="text-2xl font-black text-slate-800">{stat.value}</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
-
-            {/* Filter Row */}
-            <div className="flex gap-4 items-center bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-                <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input
-                        placeholder="Suche nach System oder Name..."
-                        className="pl-10 h-10 border-slate-200 bg-slate-50 focus-visible:ring-primary/20"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
-                <Button variant="outline" size="icon" className="h-10 w-10 border-slate-200">
-                    <Filter className="h-4 w-4" />
-                </Button>
-            </div>
-
-            <div className="flex flex-col lg:flex-row gap-8 items-start">
-                {/* Main Grid - 75% width on large screens */}
-                <div className="w-full lg:w-3/4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {loading ? (
-                        Array.from({ length: 6 }).map((_, i) => (
-                            <Card key={i} className="animate-pulse h-64 bg-slate-100 border-none" />
-                        ))
-                    ) : filteredItems.length > 0 ? (
-                        filteredItems.map((item) => (
-                            <Card
-                                key={item.id}
-                                className={cn(
-                                    "border-none shadow-sm hover:shadow-md transition-all bg-white flex flex-col cursor-pointer ring-2 ring-transparent",
-                                    selectedId === item.id ? "ring-primary scale-[1.02]" : ""
-                                )}
-                                onClick={() => setSelectedId(item.id)}
-                            >
-                                <CardHeader className="bg-slate-50/50 border-b pb-3">
-                                    <div className="flex justify-between items-start">
-                                        <div className="overflow-hidden pr-2">
-                                            <div className="text-xs font-black uppercase text-slate-400 tracking-wider mb-1">
-                                                #{item.teilsystemNummer}
+                        ) : filteredItems.length > 0 ? (
+                            <div className="divide-y divide-slate-100">
+                                {filteredItems.map(item => (
+                                    <div
+                                        key={item.id}
+                                        onClick={() => setSelectedId(item.id)}
+                                        className={cn(
+                                            "p-4 cursor-pointer hover:bg-slate-50 transition-colors flex items-center justify-between group",
+                                            selectedId === item.id ? "bg-primary/5 border-l-4 border-primary" : "border-l-4 border-transparent"
+                                        )}
+                                    >
+                                        <div className="overflow-hidden">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                                                    #{item.teilsystemNummer}
+                                                </span>
+                                                <div className={cn("w-2 h-2 rounded-full",
+                                                    item.planStatus === 'fertig' ? "bg-green-500" :
+                                                        item.planStatus === 'in_produktion' ? "bg-blue-500" : "bg-slate-300"
+                                                )} />
                                             </div>
-                                            <CardTitle className="text-lg font-bold text-slate-900 leading-tight truncate w-full" title={item.name}>
+                                            <p className={cn("text-sm font-bold truncate", selectedId === item.id ? "text-primary" : "text-slate-700")}>
                                                 {item.name}
-                                            </CardTitle>
+                                            </p>
                                         </div>
-                                        <div className={cn("px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider shrink-0", getPlanStatusColor(item.planStatus))}>
-                                            {item.planStatus || 'OFFEN'}
+                                        <ChevronRight className={cn("h-4 w-4 text-slate-300 transition-transform", selectedId === item.id ? "text-primary translate-x-1" : "group-hover:translate-x-1")} />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="p-8 text-center text-slate-400">
+                                <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                <p className="text-sm">Keine Elemente</p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Column 2: Detail Form (50%) */}
+                <Card className="flex-1 border-none shadow-md bg-white h-full flex flex-col min-w-0">
+                    {selectedItem ? (
+                        <>
+                            <CardHeader className="border-b bg-slate-50/50 p-6">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <div className="text-xs font-black uppercase text-slate-400 tracking-wider mb-1">
+                                            Teilsystem #{selectedItem.teilsystemNummer}
+                                        </div>
+                                        <CardTitle className="text-2xl font-extrabold text-slate-900 truncate">
+                                            {selectedItem.name}
+                                        </CardTitle>
+                                    </div>
+                                    <div className={cn("px-3 py-1.5 rounded-md text-xs font-black uppercase tracking-wider shrink-0", getPlanStatusColor(selectedItem.planStatus))}>
+                                        {selectedItem.planStatus || 'OFFEN'}
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-6 overflow-y-auto flex-1 space-y-6">
+                                {/* Basic Info */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Bezeichnung</label>
+                                        <Input
+                                            value={selectedItem.name}
+                                            onChange={(e) => updateItem(selectedItem.id, 'name', e.target.value)}
+                                            className="font-bold text-lg"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Status</label>
+                                        <Select
+                                            value={selectedItem.planStatus || 'offen'}
+                                            onChange={(e) => updateItem(selectedItem.id, 'planStatus', e.target.value)}
+                                            options={[
+                                                { label: 'Offen', value: 'offen' },
+                                                { label: 'In Produktion', value: 'in_produktion' },
+                                                { label: 'Bestellt', value: 'bestellt' },
+                                                { label: 'Geliefert', value: 'geliefert' },
+                                                { label: 'Verbaut', value: 'verbaut' },
+                                                { label: 'Abgeschlossen', value: 'abgeschlossen' },
+                                            ]}
+                                            className="w-full"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">WEMA Link</label>
+                                    <Input
+                                        value={selectedItem.wemaLink || ''}
+                                        onChange={(e) => updateItem(selectedItem.id, 'wemaLink', e.target.value)}
+                                        placeholder="Pfad oder URL"
+                                    />
+                                </div>
+
+                                {/* Dates Section */}
+                                <div className="bg-slate-50 p-6 rounded-xl space-y-6 border border-slate-100">
+                                    <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
+                                        <Calendar className="h-4 w-4" />
+                                        Termine & Fristen
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                                        <div className="space-y-2 relative group">
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Plan-Abgabe</label>
+                                            <div className="relative">
+                                                <Input
+                                                    value={selectedItem.abgabePlaner || ''}
+                                                    onChange={(e) => updateItem(selectedItem.id, 'abgabePlaner', e.target.value)}
+                                                    className="pl-10 font-medium"
+                                                    placeholder="DD.MM.YYYY"
+                                                />
+                                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                                <input
+                                                    type="date"
+                                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                                    onChange={(e) => handleDateSelect('abgabePlaner', e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2 relative group">
+                                            <label className="text-xs font-bold text-orange-600 uppercase tracking-wide">Montagetermin</label>
+                                            <div className="relative">
+                                                <Input
+                                                    value={selectedItem.montagetermin || ''}
+                                                    onChange={(e) => updateItem(selectedItem.id, 'montagetermin', e.target.value)}
+                                                    className="pl-10 font-bold text-orange-700 bg-orange-50/50 border-orange-100"
+                                                    placeholder="DD.MM.YYYY"
+                                                />
+                                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-400" />
+                                                <input
+                                                    type="date"
+                                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                                    onChange={(e) => handleDateSelect('montagetermin', e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2 relative group">
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Lieferfrist</label>
+                                            <div className="relative">
+                                                <Input
+                                                    value={selectedItem.lieferfrist || ''}
+                                                    onChange={(e) => updateItem(selectedItem.id, 'lieferfrist', e.target.value)}
+                                                    className="pl-10 font-medium"
+                                                    placeholder="DD.MM.YYYY"
+                                                />
+                                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                                <input
+                                                    type="date"
+                                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                                    onChange={(e) => handleDateSelect('lieferfrist', e.target.value)}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
-                                </CardHeader>
-                                <CardContent className="p-4 space-y-4 flex-1">
-                                    {/* Fields - prevent onClick propagation to avoid re-selecting card when editing */}
-                                    <div className="space-y-4" onClick={e => e.stopPropagation()}>
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1">
-                                                <Calendar className="h-3 w-3" /> Plan-Abgabe
-                                            </label>
-                                            <Input
-                                                className="h-9 font-medium bg-slate-50 border-slate-200 focus:bg-white transition-colors"
-                                                defaultValue={item.abgabePlaner || ''}
-                                                onBlur={(e) => updateItem(item.id, 'abgabePlaner', e.target.value)}
-                                                placeholder="DD.MM.YYYY"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-orange-600 uppercase tracking-wide flex items-center gap-1">
-                                                <Calendar className="h-3 w-3" /> Montagetermin
-                                            </label>
-                                            <Input
-                                                className="h-9 font-bold text-orange-700 bg-orange-50 border-orange-100 focus:bg-white focus:border-primary transition-colors"
-                                                defaultValue={item.montagetermin || ''}
-                                                onBlur={(e) => updateItem(item.id, 'montagetermin', e.target.value)}
-                                                placeholder="DD.MM.YYYY"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1">
-                                                <Clock className="h-3 w-3" /> Lieferfrist
-                                            </label>
-                                            <Input
-                                                className="h-9 font-medium bg-slate-50 border-slate-200 focus:bg-white transition-colors"
-                                                defaultValue={item.lieferfrist || ''}
-                                                onBlur={(e) => updateItem(item.id, 'lieferfrist', e.target.value)}
-                                                placeholder="Tage / Datum"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Status</label>
-                                            <Select
-                                                value={item.planStatus || 'offen'}
-                                                onChange={(e) => updateItem(item.id, 'planStatus', e.target.value)}
-                                                options={[
-                                                    { label: 'Offen', value: 'offen' },
-                                                    { label: 'In Produktion', value: 'in_produktion' },
-                                                    { label: 'Bestellt', value: 'bestellt' },
-                                                    { label: 'Geliefert', value: 'geliefert' },
-                                                    { label: 'Verbaut', value: 'verbaut' },
-                                                    { label: 'Abgeschlossen', value: 'abgeschlossen' },
-                                                ]}
-                                                className="w-full h-9 bg-white border-slate-200"
-                                            />
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))
+                                </div>
+                            </CardContent>
+                            <CardFooter className="border-t bg-slate-50/50 p-4 text-xs text-slate-400 flex justify-between items-center">
+                                <span>Zuletzt bearbeitet: Heute</span>
+                                <div className="flex items-center gap-2 text-green-600 font-bold">
+                                    <CheckCircle2 className="h-3 w-3" />
+                                    Gespeichert
+                                </div>
+                            </CardFooter>
+                        </>
                     ) : (
-                        <div className="col-span-full h-64 flex flex-col items-center justify-center text-slate-400">
-                            <FileText className="h-12 w-12 mb-4 opacity-50" />
-                            <p className="font-bold">Keine Elemente gefunden</p>
+                        <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4">
+                            <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center">
+                                <Search className="h-8 w-8 opacity-50" />
+                            </div>
+                            <div className="text-center">
+                                <h3 className="font-bold text-slate-700">Kein Teilsystem ausgewählt</h3>
+                                <p className="text-sm">Wähle ein Element aus der Liste links.</p>
+                            </div>
                         </div>
                     )}
-                </div>
+                </Card>
 
-                {/* Sidebar - Plan Upload - 25% width sticky */}
-                <div className="w-full lg:w-1/4 space-y-6 sticky top-6">
-                    <Card className="shadow-none border-2 border-dashed border-slate-300 bg-slate-50/50 flex flex-col min-h-[300px]">
-                        <CardHeader className="bg-transparent border-b-0 pb-0 pt-4 px-4">
-                            <CardTitle className="text-sm font-black text-slate-700 flex items-center gap-2">
-                                <UploadCloud className="h-4 w-4 text-primary" />
-                                Plan / Bild
+                {/* Column 3: Upload Sidebar (25%) */}
+                <div className="w-1/4 flex flex-col gap-6 h-full overflow-y-auto pr-1">
+                    {/* Plan/Image Upload */}
+                    <Card className="border-none shadow-sm bg-white overflow-hidden">
+                        <CardHeader className="border-b bg-slate-50/50 py-3 px-4">
+                            <CardTitle className="text-xs font-black text-slate-700 flex items-center gap-2 uppercase tracking-wide">
+                                <ImageIcon className="h-3 w-3" />
+                                Plan / Ansicht
                             </CardTitle>
                         </CardHeader>
                         <CardContent
                             className={cn(
-                                "flex flex-col items-center justify-center p-4 transition-colors cursor-pointer m-2 rounded-lg border-2 border-transparent flex-1",
-                                !selectedId ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-100",
-                                dragActive ? "bg-primary/5 border-primary border-dashed" : ""
+                                "p-4 flex flex-col items-center justify-center transition-all cursor-pointer min-h-[160px] relative group",
+                                !selectedId ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50",
+                                dragActive === 'image' ? "bg-primary/5 border-primary border-2 border-dashed" : "border-2 border-transparent"
                             )}
-                            onDragEnter={selectedId ? handleDrag : undefined}
-                            onDragLeave={selectedId ? handleDrag : undefined}
-                            onDragOver={selectedId ? handleDrag : undefined}
-                            onDrop={selectedId ? handleDrop : undefined}
+                            onDragEnter={(e) => handleDrag(e, 'image')}
+                            onDragLeave={(e) => handleDrag(e, 'image')}
+                            onDragOver={(e) => handleDrag(e, 'image')}
+                            onDrop={(e) => handleDrop(e, 'plan')}
                             onClick={() => selectedId && fileInputRef.current?.click()}
                         >
-                            {!selectedId ? (
-                                <div className="text-center p-4">
-                                    <div className="bg-slate-100 p-3 rounded-full shadow-sm mb-3 mx-auto w-fit">
-                                        <FileText className="h-6 w-6 text-slate-400" />
-                                    </div>
-                                    <p className="text-xs font-bold text-slate-400">
-                                        Wählen Sie ein Teilsystem aus, um einen Plan hochzuladen
-                                    </p>
-                                </div>
-                            ) : selectedItem?.imageUrl ? (
-                                <div className="text-center w-full relative group">
+                            {selectedItem?.imageUrl ? (
+                                <div className="w-full relative">
                                     <img
                                         src={getPreviewUrl(selectedItem.imageUrl) || ''}
-                                        alt="Plan Preview"
-                                        className="w-full h-auto max-h-[300px] object-contain rounded-md border border-slate-200 shadow-sm"
+                                        alt="Preview"
+                                        className="w-full h-auto max-h-[200px] object-contain rounded-md shadow-sm border border-slate-100"
                                     />
                                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-md">
-                                        <Button variant="secondary" size="sm" className="font-bold">
-                                            Ändern
-                                        </Button>
+                                        <span className="text-white text-xs font-bold">Ändern</span>
                                     </div>
                                 </div>
                             ) : (
                                 <>
-                                    <div className="bg-white p-3 rounded-full shadow-sm mb-3">
-                                        <FileType className="h-6 w-6 text-primary" />
-                                    </div>
-                                    <h3 className="text-xs font-bold text-slate-700 mb-1">
-                                        {uploading ? 'Wird hochgeladen...' : 'Plan hierher ziehen'}
-                                    </h3>
-                                    <p className="text-[10px] font-medium text-slate-400 mb-4 text-center">
-                                        JPG, PNG oder PDF
-                                    </p>
-                                    <Button
-                                        type="button"
-                                        size="sm"
-                                        variant="outline"
-                                        className="text-xs font-bold border-slate-200 h-8 px-4"
-                                        disabled={uploading}
-                                    >
-                                        Wählen
-                                    </Button>
+                                    <UploadCloud className="h-8 w-8 text-slate-300 mb-2" />
+                                    <p className="text-xs font-bold text-slate-500 text-center">Bild/Plan hochladen</p>
+                                    <span className="text-[10px] text-slate-400 mt-1">Drag & Drop</span>
                                 </>
                             )}
-
-                            <input
-                                type="file"
-                                className="hidden"
-                                ref={fileInputRef}
-                                accept="image/*,application/pdf"
-                                onChange={handleFileChange}
-                                disabled={!selectedId || uploading}
-                            />
+                            <input type="file" ref={fileInputRef} className="hidden" accept="image/*,application/pdf" onChange={(e) => handleFileChange(e, 'plan')} disabled={!selectedId} />
                         </CardContent>
-                        {selectedId && selectedItem && (
-                            <div className="p-3 bg-white border-t border-slate-100 text-[10px] font-medium text-slate-500 text-center">
-                                Ausgewählt: <span className="font-bold text-primary">{selectedItem.name}</span>
-                            </div>
-                        )}
+                    </Card>
+
+                    {/* IFC Upload */}
+                    <Card className="border-none shadow-sm bg-white overflow-hidden">
+                        <CardHeader className="border-b bg-slate-50/50 py-3 px-4">
+                            <CardTitle className="text-xs font-black text-slate-700 flex items-center gap-2 uppercase tracking-wide">
+                                <FileType className="h-3 w-3" />
+                                IFC Modell
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent
+                            className={cn(
+                                "p-4 flex flex-col items-center justify-center transition-all cursor-pointer min-h-[120px] relative group",
+                                !selectedId ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50",
+                                dragActive === 'ifc' ? "bg-primary/5 border-primary border-2 border-dashed" : "border-2 border-transparent"
+                            )}
+                            onDragEnter={(e) => handleDrag(e, 'ifc')}
+                            onDragLeave={(e) => handleDrag(e, 'ifc')}
+                            onDragOver={(e) => handleDrag(e, 'ifc')}
+                            onDrop={(e) => handleDrop(e, 'ifc')}
+                            onClick={() => selectedId && ifcInputRef.current?.click()}
+                        >
+                            {selectedItem?.ifcUrl ? (
+                                <div className="w-full flex items-center gap-3 p-3 bg-green-50 text-green-700 rounded-lg border border-green-100">
+                                    <CheckCircle2 className="h-5 w-5 shrink-0" />
+                                    <div className="overflow-hidden">
+                                        <p className="text-xs font-bold truncate">Modell hochgeladen</p>
+                                        <p className="text-[10px] opacity-70 truncate">Klicken zum Ersetzen</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <FileType className="h-8 w-8 text-slate-300 mb-2" />
+                                    <p className="text-xs font-bold text-slate-500 text-center">IFC hochladen</p>
+                                    <span className="text-[10px] text-slate-400 mt-1">.ifc Datei</span>
+                                </>
+                            )}
+                            <input type="file" ref={ifcInputRef} className="hidden" accept=".ifc" onChange={(e) => handleFileChange(e, 'ifc')} disabled={!selectedId} />
+                        </CardContent>
+                    </Card>
+
+                    {/* Documents Upload */}
+                    <Card className="border-none shadow-sm bg-white overflow-hidden">
+                        <CardHeader className="border-b bg-slate-50/50 py-3 px-4">
+                            <CardTitle className="text-xs font-black text-slate-700 flex items-center gap-2 uppercase tracking-wide">
+                                <File className="h-3 w-3" />
+                                Dokumente
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent
+                            className={cn(
+                                "p-4 flex flex-col items-center justify-center transition-all cursor-pointer min-h-[120px] relative group",
+                                !selectedId ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50",
+                                dragActive === 'doc' ? "bg-primary/5 border-primary border-2 border-dashed" : "border-2 border-transparent"
+                            )}
+                            onDragEnter={(e) => handleDrag(e, 'doc')}
+                            onDragLeave={(e) => handleDrag(e, 'doc')}
+                            onDragOver={(e) => handleDrag(e, 'doc')}
+                            onDrop={(e) => handleDrop(e, 'document')}
+                            onClick={() => selectedId && docInputRef.current?.click()}
+                        >
+                            {selectedItem?.documentUrl ? (
+                                <div className="w-full flex items-center gap-3 p-3 bg-blue-50 text-blue-700 rounded-lg border border-blue-100">
+                                    <FileText className="h-5 w-5 shrink-0" />
+                                    <div className="overflow-hidden">
+                                        <p className="text-xs font-bold truncate">Dokument vorhanden</p>
+                                        <p className="text-[10px] opacity-70 truncate">Klicken zum Ersetzen</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <UploadCloud className="h-8 w-8 text-slate-300 mb-2" />
+                                    <p className="text-xs font-bold text-slate-500 text-center">Doku hochladen</p>
+                                    <span className="text-[10px] text-slate-400 mt-1">PDF, Word, etc.</span>
+                                </>
+                            )}
+                            <input type="file" ref={docInputRef} className="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx" onChange={(e) => handleFileChange(e, 'document')} disabled={!selectedId} />
+                        </CardContent>
                     </Card>
                 </div>
             </div>

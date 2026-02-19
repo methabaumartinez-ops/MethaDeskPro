@@ -52,6 +52,8 @@ export interface Teilsystem {
   planStatus?: string;
   wemaLink?: string;
   imageUrl?: string;
+  ifcUrl?: string;
+  documentUrl?: string;
   status: ItemStatus;
 }
 
