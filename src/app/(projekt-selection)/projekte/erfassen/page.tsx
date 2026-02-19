@@ -114,24 +114,15 @@ export default function ProjektErfassenPage() {
 
     const onSubmit = async (data: ProjektValues) => {
         try {
-            let uploadedImageUrl = undefined;
-            const projectId = uuidv4(); // Generate ID in advance
+            const projectId = uuidv4();
 
-            if (imageFile) {
-                try {
-                    uploadedImageUrl = await ProjectService.uploadImage(imageFile, projectId);
-                } catch (uploadError) {
-                    console.error('Image upload failed:', uploadError);
-                    window.alert('Bild-Upload fehlgeschlagen. Projekt wird ohne Bild erstellt.');
-                }
-            }
-
-            // Map IDs back to names for storage consistency (following existing schema for now)
+            // Map IDs back to names for storage consistency
             const resolveName = (id: string) => {
                 const m = mitarbeiter.find(x => x.id === id);
                 return m ? `${m.vorname} ${m.nachname}` : id;
             };
 
+            // 1. Create the project FIRST (this also creates the Drive folder)
             await ProjectService.createProjekt({
                 ...data,
                 id: projectId,
@@ -140,9 +131,20 @@ export default function ProjektErfassenPage() {
                 polier: data.polier ? resolveName(data.polier) : undefined,
                 bimKonstrukteur: data.bimKonstrukteur ? resolveName(data.bimKonstrukteur) : undefined,
                 status: data.status as any,
-                imageUrl: uploadedImageUrl,
                 createdBy: currentUser?.id
             });
+
+            // 2. Upload image AFTER project exists
+            if (imageFile) {
+                try {
+                    const uploadedImageUrl = await ProjectService.uploadImage(imageFile, projectId);
+                    // Update project with the image URL
+                    await ProjectService.updateProjekt(projectId, { imageUrl: uploadedImageUrl });
+                } catch (uploadError) {
+                    console.error('Image upload failed:', uploadError);
+                    window.alert('Bild-Upload fehlgeschlagen. Projekt wurde ohne Bild erstellt.');
+                }
+            }
 
             window.alert('Projekt erfolgreich erstellt');
             router.push('/projekte');
