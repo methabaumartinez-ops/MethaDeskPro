@@ -146,7 +146,10 @@ export default function ProjektBearbeitenPage() {
                     imageUrl: projekt.imageUrl || '',
                 });
                 if (projekt.imageUrl) {
-                    setImagePreview(projekt.imageUrl);
+                    const previewSrc = projekt.imageUrl.includes('drive.google.com')
+                        ? `/api/image-proxy?url=${encodeURIComponent(projekt.imageUrl)}`
+                        : projekt.imageUrl;
+                    setImagePreview(previewSrc);
                 }
             } catch (error) {
                 console.error('Failed to load project:', error);

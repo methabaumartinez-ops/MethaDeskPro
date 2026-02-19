@@ -82,7 +82,13 @@ export default function ProjektePage() {
     };
 
     const getProjectImage = (p: Projekt) => {
-        if (p.imageUrl) return p.imageUrl;
+        if (p.imageUrl) {
+            // Proxy Google Drive URLs to avoid CORS issues
+            if (p.imageUrl.includes('drive.google.com')) {
+                return `/api/image-proxy?url=${encodeURIComponent(p.imageUrl)}`;
+            }
+            return p.imageUrl;
+        }
         // Default to Methabau building photo
         return '/images/Foto.png';
     };

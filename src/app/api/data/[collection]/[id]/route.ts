@@ -22,10 +22,11 @@ export async function PUT(req: Request, { params }: { params: Promise<{ collecti
         const { collection, id } = await params;
         const body = await req.json();
 
-        // Drive folder sync is handled by /api/upload when files are uploaded
-        // No need to sync on every project edit
+        // Merge with existing data to prevent overwriting fields
+        const existing = await DatabaseService.get(collection, id);
+        const merged = existing ? { ...(existing as Record<string, unknown>), ...body, id } : { ...body, id };
 
-        const updated = await DatabaseService.upsert(collection, { ...body, id });
+        const updated = await DatabaseService.upsert(collection, merged);
         return NextResponse.json(updated);
     } catch (error) {
         console.error(`API Error updating item in collection:`, error);
