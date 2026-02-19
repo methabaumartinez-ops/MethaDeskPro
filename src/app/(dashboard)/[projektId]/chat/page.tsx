@@ -32,17 +32,17 @@ export default function ChatPage() {
         <div className="flex flex-col h-[calc(100vh-180px)] space-y-4">
             <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
-                    <h1 className="text-3xl font-extrabold tracking-tight">AI Assistant</h1>
+                    <h1 className="text-3xl font-extrabold tracking-tight">KI-Assistent</h1>
                     <Sparkles className="h-6 w-6 text-primary animate-pulse" />
                 </div>
-                <p className="text-muted-foreground">Pregúntame sobre el proyecto, personal o maquinaria.</p>
+                <p className="text-muted-foreground">Fragen Sie mich zum Projekt, Personal oder Maschinen.</p>
             </div>
 
             <Card className="flex-1 flex flex-col overflow-hidden border-none shadow-xl bg-gradient-to-b from-background to-accent/20">
                 <CardHeader className="border-b bg-background/50 backdrop-blur-sm">
                     <CardTitle className="flex items-center gap-2 text-lg">
                         <Bot className="h-5 w-5 text-primary" />
-                        Metha助手 (Beta)
+                        Metha-Assistent (Beta)
                     </CardTitle>
                 </CardHeader>
 
@@ -52,35 +52,35 @@ export default function ChatPage() {
                             <div className="p-4 rounded-full bg-primary/10 mb-4">
                                 <Bot className="h-12 w-12 text-primary opacity-50" />
                             </div>
-                            <p className="text-xl font-semibold text-foreground">¡Hola! Soy tu asistente de MethaDeskPro</p>
+                            <p className="text-xl font-semibold text-foreground">Hallo! Ich bin Ihr MethaDeskPro-Assistent</p>
                             <p className="max-w-sm mt-2">
-                                Puedo ayudarte a analizar los datos de este proyecto, consultar disponibilidad de personal o buscar maquinaria específica.
+                                Ich kann Ihnen helfen, Projektdaten zu analysieren, Personalverfügbarkeiten zu prüfen oder Maschinen zu suchen.
                             </p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-8 w-full max-w-lg">
                                 <Button
                                     variant="outline"
                                     className="justify-start h-auto py-3 px-4 text-left"
                                     onClick={() => {
-                                        const event = { target: { value: "¿Qué sistemas tiene este proyecto?" } } as any;
+                                        const event = { target: { value: "Welche Systeme hat dieses Projekt?" } } as any;
                                         handleInputChange(event);
                                     }}
                                 >
                                     <div className="flex flex-col">
-                                        <span className="font-bold text-xs uppercase opacity-50">Preguntar sobre</span>
-                                        <span>¿Qué sistemas tiene este proyecto?</span>
+                                        <span className="font-bold text-xs uppercase opacity-50">Fragen über</span>
+                                        <span>Welche Systeme hat dieses Projekt?</span>
                                     </div>
                                 </Button>
                                 <Button
                                     variant="outline"
                                     className="justify-start h-auto py-3 px-4 text-left"
                                     onClick={() => {
-                                        const event = { target: { value: "¿Quién está en el equipo?" } } as any;
+                                        const event = { target: { value: "Wer gehört zum Team?" } } as any;
                                         handleInputChange(event);
                                     }}
                                 >
                                     <div className="flex flex-col">
-                                        <span className="font-bold text-xs uppercase opacity-50">Preguntar sobre</span>
-                                        <span>¿Quién está en el equipo?</span>
+                                        <span className="font-bold text-xs uppercase opacity-50">Fragen über</span>
+                                        <span>Wer gehört zum Team?</span>
                                     </div>
                                 </Button>
                             </div>
@@ -139,18 +139,18 @@ export default function ChatPage() {
                 <div className="p-4 border-t bg-background/50 backdrop-blur-sm">
                     <form onSubmit={handleSubmit} className="flex gap-2">
                         <Input
-                            placeholder="Escribe tu mensaje aquí..."
+                            placeholder="Schreiben Sie Ihre Nachricht..."
                             value={input}
                             onChange={handleInputChange}
                             className="flex-1 bg-background border-muted-foreground/20 focus-visible:ring-primary shadow-inner"
                         />
                         <Button type="submit" disabled={isLoading || !input.trim()} className="shadow-lg transition-all hover:scale-105 active:scale-95">
                             <Send className="h-4 w-4 mr-2" />
-                            Enviar
+                            Senden
                         </Button>
                     </form>
                     <p className="text-[10px] text-center mt-2 text-muted-foreground">
-                        El asistente puede cometer errores. Verifique la información importante.
+                        Der Assistent kann Fehler machen. Bitte überprüfen Sie wichtige Informationen.
                     </p>
                 </div>
             </Card>

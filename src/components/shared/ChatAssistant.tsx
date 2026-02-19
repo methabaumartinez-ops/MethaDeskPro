@@ -26,7 +26,7 @@ export const ChatAssistant = ({ isSidebarMode = false }: { isSidebarMode?: boole
             {
                 id: 'welcome',
                 role: 'assistant',
-                content: '¡Hola! Soy MethaBot. ¿En qué puedo ayudarte hoy?',
+                content: 'Hallo! Ich bin MethaBot. Wie kann ich Ihnen heute helfen?',
             }
         ],
     });
@@ -58,7 +58,7 @@ export const ChatAssistant = ({ isSidebarMode = false }: { isSidebarMode?: boole
                                     <CardTitle className="text-base font-black">MethaBot AI</CardTitle>
                                     <p className="text-[10px] font-bold opacity-80 uppercase tracking-widest flex items-center gap-1">
                                         <div className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
-                                        En línea • Asistente Inteligente
+                                        Online • Intelligenter Assistent
                                     </p>
                                 </div>
                             </div>
@@ -111,7 +111,7 @@ export const ChatAssistant = ({ isSidebarMode = false }: { isSidebarMode?: boole
                             >
                                 <div className="relative flex-1">
                                     <Input
-                                        placeholder="Pregunta algo..."
+                                        placeholder="Fragen Sie etwas..."
                                         className="h-11 pl-4 pr-10 rounded-xl bg-slate-50 border-slate-200 focus:ring-primary shadow-inner dark:bg-slate-900"
                                         value={input}
                                         onChange={handleInputChange}

@@ -15,17 +15,17 @@ export async function POST(req: Request) {
     }
 
     const systemPrompt = `
-Eres un asistente experto para MethaDeskPro, una plataforma de gestión de proyectos de construcción. 
-Tu objetivo es ayudar al usuario con consultas sobre sus proyectos, personal y maquinaria.
+Du bist ein Experten-Assistent für MethaDeskPro, eine Projektmanagement-Plattform für das Baugewerbe.
+Dein Ziel ist es, den Benutzer bei Anfragen zu seinen Projekten, Personal und Maschinen zu unterstützen.
 
-Contexto del proyecto actual:
+Aktueller Projektkontext:
 ${contextText}
 
-Instrucciones:
-1. Responde siempre en español.
-2. Si el usuario pregunta algo sobre el proyecto, consulta el contexto proporcionado arriba.
-3. Si no sabes la respuesta basada en el contexto, indícalo educadamente.
-4. Mantén un tono profesional y servicial.
+Anweisungen:
+1. Antworte IMMER auf DEUTSCH.
+2. Basieren deine Antworten auf den bereitgestellten Daten.
+3. Wenn Informationen fehlen, antworte höflich, dass keine Daten dazu vorliegen.
+4. Sei präzise und professionell.
 `;
 
     const result = streamText({
@@ -34,5 +34,5 @@ Instrucciones:
         messages,
     });
 
-    return result.toDataStreamResponse();
+    return result.toTextStreamResponse();
 }
