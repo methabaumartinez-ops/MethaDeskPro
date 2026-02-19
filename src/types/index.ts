@@ -141,6 +141,7 @@ export interface Fahrzeug {
   imageUrl?: string;
   gruppe?: string; // e.g. "Scherenbühne elekr."
   standort?: string; // Current location
+  manualUrl?: string;
 }
 
 export interface FahrzeugReservierung {

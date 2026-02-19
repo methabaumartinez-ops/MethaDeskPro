@@ -1,15 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { FleetService } from '@/lib/services/fleetService';
-// import { mockStore } from '@/lib/mock/store'; // Removed
+import { ProjectService } from '@/lib/services/projectService';
 import { Fahrzeug, FahrzeugKategorie, FahrzeugStatus } from '@/types';
-import { ArrowLeft, Save, Car } from 'lucide-react';
+import { ArrowLeft, Save, Car, UploadCloud, FileText } from 'lucide-react';
 import Link from 'next/link';
 
 const KATEGORIE_OPTIONS = [
@@ -44,6 +44,7 @@ const ANTRIEB_OPTIONS = [
 export default function FahrzeugErfassenPage() {
     const { projektId } = useParams() as { projektId: string };
     const router = useRouter();
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [form, setForm] = useState({
         bezeichnung: '',
@@ -68,9 +69,27 @@ export default function FahrzeugErfassenPage() {
         abgaswartung: '',
         status: 'verfuegbar' as FahrzeugStatus,
         bemerkung: '',
+        manualUrl: '',
     });
 
+    const [uploading, setUploading] = useState(false);
+
     const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files?.[0]) return;
+        setUploading(true);
+        try {
+            const file = e.target.files[0];
+            const url = await ProjectService.uploadImage(file, projektId, 'document');
+            update('manualUrl', url);
+        } catch (error) {
+            console.error("Upload failed", error);
+            alert("Upload fehlgeschlagen");
+        } finally {
+            setUploading(false);
+        }
+    };
 
     const handleSave = async () => {
         if (!form.bezeichnung || !form.kategorie || !form.inventarnummer) return;
@@ -99,6 +118,7 @@ export default function FahrzeugErfassenPage() {
             abgaswartung: form.abgaswartung || undefined,
             status: form.status,
             bemerkung: form.bemerkung || undefined,
+            manualUrl: form.manualUrl || undefined,
         };
 
         try {
@@ -181,6 +201,33 @@ export default function FahrzeugErfassenPage() {
                         <Input label="Abgaswartung" placeholder="z.B. bis 03.2026" value={form.abgaswartung} onChange={e => update('abgaswartung', e.target.value)} />
                         <Input label="Spez. Hinweis" placeholder="z.B. Weissrad, Russpartikelfilter" value={form.spezHinweis} onChange={e => update('spezHinweis', e.target.value)} />
                         <Input label="Bemerkung" placeholder="Optional" value={form.bemerkung} onChange={e => update('bemerkung', e.target.value)} />
+                    </div>
+
+                    {/* Manual Upload Section */}
+                    <div className="border-t border-slate-200 dark:border-slate-800 pt-4">
+                        <h3 className="text-sm font-bold mb-3 flex items-center gap-2 text-slate-700">
+                            <FileText className="h-4 w-4" />
+                            Betriebsanleitung
+                        </h3>
+                        <div className="flex items-center gap-4">
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                className="hidden"
+                                accept=".pdf"
+                                onChange={handleFileUpload}
+                            />
+                            <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                                <UploadCloud className="h-4 w-4 mr-2" />
+                                {uploading ? 'Lädt hoch...' : (form.manualUrl ? 'Anleitung ersetzen' : 'PDF Anleitung hochladen')}
+                            </Button>
+                            {form.manualUrl && (
+                                <span className="text-xs text-green-600 font-bold flex items-center gap-1">
+                                    <FileText className="h-3 w-3" />
+                                    Hochgeladen
+                                </span>
+                            )}
+                        </div>
                     </div>
 
                     {/* Actions */}
