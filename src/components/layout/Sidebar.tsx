@@ -44,7 +44,8 @@ export function Sidebar({ projektId, className }: { projektId: string; className
         { title: 'Werkhof', href: `/${projektId}/werkhof`, icon: Warehouse },
         { title: 'Fuhrpark', href: `/fuhrpark`, icon: Car },
         { title: 'Mitarbeiter', href: `/${projektId}/mitarbeiter`, icon: Users },
-        { title: 'Tabellen', href: `/${projektId}/tabellen`, icon: ListTodo }, // Added Tabellen
+        { title: 'Tabellen', href: `/${projektId}/tabellen`, icon: ListTodo },
+        { title: 'AI Assistant', href: `/${projektId}/chat`, icon: MessageSquare },
 
         // { title: 'Berichte', href: `/${projektId}/berichte`, icon: FileText }, // Removed per request
     ];
