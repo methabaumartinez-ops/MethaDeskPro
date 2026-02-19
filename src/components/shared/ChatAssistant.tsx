@@ -29,6 +29,10 @@ export const ChatAssistant = ({ isSidebarMode = false }: { isSidebarMode?: boole
                 content: 'Hallo! Ich bin MethaBot. Wie kann ich Ihnen heute helfen?',
             }
         ],
+        onError: (error) => {
+            console.error('Chat Error:', error);
+            alert('Entschuldigung, es gab einen Fehler bei der Kommunikation mit der KI.');
+        },
     });
 
     useEffect(() => {

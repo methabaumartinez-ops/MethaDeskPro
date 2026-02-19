@@ -1,38 +1,67 @@
-import { openai } from '@ai-sdk/openai';
+import { createOpenAI } from '@ai-sdk/openai';
 import { streamText } from 'ai';
 import { AIService } from '@/lib/services/aiService';
 
-// Allow streaming responses up to 30 seconds
+const openai = createOpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
+
 export const maxDuration = 30;
 
+export async function GET() {
+    return new Response('Chat API is active. POST to this endpoint for AI chat.');
+}
+
 export async function POST(req: Request) {
-    const { messages, projektId } = await req.json();
+    console.log('--- POST /api/chat received ---');
 
-    let contextText = "";
-    if (projektId) {
-        const context = await AIService.getProjectContext(projektId);
-        contextText = AIService.formatContextToText(context);
+    if (!process.env.OPENAI_API_KEY) {
+        console.error('OPENAI_API_KEY is missing in environment variables');
+        return new Response('OpenAI API Key is not configured', { status: 500 });
     }
+    try {
+        const body = await req.json();
+        const { messages, projektId } = body;
+        console.log('Project ID:', projektId);
+        console.log('Messages count:', messages?.length);
 
-    const systemPrompt = `
-Du bist ein Experten-Assistent für MethaDeskPro, eine Projektmanagement-Plattform für das Baugewerbe.
-Dein Ziel ist es, den Benutzer bei Anfragen zu seinen Projekten, Personal und Maschinen zu unterstützen.
+        if (!messages) {
+            return new Response('Missing messages', { status: 400 });
+        }
 
-Aktueller Projektkontext:
+        let contextText = "Kein Kontext verfügbar.";
+        try {
+            if (projektId) {
+                const context = await AIService.getProjectContext(projektId);
+                if (context) {
+                    contextText = AIService.formatContextToText(context);
+                }
+            }
+        } catch (e) {
+            console.error('Context fetch error:', e);
+        }
+
+        const systemPrompt = `
+Du bist ein Experten-Assistent für MethaDeskPro (Baumanagement).
+Antworte IMMER auf DEUTSCH.
+Projektkontext:
 ${contextText}
-
-Anweisungen:
-1. Antworte IMMER auf DEUTSCH.
-2. Basieren deine Antworten auf den bereitgestellten Daten.
-3. Wenn Informationen fehlen, antworte höflich, dass keine Daten dazu vorliegen.
-4. Sei präzise und professionell.
+Beantworte Fragen präzise basierend auf dem Kontext.
 `;
 
-    const result = streamText({
-        model: openai('gpt-4o-mini'),
-        system: systemPrompt,
-        messages,
-    });
+        const result = streamText({
+            model: openai('gpt-4o-mini'),
+            system: systemPrompt,
+            messages,
+        });
 
-    return result.toTextStreamResponse();
+        // Use toDataStreamResponse for AI SDK 4.x
+        return (result as any).toDataStreamResponse();
+    } catch (error: any) {
+        console.error('Chat API Error:', error);
+        return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
 }
