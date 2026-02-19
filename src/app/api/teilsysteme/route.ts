@@ -36,7 +36,7 @@ export async function POST(req: Request) {
 
         const newItem = {
             ...body,
-            id: body.teilsystemNummer || body.id || uuidv4(),
+            id: body.id || uuidv4(),
         };
 
         const result = await DatabaseService.upsert('teilsysteme', newItem);

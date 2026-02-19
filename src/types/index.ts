@@ -51,6 +51,7 @@ export interface Teilsystem {
   abgabePlaner?: string;
   planStatus?: string;
   wemaLink?: string;
+  imageUrl?: string;
   status: ItemStatus;
 }
 
