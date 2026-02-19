@@ -4,7 +4,7 @@ import { verifyToken } from '@/lib/services/authService';
 
 // Rutas públicas que NO requieren autenticación
 const PUBLIC_PATHS = ['/', '/login', '/register', '/confirm'];
-const PUBLIC_PREFIXES = ['/api/auth/', '/_next/', '/favicon.ico'];
+const PUBLIC_PREFIXES = ['/api/auth/', '/api/chat', '/_next/', '/favicon.ico'];
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
