@@ -36,6 +36,21 @@ export const mockProjekte: Projekt[] = [
         status: 'offen',
         createdAt: '2024-02-01T08:30:00Z',
     },
+    {
+        id: '29ff60bc-8e31-4085-b77a-01fe273d56e0',
+        projektnummer: '0000001',
+        projektname: 'Test',
+        strasse: 'Fohlenweg 1',
+        plz: '9230',
+        ort: 'Flawil',
+        kanton: 'St. Gallen',
+        projektleiter: 'Matthew Dean',
+        bauleiter: 'Felix Stoerchli',
+        polier: 'Francisco Jose Martinez Sanchez',
+        bimKonstrukteur: 'Moritz Munz',
+        status: 'offen',
+        createdAt: '2026-02-19T10:44:58.480Z',
+    },
 ];
 
 export const mockTeilsysteme: Teilsystem[] = [
@@ -127,6 +142,42 @@ export const mockTeilsysteme: Teilsystem[] = [
         planStatus: 'offen',
         status: 'offen',
     },
+    {
+        id: 'ts-test-1',
+        teilsystemNummer: '101.01',
+        ks: '1',
+        name: 'Baugrubensicherung',
+        beschreibung: 'Nagelwand und Spritzbeton',
+        eroeffnetAm: '10.01.2026',
+        eroeffnetDurch: 'Francisco Jose Martinez Sanchez',
+        status: 'abgeschlossen',
+        planStatus: 'fertig',
+        projektId: '29ff60bc-8e31-4085-b77a-01fe273d56e0'
+    },
+    {
+        id: 'ts-test-2',
+        teilsystemNummer: '201.05',
+        ks: '1',
+        name: 'Betonarbeiten EG',
+        beschreibung: 'Wände und Decken über EG',
+        eroeffnetAm: '01.02.2026',
+        eroeffnetDurch: 'Moritz Munz',
+        status: 'in_produktion',
+        planStatus: 'fertig',
+        projektId: '29ff60bc-8e31-4085-b77a-01fe273d56e0'
+    },
+    {
+        id: 'ts-test-3',
+        teilsystemNummer: '305.10',
+        ks: '1',
+        name: 'Stahlbau Dach',
+        beschreibung: 'Lieferung und Montage Stahlkonstruktion',
+        eroeffnetAm: '15.02.2026',
+        eroeffnetDurch: 'Matthew Dean',
+        status: 'offen',
+        planStatus: 'offen',
+        projektId: '29ff60bc-8e31-4085-b77a-01fe273d56e0'
+    }
 ];
 
 export const mockPositionen: Position[] = [
