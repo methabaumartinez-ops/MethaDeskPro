@@ -8,12 +8,7 @@ const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN;
 const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/callback/google';
 
-// Singleton client
-let driveClient: any = null;
-
 const getDriveClient = () => {
-    if (driveClient) return driveClient;
-
     if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH_TOKEN) {
         console.warn('Google Drive credentials missing. Drive integration disabled.');
         return null;
@@ -22,8 +17,7 @@ const getDriveClient = () => {
     const oauth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
     oauth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
 
-    driveClient = google.drive({ version: 'v3', auth: oauth2Client });
-    return driveClient;
+    return google.drive({ version: 'v3', auth: oauth2Client });
 };
 
 /**
