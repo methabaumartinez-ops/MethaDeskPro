@@ -287,7 +287,7 @@ export default function TabellenPage() {
 
             {/* Content Area */}
             <div className="flex-1 overflow-y-auto bg-slate-50/50 rounded-xl border p-6">
-                <div className="max-w-5xl mx-auto space-y-6">
+                <div className="space-y-6">
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-2xl font-bold flex items-center gap-2">

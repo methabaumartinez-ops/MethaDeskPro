@@ -151,7 +151,7 @@ export default function TeilsystemErfassenPage() {
     };
 
     return (
-        <div className="max-w-5xl mx-auto space-y-6 pb-8">
+        <div className="w-full space-y-6 pb-8">
             <Link href={`/${projektId}/teilsysteme`} className="inline-flex items-center text-sm font-bold text-muted-foreground hover:text-primary transition-colors">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Zurück zur Übersicht

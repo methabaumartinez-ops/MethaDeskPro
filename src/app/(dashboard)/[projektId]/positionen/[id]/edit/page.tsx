@@ -84,7 +84,7 @@ export default function PositionEditPage() {
                 </div>
             </div>
 
-            <Card className="max-w-2xl">
+            <Card className="w-full">
                 <CardHeader>
                     <CardTitle>Daten bearbeiten</CardTitle>
                 </CardHeader>

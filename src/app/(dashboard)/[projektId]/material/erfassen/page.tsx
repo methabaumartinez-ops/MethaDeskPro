@@ -54,7 +54,7 @@ export default function MaterialErfassenPage() {
     };
 
     return (
-        <div className="max-w-3xl mx-auto space-y-6">
+        <div className="w-full space-y-6">
             <Link href={`/${projektId}/material`} className="inline-flex items-center text-sm font-bold text-slate-500 hover:text-primary transition-colors">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Zurück zur Liste

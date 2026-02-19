@@ -57,7 +57,7 @@ export default function DashboardLayout({
                 <Sidebar projektId={projektId} className="fixed left-0 top-16 z-30 hidden lg:block" />
 
                 <main className="flex-1 lg:ml-64 min-h-[calc(100vh-4rem)] overflow-x-hidden">
-                    <div className="p-2 sm:p-3 lg:p-4 w-full">
+                    <div className="p-[1cm] w-full">
                         <ProjectBanner />
                         {children}
                     </div>
