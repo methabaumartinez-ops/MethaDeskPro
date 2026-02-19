@@ -11,6 +11,9 @@ const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/a
 const getDriveClient = () => {
     if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH_TOKEN) {
         console.warn('Google Drive credentials missing. Drive integration disabled.');
+        console.warn('CLIENT_ID:', CLIENT_ID ? 'set' : 'MISSING');
+        console.warn('CLIENT_SECRET:', CLIENT_SECRET ? 'set' : 'MISSING');
+        console.warn('REFRESH_TOKEN:', REFRESH_TOKEN ? 'set' : 'MISSING');
         return null;
     }
 
@@ -21,54 +24,74 @@ const getDriveClient = () => {
 };
 
 /**
+ * Escape single quotes in folder names for Google Drive API queries
+ */
+const escapeQueryValue = (val: string) => val.replace(/'/g, "\\'");
+
+/**
  * Ensures a project folder exists in Google Drive.
  * Structure: ROOT -> [ProjectNr]_[ProjectName]
  * Returns the folder ID.
  */
-export const ensureProjectFolder = async (projekt: { projektnummer: string; projektname: string; driveFolderId?: string }) => {
+export const ensureProjectFolder = async (projekt: { projektnummer?: string; projektname?: string; driveFolderId?: string }) => {
     const drive = getDriveClient();
-    if (!drive) return null;
+    if (!drive) {
+        console.error('ensureProjectFolder: Drive client is null');
+        return null;
+    }
 
-    // specific folder name format
-    const folderName = `${projekt.projektnummer}_${projekt.projektname}`;
+    if (!ROOT_FOLDER_ID) {
+        console.error('ensureProjectFolder: GOOGLE_ROOT_FOLDER_ID is missing');
+        return null;
+    }
+
+    // Build folder name, handle missing values
+    const nr = projekt.projektnummer || 'OHNE-NR';
+    const name = projekt.projektname || 'Unbenannt';
+    const folderName = `${nr}_${name}`;
+
+    console.log(`ensureProjectFolder: Looking for folder "${folderName}" in root ${ROOT_FOLDER_ID}`);
 
     try {
         // 1. Check if we already have a folder ID (and verify it still exists)
         if (projekt.driveFolderId) {
             try {
-                await drive.files.get({ fileId: projekt.driveFolderId });
+                const existing = await (drive.files as any).get({ fileId: projekt.driveFolderId });
+                console.log('ensureProjectFolder: Existing folder found:', existing.data?.id);
                 return projekt.driveFolderId;
-            } catch (e) {
-                console.log('Cached folder ID invalid or not found, searching by name...');
+            } catch (e: any) {
+                console.log('ensureProjectFolder: Cached folder ID invalid:', e.message || e);
             }
         }
 
         // 2. Search for folder by name in ROOT
-        const query = `mimeType='application/vnd.google-apps.folder' and name='${folderName}' and '${ROOT_FOLDER_ID}' in parents and trashed=false`;
-        const res = await drive.files.list({
+        const escapedName = escapeQueryValue(folderName);
+        const query = `mimeType='application/vnd.google-apps.folder' and name='${escapedName}' and '${ROOT_FOLDER_ID}' in parents and trashed=false`;
+        console.log('ensureProjectFolder: Search query:', query);
+
+        const res = await (drive.files as any).list({
             q: query,
             fields: 'files(id, name)',
             spaces: 'drive',
         });
 
         if (res.data.files && res.data.files.length > 0) {
-            console.log(`Found existing folder for ${folderName}: ${res.data.files[0].id}`);
+            console.log(`ensureProjectFolder: Found existing folder: ${res.data.files[0].id}`);
             return res.data.files[0].id;
         }
 
         // 3. Create new folder if not found
-        const fileMetadata = {
-            name: folderName,
-            mimeType: 'application/vnd.google-apps.folder',
-            parents: [ROOT_FOLDER_ID],
-        };
-
-        const file = await drive.files.create({
-            resource: fileMetadata,
+        console.log('ensureProjectFolder: Creating new folder...');
+        const file = await (drive.files as any).create({
+            requestBody: {
+                name: folderName,
+                mimeType: 'application/vnd.google-apps.folder',
+                parents: [ROOT_FOLDER_ID],
+            },
             fields: 'id',
         });
 
-        console.log(`Created new folder for ${folderName}: ${file.data.id}`);
+        console.log(`ensureProjectFolder: Created folder: ${file.data.id}`);
 
         // Create standard subfolders
         await createSubfolder(drive, file.data.id, '01_Dokumente');
@@ -78,27 +101,30 @@ export const ensureProjectFolder = async (projekt: { projektnummer: string; proj
 
         return file.data.id;
 
-    } catch (error) {
-        console.error('Error in ensureProjectFolder:', error);
+    } catch (error: any) {
+        console.error('ensureProjectFolder ERROR:', error.message || error);
+        if (error.response) {
+            console.error('Response status:', error.response.status);
+            console.error('Response data:', JSON.stringify(error.response.data));
+        }
         return null;
     }
 };
 
 const createSubfolder = async (drive: any, parentId: string, name: string) => {
     try {
-        const fileMetadata = {
-            name: name,
-            mimeType: 'application/vnd.google-apps.folder',
-            parents: [parentId],
-        };
-        await drive.files.create({
-            resource: fileMetadata,
+        await (drive.files as any).create({
+            requestBody: {
+                name: name,
+                mimeType: 'application/vnd.google-apps.folder',
+                parents: [parentId],
+            },
             fields: 'id',
         });
-    } catch (e) {
-        console.error(`Failed to create subfolder ${name}`, e);
+    } catch (e: any) {
+        console.error(`Failed to create subfolder ${name}:`, e.message || e);
     }
-}
+};
 
 /**
  * Uploads a file to a specific project folder.
@@ -117,20 +143,23 @@ export const uploadFileToDrive = async (
     try {
         let parentId = projectFolderId;
 
-        // If subfolder requested, find it
+        // If subfolder requested, find or create it
         if (subfolderName) {
-            const query = `mimeType='application/vnd.google-apps.folder' and name='${subfolderName}' and '${projectFolderId}' in parents and trashed=false`;
-            const res = await drive.files.list({ q: query, fields: 'files(id)' });
+            const escapedName = escapeQueryValue(subfolderName);
+            const query = `mimeType='application/vnd.google-apps.folder' and name='${escapedName}' and '${projectFolderId}' in parents and trashed=false`;
+            const res = await (drive.files as any).list({ q: query, fields: 'files(id)' });
             if (res.data.files && res.data.files.length > 0) {
                 parentId = res.data.files[0].id;
             } else {
-                // Should exist from creation, but fallback create
-                const fileMetadata = {
-                    name: subfolderName,
-                    mimeType: 'application/vnd.google-apps.folder',
-                    parents: [projectFolderId],
-                };
-                const file = await drive.files.create({ resource: fileMetadata, fields: 'id' });
+                // Create subfolder
+                const file = await (drive.files as any).create({
+                    requestBody: {
+                        name: subfolderName,
+                        mimeType: 'application/vnd.google-apps.folder',
+                        parents: [projectFolderId],
+                    },
+                    fields: 'id',
+                });
                 parentId = file.data.id;
             }
         }
@@ -140,24 +169,25 @@ export const uploadFileToDrive = async (
             body: Readable.from(fileBuffer),
         };
 
-        const fileMetadata = {
-            name: fileName,
-            parents: [parentId],
-        };
-
-        const res = await drive.files.create({
-            resource: fileMetadata,
+        const res = await (drive.files as any).create({
+            requestBody: {
+                name: fileName,
+                parents: [parentId],
+            },
             media: media,
             fields: 'id, webViewLink, webContentLink, thumbnailLink',
         });
 
-        // Set permissions to anyone with link (optional, depends on requirement)
-        // For now keep private to the authenticated user account
+        console.log('uploadFileToDrive: File uploaded:', res.data.id);
 
         return res.data;
 
-    } catch (error) {
-        console.error('Error uploading file to Drive:', error);
+    } catch (error: any) {
+        console.error('uploadFileToDrive ERROR:', error.message || error);
+        if (error.response) {
+            console.error('Response status:', error.response.status);
+            console.error('Response data:', JSON.stringify(error.response.data));
+        }
         throw error;
     }
 };
