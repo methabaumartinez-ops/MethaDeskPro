@@ -1,10 +1,10 @@
 import { QdrantClient } from '@qdrant/js-client-rest';
 
-const url = process.env.NEXT_PUBLIC_QDRANT_URL;
-const apiKey = process.env.NEXT_PUBLIC_QDRANT_API_KEY;
+const url = process.env.NEXT_PUBLIC_QDRANT_URL || process.env.QDRANT_URL;
+const apiKey = process.env.NEXT_PUBLIC_QDRANT_API_KEY || process.env.QDRANT_API_KEY;
 
 if (!url) {
-    console.error('Qdrant URL is missing. Please set NEXT_PUBLIC_QDRANT_URL in .env');
+    console.error('Qdrant URL is missing. Please set NEXT_PUBLIC_QDRANT_URL or QDRANT_URL in environment variables');
 }
 
 export const qdrantClient = new QdrantClient({
