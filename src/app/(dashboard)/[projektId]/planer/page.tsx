@@ -81,7 +81,8 @@ export default function PlannerPage() {
             ));
         } catch (error) {
             console.error("Upload failed:", error);
-            alert("Upload fehlgeschlagen");
+            const message = error instanceof Error ? error.message : "Upload fehlgeschlagen";
+            alert(`Upload fehlgeschlagen: ${message}`);
         } finally {
             setUploading(false);
             setDragActive(null);

@@ -48,16 +48,22 @@ export async function POST(req: Request) {
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
+        // Fallback for IFC mime type if browser doesn't detect it
+        let mimeType = file.type;
+        if (!mimeType && file.name.toLowerCase().endsWith('.ifc')) {
+            mimeType = 'application/octet-stream';
+        }
+
         const { uploadFileToDrive } = await import('@/lib/services/googleDriveService');
         const result = await uploadFileToDrive(
             buffer,
             file.name,
-            file.type,
+            mimeType,
             project.driveFolderId,
             subfolder
         );
 
-        if (!result) throw new Error('Upload failed');
+        if (!result) throw new Error('Upload failed: Google Drive service returned no result');
 
         // Return the usable link (e.g. webContentLink or thumbnailLink for images)
         // For images we might want webContentLink or thumbnailLink
