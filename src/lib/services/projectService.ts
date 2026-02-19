@@ -80,9 +80,9 @@ export const ProjectService = {
             });
 
             if (!res.ok) {
-                console.error('Upload failed');
-                // Fallback to blob if upload fails?
-                return URL.createObjectURL(file);
+                const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+                console.error('Upload failed:', errorData);
+                throw new Error(errorData.error || `Upload failed with status ${res.status}`);
             }
             const data = await res.json();
             return data.url; // WebContentLink or ViewLink
