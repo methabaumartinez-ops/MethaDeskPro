@@ -22,22 +22,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ collecti
         const { collection, id } = await params;
         const body = await req.json();
 
-        // If updating a project, ensure Drive folder is in sync
-        if (collection === 'projekte' && (body.projektname || body.projektnummer)) {
-            try {
-                if (process.env.GOOGLE_CLIENT_ID) {
-                    const { ensureProjectFolder } = await import('@/lib/services/googleDriveService');
-                    const folderId = await ensureProjectFolder({
-                        projektnummer: body.projektnummer,
-                        projektname: body.projektname,
-                        driveFolderId: body.driveFolderId
-                    });
-                    if (folderId) body.driveFolderId = folderId;
-                }
-            } catch (e) {
-                console.error('Drive sync error on PUT:', e);
-            }
-        }
+        // Drive folder sync is handled by /api/upload when files are uploaded
+        // No need to sync on every project edit
 
         const updated = await DatabaseService.upsert(collection, { ...body, id });
         return NextResponse.json(updated);
