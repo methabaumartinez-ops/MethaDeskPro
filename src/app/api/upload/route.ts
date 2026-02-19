@@ -69,7 +69,7 @@ export async function POST(req: Request) {
         return NextResponse.json({
             success: true,
             id: result.id,
-            url: result.webContentLink || result.webViewLink
+            url: result.directUrl || result.webContentLink || result.webViewLink
         });
 
     } catch (error) {

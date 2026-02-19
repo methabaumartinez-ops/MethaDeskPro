@@ -10,6 +10,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ProjectService } from '@/lib/services/projectService';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { EmployeeService } from '@/lib/services/employeeService';
 import { useProjekt } from '@/lib/context/ProjektContext';
 import { ArrowLeft, Save, Building2, MapPin, User, Hash, Loader2 } from 'lucide-react';
@@ -91,6 +92,8 @@ export default function ProjektErfassenPage() {
     const {
         register,
         handleSubmit,
+        setValue,
+        watch,
         formState: { errors, isSubmitting },
     } = useForm<ProjektValues>({
         resolver: zodResolver(projektSchema),
@@ -287,26 +290,30 @@ export default function ProjektErfassenPage() {
                                 Verantwortlichkeiten
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <FormSelect
+                                <SearchableSelect
                                     label="Projektleiter *"
                                     options={mitarbeiterOptions}
-                                    {...register('projektleiter')}
+                                    value={watch('projektleiter')}
+                                    onChange={(v) => setValue('projektleiter', v)}
                                     error={errors.projektleiter?.message}
                                 />
-                                <FormSelect
+                                <SearchableSelect
                                     label="Bauleiter"
                                     options={mitarbeiterOptions}
-                                    {...register('bauleiter')}
+                                    value={watch('bauleiter')}
+                                    onChange={(v) => setValue('bauleiter', v)}
                                 />
-                                <FormSelect
+                                <SearchableSelect
                                     label="Polier"
                                     options={mitarbeiterOptions}
-                                    {...register('polier')}
+                                    value={watch('polier')}
+                                    onChange={(v) => setValue('polier', v)}
                                 />
-                                <FormSelect
+                                <SearchableSelect
                                     label="BIM Konstrukteur"
                                     options={mitarbeiterOptions}
-                                    {...register('bimKonstrukteur')}
+                                    value={watch('bimKonstrukteur')}
+                                    onChange={(v) => setValue('bimKonstrukteur', v)}
                                 />
                             </div>
                         </div>

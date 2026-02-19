@@ -178,9 +178,28 @@ export const uploadFileToDrive = async (
             fields: 'id, webViewLink, webContentLink, thumbnailLink',
         });
 
-        console.log('uploadFileToDrive: File uploaded:', res.data.id);
+        const fileId = res.data.id;
+        console.log('uploadFileToDrive: File uploaded:', fileId);
 
-        return res.data;
+        // Make file publicly accessible (anyone with the link can view)
+        try {
+            await (drive.permissions as any).create({
+                fileId: fileId,
+                requestBody: {
+                    role: 'reader',
+                    type: 'anyone',
+                },
+            });
+            console.log('uploadFileToDrive: Public permission set for', fileId);
+        } catch (permError: any) {
+            console.error('uploadFileToDrive: Failed to set public permission:', permError.message);
+        }
+
+        // Return data with a direct image URL that works in <img> tags
+        return {
+            ...res.data,
+            directUrl: `https://drive.google.com/uc?export=view&id=${fileId}`,
+        };
 
     } catch (error: any) {
         console.error('uploadFileToDrive ERROR:', error.message || error);

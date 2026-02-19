@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ProjectService } from '@/lib/services/projectService';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { EmployeeService } from '@/lib/services/employeeService';
 import { useProjekt } from '@/lib/context/ProjektContext';
 import { ArrowLeft, Save, Building2, MapPin, User, Hash, Loader2, Plus } from 'lucide-react';
@@ -106,10 +107,19 @@ export default function ProjektBearbeitenPage() {
         register,
         handleSubmit,
         reset,
+        setValue,
+        watch,
         formState: { errors, isSubmitting },
     } = useForm<ProjektValues>({
         resolver: zodResolver(projektSchema),
     });
+
+    const mitarbeiterOptions = React.useMemo(() => [
+        { label: 'Bitte wählen...', value: '' },
+        ...mitarbeiter
+            .sort((a: any, b: any) => `${a.vorname} ${a.nachname}`.localeCompare(`${b.vorname} ${b.nachname}`, 'de'))
+            .map((m: any) => ({ label: `${m.vorname} ${m.nachname}`, value: `${m.vorname} ${m.nachname}` }))
+    ], [mitarbeiter]);
 
     React.useEffect(() => {
         const loadProject = async () => {
@@ -346,37 +356,29 @@ export default function ProjektBearbeitenPage() {
                                 Verantwortlichkeiten
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <FormSelect
+                                <SearchableSelect
                                     label="Projektleiter"
-                                    options={[
-                                        { label: 'Bitte wählen...', value: '' },
-                                        ...mitarbeiter.map(m => ({ label: `${m.vorname} ${m.nachname}`, value: `${m.vorname} ${m.nachname}` }))
-                                    ]}
-                                    {...register('projektleiter')}
+                                    options={mitarbeiterOptions}
+                                    value={watch('projektleiter')}
+                                    onChange={(v) => setValue('projektleiter', v)}
                                 />
-                                <FormSelect
+                                <SearchableSelect
                                     label="Bauleiter"
-                                    options={[
-                                        { label: 'Bitte wählen...', value: '' },
-                                        ...mitarbeiter.map(m => ({ label: `${m.vorname} ${m.nachname}`, value: `${m.vorname} ${m.nachname}` }))
-                                    ]}
-                                    {...register('bauleiter')}
+                                    options={mitarbeiterOptions}
+                                    value={watch('bauleiter')}
+                                    onChange={(v) => setValue('bauleiter', v)}
                                 />
-                                <FormSelect
+                                <SearchableSelect
                                     label="Polier"
-                                    options={[
-                                        { label: 'Bitte wählen...', value: '' },
-                                        ...mitarbeiter.map(m => ({ label: `${m.vorname} ${m.nachname}`, value: `${m.vorname} ${m.nachname}` }))
-                                    ]}
-                                    {...register('polier')}
+                                    options={mitarbeiterOptions}
+                                    value={watch('polier')}
+                                    onChange={(v) => setValue('polier', v)}
                                 />
-                                <FormSelect
+                                <SearchableSelect
                                     label="BIM Konstrukteur"
-                                    options={[
-                                        { label: 'Bitte wählen...', value: '' },
-                                        ...mitarbeiter.map(m => ({ label: `${m.vorname} ${m.nachname}`, value: `${m.vorname} ${m.nachname}` }))
-                                    ]}
-                                    {...register('bimKonstrukteur')}
+                                    options={mitarbeiterOptions}
+                                    value={watch('bimKonstrukteur')}
+                                    onChange={(v) => setValue('bimKonstrukteur', v)}
                                 />
                             </div>
                         </div>
