@@ -9,7 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^1.1.9",
+    "@ai-sdk/google": "^3.0.30",
+    "@ai-sdk/openai": "^3.0.30",
     "@hookform/resolvers": "^5.2.2",
     "@qdrant/js-client-rest": "^1.16.2",
     "@tailwindcss/postcss": "^4.1.18",
@@ -23,6 +24,7 @@
     "next": "15.1.7",
     "openai": "^6.22.0",
     "postcss": "^8",
+    "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",

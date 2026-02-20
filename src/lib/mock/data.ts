@@ -7,7 +7,7 @@ export const mockUser: User & { passwordHash: string, confirmed: boolean } = {
     email: 'admin@methabau.ch',
     department: 'IT / Management',
     role: 'admin',
-    passwordHash: '00000000000000000000000000000000:510c749b88d3c1a5dc2d171b17851ef7b3ad2a526ca12fe8d4784776cf7b8ecd5f5b4b74543f2ed79b9acb4bb40c3463399d0363083024c384eff3a29f3ce14a',
+    passwordHash: '1a17f043585847cfccb8f83294274b8a:b5150a39516b0bfa4accd54f6362f4c3e5fcb5a233c3506681014012cab9a5c81e687940ab',
     confirmed: true,
 };
 

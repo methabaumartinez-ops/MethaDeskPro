@@ -2,14 +2,22 @@ import { mockUser, mockProjekte, mockTeilsysteme, mockPositionen, mockMaterial, 
 
 const IS_SERVER = typeof window === 'undefined';
 
+// In-memory cache for server-side persistence during the session
+// This allows POST/PUT/DELETE via API routes to be reflected in server-rendered or server-side-fetched data
+const serverCache: Record<string, any> = {};
+
 const getFromStorage = (key: string, defaultValue: any) => {
-    if (IS_SERVER) return defaultValue;
+    if (IS_SERVER) {
+        return serverCache[key] || defaultValue;
+    }
     const stored = localStorage.getItem(`methabau_${key}`);
     return stored ? JSON.parse(stored) : defaultValue;
 };
 
 const saveToStorage = (key: string, value: any) => {
-    if (!IS_SERVER) {
+    if (IS_SERVER) {
+        serverCache[key] = value;
+    } else {
         localStorage.setItem(`methabau_${key}`, JSON.stringify(value));
     }
 };
@@ -32,6 +40,12 @@ export const mockStore = {
         return tsId ? all.filter((pos: any) => pos.teilsystemId === tsId) : all;
     },
     savePositionen: (positionen: any) => saveToStorage('positionen', positionen),
+
+    getUnterpositionen: (posId?: string) => {
+        const all = getFromStorage('unterpositionen', []);
+        return posId ? all.filter((upos: any) => upos.positionId === posId) : all;
+    },
+    saveUnterpositionen: (unterpositionen: any) => saveToStorage('unterpositionen', unterpositionen),
 
     getMaterial: () => getFromStorage('material', mockMaterial),
     saveMaterial: (material: any) => saveToStorage('material', material),

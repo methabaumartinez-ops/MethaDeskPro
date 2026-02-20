@@ -1,67 +1,41 @@
-import { createOpenAI } from '@ai-sdk/openai';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { streamText } from 'ai';
 import { AIService } from '@/lib/services/aiService';
 
-const openai = createOpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
-
 export const maxDuration = 30;
 
-export async function GET() {
-    return new Response('Chat API is active. POST to this endpoint for AI chat.');
-}
-
 export async function POST(req: Request) {
-    console.log('--- POST /api/chat received ---');
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) return new Response(JSON.stringify({ error: 'API Key missing' }), { status: 500 });
 
-    if (!process.env.OPENAI_API_KEY) {
-        console.error('OPENAI_API_KEY is missing in environment variables');
-        return new Response('OpenAI API Key is not configured', { status: 500 });
-    }
+    const google = createGoogleGenerativeAI({ apiKey: apiKey.trim() });
+
     try {
-        const body = await req.json();
-        const { messages, projektId } = body;
-        console.log('Project ID:', projektId);
-        console.log('Messages count:', messages?.length);
+        const { messages, projektId } = await req.json();
 
-        if (!messages) {
-            return new Response('Missing messages', { status: 400 });
-        }
-
-        let contextText = "Kein Kontext verfügbar.";
-        try {
-            if (projektId) {
+        let contextText = "Kein Kontext.";
+        if (projektId) {
+            try {
                 const context = await AIService.getProjectContext(projektId);
-                if (context) {
-                    contextText = AIService.formatContextToText(context);
-                }
-            }
-        } catch (e) {
-            console.error('Context fetch error:', e);
+                if (context) contextText = AIService.formatContextToText(context);
+            } catch (e) { }
         }
 
-        const systemPrompt = `
-Du bist ein Experten-Assistent für MethaDeskPro (Baumanagement).
-Antworte IMMER auf DEUTSCH.
-Projektkontext:
-${contextText}
-Beantworte Fragen präzise basierend auf dem Kontext.
-`;
+        const systemPrompt = `Du bist experto en MethaDeskPro.\nAntworte auf DEUTSCH.\nKontext:\n${contextText}`;
 
         const result = streamText({
-            model: openai('gpt-4o-mini'),
+            model: google('gemini-2.0-flash'),
             system: systemPrompt,
             messages,
         });
 
-        // Use toDataStreamResponse for AI SDK 4.x
-        return (result as any).toDataStreamResponse();
+        return result.toDataStreamResponse();
     } catch (error: any) {
-        console.error('Chat API Error:', error);
-        return new Response(JSON.stringify({ error: error.message }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' }
-        });
+        console.error('Chat error:', error);
+        let message = error.message || 'Ein Fehler ist aufgetreten.';
+        if (error.status === 429 || message.toLowerCase().includes('quota')) {
+            message = 'API-Quota überschritten. Bitte versuchen Sie es in un paar Minuten erneut o prüfen Sie Ihren Tarif.';
+        }
+        return new Response(JSON.stringify({ error: message }), { status: error.status || 500 });
     }
 }

@@ -10,7 +10,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useProjekt } from '@/lib/context/ProjektContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { LogIn } from 'lucide-react';
+import { LogIn, Eye, EyeOff } from 'lucide-react';
 
 const loginSchema = z.object({
     email: z.string().email('Ungültige E-Mail-Adresse'),
@@ -23,6 +23,7 @@ export default function LoginPage() {
     const { setCurrentUser } = useProjekt();
     const router = useRouter();
     const [serverError, setServerError] = useState<string | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
 
     const {
         register,
@@ -86,13 +87,22 @@ export default function LoginPage() {
                             {...register('email')}
                             error={errors.email?.message}
                         />
-                        <Input
-                            label="Passwort"
-                            type="password"
-                            placeholder="••••••••"
-                            {...register('password')}
-                            error={errors.password?.message}
-                        />
+                        <div className="relative">
+                            <Input
+                                label="Passwort"
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder="••••••••"
+                                {...register('password')}
+                                error={errors.password?.message}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-[34px] text-slate-400 hover:text-primary transition-colors focus:outline-none"
+                            >
+                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            </button>
+                        </div>
                         <Button type="submit" className="w-full h-12 text-base font-bold" disabled={isSubmitting}>
                             {isSubmitting ? 'Wird angemeldet...' : (
                                 <span className="flex items-center gap-2">

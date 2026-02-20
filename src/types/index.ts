@@ -60,6 +60,17 @@ export interface Teilsystem {
 export interface Position {
   id: string;
   teilsystemId: string;
+  posNummer?: string;
+  name: string;
+  menge: number;
+  einheit: string;
+  status: ItemStatus;
+}
+
+export interface Unterposition {
+  id: string;
+  positionId: string;
+  posNummer?: string;
   name: string;
   menge: number;
   einheit: string;

@@ -9,41 +9,40 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { mockStore } from '@/lib/mock/store';
 import { ArrowLeft, UploadCloud, FileType } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { SubsystemService } from '@/lib/services/subsystemService';
 import { PositionService } from '@/lib/services/positionService';
-import { Teilsystem } from '@/types';
+import { SubPositionService } from '@/lib/services/subPositionService';
+import { Position } from '@/types';
 
-const positionSchema = z.object({
-    posNummer: z.string().min(1, 'Número de posición es requerido'),
+const subPositionSchema = z.object({
+    posNummer: z.string().min(1, 'Positionsnummer ist erforderlich'),
     name: z.string().min(3, 'Bezeichnung muss mindestens 3 Zeichen lang sein'),
     menge: z.coerce.number().min(1, 'Menge muss mindestens 1 sein'),
     einheit: z.string().min(1, 'Einheit ist erforderlich'),
-    teilsystemId: z.string().min(1, 'Teilsystem ist erforderlich'),
+    positionId: z.string().min(1, 'Position ID ist erforderlich'),
     status: z.string().min(1, 'Status ist erforderlich'),
 });
 
-type PositionValues = z.infer<typeof positionSchema>;
+type SubPositionValues = z.infer<typeof subPositionSchema>;
 
-export default function PositionErfassenPage() {
-    const { projektId, id: teilsystemId } = useParams() as { projektId: string; id: string };
+export default function UnterpositionErfassenPage() {
+    const { projektId, id: positionId } = useParams() as { projektId: string; id: string };
     const router = useRouter();
     const [dragActive, setDragActive] = useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
-    const [teilsystem, setTeilsystem] = useState<Teilsystem | null>(null);
+    const [position, setPosition] = useState<Position | null>(null);
 
     useEffect(() => {
-        const loadTeilsystem = async () => {
-            if (teilsystemId) {
-                const ts = await SubsystemService.getTeilsystemById(teilsystemId);
-                if (ts) setTeilsystem(ts);
+        const loadPosition = async () => {
+            if (positionId) {
+                const pos = await PositionService.getPositionById(positionId);
+                if (pos) setPosition(pos);
             }
         };
-        loadTeilsystem();
-    }, [teilsystemId]);
+        loadPosition();
+    }, [positionId]);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -56,22 +55,22 @@ export default function PositionErfassenPage() {
         register,
         handleSubmit,
         formState: { errors, isSubmitting },
-    } = useForm<PositionValues>({
-        resolver: zodResolver(positionSchema),
+    } = useForm<SubPositionValues>({
+        resolver: zodResolver(subPositionSchema),
         defaultValues: {
             status: 'offen',
             einheit: 'Stk',
-            teilsystemId: teilsystemId || '',
+            positionId: positionId || '',
         }
     });
 
-    const onSubmit = async (data: PositionValues) => {
+    const onSubmit = async (data: SubPositionValues) => {
         try {
-            await PositionService.createPosition(data as any);
-            router.push(`/${projektId}/teilsysteme/${teilsystemId}`);
+            await SubPositionService.createUnterposition(data as any);
+            router.push(`/${projektId}/positionen/${positionId}`);
         } catch (error) {
-            console.error("Error creating position:", error);
-            alert("Fehler beim Speichern der Position.");
+            console.error("Error creating sub-position:", error);
+            alert("Fehler beim Speichern der Unterposition.");
         }
     };
 
@@ -95,58 +94,51 @@ export default function PositionErfassenPage() {
         }
     };
 
-    // @ts-ignore
-    const project = mockStore.getProjekte().find((p: any) => p.id === projektId);
-
-    if (!teilsystemId) {
-        return <div className="p-10 text-center text-red-500 font-bold">Fehler: Keine Teilsystem-ID angegeben.</div>;
+    if (!positionId) {
+        return <div className="p-10 text-center text-red-500 font-bold">Fehler: Keine Positions-ID angegeben.</div>;
     }
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-12">
-            {/* Project Context Header (Compact) */}
-            {/* Back Button */}
             <div className="flex justify-end mb-4">
-                <Link href={`/${projektId}/teilsysteme/${teilsystemId}`}>
+                <Link href={`/${projektId}/positionen/${positionId}`}>
                     <Button variant="outline" size="sm" className="bg-muted hover:bg-muted/80 text-foreground font-bold h-9 text-xs">
                         <ArrowLeft className="h-3 w-3 mr-1" />
-                        Zurück zum Teilsystem
+                        Zurück zur Position
                     </Button>
                 </Link>
             </div>
 
-            {/* Header Card */}
             <div className="bg-card p-6 rounded-2xl shadow-sm border border-border flex justify-between items-center">
                 <div className="space-y-1">
-                    <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">NEUE POSITION ZUORDNEN</span>
+                    <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">NEUE UNTERPOSITION ZUORDNEN</span>
                     <div className="flex items-baseline gap-2">
-                        <span className="text-3xl font-black text-foreground tracking-tight">TS {(teilsystem?.teilsystemNummer || teilsystemId || '').replace(/^ts\s?/i, '')}</span>
-                        <span className="text-3xl font-black text-foreground tracking-tight">{teilsystem?.name}</span>
+                        <span className="text-3xl font-black text-foreground tracking-tight">POS {position?.posNummer || '—'}</span>
+                        <span className="text-3xl font-black text-foreground tracking-tight">{position?.name}</span>
                     </div>
                 </div>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                    {/* Left Column: Information */}
                     <div className="lg:col-span-3 h-full flex flex-col">
                         <Card className="shadow-sm border-none flex-1">
                             <CardHeader className="py-3 px-4 bg-muted/30 border-b">
                                 <CardTitle className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                                     <FileType className="h-3.5 w-3.5" />
-                                    Positions Details
+                                    Unterpositions Details
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-6 p-6">
-                                <input type="hidden" {...register('teilsystemId')} />
+                                <input type="hidden" {...register('positionId')} />
 
                                 <div className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                                         <div className="md:col-span-1">
-                                            <Input label="Pos-Nr." placeholder="e.g. 10.1" {...register('posNummer')} error={errors.posNummer?.message} />
+                                            <Input label="Pos-Nr." placeholder="e.g. 10.1.1" {...register('posNummer')} error={errors.posNummer?.message} />
                                         </div>
                                         <div className="md:col-span-3">
-                                            <Input label="Bezeichnung" placeholder="z.B. Fensterfront Typ A" {...register('name')} error={errors.name?.message} />
+                                            <Input label="Bezeichnung" placeholder="z.B. Detail Fenster" {...register('name')} error={errors.name?.message} />
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-6">
@@ -159,7 +151,6 @@ export default function PositionErfassenPage() {
                         </Card>
                     </div>
 
-                    {/* Right Column: File Upload - Compact size & Sticky */}
                     <div className="space-y-6 sticky top-6 mt-1 lg:mt-[4.5rem]">
                         <Card className="shadow-none border-2 border-dashed border-border bg-muted/30 flex flex-col">
                             <CardHeader className="bg-transparent border-b-0 pb-0 pt-4 px-4">
@@ -202,7 +193,7 @@ export default function PositionErfassenPage() {
 
                 <div className="flex justify-end pt-4 border-t border-slate-100">
                     <Button type="submit" size="lg" className="font-black px-12 h-12 text-base shadow-xl shadow-primary/20 hover:scale-105 transition-transform" disabled={isSubmitting}>
-                        {isSubmitting ? 'Wird gespeichert...' : 'Position speichern'}
+                        {isSubmitting ? 'Wird gespeichert...' : 'Unterposition speichern'}
                     </Button>
                 </div>
             </form>

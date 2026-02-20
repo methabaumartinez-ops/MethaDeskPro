@@ -30,8 +30,8 @@ export const ChatAssistant = ({ isSidebarMode = false }: { isSidebarMode?: boole
             }
         ],
         onError: (error) => {
-            console.error('Chat Error:', error);
-            alert('Entschuldigung, es gab einen Fehler bei der Kommunikation mit der KI.');
+            console.error('Chat Error Details:', error);
+            // Non-blocking error handling
         },
     });
 
@@ -60,10 +60,10 @@ export const ChatAssistant = ({ isSidebarMode = false }: { isSidebarMode?: boole
                                 </div>
                                 <div className="text-white">
                                     <CardTitle className="text-base font-black">MethaBot AI</CardTitle>
-                                    <p className="text-[10px] font-bold opacity-80 uppercase tracking-widest flex items-center gap-1">
+                                    <div className="text-[10px] font-bold opacity-80 uppercase tracking-widest flex items-center gap-1">
                                         <div className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
                                         Online • Intelligenter Assistent
-                                    </p>
+                                    </div>
                                 </div>
                             </div>
                             <Button

@@ -5,7 +5,7 @@ import { mockStore } from '@/lib/mock/store';
 export class DatabaseService {
     // Flag to toggle between mock data and real Qdrant DB
     // Flag to toggle between mock data and real Qdrant DB
-    private static useMock = false; // Set to false to use the real Qdrant database
+    private static useMock = false; // Set to false to use real Qdrant DB
 
     /**
      * Helper to ensure ID is a valid Qdrant ID (UUID or int64)
@@ -27,9 +27,29 @@ export class DatabaseService {
     }
 
     /**
+     * Ensures a collection exists in Qdrant before operation
+     */
+    private static async ensureCollection(collectionName: string): Promise<void> {
+        if (this.useMock) return;
+        try {
+            const collections = await qdrantClient.getCollections();
+            const exists = collections.collections.some(c => c.name === collectionName);
+            if (!exists) {
+                console.log(`Creating collection '${collectionName}' in Qdrant...`);
+                await qdrantClient.createCollection(collectionName, {
+                    vectors: { size: 1, distance: 'Cosine' },
+                });
+            }
+        } catch (error) {
+            console.error(`Error ensuring collection '${collectionName}':`, error);
+        }
+    }
+
+    /**
      * List items from a collection
      */
     static async list<T>(collectionName: string, filter?: any): Promise<T[]> {
+        await this.ensureCollection(collectionName);
         if (this.useMock) {
             console.log(`Using mock data for collection: ${collectionName} with filter:`, filter);
 
@@ -56,6 +76,12 @@ export class DatabaseService {
                     let tsIdMatch = filter?.must?.find((m: any) => m.key === 'teilsystemId');
                     let tsId = tsIdMatch?.match?.value;
                     result = mockStore.getPositionen(tsId) || [];
+                    break;
+                }
+                case 'unterpositionen': {
+                    let posIdMatch = filter?.must?.find((m: any) => m.key === 'positionId');
+                    let posId = posIdMatch?.match?.value;
+                    result = mockStore.getUnterpositionen(posId) || [];
                     break;
                 }
                 case 'material': result = mockStore.getMaterial() || []; break;
@@ -108,6 +134,7 @@ export class DatabaseService {
      * Get a single item by ID
      */
     static async get<T>(collectionName: string, id: string): Promise<T | null> {
+        await this.ensureCollection(collectionName);
         if (this.useMock) {
             const all = await this.list<T>(collectionName);
             return (all as any[]).find(item => item.id === id) || null;
@@ -137,6 +164,7 @@ export class DatabaseService {
      * Create or Update an item
      */
     static async upsert<T extends { id?: string }>(collectionName: string, item: T): Promise<T> {
+        await this.ensureCollection(collectionName);
         if (this.useMock) {
             const id = item.id || uuidv4();
             const newItem = { ...item, id };
@@ -163,6 +191,12 @@ export class DatabaseService {
                     if (posIdx > -1) positionen[posIdx] = newItem; else positionen.push(newItem);
                     mockStore.savePositionen(positionen);
                     break;
+                case 'unterpositionen':
+                    const unterpositionen = mockStore.getUnterpositionen() || [];
+                    const upIdx = unterpositionen.findIndex((u: any) => u.id === id);
+                    if (upIdx > -1) unterpositionen[upIdx] = newItem; else unterpositionen.push(newItem);
+                    mockStore.saveUnterpositionen(unterpositionen);
+                    break;
                 case 'material':
                     const material = mockStore.getMaterial() || [];
                     const mIdx = material.findIndex((m: any) => m.id === id);
@@ -186,6 +220,12 @@ export class DatabaseService {
                     const lIdx = lieferanten.findIndex((l: any) => l.id === id);
                     if (lIdx > -1) lieferanten[lIdx] = newItem; else lieferanten.push(newItem);
                     mockStore.saveLieferanten(lieferanten);
+                    break;
+                case 'users':
+                    const users = mockStore.getUsers() || [];
+                    const uIdx = users.findIndex((u: any) => u.id === id);
+                    if (uIdx > -1) users[uIdx] = newItem; else users.push(newItem);
+                    mockStore.saveUsers(users);
                     break;
             }
             return newItem as T;

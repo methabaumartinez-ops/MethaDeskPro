@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared/StatusBadge';
@@ -19,10 +19,14 @@ import Link from 'next/link';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { QRCodeSVG } from 'qrcode.react';
+import { Printer, Share2 } from 'lucide-react';
+import { QRCodeSection } from '@/components/shared/QRCodeSection';
 
 export default function TeilsystemDetailPage() {
     const { projektId, id } = useParams() as { projektId: string; id: string };
     const searchParams = useSearchParams();
+    const router = useRouter();
     const isReadOnly = searchParams.get('mode') === 'readOnly';
 
     const [item, setItem] = useState<Teilsystem | null>(null);
@@ -90,21 +94,23 @@ export default function TeilsystemDetailPage() {
             {/* Project Context Header (Compact) */}
             {/* Project Context Header (Compact) */}
             {/* Back Button */}
-            <div className="flex justify-end mb-4">
-                <Link href={`/${projektId}/teilsysteme`}>
-                    <Button variant="secondary" size="sm" className="font-bold h-9 text-xs bg-background text-foreground hover:bg-muted border border-border shadow-sm">
-                        <ArrowLeft className="h-3 w-3 mr-1" />
-                        Zurück
-                    </Button>
-                </Link>
-            </div>
+            {!isReadOnly && (
+                <div className="flex justify-end mb-4">
+                    <Link href={`/${projektId}/teilsysteme`}>
+                        <Button variant="secondary" size="sm" className="font-bold h-9 text-xs bg-background text-foreground hover:bg-muted border border-border shadow-sm">
+                            <ArrowLeft className="h-3 w-3 mr-1" />
+                            Zurück
+                        </Button>
+                    </Link>
+                </div>
+            )}
 
             {/* Top Section: Details & BIM */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-auto lg:h-[500px]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Left: System Details */}
-                <div className="flex flex-col gap-6 h-full overflow-y-auto pr-1">
+                <div className="flex flex-col gap-6">
                     {/* Header Card */}
-                    <div className="flex justify-between items-start bg-card p-6 rounded-2xl shadow-sm border-2 border-border">
+                    <div className="flex justify-between items-center bg-card p-6 rounded-2xl shadow-sm border-2 border-border gap-6">
                         <div className="space-y-1">
                             <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">TEILSYSTEM</span>
                             <div className="flex items-baseline gap-3">
@@ -112,6 +118,57 @@ export default function TeilsystemDetailPage() {
                                 <h1 className="text-3xl font-black text-foreground tracking-tight">{item.name}</h1>
                             </div>
                         </div>
+
+                        {/* Integrated QR Code */}
+                        <div className="hidden md:flex items-center gap-4 border-x border-border/50 px-8 h-16">
+                            <div className="bg-white p-1.5 rounded-lg border border-border">
+                                <QRCodeSVG
+                                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/teilsystem/${item.id}`}
+                                    size={56}
+                                />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 text-muted-foreground hover:text-primary"
+                                    onClick={() => {
+                                        const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/share/teilsystem/${item.id}`;
+                                        const printWindow = window.open('', '', 'width=600,height=600');
+                                        if (printWindow) {
+                                            printWindow.document.write(`<html><body style="display:flex;flex-direction:column;align-items:center;justify-center;height:100vh;margin:0;text-align:center;font-family:sans-serif;">
+                                                <div style="padding:40px;border:2px solid #000;border-radius:20px;">
+                                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}" />
+                                                    <h1>${item.name}</h1>
+                                                    <p>TS ${item.teilsystemNummer || ''}</p>
+                                                </div>
+                                                <script>window.onload=()=>{window.print();window.close();};</script>
+                                            </body></html>`);
+                                            printWindow.document.close();
+                                        }
+                                    }}
+                                >
+                                    <Printer className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 text-muted-foreground hover:text-primary"
+                                    onClick={() => {
+                                        const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/share/teilsystem/${item.id}`;
+                                        if (navigator.share) {
+                                            navigator.share({ title: item.name, url });
+                                        } else {
+                                            navigator.clipboard.writeText(url);
+                                            alert('Link kopiert!');
+                                        }
+                                    }}
+                                >
+                                    <Share2 className="h-3.5 w-3.5" />
+                                </Button>
+                            </div>
+                        </div>
+
                         <div className="text-right flex flex-col items-end gap-2">
                             <StatusBadge status={item.status} />
                             {!isReadOnly && (
@@ -132,7 +189,7 @@ export default function TeilsystemDetailPage() {
                     </div>
 
                     {/* Details Grid */}
-                    <Card className="shadow-sm border-2 border-border flex-1">
+                    <Card className="shadow-sm border-2 border-border">
                         <CardHeader className="py-3 px-4 bg-muted/30 border-b border-border">
                             <CardTitle className="text-xs font-black uppercase tracking-wider text-muted-foreground">System Details</CardTitle>
                         </CardHeader>
@@ -173,8 +230,10 @@ export default function TeilsystemDetailPage() {
                 </div>
 
                 {/* Right: BIM Viewer */}
-                <div className="h-full min-h-[400px]">
-                    <BimViewer modelName={`${item.name}.ifc`} />
+                <div className="flex flex-col gap-6">
+                    <div className="min-h-[350px] lg:h-full">
+                        <BimViewer modelName={`${item.name}.ifc`} />
+                    </div>
                 </div>
             </div>
 
@@ -200,6 +259,7 @@ export default function TeilsystemDetailPage() {
                             <Table className="border-none rounded-none">
                                 <TableHeader className="bg-background">
                                     <TableRow className="border-b-2 border-border">
+                                        <TableHead className="w-20 font-black text-foreground">Pos-Nr.</TableHead>
                                         <TableHead className="font-black text-foreground">Bezeichnung</TableHead>
                                         <TableHead className="font-black text-foreground">Menge</TableHead>
                                         <TableHead className="font-black text-foreground">Status</TableHead>
@@ -208,8 +268,9 @@ export default function TeilsystemDetailPage() {
                                 </TableHeader>
                                 <TableBody>
                                     {positionen.map((pos) => (
-                                        <TableRow key={pos.id} className="group hover:bg-muted/50 transition-colors">
-                                            <TableCell className="font-bold text-foreground py-4">{pos.name}</TableCell>
+                                        <TableRow key={pos.id} className="group hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => router.push(`/${projektId}/positionen/${pos.id}`)}>
+                                            <TableCell className="font-black text-primary py-4">{pos.posNummer || '—'}</TableCell>
+                                            <TableCell className="font-bold text-foreground">{pos.name}</TableCell>
                                             <TableCell className="font-bold text-muted-foreground">
                                                 <Badge variant="outline" className="font-black">{pos.menge} {pos.einheit}</Badge>
                                             </TableCell>

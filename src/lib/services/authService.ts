@@ -201,7 +201,9 @@ export async function ensureUsersCollection(): Promise<void> {
     }
 }
 
-export async function login(email: string, password: string): Promise<{ token: string; user: SafeUser } | { error: string }> {
+export async function login(emailStr: string, passwordStr: string): Promise<{ token: string; user: SafeUser } | { error: string }> {
+    const email = emailStr.trim();
+    const password = passwordStr.trim();
     try {
         const users = await DatabaseService.list<StoredUser>(COLLECTION, {
             must: [{ key: 'email', match: { value: email } }]
