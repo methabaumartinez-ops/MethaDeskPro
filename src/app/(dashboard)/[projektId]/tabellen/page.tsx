@@ -187,13 +187,19 @@ export default function TabellenPage() {
                             'beschreibung',
                             'bemerkung',
                             'eroeffnetAm',
-                            'eroeffnetDurch',
-                            'id'
+                            'eroeffnetDurch'
                         ];
-                        // Filter to only include keys we actually have, then append any remaining ones
+                        // Filter to only include keys we actually have, excluding ID for now
                         const ordered = specificOrder.filter(k => keys.some(key => key.toLowerCase() === k.toLowerCase()));
-                        const remaining = keys.filter(k => !specificOrder.some(sk => sk.toLowerCase() === k.toLowerCase()));
+                        const remaining = keys.filter(k =>
+                            !specificOrder.some(sk => sk.toLowerCase() === k.toLowerCase()) &&
+                            k.toLowerCase() !== 'id'
+                        );
                         cols = [...ordered, ...remaining];
+                        // Push ID to the absolute end
+                        if (keys.some(k => k.toLowerCase() === 'id')) {
+                            cols.push('id');
+                        }
                     }
 
                     setColumns(cols.slice(0, 12)); // Show more columns
@@ -353,7 +359,10 @@ export default function TabellenPage() {
                                         <TableHeader className="bg-orange-50/50">
                                             <TableRow>
                                                 {columns.map(col => (
-                                                    <TableHead key={col} className="font-bold uppercase text-[10px] text-orange-600 whitespace-nowrap">
+                                                    <TableHead key={col} className={cn(
+                                                        "font-bold uppercase text-[10px] text-orange-600 whitespace-nowrap",
+                                                        col.toLowerCase() === 'id' && "text-right"
+                                                    )}>
                                                         {col}
                                                     </TableHead>
                                                 ))}
@@ -363,7 +372,10 @@ export default function TabellenPage() {
                                             {data.map((row, i) => (
                                                 <TableRow key={i} className="hover:bg-slate-50/50">
                                                     {columns.map(col => (
-                                                        <TableCell key={`${i}-${col}`} className="text-xs font-medium whitespace-nowrap max-w-[200px] truncate">
+                                                        <TableCell key={`${i}-${col}`} className={cn(
+                                                            "text-xs font-medium whitespace-nowrap max-w-[200px] truncate",
+                                                            col.toLowerCase() === 'id' && "text-right"
+                                                        )}>
                                                             {renderCellContent(row[col])}
                                                         </TableCell>
                                                     ))}
