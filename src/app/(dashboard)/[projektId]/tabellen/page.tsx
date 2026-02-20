@@ -198,11 +198,17 @@ export default function TabellenPage() {
                         cols = [...ordered, ...remaining];
                         // Push ID to the absolute end
                         if (keys.some(k => k.toLowerCase() === 'id')) {
+                            cols = cols.filter(k => k.toLowerCase() !== 'id');
                             cols.push('id');
                         }
                     }
 
-                    setColumns(cols.slice(0, 12)); // Show more columns
+                    // Ensure ID is kept if it exists, even after slice
+                    let finalCols = cols.slice(0, 12);
+                    if (cols.some(c => c.toLowerCase() === 'id') && !finalCols.some(c => c.toLowerCase() === 'id')) {
+                        finalCols = [...finalCols.slice(0, 11), cols.find(c => c.toLowerCase() === 'id')!];
+                    }
+                    setColumns(finalCols);
                 }
             } catch (error) {
                 console.error("Failed to load table data:", error);
@@ -361,7 +367,7 @@ export default function TabellenPage() {
                                                 {columns.map(col => (
                                                     <TableHead key={col} className={cn(
                                                         "font-bold uppercase text-[10px] text-orange-600 whitespace-nowrap",
-                                                        col.toLowerCase() === 'id' && "text-right"
+                                                        col.toLowerCase() === 'id' ? "text-right" : "text-left"
                                                     )}>
                                                         {col}
                                                     </TableHead>
@@ -374,7 +380,7 @@ export default function TabellenPage() {
                                                     {columns.map(col => (
                                                         <TableCell key={`${i}-${col}`} className={cn(
                                                             "text-xs font-medium whitespace-nowrap max-w-[200px] truncate",
-                                                            col.toLowerCase() === 'id' && "text-right"
+                                                            col.toLowerCase() === 'id' ? "text-right" : "text-left"
                                                         )}>
                                                             {renderCellContent(row[col])}
                                                         </TableCell>
