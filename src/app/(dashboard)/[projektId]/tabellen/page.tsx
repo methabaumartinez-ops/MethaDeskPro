@@ -171,14 +171,32 @@ export default function TabellenPage() {
                     }
 
                     // Reorder to put labels first if they exist
-                    const cols = keys.sort((a, b) => {
+                    let cols = keys.sort((a, b) => {
                         if (a === 'Projekt' || a === 'bezeichnung' || a === 'name') return -1;
                         if (b === 'Projekt' || b === 'bezeichnung' || b === 'name') return 1;
                         if (a === 'status') return 1; // Put status near end
                         return 0;
                     });
 
-                    setColumns(cols.slice(0, 10)); // Show more columns
+                    if (activeTable === 'teilsysteme') {
+                        const specificOrder = [
+                            'Projekt',
+                            'name',
+                            'teilsystemNummer',
+                            'ks',
+                            'beschreibung',
+                            'bemerkung',
+                            'eroeffnetAm',
+                            'eroeffnetDurch',
+                            'id'
+                        ];
+                        // Filter to only include keys we actually have, then append any remaining ones
+                        const ordered = specificOrder.filter(k => keys.some(key => key.toLowerCase() === k.toLowerCase()));
+                        const remaining = keys.filter(k => !specificOrder.some(sk => sk.toLowerCase() === k.toLowerCase()));
+                        cols = [...ordered, ...remaining];
+                    }
+
+                    setColumns(cols.slice(0, 12)); // Show more columns
                 }
             } catch (error) {
                 console.error("Failed to load table data:", error);
@@ -332,10 +350,10 @@ export default function TabellenPage() {
                             ) : (
                                 <div className="rounded-md border overflow-x-auto">
                                     <Table>
-                                        <TableHeader className="bg-slate-50">
+                                        <TableHeader className="bg-orange-50/50">
                                             <TableRow>
                                                 {columns.map(col => (
-                                                    <TableHead key={col} className="font-bold uppercase text-[10px] text-muted-foreground whitespace-nowrap">
+                                                    <TableHead key={col} className="font-bold uppercase text-[10px] text-orange-600 whitespace-nowrap">
                                                         {col}
                                                     </TableHead>
                                                 ))}
