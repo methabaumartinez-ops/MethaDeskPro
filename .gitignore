@@ -42,6 +42,8 @@ next-env.d.ts
 
 # Agent Checkpoints
 .agent/
+!.agent/skills/
+!.agent/workflows/
 .gemini/
 
 # My scripts
