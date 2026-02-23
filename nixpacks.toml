@@ -1,14 +1,8 @@
 [phases.setup]
-nixPkgs = ["nodejs_20", "bash"]
-
-[phases.install]
-cmds = ["npm ci"]
+nixPkgs = ["nodejs_20"]
 
 [phases.build]
 cmds = ["npm run build"]
 
 [start]
 cmd = "npm run start"
-
-[variables]
-NIXPACKS_METADATA = "nextjs"
