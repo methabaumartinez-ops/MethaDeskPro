@@ -1,4 +1,9 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { getUserFromToken } from '@/lib/services/authService';
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png', '.ifc', '.zip', '.docx', '.xlsx'];
 
 export async function POST(req: Request) {
     try {
@@ -9,6 +14,28 @@ export async function POST(req: Request) {
 
         if (!file || !projektId) {
             return NextResponse.json({ error: 'File and ProjektID required' }, { status: 400 });
+        }
+
+        // 1. RBAC Check
+        const cookieStore = await cookies();
+        const token = cookieStore.get('methabau_token')?.value;
+        if (!token) {
+            return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 });
+        }
+        const user = await getUserFromToken(token);
+        if (!user || (user.role !== 'admin' && user.role !== 'projektleiter')) {
+            return NextResponse.json({ error: 'Keine Berechtigung zum Hochladen von Dateien.' }, { status: 403 });
+        }
+
+        // 2. File Size Validation
+        if (file.size > MAX_FILE_SIZE) {
+            return NextResponse.json({ error: 'Datei ist zu groß (max. 10MB).' }, { status: 400 });
+        }
+
+        // 3. Extension Validation
+        const extension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+        if (!ALLOWED_EXTENSIONS.includes(extension)) {
+            return NextResponse.json({ error: 'Dateityp nicht erlaubt.' }, { status: 400 });
         }
 
         const { ProjectService } = await import('@/lib/services/projectService');

@@ -9,6 +9,23 @@ export async function GET(req: Request) {
     }
 
     try {
+        const parsedUrl = new URL(driveUrl);
+        const allowedDomains = [
+            'drive.google.com',
+            'lh3.googleusercontent.com',
+            'docs.google.com',
+            'googleapis.com'
+        ];
+
+        const isAllowed = allowedDomains.some(domain =>
+            parsedUrl.hostname === domain || parsedUrl.hostname.endsWith('.' + domain)
+        );
+
+        if (!isAllowed) {
+            console.warn(`[SSRF Prevention] Blocked suspicious proxy request to: ${parsedUrl.hostname}`);
+            return NextResponse.json({ error: 'Forbidden: Domain not whitelisted' }, { status: 403 });
+        }
+
         // Fetch the image from Google Drive
         const response = await fetch(driveUrl, {
             redirect: 'follow',
