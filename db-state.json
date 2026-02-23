@@ -1,0 +1,77 @@
+{
+  "stats": {
+    "projekte": 1,
+    "teilsysteme": 7,
+    "positionen": 6,
+    "material": 1
+  },
+  "broken_links": [
+    "Position 2b40df1a-ed1b-4125-99c9-1f258ec21a36 points to unknown TS t1",
+    "Position pos1 points to unknown TS ts2605",
+    "Material 9450dcec-a830-4159-8dc3-c4d7038569ea points to unknown Position undefined"
+  ],
+  "material_data": [
+    {
+      "id": "9450dcec-a830-4159-8dc3-c4d7038569ea",
+      "name": "Winkel",
+      "hersteller": "test",
+      "artikelnummer": "test",
+      "status": "offen"
+    }
+  ],
+  "positionen_data": [
+    {
+      "id": "2ae221ab-f788-4ec1-a3cd-c9bd800f8a8c",
+      "posNummer": "101",
+      "name": "ffdd",
+      "menge": 3,
+      "einheit": "Stk",
+      "teilsystemId": "4ba85247-be36-496d-9597-78be5cbf2277",
+      "status": "offen"
+    },
+    {
+      "id": "2b40df1a-ed1b-4125-99c9-1f258ec21a36",
+      "posNummer": "TEST-QDRANT-1",
+      "bezeichnung": "Test Position Real DB",
+      "teilsystemId": "t1",
+      "einheit": "Stk",
+      "menge": 10,
+      "status": "offen"
+    },
+    {
+      "id": "354905db-efcc-48a2-987b-9c34bac828ed",
+      "posNummer": "101",
+      "name": "Grundgerüst",
+      "menge": 3,
+      "einheit": "Stk",
+      "teilsystemId": "0acfff0b-02a4-4ee6-b1ff-18cfa15f0497",
+      "status": "offen"
+    },
+    {
+      "id": "pos1",
+      "teilsystemId": "ts2605",
+      "name": "Stahlträger HEB 200",
+      "menge": 12,
+      "einheit": "Stk",
+      "status": "bestellt"
+    },
+    {
+      "id": "7aff4433-39dd-4c36-9fe0-4bc160b4b3a8",
+      "posNummer": "101",
+      "name": "Sthalplate",
+      "menge": 4,
+      "einheit": "Stk",
+      "teilsystemId": "4ba85247-be36-496d-9597-78be5cbf2277",
+      "status": "offen"
+    },
+    {
+      "id": "e6d8eac3-2a44-4fce-9bdf-8fe5c9707d3c",
+      "posNummer": "101",
+      "name": "Grundgerüst",
+      "menge": 3,
+      "einheit": "Stk",
+      "teilsystemId": "177c6060-3c58-4398-90f1-476a504cc767",
+      "status": "offen"
+    }
+  ]
+}

@@ -143,11 +143,11 @@ export default function GlobalEinkaufPage() {
                         <div className="flex gap-2">
                             <Badge variant="outline" className="font-bold flex gap-1 items-center bg-white">
                                 <Building2 className="h-3 w-3" />
-                                {new Set(items.map(i => i.projekt.id)).size} Projekte
+                                {new Set(items.map(i => i.projekt?.id).filter(Boolean)).size} Projekte
                             </Badge>
                             <Badge variant="outline" className="font-bold flex gap-1 items-center bg-white">
                                 <Truck className="h-3 w-3" />
-                                {new Set(items.map(i => i.material.hersteller)).size} Hersteller
+                                {new Set(items.map(i => i.material?.hersteller).filter(Boolean)).size} Hersteller
                             </Badge>
                         </div>
                     </div>
