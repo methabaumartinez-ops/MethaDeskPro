@@ -41,7 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 # Agent Checkpoints
-.agent/
+.agent/*
 !.agent/skills/
 !.agent/workflows/
 .gemini/
