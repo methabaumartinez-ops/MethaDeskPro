@@ -37,7 +37,7 @@ export async function POST(req: Request) {
         const systemPrompt = `Du bist experto en MethaDeskPro.\nAntworte auf DEUTSCH.\nKontext:\n${contextText}`;
 
         const result = streamText({
-            model: google('gemini-2.0-flash'),
+            model: google('gemini-2.0-flash') as any,
             system: systemPrompt,
             messages,
         });
