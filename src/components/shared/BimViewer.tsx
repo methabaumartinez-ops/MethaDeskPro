@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Maximize2, Minimize2, Layers, Video, Share2, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export function BimViewer({ modelName = "IFC Modell" }: { modelName?: string }) {
+export function BimViewer({ modelName = "IFC Modell", modelUrl }: { modelName?: string; modelUrl?: string }) {
     const [isExpanded, setIsExpanded] = React.useState(false);
     const [showLayers, setShowLayers] = React.useState(false);
     const [showSettings, setShowSettings] = React.useState(false);
@@ -95,23 +95,33 @@ export function BimViewer({ modelName = "IFC Modell" }: { modelName?: string }) 
                     </div>
                 )}
 
-                {/* Content (Placeholder) */}
-                <CardContent className="h-full flex flex-col items-center justify-center text-slate-300 space-y-4 p-0">
-                    <div className={`relative w-32 h-32 border-2 border-dashed border-slate-200 rounded-full transition-all duration-1000 ${isRotating ? 'animate-[spin_10s_linear_infinite]' : ''}`} />
-                    <div className="absolute">
-                        <Share2 className="h-12 w-12 text-primary opacity-50" />
-                    </div>
-                    <div className="text-center z-10 select-none">
-                        <h3 className="text-lg font-bold text-slate-700 mb-1">{modelName}</h3>
-                        <p className="text-xs text-slate-400">Interaktiver 3D Viewer</p>
-                        <p className="text-[10px] mt-2 text-slate-300">{isExpanded ? 'ESC zum Verlassen' : '(Klicken zum Laden)'}</p>
-                    </div>
+                {/* Content */}
+                <CardContent className="h-full flex flex-col items-center justify-center text-slate-300 space-y-4 p-0 relative">
+                    {modelUrl ? (
+                        <iframe
+                            src={modelUrl.includes('drive.google.com') ? modelUrl.replace('/view', '/preview') : modelUrl}
+                            className="w-full h-full border-none absolute inset-0 z-0 bg-white"
+                            title={modelName}
+                        />
+                    ) : (
+                        <>
+                            <div className={`relative w-32 h-32 border-2 border-dashed border-slate-200 rounded-full transition-all duration-1000 ${isRotating ? 'animate-[spin_10s_linear_infinite]' : ''}`} />
+                            <div className="absolute">
+                                <Share2 className="h-12 w-12 text-primary opacity-50" />
+                            </div>
+                            <div className="text-center z-10 select-none">
+                                <h3 className="text-lg font-bold text-slate-700 mb-1">{modelName}</h3>
+                                <p className="text-xs text-slate-400">Interaktiver 3D Viewer</p>
+                                <p className="text-[10px] mt-2 text-slate-300">{isExpanded ? 'ESC zum Verlassen' : '(Kein Modell hinterlegt)'}</p>
+                            </div>
 
-                    {/* Grid Overlay */}
-                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000005_1px,transparent_1px),linear-gradient(to_bottom,#00000005_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+                            {/* Grid Overlay */}
+                            <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000005_1px,transparent_1px),linear-gradient(to_bottom,#00000005_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
-                    {/* Background Gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-50 via-transparent to-transparent opacity-80" />
+                            {/* Background Gradient */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-50 via-transparent to-transparent opacity-80" />
+                        </>
+                    )}
                 </CardContent>
 
                 {/* Footer info */}

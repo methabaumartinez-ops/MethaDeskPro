@@ -19,8 +19,8 @@ interface AggregateItem {
     id: string;
     projekt: Projekt;
     teilsystem: Teilsystem;
-    position: Position;
-    material: Material;
+    position: Position | null;
+    material: Material | null;
 }
 
 export default function GlobalEinkaufPage() {
@@ -53,22 +53,46 @@ export default function GlobalEinkaufPage() {
 
                 const joined: AggregateItem[] = [];
 
-                materialien.forEach((m: Material) => {
-                    const pos = positionen.find((p: Position) => p.id === m.positionId);
-                    if (!pos) return;
-
-                    const ts = teilsysteme.find((t: Teilsystem) => t.id === pos.teilsystemId);
-                    if (!ts) return;
-
+                teilsysteme.forEach((ts: Teilsystem) => {
                     const proj = projekte.find((p: Projekt) => p.id === ts.projektId);
                     if (!proj) return;
 
-                    joined.push({
-                        id: m.id,
-                        projekt: proj,
-                        teilsystem: ts,
-                        position: pos,
-                        material: m
+                    const tsPositions = positionen.filter((p: Position) => p.teilsystemId === ts.id);
+
+                    if (tsPositions.length === 0) {
+                        joined.push({
+                            id: `ts-${ts.id}`,
+                            projekt: proj,
+                            teilsystem: ts,
+                            position: null,
+                            material: null
+                        });
+                        return;
+                    }
+
+                    tsPositions.forEach((pos: Position) => {
+                        const posMaterialien = materialien.filter((m: Material) => m.positionId === pos.id);
+
+                        if (posMaterialien.length === 0) {
+                            joined.push({
+                                id: `pos-${pos.id}`,
+                                projekt: proj,
+                                teilsystem: ts,
+                                position: pos,
+                                material: null
+                            });
+                            return;
+                        }
+
+                        posMaterialien.forEach((m: Material) => {
+                            joined.push({
+                                id: m.id,
+                                projekt: proj,
+                                teilsystem: ts,
+                                position: pos,
+                                material: m
+                            });
+                        });
                     });
                 });
 
@@ -85,8 +109,8 @@ export default function GlobalEinkaufPage() {
 
     const filtered = items.filter(item =>
         item.projekt.projektname.toLowerCase().includes(search.toLowerCase()) ||
-        item.material.name.toLowerCase().includes(search.toLowerCase()) ||
-        item.material.hersteller.toLowerCase().includes(search.toLowerCase()) ||
+        (item.material && item.material.name.toLowerCase().includes(search.toLowerCase())) ||
+        (item.material?.hersteller && item.material.hersteller.toLowerCase().includes(search.toLowerCase())) ||
         item.teilsystem.name.toLowerCase().includes(search.toLowerCase())
     );
 
@@ -159,22 +183,32 @@ export default function GlobalEinkaufPage() {
                                             <TableCell>
                                                 <div className="flex flex-col">
                                                     <span className="text-sm font-semibold text-slate-700">{item.teilsystem.name}</span>
-                                                    <span className="text-xs text-slate-400 italic">{item.position.name}</span>
+                                                    {item.position && <span className="text-xs text-slate-400 italic">{item.position.name}</span>}
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <div className="flex items-center gap-2">
-                                                    <div className="h-8 w-8 rounded-lg bg-primary/5 flex items-center justify-center">
-                                                        <Package className="h-4 w-4 text-primary" />
+                                                {item.material ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="h-8 w-8 rounded-lg bg-primary/5 flex items-center justify-center">
+                                                            <Package className="h-4 w-4 text-primary" />
+                                                        </div>
+                                                        <span className="font-bold text-slate-800">{item.material.name}</span>
                                                     </div>
-                                                    <span className="font-bold text-slate-800">{item.material.name}</span>
-                                                </div>
+                                                ) : (
+                                                    <span className="text-muted-foreground/30 font-semibold italic">—</span>
+                                                )}
                                             </TableCell>
                                             <TableCell>
-                                                <span className="text-sm font-medium text-slate-600">{item.material.hersteller || '—'}</span>
+                                                <span className="text-sm font-medium text-slate-600">{item.material?.hersteller || '—'}</span>
                                             </TableCell>
                                             <TableCell>
-                                                <StatusBadge status={item.material.status} />
+                                                {item.material ? (
+                                                    <StatusBadge status={item.material.status} />
+                                                ) : item.position ? (
+                                                    <StatusBadge status={item.position.status || 'offen'} />
+                                                ) : (
+                                                    <StatusBadge status={item.teilsystem.status || 'offen'} />
+                                                )}
                                             </TableCell>
                                         </TableRow>
                                     ))

@@ -80,12 +80,21 @@ export default function TeilsystemErfassenPage() {
         };
 
         const { SubsystemService } = await import('@/lib/services/subsystemService');
+        const { ProjectService } = await import('@/lib/services/projectService');
+
         try {
+            let uploadedIfcUrl = undefined;
+            if (fileInputRef.current?.files?.[0]) {
+                const file = fileInputRef.current.files[0];
+                uploadedIfcUrl = await ProjectService.uploadImage(file, projektId, 'ifc');
+            }
+
             await SubsystemService.createTeilsystem({
                 ...data,
                 projektId,
                 eroeffnetDurch: resolveName(data.eroeffnetDurch),
-                status: data.status as any
+                status: data.status as any,
+                ifcUrl: uploadedIfcUrl
             });
             router.push(`/${projektId}/teilsysteme`);
         } catch (error) {

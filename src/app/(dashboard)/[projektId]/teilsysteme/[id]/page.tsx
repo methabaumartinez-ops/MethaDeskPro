@@ -20,7 +20,7 @@ import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { QRCodeSVG } from 'qrcode.react';
-import { Printer, Share2 } from 'lucide-react';
+import { Printer, Share2, UploadCloud } from 'lucide-react';
 import { QRCodeSection } from '@/components/shared/QRCodeSection';
 
 export default function TeilsystemDetailPage() {
@@ -33,6 +33,8 @@ export default function TeilsystemDetailPage() {
     const [project, setProject] = useState<Projekt | null>(null);
     const [positionen, setPositionen] = useState<Position[]>([]);
     const [loading, setLoading] = useState(true);
+    const [uploadingIfc, setUploadingIfc] = useState(false);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const loadData = async () => {
@@ -54,6 +56,23 @@ export default function TeilsystemDetailPage() {
         };
         loadData();
     }, [id, projektId]);
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files?.[0] || !item) return;
+        setUploadingIfc(true);
+        try {
+            const file = e.target.files[0];
+            const url = await ProjectService.uploadImage(file, projektId, 'ifc');
+
+            const updated = await SubsystemService.updateTeilsystem(item.id, { ifcUrl: url });
+            setItem(updated);
+        } catch (error) {
+            console.error("Upload failed", error);
+            alert("Upload fehlgeschlagen");
+        } finally {
+            setUploadingIfc(false);
+        }
+    };
 
     if (loading) return (
         <div className="h-96 flex items-center justify-center">
@@ -231,8 +250,28 @@ export default function TeilsystemDetailPage() {
 
                 {/* Right: BIM Viewer */}
                 <div className="flex flex-col gap-6">
-                    <div className="min-h-[350px] lg:h-full">
-                        <BimViewer modelName={`${item.name}.ifc`} />
+                    <div className="min-h-[350px] lg:h-full relative group">
+                        <BimViewer modelName={`${item.name}${!item.ifcUrl ? '.ifc' : ''}`} modelUrl={item.ifcUrl} />
+
+                        {!isReadOnly && !item.ifcUrl && (
+                            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[1px]">
+                                <input
+                                    type="file"
+                                    className="hidden"
+                                    ref={fileInputRef}
+                                    accept=".ifc"
+                                    onChange={handleFileUpload}
+                                />
+                                <Button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="shadow-xl"
+                                    disabled={uploadingIfc}
+                                >
+                                    <UploadCloud className="mr-2 h-4 w-4" />
+                                    {uploadingIfc ? 'Wird hochgeladen...' : 'IFC Datei hochladen'}
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
