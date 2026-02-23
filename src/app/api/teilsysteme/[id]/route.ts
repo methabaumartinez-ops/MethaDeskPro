@@ -34,8 +34,17 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     try {
         const { id } = await params;
         const body = await req.json();
-        const updated = await DatabaseService.upsert('teilsysteme', { ...body, id });
-        return NextResponse.json(updated);
+
+        // Fetch existing item to merge and avoid losing fields like projektId
+        const existing = await DatabaseService.get('teilsysteme', id);
+        const updatedData = {
+            ...(existing || {}),
+            ...body,
+            id
+        };
+
+        const result = await DatabaseService.upsert('teilsysteme', updatedData);
+        return NextResponse.json(result);
     } catch (error) {
         console.error("API Error updating teilsystem:", error);
         return NextResponse.json({ error: 'Failed to update' }, { status: 500 });
