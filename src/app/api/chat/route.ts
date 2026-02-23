@@ -1,8 +1,14 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { streamText } from 'ai';
 import { AIService } from '@/lib/services/aiService';
+import { z } from 'zod';
 
 export const maxDuration = 30;
+
+const chatSchema = z.object({
+    messages: z.array(z.any()),
+    projektId: z.string().uuid().optional(),
+});
 
 export async function POST(req: Request) {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -11,7 +17,14 @@ export async function POST(req: Request) {
     const google = createGoogleGenerativeAI({ apiKey: apiKey.trim() });
 
     try {
-        const { messages, projektId } = await req.json();
+        const body = await req.json();
+        const validation = chatSchema.safeParse(body);
+
+        if (!validation.success) {
+            return new Response(JSON.stringify({ error: 'Ungültige Anfragedaten.', details: validation.error.errors }), { status: 400 });
+        }
+
+        const { messages, projektId } = validation.data;
 
         let contextText = "Kein Kontext.";
         if (projektId) {

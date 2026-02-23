@@ -7,11 +7,14 @@ export class DatabaseService {
     private static useMock = false; // Set to false to use real Qdrant DB
 
     /**
-     * Helper to ensure ID is a valid Qdrant ID (UUID or int64)
+     * Helper to ensure ID is a valid Qdrant ID (UUID)
      */
     private static ensureQdrantId(id: string): string {
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
-        if (isUuid) return id;
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+        if (!isUuid) {
+            console.error(`[DatabaseService] Invalid UUID format: ${id}`);
+            throw new Error(`Invalid ID format: ${id}. Expected a valid UUID.`);
+        }
         return id;
     }
 

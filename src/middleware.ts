@@ -2,6 +2,15 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyToken } from '@/lib/services/authService';
 
+// Security Headers Helper
+function addSecurityHeaders(response: NextResponse) {
+    response.headers.set('X-Frame-Options', 'DENY');
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+    return response;
+}
+
 // Rutas públicas que NO requieren autenticación
 const PUBLIC_PATHS = ['/', '/login', '/register', '/confirm'];
 const PUBLIC_PREFIXES = ['/api/auth/', '/api/chat', '/_next/', '/favicon.ico', '/share/'];
@@ -11,17 +20,17 @@ export async function middleware(request: NextRequest) {
 
     // Permitir rutas públicas
     if (PUBLIC_PATHS.includes(pathname)) {
-        return NextResponse.next();
+        return addSecurityHeaders(NextResponse.next());
     }
 
     // Permitir prefijos públicos (assets, API auth, etc.)
     if (PUBLIC_PREFIXES.some(prefix => pathname.startsWith(prefix))) {
-        return NextResponse.next();
+        return addSecurityHeaders(NextResponse.next());
     }
 
     // Permitir archivos estáticos
     if (pathname.match(/\.(svg|png|jpg|jpeg|gif|ico|css|js|woff|woff2|ttf)$/)) {
-        return NextResponse.next();
+        return addSecurityHeaders(NextResponse.next());
     }
 
     // Verificar token de la cookie
@@ -39,7 +48,7 @@ export async function middleware(request: NextRequest) {
         return response;
     }
 
-    return NextResponse.next();
+    return addSecurityHeaders(NextResponse.next());
 }
 
 export const config = {

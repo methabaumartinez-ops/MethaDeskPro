@@ -1,16 +1,25 @@
 import { NextResponse } from 'next/server';
 import { login } from '@/lib/services/authService';
+import { z } from 'zod';
+
+const loginSchema = z.object({
+    email: z.string().email({ message: 'Ungültiges E-Mail-Format.' }),
+    password: z.string().min(1, { message: 'Passwort ist erforderlich.' }),
+});
 
 export async function POST(req: Request) {
     try {
-        const { email, password } = await req.json();
+        const body = await req.json();
+        const validation = loginSchema.safeParse(body);
 
-        if (!email || !password) {
+        if (!validation.success) {
             return NextResponse.json(
-                { error: 'E-Mail und Passwort sind erforderlich.' },
+                { error: validation.error.errors[0].message },
                 { status: 400 }
             );
         }
+
+        const { email, password } = validation.data;
 
         const result = await login(email, password);
         if ('error' in result) {

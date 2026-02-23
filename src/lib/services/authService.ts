@@ -1,9 +1,14 @@
 import { DatabaseService } from './db';
 import { v4 as uuidv4 } from 'uuid';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'methabau-dev-secret-change-me';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
+    throw new Error('FATAL: JWT_SECRET environment variable is not set in production');
+}
+const ACTUAL_JWT_SECRET = JWT_SECRET || 'methabau-dev-secret-change-me';
+
 const SALT_LENGTH = 16;
-const ITERATIONS = 100000;
+const ITERATIONS = 600000; // Increased to meet OWASP 2025 recommendations
 const KEY_LENGTH = 64;
 const JWT_EXPIRY_HOURS = 24;
 
@@ -80,7 +85,7 @@ async function getHmacKey(): Promise<CryptoKey> {
     const encoder = new TextEncoder();
     return crypto.subtle.importKey(
         'raw',
-        encoder.encode(JWT_SECRET),
+        encoder.encode(ACTUAL_JWT_SECRET),
         { name: 'HMAC', hash: 'SHA-256' },
         false,
         ['sign', 'verify']
