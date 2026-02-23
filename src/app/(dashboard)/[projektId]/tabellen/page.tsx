@@ -105,7 +105,8 @@ export default function TabellenPage() {
                             return {
                                 ...pos,
                                 Projekt: p ? `${p.projektnummer} - ${p.projektname}` : '–',
-                                Teilsystem: sys ? sys.name : '–',
+                                TSNummer: sys ? sys.teilsystemNummer : '–',
+                                Teilsystem: sys ? `${sys.teilsystemNummer || '—'} - ${sys.name}` : '–',
                                 _projektId: p?.id // Internal for filtering
                             };
                         });
@@ -131,6 +132,8 @@ export default function TabellenPage() {
                             return {
                                 ...m,
                                 Projekt: p ? `${p.projektnummer} - ${p.projektname}` : '–',
+                                TSNummer: sys ? sys.teilsystemNummer : '–',
+                                Teilsystem: sys ? `${sys.teilsystemNummer || '—'} - ${sys.name}` : '–',
                                 Position: pos ? pos.name : '–',
                                 _projektId: p?.id
                             };
@@ -156,6 +159,7 @@ export default function TabellenPage() {
                     // Prioritize specific columns for certain tables
                     let keys = Object.keys(first).filter(k =>
                         !k.startsWith('_') &&
+                        !['teilsystemid', 'projektid', 'positionid', 'id'].includes(k.toLowerCase()) &&
                         (typeof first[k] !== 'object' || first[k] === null || Array.isArray(first[k]) === false)
                     );
 
@@ -167,15 +171,23 @@ export default function TabellenPage() {
 
                     if (activeTable === 'mitarbeiter') {
                         // Hide ID and sensitive fields for employees
-                        keys = keys.filter(k => !['id', 'passwordHash', 'confirmationToken'].includes(k));
+                        keys = keys.filter(k => !['passwordHash', 'confirmationToken'].includes(k));
                     }
 
                     // Reorder to put labels first if they exist
                     let cols = keys.sort((a, b) => {
-                        if (a === 'Projekt' || a === 'bezeichnung' || a === 'name') return -1;
-                        if (b === 'Projekt' || b === 'bezeichnung' || b === 'name') return 1;
-                        if (a === 'status') return 1; // Put status near end
-                        return 0;
+                        const priorities: Record<string, number> = {
+                            'projekt': 1,
+                            'tsnummer': 2,
+                            'name': 3,
+                            'bezeichnung': 3,
+                            'teilsystem': 4,
+                            'position': 5,
+                            'status': 100
+                        };
+                        const prioA = priorities[a.toLowerCase()] || 50;
+                        const prioB = priorities[b.toLowerCase()] || 50;
+                        return prioA - prioB;
                     });
 
                     if (activeTable === 'teilsysteme') {
@@ -203,11 +215,10 @@ export default function TabellenPage() {
                         }
                     }
 
-                    // Ensure ID is kept if it exists, even after slice
+                    // Ensure ID is kept ONLY if it's the projects table where it might be useful as a fallback
+                    // but generally we want it gone for Positions/Material
                     let finalCols = cols.slice(0, 12);
-                    if (cols.some(c => c.toLowerCase() === 'id') && !finalCols.some(c => c.toLowerCase() === 'id')) {
-                        finalCols = [...finalCols.slice(0, 11), cols.find(c => c.toLowerCase() === 'id')!];
-                    }
+
                     setColumns(finalCols);
                 }
             } catch (error) {

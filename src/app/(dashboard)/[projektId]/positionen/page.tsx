@@ -8,28 +8,48 @@ import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { PositionService } from '@/lib/services/positionService';
-import { Position } from '@/types';
+import { SubsystemService } from '@/lib/services/subsystemService';
+import { Position, Teilsystem } from '@/types';
 import { Plus, Search, Eye, Filter, ListTodo, Edit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function PositionenListPage() {
     const { projektId } = useParams() as { projektId: string };
     const [items, setItems] = useState<Position[]>([]);
+    const [teilsysteme, setTeilsysteme] = useState<Record<string, Teilsystem>>({});
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const load = async () => {
-            const data = await PositionService.getPositionen();
-            // In a real app we might filter by project via teilsysteme, but for now getting all is fine as per original logic
-            setItems(data);
-            setLoading(false);
+            try {
+                const [posData, tsData] = await Promise.all([
+                    PositionService.getPositionen(),
+                    SubsystemService.getTeilsysteme(projektId)
+                ]);
+
+                // Create a map for quick lookup
+                const tsMap: Record<string, Teilsystem> = {};
+                tsData.forEach(ts => {
+                    tsMap[ts.id] = ts;
+                });
+                setTeilsysteme(tsMap);
+
+                // Filter positions to current project
+                const projectTsIds = tsData.map(ts => ts.id);
+                setItems(posData.filter(p => projectTsIds.includes(p.teilsystemId)));
+            } catch (error) {
+                console.error("Failed to load positions/teilsysteme:", error);
+            } finally {
+                setLoading(false);
+            }
         };
         load();
-    }, []);
+    }, [projektId]);
 
     const filteredItems = items.filter(item =>
-        item.name.toLowerCase().includes(search.toLowerCase())
+        item.name.toLowerCase().includes(search.toLowerCase()) ||
+        (teilsysteme[item.teilsystemId]?.name.toLowerCase() || '').includes(search.toLowerCase())
     );
 
     return (
@@ -53,7 +73,7 @@ export default function PositionenListPage() {
                         <div className="relative w-full md:w-96">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input
-                                placeholder="Nach Positionen suchen..."
+                                placeholder="Nach Bezeichnung o. Teilsystem suchen..."
                                 className="pl-10"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
@@ -75,6 +95,7 @@ export default function PositionenListPage() {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Bezeichnung</TableHead>
+                                    <TableHead>Teilsystem</TableHead>
                                     <TableHead>Menge</TableHead>
                                     <TableHead>Einheit</TableHead>
                                     <TableHead>Status</TableHead>
@@ -85,6 +106,13 @@ export default function PositionenListPage() {
                                 {filteredItems.map((item) => (
                                     <TableRow key={item.id} className="group">
                                         <TableCell className="font-bold text-foreground">{item.name}</TableCell>
+                                        <TableCell className="font-medium text-primary">
+                                            {teilsysteme[item.teilsystemId] ? (
+                                                <Link href={`/${projektId}/teilsysteme/${item.teilsystemId}`} className="hover:underline">
+                                                    {teilsysteme[item.teilsystemId].teilsystemNummer} - {teilsysteme[item.teilsystemId].name}
+                                                </Link>
+                                            ) : '—'}
+                                        </TableCell>
                                         <TableCell className="font-medium text-muted-foreground">{item.menge}</TableCell>
                                         <TableCell className="font-medium text-muted-foreground">{item.einheit}</TableCell>
                                         <TableCell>
