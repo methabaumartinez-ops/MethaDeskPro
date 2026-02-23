@@ -1,12 +1,6 @@
 import { DatabaseService } from './db';
 import { v4 as uuidv4 } from 'uuid';
 
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
-    throw new Error('FATAL: JWT_SECRET environment variable is not set in production');
-}
-const ACTUAL_JWT_SECRET = JWT_SECRET || 'methabau-dev-secret-change-me';
-
 const SALT_LENGTH = 16;
 const ITERATIONS = 600000; // Increased to meet OWASP 2025 recommendations
 const KEY_LENGTH = 64;
@@ -82,10 +76,19 @@ function base64UrlDecode(str: string): string {
 }
 
 async function getHmacKey(): Promise<CryptoKey> {
+    const secret = process.env.JWT_SECRET;
+
+    // Lazy check: Only throw if we are actually trying to use the secret and it's missing in production.
+    // This allows the Next.js build phase to complete even if secrets aren't provided to the build environment.
+    if (!secret && process.env.NODE_ENV === 'production') {
+        throw new Error('FATAL: JWT_SECRET environment variable is not set in production');
+    }
+
+    const actualSecret = secret || 'methabau-dev-secret-change-me';
     const encoder = new TextEncoder();
     return crypto.subtle.importKey(
         'raw',
-        encoder.encode(ACTUAL_JWT_SECRET),
+        encoder.encode(actualSecret),
         { name: 'HMAC', hash: 'SHA-256' },
         false,
         ['sign', 'verify']
