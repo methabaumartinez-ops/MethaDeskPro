@@ -50,20 +50,27 @@ export async function POST(req: Request) {
 
         // Fallback for IFC mime type if browser doesn't detect it
         let mimeType = file.type;
-        if (!mimeType && file.name.toLowerCase().endsWith('.ifc')) {
-            mimeType = 'application/octet-stream';
+        if (!mimeType || mimeType === 'application/octet-stream') {
+            if (file.name.toLowerCase().endsWith('.ifc')) {
+                mimeType = 'application/x-step'; // Standard IFC mime type or similar
+            }
         }
 
         const { uploadFileToDrive } = await import('@/lib/services/googleDriveService');
+
+        console.log(`[Upload] Starting: ${file.name} (${buffer.length} bytes), Type: ${mimeType}, Project: ${projektId}`);
+
         const result = await uploadFileToDrive(
             buffer,
             file.name,
             mimeType,
-            project.driveFolderId,
+            project.driveFolderId!,
             subfolder
         );
 
-        if (!result) throw new Error('Upload failed: Google Drive service returned no result');
+        if (!result) {
+            throw new Error('Upload failed: Google Drive service returned no result');
+        }
 
         // Return the usable link (e.g. webContentLink or thumbnailLink for images)
         // For images we might want webContentLink or thumbnailLink
@@ -78,8 +85,12 @@ export async function POST(req: Request) {
             url: result.directUrl || result.webContentLink || result.webViewLink
         });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Upload API Error:', error);
-        return NextResponse.json({ error: `Internal Server Error: ${error instanceof Error ? error.message : String(error)}` }, { status: 500 });
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        return NextResponse.json({
+            error: `Upload failed: ${errorMessage}`,
+            details: error.response?.data || null
+        }, { status: 500 });
     }
 }

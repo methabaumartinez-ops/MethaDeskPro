@@ -11,16 +11,17 @@ const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/a
 const getDriveClient = () => {
     if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH_TOKEN) {
         console.warn('Google Drive credentials missing. Drive integration disabled.');
-        console.warn('CLIENT_ID:', CLIENT_ID ? 'set' : 'MISSING');
-        console.warn('CLIENT_SECRET:', CLIENT_SECRET ? 'set' : 'MISSING');
-        console.warn('REFRESH_TOKEN:', REFRESH_TOKEN ? 'set' : 'MISSING');
         return null;
     }
 
-    const oauth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
-    oauth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
-
-    return google.drive({ version: 'v3', auth: oauth2Client });
+    try {
+        const oauth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+        oauth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+        return google.drive({ version: 'v3', auth: oauth2Client });
+    } catch (error: any) {
+        console.error('Google Drive initialization error:', error.message);
+        return null;
+    }
 };
 
 /**
@@ -36,13 +37,11 @@ const escapeQueryValue = (val: string) => val.replace(/'/g, "\\'");
 export const ensureProjectFolder = async (projekt: { projektnummer?: string; projektname?: string; driveFolderId?: string }) => {
     const drive = getDriveClient();
     if (!drive) {
-        console.error('ensureProjectFolder: Drive client is null');
-        return null;
+        throw new Error('Google Drive client could not be initialized. Check credentials.');
     }
 
     if (!ROOT_FOLDER_ID) {
-        console.error('ensureProjectFolder: GOOGLE_ROOT_FOLDER_ID is missing');
-        return null;
+        throw new Error('GOOGLE_ROOT_FOLDER_ID is missing');
     }
 
     // Build folder name, handle missing values
@@ -50,24 +49,20 @@ export const ensureProjectFolder = async (projekt: { projektnummer?: string; pro
     const name = projekt.projektname || 'Unbenannt';
     const folderName = `${nr}_${name}`;
 
-    console.log(`ensureProjectFolder: Looking for folder "${folderName}" in root ${ROOT_FOLDER_ID}`);
-
     try {
         // 1. Check if we already have a folder ID (and verify it still exists)
         if (projekt.driveFolderId) {
             try {
                 const existing = await (drive.files as any).get({ fileId: projekt.driveFolderId });
-                console.log('ensureProjectFolder: Existing folder found:', existing.data?.id);
-                return projekt.driveFolderId;
+                if (existing.data) return projekt.driveFolderId;
             } catch (e: any) {
-                console.log('ensureProjectFolder: Cached folder ID invalid:', e.message || e);
+                console.log('ensureProjectFolder: Cached folder ID invalid, searching...', e.message);
             }
         }
 
         // 2. Search for folder by name in ROOT
         const escapedName = escapeQueryValue(folderName);
         const query = `mimeType='application/vnd.google-apps.folder' and name='${escapedName}' and '${ROOT_FOLDER_ID}' in parents and trashed=false`;
-        console.log('ensureProjectFolder: Search query:', query);
 
         const res = await (drive.files as any).list({
             q: query,
@@ -76,12 +71,10 @@ export const ensureProjectFolder = async (projekt: { projektnummer?: string; pro
         });
 
         if (res.data.files && res.data.files.length > 0) {
-            console.log(`ensureProjectFolder: Found existing folder: ${res.data.files[0].id}`);
             return res.data.files[0].id;
         }
 
         // 3. Create new folder if not found
-        console.log('ensureProjectFolder: Creating new folder...');
         const file = await (drive.files as any).create({
             requestBody: {
                 name: folderName,
@@ -91,23 +84,19 @@ export const ensureProjectFolder = async (projekt: { projektnummer?: string; pro
             fields: 'id',
         });
 
-        console.log(`ensureProjectFolder: Created folder: ${file.data.id}`);
+        const newFolderId = file.data.id;
 
         // Create standard subfolders
-        await createSubfolder(drive, file.data.id, '01_Dokumente');
-        await createSubfolder(drive, file.data.id, '02_Pläne');
-        await createSubfolder(drive, file.data.id, '03_Fotos');
-        await createSubfolder(drive, file.data.id, '04_IFC');
+        await createSubfolder(drive, newFolderId, '01_Dokumente');
+        await createSubfolder(drive, newFolderId, '02_Pläne');
+        await createSubfolder(drive, newFolderId, '03_Fotos');
+        await createSubfolder(drive, newFolderId, '04_IFC');
 
-        return file.data.id;
+        return newFolderId;
 
     } catch (error: any) {
         console.error('ensureProjectFolder ERROR:', error.message || error);
-        if (error.response) {
-            console.error('Response status:', error.response.status);
-            console.error('Response data:', JSON.stringify(error.response.data));
-        }
-        return null;
+        throw new Error(`Failed to ensure project folder: ${error.message}`);
     }
 };
 
@@ -138,7 +127,7 @@ export const uploadFileToDrive = async (
     subfolderName?: string
 ) => {
     const drive = getDriveClient();
-    if (!drive) return null;
+    if (!drive) throw new Error('Google Drive client is not available');
 
     try {
         let parentId = projectFolderId;
@@ -178,8 +167,11 @@ export const uploadFileToDrive = async (
             fields: 'id, webViewLink, webContentLink, thumbnailLink',
         });
 
+        if (!res || !res.data) {
+            throw new Error('Google Drive API returned an empty response during upload');
+        }
+
         const fileId = res.data.id;
-        console.log('uploadFileToDrive: File uploaded:', fileId);
 
         // Make file publicly accessible (anyone with the link can view)
         try {
@@ -190,7 +182,6 @@ export const uploadFileToDrive = async (
                     type: 'anyone',
                 },
             });
-            console.log('uploadFileToDrive: Public permission set for', fileId);
         } catch (permError: any) {
             console.error('uploadFileToDrive: Failed to set public permission:', permError.message);
         }
@@ -204,8 +195,8 @@ export const uploadFileToDrive = async (
     } catch (error: any) {
         console.error('uploadFileToDrive ERROR:', error.message || error);
         if (error.response) {
-            console.error('Response status:', error.response.status);
-            console.error('Response data:', JSON.stringify(error.response.data));
+            console.error('Drive API Detail:', JSON.stringify(error.response.data));
+            throw new Error(`Drive API Error (${error.response.status}): ${JSON.stringify(error.response.data)}`);
         }
         throw error;
     }
