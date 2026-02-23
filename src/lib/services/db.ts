@@ -29,6 +29,18 @@ export class DatabaseService {
                 await qdrantClient.createCollection(collectionName, {
                     vectors: {}, // Changed to empty vectors to match migration script
                 });
+
+                // Create default indexes for filtering
+                const commonFilterFields = ['projektId', 'teilsystemId', 'positionId', 'status', 'userId'];
+                for (const field of commonFilterFields) {
+                    try {
+                        await qdrantClient.createPayloadIndex(collectionName, {
+                            field_name: field,
+                            field_schema: 'keyword',
+                            wait: false
+                        });
+                    } catch { /* Field might not exist in all collections, ignore */ }
+                }
             }
         } catch (error) {
             console.error(`[DatabaseService] Error ensuring collection '${collectionName}':`, error);
@@ -44,25 +56,27 @@ export class DatabaseService {
         if (this.useMock) {
             console.log(`[DatabaseService] Mock list: ${collectionName}`, filter);
             let result: any[] = [];
-            // ... (rest of mock logic remains same for now)
             let projektId: string | undefined;
             if (filter?.must) {
                 const pIdMatch = filter.must.find((m: any) => m.key === 'projektId' || m.key === 'projekt_id');
-                if (pIdMatch) projektId = pIdMatch.match?.value;
+                if (pIdMatch) {
+                    projektId = typeof pIdMatch.match === 'object' ? pIdMatch.match.value : pIdMatch.match;
+                }
             }
 
             switch (collectionName) {
                 case 'projekte': result = mockStore.getProjekte() || []; break;
                 case 'teilsysteme': result = mockStore.getTeilsysteme(projektId) || []; break;
+                // ... (existing mock implementation)
                 case 'positionen': {
                     let tsIdMatch = filter?.must?.find((m: any) => m.key === 'teilsystemId');
-                    let tsId = tsIdMatch?.match?.value;
+                    let tsId = typeof tsIdMatch?.match === 'object' ? tsIdMatch.match.value : tsIdMatch?.match;
                     result = mockStore.getPositionen(tsId) || [];
                     break;
                 }
                 case 'unterpositionen': {
                     let posIdMatch = filter?.must?.find((m: any) => m.key === 'positionId');
-                    let posId = posIdMatch?.match?.value;
+                    let posId = typeof posIdMatch?.match === 'object' ? posIdMatch.match.value : posIdMatch?.match;
                     result = mockStore.getUnterpositionen(posId) || [];
                     break;
                 }
@@ -80,7 +94,7 @@ export class DatabaseService {
         await this.ensureCollection(collectionName);
 
         try {
-            console.log(`[DatabaseService] Qdrant list: ${collectionName}`, JSON.stringify(filter));
+            console.log(`[DatabaseService] Qdrant list: ${collectionName} with filter:`, JSON.stringify(filter, null, 2));
             let allPoints: any[] = [];
             let next_page_offset: any = undefined;
 
@@ -97,14 +111,15 @@ export class DatabaseService {
                 next_page_offset = response.next_page_offset;
             } while (next_page_offset);
 
-            console.log(`[DatabaseService] Found ${allPoints.length} items in ${collectionName}`);
+            console.log(`[DatabaseService] Success: Found ${allPoints.length} items in ${collectionName}`);
 
             return allPoints.map(point => ({
                 id: point.id,
                 ...point.payload
             })) as unknown as T[];
         } catch (error: any) {
-            console.error(`[DatabaseService] Error listing from ${collectionName}:`, error.message || error);
+            console.error(`[DatabaseService] CRITICAL Error listing from ${collectionName}:`, error.message || error);
+            // Don't throw if we want to return empty list on failure, but here throwing is better for visibility
             throw error;
         }
     }
