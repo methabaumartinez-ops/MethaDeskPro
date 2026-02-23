@@ -96,7 +96,7 @@ async function getHmacKey(): Promise<CryptoKey> {
     // Lazy check: Only throw if we are actually trying to use the secret and it's missing in production.
     // This allows the Next.js build phase to complete even if secrets aren't provided to the build environment.
     if (!secret && process.env.NODE_ENV === 'production') {
-        throw new Error('FATAL: JWT_SECRET environment variable is not set in production');
+        throw new Error('JWT_SECRET_MISSING: Die Umgebungsvariable JWT_SECRET ist in der Produktion nicht gesetzt.');
     }
 
     const actualSecret = secret || 'methabau-dev-secret-change-me';
@@ -246,8 +246,11 @@ export async function login(emailStr: string, passwordStr: string): Promise<{ to
         const token = await generateToken({ userId: user.id, email: user.email, role: user.role });
 
         return { token, user: safeUser };
-    } catch (error) {
+    } catch (error: any) {
         console.error('Login error:', error);
+        if (error.message.includes('JWT_SECRET_MISSING')) {
+            return { error: 'Konfigurationsfehler: JWT_SECRET fehlt in der Serverumgebung.' };
+        }
         return { error: 'Anmeldung fehlgeschlagen.' };
     }
 }
