@@ -13,7 +13,7 @@ function addSecurityHeaders(response: NextResponse) {
 
 // Rutas públicas que NO requieren autenticación
 const PUBLIC_PATHS = ['/', '/login', '/register', '/confirm'];
-const PUBLIC_PREFIXES = ['/api/auth/', '/api/chat', '/_next/', '/favicon.ico', '/share/'];
+const PUBLIC_PREFIXES = ['/api/auth/', '/api/chat', '/api/teilsysteme', '/api/data', '/api/material', '/api/positionen', '/api/lieferanten', '/api/projekte', '/_next/', '/favicon.ico', '/share/'];
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
