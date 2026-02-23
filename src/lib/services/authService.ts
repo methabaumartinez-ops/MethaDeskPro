@@ -2,7 +2,8 @@ import { DatabaseService } from './db';
 import { v4 as uuidv4 } from 'uuid';
 
 const SALT_LENGTH = 16;
-const ITERATIONS = 600000; // Increased to meet OWASP 2025 recommendations
+const ITERATIONS = 600000; // Current recommendation
+const LEGACY_ITERATIONS = 100000; // Previous standard
 const KEY_LENGTH = 64;
 const JWT_EXPIRY_HOURS = 24;
 
@@ -40,25 +41,39 @@ async function verifyPassword(password: string, storedHash: string): Promise<boo
     const [saltHex, hashHex] = storedHash.split(':');
     const salt = new Uint8Array(saltHex.match(/.{2}/g)!.map(byte => parseInt(byte, 16)));
     const encoder = new TextEncoder();
-    const keyMaterial = await crypto.subtle.importKey(
-        'raw',
-        encoder.encode(password),
-        'PBKDF2',
-        false,
-        ['deriveBits']
-    );
-    const derivedBits = await crypto.subtle.deriveBits(
-        {
-            name: 'PBKDF2',
-            salt: salt,
-            iterations: ITERATIONS,
-            hash: 'SHA-256',
-        },
-        keyMaterial,
-        KEY_LENGTH * 8
-    );
-    const newHashHex = Array.from(new Uint8Array(derivedBits)).map(b => b.toString(16).padStart(2, '0')).join('');
-    return newHashHex === hashHex;
+
+    // Helper to derive bits
+    const derive = async (iters: number) => {
+        const keyMaterial = await crypto.subtle.importKey(
+            'raw',
+            encoder.encode(password),
+            'PBKDF2',
+            false,
+            ['deriveBits']
+        );
+        return await crypto.subtle.deriveBits(
+            {
+                name: 'PBKDF2',
+                salt: salt,
+                iterations: iters,
+                hash: 'SHA-256',
+            },
+            keyMaterial,
+            KEY_LENGTH * 8
+        );
+    };
+
+    // 1. Try with current iterations
+    const bits = await derive(ITERATIONS);
+    const hash = Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+    if (hash === hashHex) return true;
+
+    // 2. Fallback to legacy iterations (100k)
+    const legacyBits = await derive(LEGACY_ITERATIONS);
+    const legacyHash = Array.from(new Uint8Array(legacyBits)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+    return legacyHash === hashHex;
 }
 
 // ============================================================
