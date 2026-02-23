@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ReservierungModal } from '@/components/shared/ReservierungModal';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { FleetService } from '@/lib/services/fleetService';
 import { Fahrzeug, FahrzeugReservierung } from '@/types';
 import {
@@ -43,8 +44,15 @@ export default function FuhrparkPage() {
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState('fahrzeuge');
     const [searchTerm, setSearchTerm] = useState('');
-    const [modalOpen, setModalOpen] = useState(false);
-    const [selectedFahrzeug, setSelectedFahrzeug] = useState<Fahrzeug | undefined>();
+    const [showReservierungModal, setShowReservierungModal] = useState(false);
+    const [selectedFahrzeug, setSelectedFahrzeug] = useState<Fahrzeug | null>(null);
+
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmAction, setConfirmAction] = useState<{
+        type: 'vehicle' | 'reservation';
+        id: string;
+        name: string;
+    } | null>(null);
 
     const loadData = useCallback(async () => {
         setLoading(true);
@@ -68,36 +76,47 @@ export default function FuhrparkPage() {
         loadData();
     }, [loadData]);
 
-    const handleDeleteFahrzeug = async (id: string) => {
-        if (!confirm('Sind Sie sicher, dass Sie dieses Fahrzeug löschen möchten?')) return;
-        try {
-            await FleetService.deleteFahrzeug(id);
-            setFahrzeuge(prev => prev.filter(f => f.id !== id));
-        } catch (err) {
-            console.error(err);
-            alert('Fehler beim Löschen des Fahrzeugs.');
-        }
+    const handleDeleteFahrzeug = (id: string, name: string) => {
+        setConfirmAction({ type: 'vehicle', id, name });
+        setConfirmOpen(true);
     };
 
-    const handleDeleteReservierung = async (id: string) => {
-        if (!confirm('Reservierung wirklich löschen?')) return;
+    const handleDeleteReservierung = (id: string, code: string) => {
+        setConfirmAction({ type: 'reservation', id, name: `Reservierung ${code}` });
+        setConfirmOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!confirmAction) return;
+
         try {
-            const res = reservierungen.find(r => r.id === id);
-            await FleetService.deleteReservierung(id);
-            if (res) {
-                await FleetService.updateFahrzeug(res.fahrzeugId, { status: 'verfuegbar' });
-                setFahrzeuge(prev => prev.map(f => f.id === res.fahrzeugId ? { ...f, status: 'verfuegbar' } : f));
+            if (confirmAction.type === 'vehicle') {
+                await FleetService.deleteFahrzeug(confirmAction.id);
+                setFahrzeuge(prev => prev.filter(f => f.id !== confirmAction.id));
+            } else {
+                const res = reservierungen.find(r => r.id === confirmAction.id);
+                await FleetService.deleteReservierung(confirmAction.id);
+                setReservierungen(prev => prev.filter(r => r.id !== confirmAction.id));
+
+                if (res) {
+                    const fahrzeug = fahrzeuge.find(f => f.id === res.fahrzeugId);
+                    if (fahrzeug) {
+                        await FleetService.updateFahrzeug(fahrzeug.id, { status: 'verfuegbar' });
+                        setFahrzeuge(prev => prev.map(f => f.id === fahrzeug.id ? { ...f, status: 'verfuegbar' } : f));
+                    }
+                }
             }
-            setReservierungen(prev => prev.filter(r => r.id !== id));
-        } catch (err) {
-            console.error(err);
-            alert('Fehler beim Löschen der Reservierung.');
+            setConfirmOpen(false);
+            setConfirmAction(null);
+        } catch (error) {
+            console.error("Failed to delete", error);
+            alert("Fehler beim Löschen");
         }
     };
 
     const handleReserve = (fahrzeug: Fahrzeug) => {
         setSelectedFahrzeug(fahrzeug);
-        setModalOpen(true);
+        setShowReservierungModal(true);
     };
 
     const handleSaveReservierung = async (newRes: FahrzeugReservierung) => {
@@ -120,7 +139,7 @@ export default function FuhrparkPage() {
             setReservierungen(prev => [...prev, createdRes]);
             setFahrzeuge(prev => prev.map(f => f.id === newRes.fahrzeugId ? { ...f, status: 'reserviert' } : f));
 
-            setModalOpen(false);
+            setShowReservierungModal(false);
         } catch (err) {
             console.error(err);
             alert('Fehler beim Speichern der Reservierung.');
@@ -325,7 +344,7 @@ export default function FuhrparkPage() {
                                                                     variant="ghost"
                                                                     size="icon"
                                                                     className="h-8 w-8 text-muted-foreground/50 hover:text-red-600 hover:bg-red-50 hover:shadow-sm"
-                                                                    onClick={() => handleDeleteFahrzeug(item.id)}
+                                                                    onClick={() => handleDeleteFahrzeug(item.id, item.bezeichnung)}
                                                                 >
                                                                     <Trash2 className="h-4 w-4" />
                                                                 </Button>
@@ -347,7 +366,7 @@ export default function FuhrparkPage() {
                     <div className="flex justify-end mb-4">
                         <Button
                             className="font-bold shadow-lg shadow-primary/20"
-                            onClick={() => { setSelectedFahrzeug(undefined); setModalOpen(true); }}
+                            onClick={() => { setSelectedFahrzeug(null); setShowReservierungModal(true); }}
                         >
                             <CalendarPlus className="h-5 w-5 mr-2" />
                             Neue Reservierung
@@ -403,7 +422,7 @@ export default function FuhrparkPage() {
                                                         variant="ghost"
                                                         size="icon"
                                                         className="h-8 w-8 text-muted-foreground/50 hover:text-red-600 hover:bg-red-50 hover:shadow-sm"
-                                                        onClick={() => handleDeleteReservierung(res.id)}
+                                                        onClick={() => handleDeleteReservierung(res.id, res.projektId || res.baustelle)}
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
@@ -420,10 +439,17 @@ export default function FuhrparkPage() {
 
             {/* Reservation Modal */}
             <ReservierungModal
-                isOpen={modalOpen}
-                onClose={() => { setModalOpen(false); setSelectedFahrzeug(undefined); }}
+                isOpen={showReservierungModal}
+                onClose={() => { setShowReservierungModal(false); setSelectedFahrzeug(null); }}
                 onSave={handleSaveReservierung}
-                fahrzeug={selectedFahrzeug}
+            />
+
+            <ConfirmDialog
+                isOpen={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                onConfirm={confirmDelete}
+                title={confirmAction?.type === 'vehicle' ? "Fahrzeug löschen" : "Reservierung löschen"}
+                description={`Sind Sie sicher, dass Sie "${confirmAction?.name}" permanent löschen möchten?`}
             />
         </div>
     );

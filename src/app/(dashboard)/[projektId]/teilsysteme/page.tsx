@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 export default function TeilsystemeListPage() {
     const { projektId } = useParams() as { projektId: string };
@@ -25,6 +26,8 @@ export default function TeilsystemeListPage() {
     const [project, setProject] = useState<Projekt | null>(null);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<Teilsystem | null>(null);
 
     useEffect(() => {
         const loadData = async () => {
@@ -49,15 +52,19 @@ export default function TeilsystemeListPage() {
         (item.name?.toLowerCase() || '').includes(search.toLowerCase())
     );
 
-    const handleDelete = async (item: Teilsystem) => {
-        if (confirm(`Sind Sie sicher, dass Sie "${item.name}" löschen möchten?`)) {
-            try {
-                await SubsystemService.deleteTeilsystem(item.id);
-                setItems(prev => prev.filter(i => i.id !== item.id));
-            } catch (error) {
-                console.error("Failed to delete", error);
-                alert("Fehler beim Löschen");
-            }
+    const handleDelete = (item: Teilsystem) => {
+        setItemToDelete(item);
+        setConfirmOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!itemToDelete) return;
+        try {
+            await SubsystemService.deleteTeilsystem(itemToDelete.id);
+            setItems(prev => prev.filter(i => i.id !== itemToDelete.id));
+        } catch (error) {
+            console.error("Failed to delete", error);
+            alert("Fehler beim Löschen");
         }
     };
 
@@ -195,6 +202,14 @@ export default function TeilsystemeListPage() {
                     )}
                 </CardContent>
             </Card>
+
+            <ConfirmDialog
+                isOpen={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                onConfirm={confirmDelete}
+                title="Teilsystem löschen"
+                description={`Sind Sie sicher, dass Sie "${itemToDelete?.name}" permanent löschen möchten? Dieser Vorgang kann nicht rückgängig gemacht werden.`}
+            />
         </div >
     );
 }

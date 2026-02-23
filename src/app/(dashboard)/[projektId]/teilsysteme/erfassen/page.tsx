@@ -32,8 +32,12 @@ const teilsystemSchema = z.object({
 });
 
 type TeilsystemValues = z.infer<typeof teilsystemSchema>;
+
+import { useProjekt } from '@/lib/context/ProjektContext';
+
 export default function TeilsystemErfassenPage() {
     const { projektId } = useParams() as { projektId: string };
+    const { currentUser } = useProjekt();
     const router = useRouter();
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [dragActive, setDragActive] = React.useState(false);
@@ -60,6 +64,7 @@ export default function TeilsystemErfassenPage() {
         handleSubmit,
         setValue,
         watch,
+        setError,
         formState: { errors, isSubmitting },
     } = useForm<TeilsystemValues>({
         resolver: zodResolver(teilsystemSchema),
@@ -67,11 +72,18 @@ export default function TeilsystemErfassenPage() {
             status: 'offen',
             ks: '1',
             planStatus: 'offen',
-            eroeffnetDurch: 'Moritz', // Default but accessible via select
+            eroeffnetDurch: currentUser ? `${currentUser.vorname} ${currentUser.nachname}` : 'Moritz',
             eroeffnetAm: new Date().toLocaleDateString('de-DE'),
             montagetermin: 'nach Absprache Bauleitung',
         }
     });
+
+    // Effect to update field when currentUser becomes available
+    React.useEffect(() => {
+        if (currentUser) {
+            setValue('eroeffnetDurch', `${currentUser.vorname} ${currentUser.nachname}`);
+        }
+    }, [currentUser, setValue]);
 
     const onSubmit = async (data: TeilsystemValues) => {
         const resolveName = (id: string) => {
@@ -83,6 +95,13 @@ export default function TeilsystemErfassenPage() {
         const { ProjectService } = await import('@/lib/services/projectService');
 
         try {
+            // Check for unique system number
+            const isUnique = await SubsystemService.isSystemnummerUnique(projektId, data.teilsystemNummer);
+            if (!isUnique) {
+                setError('teilsystemNummer', { type: 'manual', message: 'Diese System-Nummer existiert bereits in diesem Projekt' });
+                return;
+            }
+
             let uploadedIfcUrl = undefined;
             if (fileInputRef.current?.files?.[0]) {
                 const file = fileInputRef.current.files[0];

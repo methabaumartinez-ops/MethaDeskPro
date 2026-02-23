@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { QRCodeSVG } from 'qrcode.react';
 import { Printer, Share2, UploadCloud } from 'lucide-react';
 import { QRCodeSection } from '@/components/shared/QRCodeSection';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 export default function TeilsystemDetailPage() {
     const { projektId, id } = useParams() as { projektId: string; id: string };
@@ -35,6 +36,8 @@ export default function TeilsystemDetailPage() {
     const [loading, setLoading] = useState(true);
     const [uploadingIfc, setUploadingIfc] = useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [posToDelete, setPosToDelete] = useState<Position | null>(null);
 
     useEffect(() => {
         const loadData = async () => {
@@ -331,17 +334,10 @@ export default function TeilsystemDetailPage() {
                                                             variant="ghost"
                                                             size="icon"
                                                             className="h-8 w-8 text-muted-foreground/50 hover:text-red-600 hover:bg-red-50 hover:shadow-sm"
-                                                            onClick={async (e) => {
+                                                            onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                if (confirm(`Sind Sie sicher, dass Sie "${pos.name}" löschen möchten?`)) {
-                                                                    try {
-                                                                        await PositionService.deletePosition(pos.id);
-                                                                        setPositionen(prev => prev.filter(p => p.id !== pos.id));
-                                                                    } catch (error) {
-                                                                        console.error("Failed to delete position:", error);
-                                                                        alert("Fehler beim Löschen der Position.");
-                                                                    }
-                                                                }
+                                                                setPosToDelete(pos);
+                                                                setConfirmOpen(true);
                                                             }}
                                                         >
                                                             <Trash2 className="h-4 w-4" />
@@ -362,6 +358,23 @@ export default function TeilsystemDetailPage() {
                     )}
                 </CardContent>
             </Card>
+
+            <ConfirmDialog
+                isOpen={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                onConfirm={async () => {
+                    if (!posToDelete) return;
+                    try {
+                        await PositionService.deletePosition(posToDelete.id);
+                        setPositionen(prev => prev.filter(p => p.id !== posToDelete.id));
+                    } catch (error) {
+                        console.error("Failed to delete position:", error);
+                        alert("Fehler beim Löschen der Position.");
+                    }
+                }}
+                title="Position löschen"
+                description={`Sind Sie sicher, dass Sie "${posToDelete?.name}" permanent löschen möchten?`}
+            />
         </div>
     );
 }

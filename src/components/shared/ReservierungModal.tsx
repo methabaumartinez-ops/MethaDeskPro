@@ -22,6 +22,7 @@ export function ReservierungModal({ isOpen, onClose, onSave, fahrzeug, projektId
     const [projekte, setProjekte] = useState<Projekt[]>([]);
     const [fahrzeugeList, setFahrzeugeList] = useState<Fahrzeug[]>([]);
     const [mitarbeiter, setMitarbeiter] = useState<any[]>([]);
+    const [existingReservierungen, setExistingReservierungen] = useState<FahrzeugReservierung[]>([]);
     const [loadingData, setLoadingData] = useState(false);
 
     const [form, setForm] = useState({
@@ -40,11 +41,13 @@ export function ReservierungModal({ isOpen, onClose, onSave, fahrzeug, projektId
             Promise.all([
                 ProjectService.getProjekte(),
                 FleetService.getFahrzeuge(),
-                EmployeeService.getMitarbeiter()
-            ]).then(([p, f, m]) => {
+                EmployeeService.getMitarbeiter(),
+                FleetService.getReservierungen()
+            ]).then(([p, f, m, r]) => {
                 setProjekte(p);
                 setFahrzeugeList(f);
                 setMitarbeiter(m);
+                setExistingReservierungen(r);
             }).catch(err => {
                 console.error('Failed to load dropdown data', err);
             }).finally(() => {
@@ -63,6 +66,25 @@ export function ReservierungModal({ isOpen, onClose, onSave, fahrzeug, projektId
 
     if (!isOpen) return null;
 
+    const isDateConflict = (start: string, end: string, vehicleId: string) => {
+        if (!start || !end || !vehicleId) return false;
+
+        const newStart = new Date(start);
+        const newEnd = new Date(end);
+
+        return existingReservierungen.some(res => {
+            if (res.fahrzeugId !== vehicleId) return false;
+
+            const resStart = new Date(res.reserviertAb);
+            const resEnd = new Date(res.reserviertBis);
+
+            return (newStart <= resEnd && newEnd >= resStart);
+        });
+    };
+
+    const hasConflict = isDateConflict(form.reserviertAb, form.reserviertBis, form.fahrzeugId);
+    const today = new Date().toISOString().split('T')[0];
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!form.fahrzeugId || !form.projektId || !form.reserviertAb || !form.reserviertBis || !form.reserviertDurch) {
@@ -70,12 +92,24 @@ export function ReservierungModal({ isOpen, onClose, onSave, fahrzeug, projektId
             return;
         }
 
-        // Note: ProjectService/FleetService usage here is just for data referencing
-        // Actual save logic is handled by parent via onSave
+        if (hasConflict) {
+            alert('Das Fahrzeug es in diesem Zeitraum bereits reserviert.');
+            return;
+        }
+
+        if (form.reserviertAb < today) {
+            alert('Das Startdatum darf nicht in der Vergangenheit liegen.');
+            return;
+        }
+
+        if (form.reserviertBis < form.reserviertAb) {
+            alert('Das Enddatum muss nach dem Startdatum liegen.');
+            return;
+        }
+
         const selectedProjekt = projekte.find(p => p.id === form.projektId);
         const selectedMitarbeiter = mitarbeiter.find(m => m.id === form.reserviertDurch);
 
-        // Construct object - ID handled by backend/service usually, but here we pass object stricture
         const newReservierung: any = {
             fahrzeugId: form.fahrzeugId,
             projektId: form.projektId,
@@ -85,10 +119,8 @@ export function ReservierungModal({ isOpen, onClose, onSave, fahrzeug, projektId
             reserviertBis: form.reserviertBis,
             reserviertDurch: selectedMitarbeiter ? `${selectedMitarbeiter.vorname} ${selectedMitarbeiter.nachname}` : form.reserviertDurch,
             bemerkung: form.bemerkung || undefined,
-            // createdAt handled by DB or Service
         };
         onSave(newReservierung);
-        // We don't close here, parent handles it after successful save
     };
 
     const projektOptions = [
@@ -159,16 +191,26 @@ export function ReservierungModal({ isOpen, onClose, onSave, fahrzeug, projektId
                         <Input
                             label="Reserviert ab"
                             type="date"
+                            min={today}
                             value={form.reserviertAb}
                             onChange={e => setForm({ ...form, reserviertAb: e.target.value })}
+                            className={hasConflict ? "border-red-500 focus:ring-red-500" : ""}
                         />
                         <Input
                             label="Reserviert bis"
                             type="date"
+                            min={form.reserviertAb || today}
                             value={form.reserviertBis}
                             onChange={e => setForm({ ...form, reserviertBis: e.target.value })}
+                            className={hasConflict ? "border-red-500 focus:ring-red-500" : ""}
                         />
                     </div>
+
+                    {hasConflict && (
+                        <p className="text-xs font-bold text-red-600 animate-pulse">
+                            ⚠️ Achtung: Das Fahrzeug ist in diesem Zeitraum bereits reserviert!
+                        </p>
+                    )}
 
                     <Select
                         label="Reserviert durch"
@@ -191,7 +233,7 @@ export function ReservierungModal({ isOpen, onClose, onSave, fahrzeug, projektId
                         <Button
                             type="submit"
                             className="font-bold shadow-lg shadow-primary/20"
-                            disabled={!form.fahrzeugId || !form.projektId || !form.reserviertAb || !form.reserviertBis || !form.reserviertDurch || loadingData}
+                            disabled={!form.fahrzeugId || !form.projektId || !form.reserviertAb || !form.reserviertBis || !form.reserviertDurch || loadingData || hasConflict}
                         >
                             Reservierung erstellen
                         </Button>

@@ -108,6 +108,7 @@ export default function TeilsystemEditPage() {
         handleSubmit,
         setValue,
         control,
+        setError,
         formState: { errors, isSubmitting },
     } = useForm<TeilsystemValues>({
         resolver: zodResolver(teilsystemSchema),
@@ -162,6 +163,15 @@ export default function TeilsystemEditPage() {
     const onSubmit = async (data: TeilsystemValues) => {
         try {
             await new Promise((resolve) => setTimeout(resolve, 800));
+
+            // Check for unique system number (excluding current id)
+            if (data.teilsystemNummer) {
+                const isUnique = await SubsystemService.isSystemnummerUnique(projektId, data.teilsystemNummer, id);
+                if (!isUnique) {
+                    setError('teilsystemNummer', { type: 'manual', message: 'Diese System-Nummer existiert bereits in diesem Projekt' });
+                    return;
+                }
+            }
 
             // Convert ISO dates back to German format for storage
             const toSave = {

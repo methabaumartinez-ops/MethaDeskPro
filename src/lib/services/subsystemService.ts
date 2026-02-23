@@ -100,6 +100,11 @@ export const SubsystemService = {
         return DatabaseService.delete('teilsysteme', id);
     },
 
+    async isSystemnummerUnique(projektId: string, nummer: string, excludeId?: string): Promise<boolean> {
+        const systems = await this.getTeilsysteme(projektId);
+        return !systems.some(s => s.teilsystemNummer === nummer && s.id !== excludeId);
+    },
+
     // Aggregations
     async getTeilsystemCount(projektId: string): Promise<number> {
         if (typeof window !== 'undefined') {
