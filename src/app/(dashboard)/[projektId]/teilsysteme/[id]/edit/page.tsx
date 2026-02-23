@@ -166,6 +166,7 @@ export default function TeilsystemEditPage() {
             // Convert ISO dates back to German format for storage
             const toSave = {
                 ...data,
+                projektId, // Add project id to avoid disappearing from lists
                 eroeffnetAm: isoToGermanDate(data.eroeffnetAm),
                 montagetermin: isoToGermanDate(data.montagetermin),
                 abgabePlaner: isoToGermanDate(data.abgabePlaner),
