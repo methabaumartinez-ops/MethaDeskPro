@@ -65,11 +65,6 @@ export default function DashboardLayout({
                         )}
                         {children}
                     </div>
-
-                    {/* Developer Signature Footer */}
-                    <footer className="py-12 border-t border-slate-100 dark:border-slate-800 bg-slate-50/30">
-                        <Signature />
-                    </footer>
                 </main>
             </div>
 

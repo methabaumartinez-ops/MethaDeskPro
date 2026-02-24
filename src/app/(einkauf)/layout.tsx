@@ -37,9 +37,6 @@ export default function EinkaufLayout({
                     <div className="p-4 sm:p-6 lg:p-8 w-full flex-1">
                         {children}
                     </div>
-                    <footer className="py-8 border-t border-slate-100 bg-slate-50/30">
-                        <Signature />
-                    </footer>
                 </main>
             </div>
 
