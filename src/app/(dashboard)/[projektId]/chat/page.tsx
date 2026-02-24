@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect } from 'react';
-import { useChat } from '@ai-sdk/react';
+import { useChat } from 'ai/react';
 import { useParams } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,7 @@ export default function ChatPage() {
         body: {
             projektId,
         },
+        streamProtocol: 'text',
     });
 
     const scrollRef = useRef<HTMLDivElement>(null);

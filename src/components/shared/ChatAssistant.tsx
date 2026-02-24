@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
-import { useChat } from '@ai-sdk/react';
+import { useChat } from 'ai/react';
 import {
     MessageSquare, X, Send, Bot, User, Sparkles,
 } from 'lucide-react';
@@ -29,10 +29,10 @@ export const ChatAssistant = ({ isSidebarMode = false }: { isSidebarMode?: boole
                 content: 'Hallo! Ich bin MethaBot. Wie kann ich Ihnen heute helfen?',
             }
         ],
+        streamProtocol: 'text',
         onError: (error) => {
-            console.error('Chat Error Details:', error);
-            // Non-blocking error handling
-        },
+            console.error('Chat Error:', error);
+        }
     });
 
     useEffect(() => {
@@ -77,7 +77,7 @@ export const ChatAssistant = ({ isSidebarMode = false }: { isSidebarMode?: boole
                         </CardHeader>
 
                         <CardContent ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth bg-slate-50/30 dark:bg-slate-900/10">
-                            {messages.map((msg) => (
+                            {messages?.map((msg) => (
                                 <div
                                     key={msg.id}
                                     className={cn(

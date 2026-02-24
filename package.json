@@ -9,13 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@ai-sdk/google": "^3.0.30",
-    "@ai-sdk/openai": "^3.0.31",
-    "@ai-sdk/react": "^3.0.99",
+    "@ai-sdk/openai": "^1.3.24",
+    "@ai-sdk/react": "^1.1.25",
     "@hookform/resolvers": "^5.2.2",
     "@qdrant/js-client-rest": "^1.16.2",
     "@tailwindcss/postcss": "^4.1.18",
-    "ai": "^6.0.97",
+    "ai": "^4.1.66",
     "autoprefixer": "^10.4.20",
     "clsx": "^2.1.1",
     "dotenv": "^17.3.1",

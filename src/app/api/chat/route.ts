@@ -1,5 +1,4 @@
-import { createOpenAI } from '@ai-sdk/openai';
-import { streamText } from 'ai';
+import OpenAI from 'openai';
 import { AIService } from '@/lib/services/aiService';
 import { z } from 'zod';
 
@@ -14,7 +13,7 @@ export async function POST(req: Request) {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) return new Response(JSON.stringify({ error: 'API Key missing' }), { status: 500 });
 
-    const openai = createOpenAI({ apiKey: apiKey.trim() });
+    const openai = new OpenAI({ apiKey: apiKey.trim() });
 
     try {
         const body = await req.json();
@@ -34,15 +33,44 @@ export async function POST(req: Request) {
             } catch (e) { }
         }
 
-        const systemPrompt = `Du bist experto en MethaDeskPro.\nAntworte auf DEUTSCH.\nKontext:\n${contextText}`;
+        const systemPrompt = `Du bist ein Experte für MethaDeskPro.\nAntworte IMMER auf DEUTSCH.\nKontext:\n${contextText}`;
 
-        const result = streamText({
-            model: openai('gpt-4o') as any,
-            system: systemPrompt,
-            messages,
+        const response = await openai.chat.completions.create({
+            model: 'gpt-4o',
+            stream: true,
+            messages: [
+                { role: 'system', content: systemPrompt },
+                ...messages.map((m: any) => ({
+                    role: m.role as 'user' | 'assistant' | 'system',
+                    content: m.content,
+                })),
+            ],
         });
 
-        return result.toTextStreamResponse();
+        const stream = new ReadableStream({
+            async start(controller) {
+                const encoder = new TextEncoder();
+                try {
+                    for await (const chunk of response) {
+                        const content = chunk.choices[0]?.delta?.content || '';
+                        if (content) {
+                            controller.enqueue(encoder.encode(content));
+                        }
+                    }
+                } catch (error) {
+                    controller.error(error);
+                } finally {
+                    controller.close();
+                }
+            },
+        });
+
+        return new Response(stream, {
+            headers: {
+                'Content-Type': 'text/plain; charset=utf-8',
+                'X-Content-Type-Options': 'nosniff',
+            },
+        });
     } catch (error: any) {
         console.error('Chat error:', error);
         let message = error.message || 'Ein Fehler ist aufgetreten.';
