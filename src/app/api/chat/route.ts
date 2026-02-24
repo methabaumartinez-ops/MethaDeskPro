@@ -42,7 +42,7 @@ export async function POST(req: Request) {
             messages,
         });
 
-        return result.toDataStreamResponse();
+        return result.toTextStreamResponse();
     } catch (error: any) {
         console.error('Chat error:', error);
         let message = error.message || 'Ein Fehler ist aufgetreten.';
