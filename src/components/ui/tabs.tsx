@@ -8,7 +8,7 @@ const Tabs = ({ children, className }: { children: React.ReactNode; className?: 
 );
 
 const TabsList = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <div className={cn('inline-flex h-12 items-center justify-center rounded-xl bg-slate-100 p-1 text-slate-500', className)}>
+    <div className={cn('inline-flex h-12 items-center justify-center rounded-xl bg-slate-50/50 p-1 text-slate-500', className)}>
         {children}
     </div>
 );
@@ -27,8 +27,10 @@ const TabsTrigger = ({
     <button
         onClick={onClick}
         className={cn(
-            'inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-sm font-semibold ring-offset-white transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50',
-            active ? 'bg-white text-slate-950 shadow-sm' : 'hover:bg-slate-200/50 hover:text-slate-700',
+            'inline-flex items-center justify-center whitespace-nowrap rounded-xl px-5 py-2.5 text-sm font-black ring-offset-white transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50',
+            active
+                ? 'bg-orange-100 text-orange-900 shadow-sm border-none'
+                : 'bg-orange-50/50 text-orange-600 hover:bg-orange-100/50 hover:text-orange-700 border-none',
             className
         )}
     >

@@ -1,4 +1,4 @@
-import { mockUser, mockProjekte, mockTeilsysteme, mockPositionen, mockMaterial, mockLieferanten, mockMitarbeiter, mockFahrzeuge, mockReservierungen } from './data';
+import { mockUser, mockProjekte, mockTeilsysteme, mockPositionen, mockMaterial, mockLieferanten, mockMitarbeiter, mockFahrzeuge, mockReservierungen, mockBestellungen } from './data';
 
 const IS_SERVER = typeof window === 'undefined';
 
@@ -61,6 +61,12 @@ export const mockStore = {
 
     getReservierungen: () => getFromStorage('reservierungen', mockReservierungen),
     saveReservierungen: (reservierungen: any) => saveToStorage('reservierungen', reservierungen),
+
+    getBestellungen: (projektId?: string) => {
+        const all = getFromStorage('bestellungen', mockBestellungen);
+        return projektId ? all.filter((b: any) => b.projektId === projektId) : all;
+    },
+    saveBestellungen: (bestellungen: any) => saveToStorage('bestellungen', bestellungen),
 
     // Helpers
     login: (email: string) => {

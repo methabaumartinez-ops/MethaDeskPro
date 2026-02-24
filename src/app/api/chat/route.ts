@@ -1,4 +1,4 @@
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createOpenAI } from '@ai-sdk/openai';
 import { streamText } from 'ai';
 import { AIService } from '@/lib/services/aiService';
 import { z } from 'zod';
@@ -11,10 +11,10 @@ const chatSchema = z.object({
 });
 
 export async function POST(req: Request) {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) return new Response(JSON.stringify({ error: 'API Key missing' }), { status: 500 });
 
-    const google = createGoogleGenerativeAI({ apiKey: apiKey.trim() });
+    const openai = createOpenAI({ apiKey: apiKey.trim() });
 
     try {
         const body = await req.json();
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
         const systemPrompt = `Du bist experto en MethaDeskPro.\nAntworte auf DEUTSCH.\nKontext:\n${contextText}`;
 
         const result = streamText({
-            model: google('gemini-2.0-flash') as any,
+            model: openai('gpt-4o') as any,
             system: systemPrompt,
             messages,
         });

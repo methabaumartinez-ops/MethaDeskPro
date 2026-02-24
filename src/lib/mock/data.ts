@@ -1,4 +1,4 @@
-import { User, Projekt, Teilsystem, Position, Material, Lieferant, Mitarbeiter, Fahrzeug, FahrzeugReservierung } from '@/types';
+import { User, Projekt, Teilsystem, Position, Material, Lieferant, Mitarbeiter, Fahrzeug, FahrzeugReservierung, MaterialBestellung } from '@/types';
 
 export const mockUser: User & { passwordHash: string, confirmed: boolean } = {
     id: 'u1',
@@ -245,6 +245,33 @@ export const mockLieferanten: Lieferant[] = [
         kontakt: null as any,
         email: 'info@wuerth.ch',
         telefon: '+41 61 705 91 11',
+    }
+];
+
+export const mockBestellungen: MaterialBestellung[] = [
+    {
+        id: 'mb1',
+        projektId: 'p1',
+        containerBez: 'Container EG Ost',
+        bestelldatum: '2025-07-20T08:00:00Z',
+        status: 'angefragt',
+        bestelltVon: 'F.Martinez',
+        items: [
+            { id: 'item1', materialName: 'Schraubensets M24', menge: 50, einheit: 'Stk', vorbereitet: false },
+            { id: 'item2', materialName: 'Kopfplatten 20mm', menge: 10, einheit: 'Stk', vorbereitet: false }
+        ]
+    },
+    {
+        id: 'mb2',
+        projektId: 'p1',
+        containerBez: 'Material Kiste Dach',
+        bestelldatum: '2025-07-18T14:30:00Z',
+        status: 'in_bearbeitung',
+        bestelltVon: 'Moritz',
+        items: [
+            { id: 'item3', materialName: 'Stahlträger HEB 200', menge: 2, einheit: 'Stk', vorbereitet: true },
+            { id: 'item4', materialName: 'Isoliermatte 10cm', menge: 5, einheit: 'Rollen', vorbereitet: false }
+        ]
     }
 ];
 

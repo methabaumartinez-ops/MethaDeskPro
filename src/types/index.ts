@@ -90,6 +90,27 @@ export interface Material {
   liefertermin?: string;
 }
 
+export type BestellungStatus = 'angefragt' | 'in_bearbeitung' | 'bereit' | 'versendet' | 'geliefert';
+
+export interface BestellungItem {
+  id: string;
+  materialName: string;
+  menge: number;
+  einheit: string;
+  vorbereitet: boolean;
+  tsnummer?: string;
+}
+
+export interface MaterialBestellung {
+  id: string;
+  projektId: string;
+  containerBez: string;
+  bestelldatum: string;
+  status: BestellungStatus;
+  bestelltVon: string;
+  items: BestellungItem[];
+}
+
 export interface Lieferant {
   id: string;
   name: string;
