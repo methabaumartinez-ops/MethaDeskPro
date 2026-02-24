@@ -88,6 +88,7 @@ export interface Material {
   einheit?: string;
   preis?: number;
   liefertermin?: string;
+  projektId?: string;
 }
 
 export type BestellungStatus = 'angefragt' | 'in_bearbeitung' | 'bereit' | 'versendet' | 'geliefert';

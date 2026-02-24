@@ -572,7 +572,7 @@ export default function AusfuehrungPage() {
                                                     onClick={() => {
                                                         setIsCreatingOrder(true);
                                                         setEditingOrderId(null);
-                                                        setNewContainerBez(activeProjekt?.projektname || '');
+                                                        setNewContainerBez(activeProjekt ? `${activeProjekt.projektnummer} - ${activeProjekt.projektname}` : '');
                                                         setNewBemerkung('');
                                                         setNewOrderItems([{ name: '', menge: '', einheit: '', tsnummer: '' }]);
                                                     }}

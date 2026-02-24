@@ -22,7 +22,8 @@ export default function MaterialListPage() {
         const load = async () => {
             try {
                 const data = await MaterialService.getMaterial();
-                setItems(data);
+                // Filter by projektId
+                setItems(data.filter(item => item.projektId === projektId));
             } catch (error) {
                 console.error("Failed to load material", error);
             } finally {
