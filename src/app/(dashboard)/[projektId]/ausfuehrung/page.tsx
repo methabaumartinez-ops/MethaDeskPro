@@ -239,6 +239,23 @@ export default function AusfuehrungPage() {
             console.error("Fehler beim Speichern der Bestellung", error);
         }
     };
+    const isOrderEditable = (bestelldatum: string) => {
+        const orderDate = new Date(bestelldatum);
+        const now = new Date();
+
+        // Check if it's the same day
+        const isSameDay = orderDate.toDateString() === now.toDateString();
+
+        // Return true if it's today and before 15:00
+        if (isSameDay) {
+            return now.getHours() < 15;
+        }
+
+        // If it's a future date (unlikely but possible), it's editable
+        if (orderDate > now) return true;
+
+        return false;
+    };
 
     return (
         <div className="flex flex-col h-[calc(100vh-6rem)] space-y-3">
@@ -571,20 +588,32 @@ export default function AusfuehrungPage() {
                                         </div>
                                     ) : (
                                         <>
-                                            <div className="flex justify-end mb-4">
-                                                <Button
-                                                    className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest shadow-lg shadow-orange-200 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
-                                                    onClick={() => {
-                                                        setIsCreatingOrder(true);
-                                                        setEditingOrderId(null);
-                                                        setNewContainerBez(activeProjekt ? `${activeProjekt.projektnummer} - ${activeProjekt.projektname}` : '');
-                                                        setNewBemerkung('');
-                                                        setNewOrderItems([{ name: '', menge: '', einheit: '', tsnummer: '' }]);
-                                                    }}
-                                                >
-                                                    <Plus className="h-4 w-4" />
-                                                    <span>Material bestellen</span>
-                                                </Button>
+                                            <div className="flex flex-col gap-4 mb-4">
+                                                <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-xl shadow-sm">
+                                                    <div className="flex items-center gap-3">
+                                                        <Clock className="h-5 w-5 text-amber-600" />
+                                                        <div>
+                                                            <p className="text-sm font-black text-amber-900 uppercase tracking-tight">Wichtiger Hinweis zur Nachbestellung</p>
+                                                            <p className="text-xs text-amber-800 font-medium">Bestellungen können nur am Tag der Erfassung **bis 15:00 Uhr** bearbeitet werden. Danach wird die Liste für den Werkhof fixiert.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex justify-end">
+                                                    <Button
+                                                        className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest shadow-lg shadow-orange-200 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+                                                        onClick={() => {
+                                                            setIsCreatingOrder(true);
+                                                            setEditingOrderId(null);
+                                                            setNewContainerBez(activeProjekt ? `${activeProjekt.projektnummer} - ${activeProjekt.projektname}` : '');
+                                                            setNewBemerkung('');
+                                                            setNewOrderItems([{ name: '', menge: '', einheit: '', tsnummer: '' }]);
+                                                        }}
+                                                    >
+                                                        <Plus className="h-4 w-4" />
+                                                        <span>Material bestellen</span>
+                                                    </Button>
+                                                </div>
                                             </div>
 
                                             {filteredBestellungen.length > 0 ? (
@@ -610,7 +639,7 @@ export default function AusfuehrungPage() {
                                                                     )}>
                                                                         {bestellung.status.replace('_', ' ')}
                                                                     </span>
-                                                                    {(bestellung.status === 'angefragt' || bestellung.status === 'in_bearbeitung') && (
+                                                                    {(bestellung.status === 'angefragt' || bestellung.status === 'in_bearbeitung') && isOrderEditable(bestellung.bestelldatum) && (
                                                                         <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-400 hover:text-orange-600 hover:bg-orange-50" onClick={() => handleEditOrder(bestellung)}>
                                                                             <Edit2 className="h-3 w-3" />
                                                                         </Button>
