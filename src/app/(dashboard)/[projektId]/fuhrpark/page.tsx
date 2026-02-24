@@ -10,8 +10,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { ReservierungModal } from '@/components/shared/ReservierungModal';
 import { FleetService } from '@/lib/services/fleetService';
+import { ProjectService } from '@/lib/services/projectService';
 // import { mockStore } from '@/lib/mock/store'; // Removed
-import { Fahrzeug, FahrzeugReservierung } from '@/types';
+import { Fahrzeug, FahrzeugReservierung, Projekt } from '@/types';
 import {
     Plus, Search, Eye, Edit, Trash2, CalendarPlus,
     Car, Wrench, AlertTriangle, CheckCircle2, Calendar
@@ -44,6 +45,7 @@ export default function FuhrparkPage() {
     const { projektId } = useParams() as { projektId: string };
     const [fahrzeuge, setFahrzeuge] = useState<Fahrzeug[]>([]);
     const [reservierungen, setReservierungen] = useState<FahrzeugReservierung[]>([]);
+    const [projekte, setProjekte] = useState<Projekt[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('fahrzeuge');
     const [searchTerm, setSearchTerm] = useState('');
@@ -55,12 +57,14 @@ export default function FuhrparkPage() {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [veh, res] = await Promise.all([
+                const [veh, res, projs] = await Promise.all([
                     FleetService.getFahrzeuge(),
-                    FleetService.getReservierungen()
+                    FleetService.getReservierungen(),
+                    ProjectService.getProjekte()
                 ]);
                 setFahrzeuge(veh);
                 setReservierungen(res);
+                setProjekte(projs);
             } catch (error) {
                 console.error("Failed to load fleet data", error);
             } finally {
@@ -420,7 +424,9 @@ export default function FuhrparkPage() {
                                                     <span className="font-bold text-foreground">{getFahrzeugName(res.fahrzeugId)}</span>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <span className="text-muted-foreground font-medium">{res.projektName || res.projektId}</span>
+                                                    <span className="text-muted-foreground font-medium">
+                                                        {res.projektName || projekte.find(p => p.id === res.projektId)?.projektname || res.projektId}
+                                                    </span>
                                                 </TableCell>
                                                 <TableCell>
                                                     <span className="font-semibold text-foreground">{res.baustelle}</span>
