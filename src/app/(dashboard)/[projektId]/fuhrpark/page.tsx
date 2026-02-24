@@ -258,6 +258,38 @@ export default function FuhrparkPage() {
                     )}
                 </div>
 
+                {activeTab === 'fahrzeuge' && (
+                    <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b -mx-6 px-6 py-3 mb-4 shadow-sm scrollbar-hide">
+                        <div className="flex gap-2 overflow-x-auto">
+                            <Button
+                                variant={selectedKategorie === 'Alle' ? 'primary' : 'ghost'}
+                                size="sm"
+                                className={cn(
+                                    "rounded-full whitespace-nowrap text-xs font-bold transition-all h-8",
+                                    selectedKategorie === 'Alle' ? "bg-primary text-white" : "hover:bg-slate-100 dark:hover:bg-slate-800"
+                                )}
+                                onClick={() => setSelectedKategorie('Alle')}
+                            >
+                                Alle
+                            </Button>
+                            {Object.entries(KATEGORIE_LABELS).map(([key, label]) => (
+                                <Button
+                                    key={key}
+                                    variant={selectedKategorie === key ? 'primary' : 'ghost'}
+                                    size="sm"
+                                    className={cn(
+                                        "rounded-full whitespace-nowrap text-xs font-bold transition-all h-8",
+                                        selectedKategorie === key ? "bg-primary text-white" : "hover:bg-slate-100 dark:hover:bg-slate-800"
+                                    )}
+                                    onClick={() => setSelectedKategorie(key)}
+                                >
+                                    {label}
+                                </Button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {/* Tab: Fahrzeuge */}
                 <TabsContent active={activeTab === 'fahrzeuge'}>
                     {/* Group Navigation (Folders) */}
@@ -468,62 +500,6 @@ export default function FuhrparkPage() {
                 fahrzeug={selectedFahrzeug}
                 projektId={projektId}
             />
-            {/* Sticky Bottom Category Tabs */}
-            <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-t py-2 px-4 shadow-2xl flex justify-center md:hidden">
-                <div className="flex gap-2 overflow-x-auto pb-1 max-w-full no-scrollbar">
-                    <Button
-                        variant={selectedKategorie === 'Alle' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        className={cn(
-                            "rounded-full whitespace-nowrap text-[10px] font-bold h-8",
-                            selectedKategorie === 'Alle' && "bg-primary text-white hover:bg-primary/90"
-                        )}
-                        onClick={() => setSelectedKategorie('Alle')}
-                    >
-                        Alle
-                    </Button>
-                    {Object.entries(KATEGORIE_LABELS).map(([key, label]) => (
-                        <Button
-                            key={key}
-                            variant={selectedKategorie === key ? 'secondary' : 'ghost'}
-                            size="sm"
-                            className={cn(
-                                "rounded-full whitespace-nowrap text-[10px] font-bold h-8",
-                                selectedKategorie === key && "bg-primary text-white hover:bg-primary/90"
-                            )}
-                            onClick={() => setSelectedKategorie(key)}
-                        >
-                            {label}
-                        </Button>
-                    ))}
-                </div>
-            </div>
-
-            {/* Desktop Bottom Bar (optional but nice) */}
-            <div className="hidden md:flex fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-background/90 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-full p-1.5 shadow-2xl items-center gap-1 overflow-x-auto max-w-[90vw]">
-                <Button
-                    variant={selectedKategorie === 'Alle' ? 'primary' : 'ghost'}
-                    size="sm"
-                    className="rounded-full px-4 h-9 font-bold transition-all"
-                    onClick={() => setSelectedKategorie('Alle')}
-                >
-                    Alle
-                </Button>
-                {Object.entries(KATEGORIE_LABELS).map(([key, label]) => (
-                    <Button
-                        key={key}
-                        variant={selectedKategorie === key ? 'primary' : 'ghost'}
-                        size="sm"
-                        className="rounded-full px-4 h-9 font-bold transition-all"
-                        onClick={() => setSelectedKategorie(key)}
-                    >
-                        {label}
-                    </Button>
-                ))}
-            </div>
-
-            {/* Spacer for bottom bar */}
-            <div className="h-16 md:h-20" />
         </div>
     );
 }
