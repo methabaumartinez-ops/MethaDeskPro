@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { DatabaseService } from '@/lib/services/db';
 import { v4 as uuidv4 } from 'uuid';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
@@ -9,16 +11,12 @@ export async function GET(req: Request) {
 
         console.log(`API: Fetching teilsysteme (projektId=${projektId || 'all'})...`);
 
-        let filter = undefined;
+        let data = await DatabaseService.list('teilsysteme');
+
         if (projektId) {
-            filter = {
-                must: [
-                    { key: "projektId", match: { value: projektId } }
-                ]
-            };
+            data = (data as any[]).filter(t => t.projektId === projektId);
         }
 
-        const data = await DatabaseService.list('teilsysteme', filter);
         return NextResponse.json(data);
     } catch (error) {
         console.error("API Error fetching teilsysteme:", error);
