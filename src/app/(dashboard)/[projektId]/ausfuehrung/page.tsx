@@ -15,7 +15,7 @@ import { FleetService } from '@/lib/services/fleetService';
 import { Teilsystem, Mitarbeiter, Fahrzeug } from '@/types';
 import {
     Search, Filter, Layers, Link as LinkIcon,
-    Users, Car, HardHat, Package, Truck, Plus, CheckCircle2, Clock, Inbox, Trash2, Send, Edit2,
+    Users, Car, HardHat, Package, Truck, Plus, CheckCircle2, Clock, Inbox, Trash2, Send, Edit2, MessageSquare,
     Eye, CalendarPlus, Wrench
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -62,6 +62,7 @@ export default function AusfuehrungPage() {
     const [isCreatingOrder, setIsCreatingOrder] = useState(false);
     const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
     const [newContainerBez, setNewContainerBez] = useState('');
+    const [newBemerkung, setNewBemerkung] = useState('');
     const [newOrderItems, setNewOrderItems] = useState<{ name: string, menge: string, einheit: string, tsnummer: string }[]>([{ name: '', menge: '', einheit: '', tsnummer: '' }]);
 
     // Fahrzeug Reservation States
@@ -173,6 +174,7 @@ export default function AusfuehrungPage() {
     const handleEditOrder = (order: MaterialBestellung) => {
         setEditingOrderId(order.id);
         setNewContainerBez(order.containerBez);
+        setNewBemerkung(order.bemerkung || '');
         const mappedItems = order.items.map(item => ({
             name: item.materialName,
             menge: item.menge.toString(),
@@ -205,6 +207,7 @@ export default function AusfuehrungPage() {
                 // Update existing order
                 const updatedOrder = await BestellService.updateBestellung(editingOrderId, {
                     containerBez: newContainerBez,
+                    bemerkung: newBemerkung,
                     items
                 });
                 setBestellungen(bestellungen.map(b => b.id === editingOrderId ? updatedOrder : b));
@@ -213,6 +216,7 @@ export default function AusfuehrungPage() {
                 const newOrder = await BestellService.createBestellung({
                     projektId,
                     containerBez: newContainerBez,
+                    bemerkung: newBemerkung,
                     bestelldatum: new Date().toISOString(),
                     status: 'angefragt',
                     bestelltVon: currentUser?.vorname ? `${currentUser.vorname.charAt(0)}.${currentUser.nachname}` : 'Unbekannt',
@@ -224,6 +228,7 @@ export default function AusfuehrungPage() {
             setIsCreatingOrder(false);
             setEditingOrderId(null);
             setNewContainerBez('');
+            setNewBemerkung('');
             setNewOrderItems([{ name: '', menge: '', einheit: '', tsnummer: '' }]);
         } catch (error) {
             console.error("Fehler beim Speichern der Bestellung", error);
@@ -488,6 +493,19 @@ export default function AusfuehrungPage() {
                                                     />
                                                 </div>
 
+                                                <div>
+                                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block flex items-center gap-2">
+                                                        <MessageSquare className="h-3 w-3" />
+                                                        Kommentare / Info für Werkhof
+                                                    </label>
+                                                    <textarea
+                                                        className="w-full text-sm p-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-orange-500/10 focus:border-orange-500/40 outline-none transition-all min-h-[80px] resize-none font-medium text-slate-700"
+                                                        placeholder="z.B. Dringend benötigt, bauseitig versetzen, direkt an Polier liefern..."
+                                                        value={newBemerkung}
+                                                        onChange={e => setNewBemerkung(e.target.value)}
+                                                    />
+                                                </div>
+
                                                 <div className="pt-4 border-t border-slate-100">
                                                     <div className="flex justify-between items-center mb-2">
                                                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Materialliste</label>
@@ -555,6 +573,7 @@ export default function AusfuehrungPage() {
                                                         setIsCreatingOrder(true);
                                                         setEditingOrderId(null);
                                                         setNewContainerBez(activeProjekt?.projektname || '');
+                                                        setNewBemerkung('');
                                                         setNewOrderItems([{ name: '', menge: '', einheit: '', tsnummer: '' }]);
                                                     }}
                                                 >
@@ -601,6 +620,12 @@ export default function AusfuehrungPage() {
                                                                             <span className="text-slate-600 font-medium truncate pr-2">{item.menge} {item.einheit} {item.materialName}</span>
                                                                         </div>
                                                                     ))}
+
+                                                                    {bestellung.bemerkung && (
+                                                                        <div className="mt-2 p-2 bg-orange-50 rounded border border-orange-100/50 text-[10px] text-orange-800 font-medium italic line-clamp-2">
+                                                                            "{bestellung.bemerkung}"
+                                                                        </div>
+                                                                    )}
                                                                     {bestellung.items.length > 3 && (
                                                                         <div className="text-[10px] font-bold text-slate-400 text-center pt-1">+ {bestellung.items.length - 3} weitere Artikel</div>
                                                                     )}

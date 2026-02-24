@@ -109,6 +109,7 @@ export interface MaterialBestellung {
   status: BestellungStatus;
   bestelltVon: string;
   items: BestellungItem[];
+  bemerkung?: string;
 }
 
 export interface Lieferant {

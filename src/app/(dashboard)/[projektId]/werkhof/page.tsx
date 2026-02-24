@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { BestellService } from '@/lib/services/bestellService';
 import { ProjectService } from '@/lib/services/projectService';
 import { MaterialBestellung, BestellungItem, Projekt } from '@/types';
-import { Warehouse, Package, CheckCircle2, Circle, Truck, Inbox, ArrowRight, Check, Edit2 } from 'lucide-react';
+import { Warehouse, Package, CheckCircle2, Circle, Truck, Inbox, ArrowRight, Check, Edit2, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function WerkhofPage() {
@@ -78,6 +78,15 @@ export default function WerkhofPage() {
             setBestellungen(current => current.map(b => b.id === bestellungId ? { ...b, status } : b));
         } catch (error) {
             console.error("Fehler beim Status Update", error);
+        }
+    };
+
+    const handleUpdateBemerkung = async (bestellungId: string, bemerkung: string) => {
+        try {
+            await BestellService.updateBestellung(bestellungId, { bemerkung });
+            setBestellungen(current => current.map(b => b.id === bestellungId ? { ...b, bemerkung } : b));
+        } catch (error) {
+            console.error("Fehler beim Speichern des Kommentars", error);
         }
     };
 
@@ -190,6 +199,19 @@ export default function WerkhofPage() {
                                                 </div>
                                             </div>
                                         ))}
+                                    </div>
+
+                                    <div className="px-4 py-3 border-t border-slate-100 bg-white">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <MessageSquare className="h-3 w-3 text-slate-400" />
+                                            <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider text-orange-600/70">Kommentare / Versand-Info</span>
+                                        </div>
+                                        <textarea
+                                            className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500/10 focus:border-orange-500/40 outline-none transition-all min-h-[50px] resize-none font-medium text-slate-700 placeholder:text-slate-300"
+                                            placeholder="z.B. Direkt auf Baustelle, bereits bestellt..."
+                                            defaultValue={bestellung.bemerkung || ''}
+                                            onBlur={(e) => handleUpdateBemerkung(bestellung.id, e.target.value)}
+                                        />
                                     </div>
 
                                     <div className="p-4 bg-slate-50/50 border-t border-slate-100 mt-auto">
