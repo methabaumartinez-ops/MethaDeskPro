@@ -1,8 +1,10 @@
+```
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, CheckCircle2, ShieldCheck, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Signature } from '@/components/shared/Signature';
 
 export default function LandingPage() {
   return (

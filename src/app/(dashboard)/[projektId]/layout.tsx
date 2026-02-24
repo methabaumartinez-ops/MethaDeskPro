@@ -64,6 +64,34 @@ export default function DashboardLayout({
                         )}
                         {children}
                     </div>
+
+                    {/* Developer Signature Footer */}
+                    <footer className="mt-auto py-8 border-t border-slate-100 dark:border-slate-800">
+                        <div className="flex flex-col items-center justify-center gap-3">
+                            <a
+                                href="https://www.agentia-automate.ch/de"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-3 group hover:opacity-80 transition-all"
+                            >
+                                <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
+                                    <img
+                                        src="/images/agentia-logo.png"
+                                        alt="AgentiA-Automate Logo"
+                                        className="object-cover w-full h-full"
+                                    />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 group-hover:text-[#FF6B35] transition-colors">
+                                        Powered by
+                                    </span>
+                                    <span className="text-xs font-black text-foreground/80">
+                                        AgentiA-Automate
+                                    </span>
+                                </div>
+                            </a>
+                        </div>
+                    </footer>
                 </main>
             </div>
 
