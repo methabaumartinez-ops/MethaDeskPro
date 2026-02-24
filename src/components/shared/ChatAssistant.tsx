@@ -12,6 +12,8 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export const ChatAssistant = ({ isSidebarMode = false }: { isSidebarMode?: boolean }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -27,7 +29,7 @@ export const ChatAssistant = ({ isSidebarMode = false }: { isSidebarMode?: boole
             {
                 id: 'welcome',
                 role: 'assistant',
-                content: 'Hallo! Ich bin MethaBot. Wie kann ich Ihnen heute helfen?',
+                content: 'Hallo! Ich bin METHAbot. Wie kann ich dir heute helfen?',
             }
         ],
         streamProtocol: 'text',
@@ -60,11 +62,7 @@ export const ChatAssistant = ({ isSidebarMode = false }: { isSidebarMode?: boole
                                     <AnimatedRobot className="h-8 w-8" isWaving={isOpen} isThinking={isLoading} />
                                 </div>
                                 <div className="text-white">
-                                    <CardTitle className="text-base font-black">MethaBot AI</CardTitle>
-                                    <div className="text-[10px] font-bold opacity-80 uppercase tracking-widest flex items-center gap-1">
-                                        <div className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
-                                        Online • Intelligenter Assistent
-                                    </div>
+                                    <CardTitle className="text-base font-black">METHAbot</CardTitle>
                                 </div>
                             </div>
                             <Button
@@ -87,12 +85,20 @@ export const ChatAssistant = ({ isSidebarMode = false }: { isSidebarMode?: boole
                                     )}
                                 >
                                     <div className={cn(
-                                        "px-4 py-2.5 rounded-2xl text-sm font-medium shadow-sm whitespace-pre-wrap",
+                                        "px-4 py-2.5 rounded-2xl text-sm shadow-sm",
                                         msg.role === 'user'
-                                            ? "bg-primary text-white rounded-tr-none"
+                                            ? "bg-primary text-white rounded-tr-none font-medium whitespace-pre-wrap"
                                             : "bg-white dark:bg-slate-900 dark:text-slate-100 rounded-tl-none border border-slate-200 dark:border-slate-800"
                                     )}>
-                                        {msg.content}
+                                        {msg.role === 'user' ? (
+                                            msg.content
+                                        ) : (
+                                            <div className="prose prose-sm dark:prose-invert max-w-none break-words whitespace-pre-wrap leading-relaxed marker:text-primary [&>ul]:space-y-1 [&>ul>li]:pl-1 [&>p]:mb-2 last:[&>p]:mb-0">
+                                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                                    {msg.content}
+                                                </ReactMarkdown>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -109,7 +115,7 @@ export const ChatAssistant = ({ isSidebarMode = false }: { isSidebarMode?: boole
                             )}
                         </CardContent>
 
-                        <CardFooter className="p-4 border-t dark:border-slate-800 bg-white dark:bg-slate-950">
+                        <CardFooter className="p-4 border-t dark:border-slate-800 bg-white dark:bg-slate-950 flex flex-col gap-3">
                             <form
                                 className="flex w-full gap-2 items-center"
                                 onSubmit={handleSubmit}
@@ -132,6 +138,11 @@ export const ChatAssistant = ({ isSidebarMode = false }: { isSidebarMode?: boole
                                     <Send className="h-5 w-5" />
                                 </Button>
                             </form>
+                            <div className="text-center w-full">
+                                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                                    METHAbot kann Fehler machen. Bitte überprüfe wichtige Informationen.
+                                </span>
+                            </div>
                         </CardFooter>
                     </Card>
                 </div>

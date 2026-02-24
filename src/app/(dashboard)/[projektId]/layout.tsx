@@ -6,7 +6,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { ProjectBanner } from '@/components/layout/ProjectBanner';
 import { useProjekt } from '@/lib/context/ProjektContext';
 import { ProjectService } from '@/lib/services/projectService';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 export default function DashboardLayout({
@@ -18,6 +18,7 @@ export default function DashboardLayout({
     const { setActiveProjekt, activeProjekt, loading } = useProjekt();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const router = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
         const validateProject = async () => {
@@ -58,7 +59,9 @@ export default function DashboardLayout({
 
                 <main className="flex-1 lg:ml-64 min-h-[calc(100vh-4rem)] overflow-x-hidden">
                     <div className="p-[1cm] w-full">
-                        <ProjectBanner />
+                        {!pathname?.includes('/chat') && (
+                            <ProjectBanner />
+                        )}
                         {children}
                     </div>
                 </main>

@@ -53,8 +53,8 @@ export const AnimatedRobot: React.FC<AnimatedRobotProps> = ({ className, isWavin
                     `}
                 </style>
                 <linearGradient id="hatGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#FDE047" />
-                    <stop offset="100%" stopColor="#EAB308" />
+                    <stop offset="0%" stopColor="#F97316" />
+                    <stop offset="100%" stopColor="#EA580C" />
                 </linearGradient>
             </defs>
 
@@ -95,9 +95,17 @@ export const AnimatedRobot: React.FC<AnimatedRobotProps> = ({ className, isWavin
                 {/* Hard Hat */}
                 <path d="M 20 45 Q 20 15 50 15 Q 80 15 80 45 Z" fill="url(#hatGradient)" />
                 {/* Hard Hat brim */}
-                <rect x="15" y="42" width="70" height="6" rx="3" fill="#CA8A04" />
+                <rect x="15" y="42" width="70" height="6" rx="3" fill="#EA580C" />
                 {/* Hard hat ridge */}
-                <rect x="42" y="10" width="16" height="8" rx="4" fill="#A16207" />
+                <rect x="42" y="10" width="16" height="8" rx="4" fill="#C2410C" />
+
+                {/* METHABAU Logo */}
+                <g transform="translate(50, 32)">
+                    <rect x="-18" y="-6" width="36" height="9" rx="1" fill="#000000" />
+                    <text x="0" y="1" fontFamily="Arial, Helvetica, sans-serif" fontWeight="900" fontSize="5px" textAnchor="middle">
+                        <tspan fill="#F26A21">METHA</tspan><tspan fill="#FFFFFF">BAU</tspan>
+                    </text>
+                </g>
             </g>
         </svg>
     );
