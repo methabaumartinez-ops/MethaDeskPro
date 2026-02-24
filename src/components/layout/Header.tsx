@@ -70,13 +70,13 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
                                 <span className="text-sm font-bold text-foreground">{activeProjekt.projektname}</span>
                             </div>
                             <Button
-                                variant="ghost"
+                                variant="primary"
                                 size="sm"
-                                className="h-8 ml-2 gap-2 text-muted-foreground hover:text-primary"
+                                className="h-9 ml-4 gap-2 font-bold shadow-sm hover:scale-105 transition-transform"
                                 onClick={() => router.push('/projekte')}
                             >
-                                <FolderSync className="h-3.5 w-3.5" />
-                                <span>Wechseln</span>
+                                <FolderSync className="h-4 w-4" />
+                                <span>Projekt wechseln</span>
                             </Button>
                         </div>
                     )}

@@ -62,7 +62,7 @@ export default function MitarbeiterListPage() {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Mitarbeiter</h1>
+                    <h1 className="text-3xl font-extrabold text-primary tracking-tight">Mitarbeiter</h1>
                     <p className="text-muted-foreground font-medium mt-1">Teammitglieder, die diesem Projekt zugewiesen sind.</p>
                 </div>
                 <div className="flex items-center gap-3 w-full md:w-auto">

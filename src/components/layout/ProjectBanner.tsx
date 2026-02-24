@@ -24,23 +24,23 @@ export function ProjectBanner() {
             </div>
             <div className="flex gap-8 text-xs self-end md:self-auto">
                 <div>
-                    <span className="text-slate-400 block text-[9px] uppercase tracking-wider mb-0.5">Kommission</span>
+                    <span className="text-primary block text-[9px] uppercase tracking-wider mb-0.5">Kommission</span>
                     <span className="font-bold text-sm block font-mono">#{activeProjekt.projektnummer}</span>
                 </div>
                 <div>
-                    <span className="text-slate-400 block text-[9px] uppercase tracking-wider mb-0.5">Bauleiter</span>
+                    <span className="text-primary block text-[9px] uppercase tracking-wider mb-0.5">Bauleiter</span>
                     <span className="font-bold text-sm block">{activeProjekt.bauleiter || 'n/a'}</span>
                 </div>
                 <div>
-                    <span className="text-slate-400 block text-[9px] uppercase tracking-wider mb-0.5">Polier</span>
+                    <span className="text-primary block text-[9px] uppercase tracking-wider mb-0.5">Polier</span>
                     <span className="font-bold text-sm block">{activeProjekt.polier || 'n/a'}</span>
                 </div>
                 <div>
-                    <span className="text-slate-400 block text-[9px] uppercase tracking-wider mb-0.5">Projektleiter</span>
+                    <span className="text-primary block text-[9px] uppercase tracking-wider mb-0.5">Projektleiter</span>
                     <span className="font-bold text-sm block">{activeProjekt.projektleiter || 'n/a'}</span>
                 </div>
                 <div>
-                    <span className="text-slate-400 block text-[9px] uppercase tracking-wider mb-0.5">BIM Konst.</span>
+                    <span className="text-primary block text-[9px] uppercase tracking-wider mb-0.5">BIM Konst.</span>
                     <span className="font-bold text-sm block">{activeProjekt.bimKonstrukteur || 'n/a'}</span>
                 </div>
             </div>

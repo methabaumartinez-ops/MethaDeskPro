@@ -68,7 +68,7 @@ export default function OverviewPage() {
         <div className="space-y-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Übersicht</h1>
+                    <h1 className="text-3xl font-extrabold text-primary tracking-tight">Übersicht</h1>
                     <p className="text-muted-foreground font-medium mt-1">Status und aktuelle Aktivitäten Ihres Projekts.</p>
                 </div>
                 <div className="flex gap-3">

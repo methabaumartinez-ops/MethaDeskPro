@@ -164,7 +164,7 @@ export default function FuhrparkPage() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Fuhrpark</h1>
+                    <h1 className="text-3xl font-extrabold text-primary tracking-tight">Fuhrpark</h1>
                     <p className="text-muted-foreground font-medium mt-1">Bühnen und Baumaschinen – Verwaltung und Disposition.</p>
                 </div>
                 <Link href={`/${projektId}/fuhrpark/erfassen`}>

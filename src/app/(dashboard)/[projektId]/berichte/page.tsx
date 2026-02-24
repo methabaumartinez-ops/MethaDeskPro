@@ -11,7 +11,7 @@ export default function BerichtePage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Berichte</h1>
+                <h1 className="text-3xl font-extrabold text-primary tracking-tight">Berichte</h1>
                 <p className="text-muted-foreground font-medium mt-1">Projektanalysen und Statusberichte.</p>
             </div>
 

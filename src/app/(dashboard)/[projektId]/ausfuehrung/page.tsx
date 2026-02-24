@@ -234,7 +234,7 @@ export default function AusfuehrungPage() {
         <div className="flex flex-col h-[calc(100vh-6rem)] space-y-3">
             <div className="flex justify-between items-center gap-4">
                 <div>
-                    <h2 className="text-2xl font-black text-slate-900 tracking-tight dark:text-slate-100">Ausführung</h2>
+                    <h2 className="text-2xl font-black text-primary tracking-tight dark:text-orange-400">Ausführung</h2>
                     <p className="text-slate-500 font-medium text-xs">Übersicht und Ressourcen.</p>
                 </div>
                 {/* Global Actions or Legend could go here */}

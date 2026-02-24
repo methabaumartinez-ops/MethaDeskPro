@@ -99,7 +99,7 @@ export default function WerkhofPage() {
     return (
         <div className="space-y-6 h-full flex flex-col pt-2 max-w-7xl mx-auto">
             <div>
-                <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Logistik & Werkhof</h1>
+                <h1 className="text-3xl font-extrabold text-primary tracking-tight">Logistik & Werkhof</h1>
                 <p className="text-muted-foreground font-medium mt-1">Materialbestellungen vorbereiten und versenden.</p>
             </div>
 
