@@ -12,8 +12,7 @@ export class DatabaseService {
     private static ensureQdrantId(id: string): string {
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
         if (!isUuid) {
-            console.error(`[DatabaseService] Invalid UUID format: ${id}`);
-            throw new Error(`Invalid ID format: ${id}. Expected a valid UUID.`);
+            console.warn(`[DatabaseService] Standard UUID format expected, got: ${id}. This might fail if the backend strictly requires UUIDs.`);
         }
         return id;
     }

@@ -70,6 +70,11 @@ export default function RegisterPage() {
         { label: 'Ausführung', value: 'Ausführung' },
         { label: 'Werkhof', value: 'Werkhof' },
         { label: 'Fuhrpark', value: 'Fuhrpark' },
+        { label: 'Einkauf', value: 'Einkauf' },
+        { label: 'AVOR', value: 'AVOR' },
+        { label: 'Schlosserei', value: 'Schlosserei' },
+        { label: 'Blechabteilung', value: 'Blechabteilung' },
+        { label: 'Zimmerei', value: 'Zimmerei' },
     ];
 
     // ─── Confirmation pending view ──────────────────────

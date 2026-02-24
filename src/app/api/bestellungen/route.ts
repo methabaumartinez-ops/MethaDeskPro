@@ -26,10 +26,11 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
     try {
         const body = await req.json();
+        const id = uuidv4();
 
         const newItem = {
             ...body,
-            id: body.id || `mb-${Date.now()}-${uuidv4().substring(0, 8)}`,
+            id: body.id || uuidv4(),
         };
 
         const result = await DatabaseService.upsert('bestellungen', newItem);
