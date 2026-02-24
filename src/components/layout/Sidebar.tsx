@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useProjekt } from '@/lib/context/ProjektContext';
 import { ChatAssistant } from '@/components/shared/ChatAssistant';
+import { Signature } from '@/components/shared/Signature';
 
 export function Sidebar({ projektId, className }: { projektId: string; className?: string }) {
     const pathname = usePathname();
@@ -106,30 +107,14 @@ export function Sidebar({ projektId, className }: { projektId: string; className
                 <div className="flex justify-center mb-4">
                     <ChatAssistant isSidebarMode={true} />
                 </div>
-                <div className="rounded-2xl bg-muted p-4 border space-y-4">
-                    <div>
-                        <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">Version</p>
-                        <p className="text-xs font-bold text-foreground/80">v1.0.0-prototype</p>
+                <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/50 p-3 border border-slate-200/50">
+                    <div className="mb-2 px-1">
+                        <p className="text-[10px] font-bold uppercase text-muted-foreground/60 tracking-widest leading-none mb-1">Version</p>
+                        <p className="text-[10px] font-extrabold text-foreground/70">v1.2.4-PRO</p>
                     </div>
-
-                    <a
-                        href="https://www.agentia-automate.ch/de"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 group pt-2 border-t border-slate-200 dark:border-slate-700 transition-all hover:opacity-80"
-                    >
-                        <div className="h-6 w-6 rounded-md overflow-hidden bg-white border border-slate-200 dark:border-slate-800">
-                            <img src="/images/agentia-logo.png" alt="AgentiA" className="w-full h-full object-cover" />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground/70">
-                                Developed by
-                            </span>
-                            <span className="text-[10px] font-black text-foreground/90 group-hover:text-[#FF6B35] transition-colors">
-                                AgentiA-Automate
-                            </span>
-                        </div>
-                    </a>
+                    <div className="pt-2 border-t border-slate-200/50">
+                        <Signature />
+                    </div>
                 </div>
             </div>
         </aside>

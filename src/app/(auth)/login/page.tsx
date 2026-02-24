@@ -11,6 +11,7 @@ import { useProjekt } from '@/lib/context/ProjektContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { LogIn, Eye, EyeOff } from 'lucide-react';
+import { Signature } from '@/components/shared/Signature';
 
 const loginSchema = z.object({
     email: z.string().email('Ungültige E-Mail-Adresse'),
@@ -121,6 +122,9 @@ export default function LoginPage() {
                     </div>
                 </CardContent>
             </Card>
+            <div className="fixed bottom-8 left-0 right-0">
+                <Signature />
+            </div>
         </div>
     );
 }

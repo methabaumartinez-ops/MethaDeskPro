@@ -11,6 +11,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { UserPlus, MailCheck } from 'lucide-react';
+import { Signature } from '@/components/shared/Signature';
 
 const registerSchema = z.object({
     vorname: z.string().min(2, 'Vorname ist erforderlich'),
@@ -195,6 +196,9 @@ export default function RegisterPage() {
                     </div>
                 </CardContent>
             </Card>
+            <div className="fixed bottom-8 left-0 right-0">
+                <Signature />
+            </div>
         </div>
     );
 }

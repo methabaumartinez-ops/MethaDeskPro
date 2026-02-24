@@ -8,6 +8,7 @@ import { useProjekt } from '@/lib/context/ProjektContext';
 import { ProjectService } from '@/lib/services/projectService';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { Signature } from '@/components/shared/Signature';
 
 export default function DashboardLayout({
     children,
@@ -57,8 +58,8 @@ export default function DashboardLayout({
             <div className="flex pt-16">
                 <Sidebar projektId={projektId} className="fixed left-0 top-16 z-30 hidden lg:block" />
 
-                <main className="flex-1 lg:ml-64 min-h-[calc(100vh-4rem)] overflow-x-hidden">
-                    <div className="p-[1cm] w-full">
+                <main className="flex-1 lg:ml-64 flex flex-col min-h-[calc(100vh-4rem)] overflow-x-hidden">
+                    <div className="p-[1cm] w-full flex-1">
                         {!pathname?.includes('/chat') && (
                             <ProjectBanner />
                         )}
@@ -66,31 +67,8 @@ export default function DashboardLayout({
                     </div>
 
                     {/* Developer Signature Footer */}
-                    <footer className="mt-auto py-8 border-t border-slate-100 dark:border-slate-800">
-                        <div className="flex flex-col items-center justify-center gap-3">
-                            <a
-                                href="https://www.agentia-automate.ch/de"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-3 group hover:opacity-80 transition-all"
-                            >
-                                <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
-                                    <img
-                                        src="/images/agentia-logo.png"
-                                        alt="AgentiA-Automate Logo"
-                                        className="object-cover w-full h-full"
-                                    />
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 group-hover:text-[#FF6B35] transition-colors">
-                                        Powered by
-                                    </span>
-                                    <span className="text-xs font-black text-foreground/80">
-                                        AgentiA-Automate
-                                    </span>
-                                </div>
-                            </a>
-                        </div>
+                    <footer className="py-12 border-t border-slate-100 dark:border-slate-800 bg-slate-50/30">
+                        <Signature />
                     </footer>
                 </main>
             </div>

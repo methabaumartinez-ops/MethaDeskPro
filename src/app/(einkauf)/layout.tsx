@@ -6,6 +6,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { ProjectService } from '@/lib/services/projectService';
 import { cn } from '@/lib/utils';
 import { Projekt } from '@/types';
+import { Signature } from '@/components/shared/Signature';
 
 export default function EinkaufLayout({
     children,
@@ -32,10 +33,13 @@ export default function EinkaufLayout({
             <div className="flex pt-16">
                 {projektId && <Sidebar projektId={projektId} className="fixed left-0 top-16 z-30 hidden lg:block" />}
 
-                <main className="flex-1 lg:ml-64 min-h-[calc(100vh-4rem)] overflow-x-hidden">
-                    <div className="p-4 sm:p-6 lg:p-8 w-full">
+                <main className="flex-1 lg:ml-64 flex flex-col min-h-[calc(100vh-4rem)] overflow-x-hidden">
+                    <div className="p-4 sm:p-6 lg:p-8 w-full flex-1">
                         {children}
                     </div>
+                    <footer className="py-8 border-t border-slate-100 bg-slate-50/30">
+                        <Signature />
+                    </footer>
                 </main>
             </div>
 

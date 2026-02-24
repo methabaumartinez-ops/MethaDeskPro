@@ -1,4 +1,3 @@
-```
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -63,8 +62,9 @@ export default function LandingPage() {
         </div>
       </main>
 
-      <footer className="py-4 border-t border-slate-100 text-center">
-        <p className="text-xs text-slate-400 font-medium">
+      <footer className="py-8 border-t border-slate-100 flex flex-col items-center gap-4">
+        <Signature />
+        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
           © {new Date().getFullYear()} METHABAU AG. Alle Rechte vorbehalten.
         </p>
       </footer>

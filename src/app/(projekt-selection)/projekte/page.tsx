@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/layout/Header';
 import { useRouter } from 'next/navigation';
 import { Plus, MapPin, Calendar, ArrowRight, Trash2, Pencil } from 'lucide-react';
+import { Signature } from '@/components/shared/Signature';
 
 export default function ProjektePage() {
     const { setActiveProjekt, currentUser, loading: authLoading } = useProjekt();
@@ -203,6 +204,10 @@ export default function ProjektePage() {
                     </div>
                 )}
             </main>
+
+            <footer className="py-12 border-t border-slate-100 mt-12">
+                <Signature />
+            </footer>
         </div>
     );
 }
