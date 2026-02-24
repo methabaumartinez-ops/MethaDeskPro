@@ -258,8 +258,10 @@ export default function FuhrparkPage() {
                     )}
                 </div>
 
-                {activeTab === 'fahrzeuge' && (
-                    <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md -mx-6 px-6 py-3 mb-4 scrollbar-hide">
+                {/* Tab: Fahrzeuge */}
+                <TabsContent active={activeTab === 'fahrzeuge'}>
+                    {/* Category Menu (Orange Theme) */}
+                    <div className="bg-background/95 backdrop-blur-sm -mx-6 px-6 py-3 mb-4 scrollbar-hide">
                         <div className="flex gap-2 p-1.5 overflow-x-auto border-2 border-[#FF6B35]/20 bg-white rounded-2xl shadow-sm">
                             <Button
                                 variant="ghost"
@@ -292,12 +294,9 @@ export default function FuhrparkPage() {
                             ))}
                         </div>
                     </div>
-                )}
 
-                {/* Tab: Fahrzeuge */}
-                <TabsContent active={activeTab === 'fahrzeuge'}>
                     {/* Group Navigation (Folders) */}
-                    <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
+                    <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide px-1">
                         <Button
                             variant={selectedGroup === 'Alle' ? 'primary' : 'outline'}
                             onClick={() => setSelectedGroup('Alle')}
