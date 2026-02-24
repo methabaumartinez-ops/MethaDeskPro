@@ -31,7 +31,6 @@ const KATEGORIE_LABELS: Record<string, string> = {
     raupendumper: 'Raupendumper',
     minikran: 'Minikran',
     turmdrehkran: 'Turmdrehkran',
-    sonstiges: 'Sonstiges',
 };
 
 const STATUS_CONFIG: Record<string, { label: string; variant: 'success' | 'warning' | 'error' | 'info' }> = {

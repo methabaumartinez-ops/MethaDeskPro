@@ -143,8 +143,7 @@ export type FahrzeugKategorie =
   | 'baggerlader'
   | 'raupendumper'
   | 'minikran'
-  | 'turmdrehkran'
-  | 'sonstiges';
+  | 'turmdrehkran';
 
 export type FahrzeugStatus = 'verfuegbar' | 'reserviert' | 'in_wartung' | 'ausser_betrieb';
 
