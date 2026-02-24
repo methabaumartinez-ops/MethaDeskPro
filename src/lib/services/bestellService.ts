@@ -1,51 +1,30 @@
 import { MaterialBestellung, BestellungStatus } from '@/types';
-import { mockStore } from '../mock/store';
-
-// Simulate network delay
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+import { DatabaseService } from './db';
+import { v4 as uuidv4 } from 'uuid';
 
 export class BestellService {
     static async getBestellungen(projektId?: string): Promise<MaterialBestellung[]> {
-        await delay(300);
-        return mockStore.getBestellungen(projektId);
+        const all = await DatabaseService.list<MaterialBestellung>('bestellungen');
+        return projektId ? all.filter(b => b.projektId === projektId) : all;
     }
 
     static async getBestellung(id: string): Promise<MaterialBestellung | undefined> {
-        await delay(200);
-        const bestellungen = mockStore.getBestellungen();
-        return bestellungen.find((b: any) => b.id === id);
+        const bestellung = await DatabaseService.get<MaterialBestellung>('bestellungen', id);
+        return bestellung || undefined;
     }
 
     static async createBestellung(bestellung: Omit<MaterialBestellung, 'id'>): Promise<MaterialBestellung> {
-        await delay(500);
-        const bestellungen = mockStore.getBestellungen();
-        const newBestellung = {
-            ...bestellung,
-            id: `mb-${Date.now()}`
-        };
-        mockStore.saveBestellungen([...bestellungen, newBestellung]);
-        return newBestellung;
+        const id = `mb-${Date.now()}-${uuidv4().substring(0, 8)}`;
+        const newBestellung = { ...bestellung, id };
+        return await DatabaseService.upsert('bestellungen', newBestellung as MaterialBestellung);
     }
 
     static async updateBestellung(id: string, updates: Partial<MaterialBestellung>): Promise<MaterialBestellung> {
-        await delay(400);
-        const bestellungen = mockStore.getBestellungen();
-        let updatedItem: MaterialBestellung | null = null;
+        const bestellung = await this.getBestellung(id);
+        if (!bestellung) throw new Error(`Bestellung with id ${id} not found`);
 
-        const updated = bestellungen.map((b: any) => {
-            if (b.id === id) {
-                updatedItem = { ...b, ...updates };
-                return updatedItem;
-            }
-            return b;
-        });
-
-        if (!updatedItem) {
-            throw new Error(`Bestellung with id ${id} not found`);
-        }
-
-        mockStore.saveBestellungen(updated);
-        return updatedItem;
+        const updated = { ...bestellung, ...updates };
+        return await DatabaseService.upsert('bestellungen', updated);
     }
 
     static async updateBestellungStatus(id: string, status: BestellungStatus): Promise<MaterialBestellung> {
@@ -53,32 +32,19 @@ export class BestellService {
     }
 
     static async toggleItemVorbereitet(bestellungId: string, itemId: string, vorbereitet: boolean): Promise<MaterialBestellung> {
-        await delay(200);
-        const bestellungen = mockStore.getBestellungen();
-        let updatedBestellung: MaterialBestellung | null = null;
+        const bestellung = await this.getBestellung(bestellungId);
+        if (!bestellung) throw new Error("Bestellung not found");
 
-        const updated = bestellungen.map((b: any) => {
-            if (b.id === bestellungId) {
-                const newItems = b.items.map((item: any) => {
-                    if (item.id === itemId) return { ...item, vorbereitet };
-                    return item;
-                });
-                updatedBestellung = { ...b, items: newItems };
-                return updatedBestellung;
-            }
-            return b;
-        });
+        const items = [...bestellung.items];
+        const itemIndex = items.findIndex(i => i.id === itemId);
+        if (itemIndex > -1) {
+            items[itemIndex] = { ...items[itemIndex], vorbereitet };
+        }
 
-        if (!updatedBestellung) throw new Error("Bestellung not found");
-
-        mockStore.saveBestellungen(updated);
-        return updatedBestellung;
+        return this.updateBestellung(bestellungId, { items });
     }
 
     static async deleteBestellung(id: string): Promise<void> {
-        await delay(400);
-        const bestellungen = mockStore.getBestellungen();
-        const filtered = bestellungen.filter((b: any) => b.id !== id);
-        mockStore.saveBestellungen(filtered);
+        await DatabaseService.delete('bestellungen', id);
     }
 }

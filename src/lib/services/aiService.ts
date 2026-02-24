@@ -11,17 +11,21 @@ export class AIService {
                 ]
             };
 
-            const [projekt, teilsysteme, fahrzeuge, mitarbeiter, material, lieferanten, positionen] = await Promise.all([
+            const [projekt, allTeilsysteme, fahrzeuge, mitarbeiter, material, lieferanten, positionen, allBestellungen] = await Promise.all([
                 DatabaseService.get<any>('projekte', projektId),
-                DatabaseService.list<any>('teilsysteme', filter),
+                DatabaseService.list<any>('teilsysteme'), // Fetch all, filter manually like UI to avoid index issues
                 DatabaseService.list<any>('fahrzeuge'),
                 DatabaseService.list<any>('mitarbeiter'),
                 DatabaseService.list<any>('material'),
                 DatabaseService.list<any>('lieferanten'),
                 DatabaseService.list<any>('positionen'),
+                DatabaseService.list<any>('bestellungen'),
             ]);
 
-            console.log(`Context found: ${teilsysteme?.length || 0} systems, ${positionen?.length || 0} positions`);
+            const teilsysteme = allTeilsysteme?.filter(t => t.projektId === projektId) || [];
+            const bestellungen = allBestellungen?.filter(b => b.projektId === projektId) || [];
+
+            console.log(`Context found: ${teilsysteme?.length || 0} systems, ${positionen?.length || 0} positions, ${bestellungen?.length || 0} bestellungen`);
 
             return {
                 projekt,
@@ -30,7 +34,8 @@ export class AIService {
                 mitarbeiter,
                 material: material?.filter(m => m.projektId === projektId || !m.projektId),
                 lieferanten,
-                positionen
+                positionen,
+                bestellungen
             };
         } catch (error) {
             console.error('Error fetching context for AI:', error);
@@ -110,6 +115,20 @@ export class AIService {
             text += `\n=== LIEFERANTEN ===\n`;
             context.lieferanten.forEach((l: any) => {
                 text += `- ${l.name}: Kontakt ${l.kontaktperson || 'N/A'}, Tel: ${l.telefon || 'N/A'}\n`;
+            });
+        }
+
+        if (context.bestellungen && context.bestellungen.length > 0) {
+            text += `\n=== WERKHOF BESTELLUNGEN & LOGISTIK ===\n`;
+            context.bestellungen.forEach((b: any) => {
+                text += `- Bestellung ${b.bestellnummer} (${b.titel}): Status ${b.status}, Bestellt von ${b.bestelltVon}, Datum ${new Date(b.erstelltAm).toLocaleDateString('de-CH')}\n`;
+                if (b.items && b.items.length > 0) {
+                    text += `  Artikel:\n`;
+                    b.items.forEach((item: any) => {
+                        const readyMark = item.vorbereitet ? '[X] Bereit' : '[ ] Offen';
+                        text += `  - ${item.menge} ${item.einheit} ${item.name} | ${readyMark}\n`;
+                    });
+                }
             });
         }
 
