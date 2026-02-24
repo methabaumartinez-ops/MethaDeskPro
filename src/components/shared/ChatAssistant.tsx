@@ -4,8 +4,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { useChat } from 'ai/react';
+import { AnimatedRobot } from '@/components/shared/AnimatedRobot';
 import {
-    MessageSquare, X, Send, Bot, User, Sparkles,
+    MessageSquare, X, Send, User, Sparkles,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -55,8 +56,8 @@ export const ChatAssistant = ({ isSidebarMode = false }: { isSidebarMode?: boole
                     <Card className="h-full flex flex-col shadow-2xl border-slate-200 bg-white dark:bg-slate-950 overflow-hidden">
                         <CardHeader className="bg-primary p-4 flex flex-row items-center justify-between space-y-0">
                             <div className="flex items-center gap-3">
-                                <div className="bg-white/20 p-2 rounded-xl">
-                                    <Bot className="h-5 w-5 text-white" />
+                                <div className="bg-white/20 p-2 rounded-xl flex items-center justify-center">
+                                    <AnimatedRobot className="h-8 w-8" isWaving={isOpen} isThinking={isLoading} />
                                 </div>
                                 <div className="text-white">
                                     <CardTitle className="text-base font-black">MethaBot AI</CardTitle>
@@ -140,22 +141,16 @@ export const ChatAssistant = ({ isSidebarMode = false }: { isSidebarMode?: boole
             <Button
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
-                    "h-14 w-14 rounded-full shadow-2xl transition-all duration-500 flex items-center justify-center p-0 overflow-hidden",
+                    "h-20 w-20 rounded-full shadow-2xl transition-all duration-500 flex items-center justify-center p-0 overflow-hidden",
                     isOpen ? "rotate-90 bg-slate-900 hover:bg-slate-800" : "bg-white hover:bg-slate-50 border-2 border-primary hover:scale-110",
-                    isSidebarMode ? "h-12 w-12" : ""
+                    isSidebarMode ? "h-14 w-14" : ""
                 )}
             >
                 {isOpen ? (
                     <X className="h-6 w-6 text-white" />
                 ) : (
                     <div className="relative h-full w-full flex items-center justify-center">
-                        <Image
-                            src="/assets/robot_head.svg"
-                            alt="Chat AI"
-                            width={40}
-                            height={40}
-                            className="object-contain"
-                        />
+                        <AnimatedRobot className="h-14 w-14 transition-transform hover:scale-110" isWaving={!isOpen} />
                         <div className="absolute top-1 right-1 h-3 w-3 bg-white rounded-full flex items-center justify-center z-10 shadow-sm border border-slate-100">
                             <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-ping" />
                         </div>

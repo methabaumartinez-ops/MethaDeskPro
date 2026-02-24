@@ -6,8 +6,9 @@ import { useParams } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, Send, Bot, User, Sparkles } from 'lucide-react';
+import { MessageSquare, Send, User, Sparkles } from 'lucide-react';
 import { clsx } from 'clsx';
+import { AnimatedRobot } from '@/components/shared/AnimatedRobot';
 
 export default function ChatPage() {
     const params = useParams();
@@ -42,7 +43,7 @@ export default function ChatPage() {
             <Card className="flex-1 flex flex-col overflow-hidden border-none shadow-xl bg-gradient-to-b from-background to-accent/20">
                 <CardHeader className="border-b bg-background/50 backdrop-blur-sm">
                     <CardTitle className="flex items-center gap-2 text-lg">
-                        <Bot className="h-5 w-5 text-primary" />
+                        <AnimatedRobot className="h-7 w-7" />
                         Metha-Assistent (Beta)
                     </CardTitle>
                 </CardHeader>
@@ -50,8 +51,8 @@ export default function ChatPage() {
                 <CardContent className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
                     {messages.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground animate-in fade-in zoom-in duration-500">
-                            <div className="p-4 rounded-full bg-primary/10 mb-4">
-                                <Bot className="h-12 w-12 text-primary opacity-50" />
+                            <div className="p-4 rounded-full bg-primary/10 mb-4 transition-transform hover:scale-110">
+                                <AnimatedRobot className="h-24 w-24 md:h-28 md:w-28 drop-shadow-lg" isWaving={true} />
                             </div>
                             <p className="text-xl font-semibold text-foreground">Hallo! Ich bin Ihr MethaDeskPro-Assistent</p>
                             <p className="max-w-sm mt-2">
@@ -102,10 +103,10 @@ export default function ChatPage() {
                                     )}
                                 >
                                     <div className={clsx(
-                                        "flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center shadow-sm",
+                                        "flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center shadow-sm",
                                         m.role === 'user' ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground border"
                                     )}>
-                                        {m.role === 'user' ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
+                                        {m.role === 'user' ? <User className="h-5 w-5" /> : <AnimatedRobot className="h-8 w-8" />}
                                     </div>
                                     <div
                                         className={clsx(
@@ -124,8 +125,8 @@ export default function ChatPage() {
                     {isLoading && (
                         <div className="flex justify-start mb-4">
                             <div className="flex gap-3 max-w-[70%]">
-                                <div className="flex-shrink-0 h-8 w-8 rounded-full bg-muted flex items-center justify-center border">
-                                    <Bot className="h-5 w-5 text-muted-foreground" />
+                                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-muted flex items-center justify-center border">
+                                    <AnimatedRobot className="h-8 w-8" isThinking={true} />
                                 </div>
                                 <div className="bg-background border rounded-2xl rounded-tl-none px-4 py-3 flex gap-1 items-center">
                                     <span className="w-1.5 h-1.5 bg-foreground/20 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
