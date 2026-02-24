@@ -16,6 +16,7 @@ import {
     Plus, Search, Eye, Edit, Trash2, CalendarPlus,
     Car, Wrench, AlertTriangle, CheckCircle2, Calendar
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 const KATEGORIE_LABELS: Record<string, string> = {
@@ -47,6 +48,7 @@ export default function FuhrparkPage() {
     const [activeTab, setActiveTab] = useState('fahrzeuge');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedGroup, setSelectedGroup] = useState('Alle');
+    const [selectedKategorie, setSelectedKategorie] = useState('Alle');
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedFahrzeug, setSelectedFahrzeug] = useState<Fahrzeug | undefined>();
 
@@ -143,6 +145,7 @@ export default function FuhrparkPage() {
 
     const filteredFahrzeuge = fahrzeuge.filter(f => {
         if (selectedGroup !== 'Alle' && (f.gruppe || 'Sonstige') !== selectedGroup) return false;
+        if (selectedKategorie !== 'Alle' && f.kategorie !== selectedKategorie) return false;
 
         if (!searchTerm) return true;
         const term = searchTerm.toLowerCase();
@@ -459,6 +462,62 @@ export default function FuhrparkPage() {
                 fahrzeug={selectedFahrzeug}
                 projektId={projektId}
             />
+            {/* Sticky Bottom Category Tabs */}
+            <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-t py-2 px-4 shadow-2xl flex justify-center md:hidden">
+                <div className="flex gap-2 overflow-x-auto pb-1 max-w-full no-scrollbar">
+                    <Button
+                        variant={selectedKategorie === 'Alle' ? 'secondary' : 'ghost'}
+                        size="sm"
+                        className={cn(
+                            "rounded-full whitespace-nowrap text-[10px] font-bold h-8",
+                            selectedKategorie === 'Alle' && "bg-primary text-white hover:bg-primary/90"
+                        )}
+                        onClick={() => setSelectedKategorie('Alle')}
+                    >
+                        Alle
+                    </Button>
+                    {Object.entries(KATEGORIE_LABELS).map(([key, label]) => (
+                        <Button
+                            key={key}
+                            variant={selectedKategorie === key ? 'secondary' : 'ghost'}
+                            size="sm"
+                            className={cn(
+                                "rounded-full whitespace-nowrap text-[10px] font-bold h-8",
+                                selectedKategorie === key && "bg-primary text-white hover:bg-primary/90"
+                            )}
+                            onClick={() => setSelectedKategorie(key)}
+                        >
+                            {label}
+                        </Button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Desktop Bottom Bar (optional but nice) */}
+            <div className="hidden md:flex fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-background/90 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-full p-1.5 shadow-2xl items-center gap-1 overflow-x-auto max-w-[90vw]">
+                <Button
+                    variant={selectedKategorie === 'Alle' ? 'primary' : 'ghost'}
+                    size="sm"
+                    className="rounded-full px-4 h-9 font-bold transition-all"
+                    onClick={() => setSelectedKategorie('Alle')}
+                >
+                    Alle
+                </Button>
+                {Object.entries(KATEGORIE_LABELS).map(([key, label]) => (
+                    <Button
+                        key={key}
+                        variant={selectedKategorie === key ? 'primary' : 'ghost'}
+                        size="sm"
+                        className="rounded-full px-4 h-9 font-bold transition-all"
+                        onClick={() => setSelectedKategorie(key)}
+                    >
+                        {label}
+                    </Button>
+                ))}
+            </div>
+
+            {/* Spacer for bottom bar */}
+            <div className="h-16 md:h-20" />
         </div>
     );
 }
