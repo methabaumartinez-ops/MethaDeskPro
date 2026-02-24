@@ -168,78 +168,88 @@ export default function FuhrparkPage() {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-extrabold text-primary tracking-tight">Fuhrpark</h1>
-                    <p className="text-muted-foreground font-medium mt-1">Bühnen und Baumaschinen – Verwaltung und Disposition.</p>
+        <div className="flex flex-col h-full -mt-6"> {/* Full height container to manage sticky better */}
+            {/* --- FIXED/STICKY HEADER SECTION --- */}
+            <div className="sticky top-0 z-50 bg-background pt-6 pb-2 space-y-6 shadow-sm border-b -mx-6 px-6">
+                {/* Title and Action Button */}
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h1 className="text-3xl font-extrabold text-primary tracking-tight">Fuhrpark</h1>
+                        <p className="text-sm font-medium text-muted-foreground mt-1">Bühnen und Baumaschinen – Verwaltung und Disposition.</p>
+                    </div>
+                    <Link href={`/${projektId}/fuhrpark/erfassen`}>
+                        <Button className="font-bold shadow-lg shadow-[#FF6B35]/20 bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white">
+                            <Plus className="h-5 w-5 mr-2" />
+                            Neue Maschine
+                        </Button>
+                    </Link>
                 </div>
-                <Link href={`/${projektId}/fuhrpark/erfassen`}>
-                    <Button className="font-bold shadow-lg shadow-primary/20">
-                        <Plus className="h-5 w-5 mr-2" />
-                        Neue Maschine
-                    </Button>
-                </Link>
-            </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <Card>
-                    <CardContent className="p-4 flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                            <CheckCircle2 className="h-5 w-5 text-green-600" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-extrabold text-foreground">{fahrzeuge.filter(f => f.status === 'verfuegbar').length}</p>
-                            <p className="text-xs font-semibold text-muted-foreground">Verfügbar</p>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="p-4 flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                            <Calendar className="h-5 w-5 text-amber-600" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-extrabold text-foreground">{fahrzeuge.filter(f => f.status === 'reserviert').length}</p>
-                            <p className="text-xs font-semibold text-muted-foreground">Reserviert</p>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="p-4 flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                            <Wrench className="h-5 w-5 text-blue-600" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-extrabold text-foreground">{fahrzeuge.filter(f => f.status === 'in_wartung').length}</p>
-                            <p className="text-xs font-semibold text-muted-foreground">In Wartung</p>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="p-4 flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                            <Car className="h-5 w-5 text-slate-500" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-extrabold text-foreground">{fahrzeuge.length}</p>
-                            <p className="text-xs font-semibold text-muted-foreground">Gesamt</p>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-            {/* Tabs & Sticky Header Section */}
-            <Tabs>
-                <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-md -mx-6 px-6 pt-4 pb-2 border-b shadow-sm space-y-4">
-                    {/* Tabs & Search */}
+                {/* Stats Cards Row (Horizontal Scroll on Mobile) */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                    <Card className="border-[#FF6B35]/20 min-w-[150px]">
+                        <CardContent className="p-3 flex items-center gap-3">
+                            <div className="h-9 w-9 rounded-xl bg-green-50 flex items-center justify-center">
+                                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                            </div>
+                            <div>
+                                <p className="text-xl font-black text-foreground">{fahrzeuge.filter(f => f.status === 'verfuegbar').length}</p>
+                                <p className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">Verfügbar</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card className="border-[#FF6B35]/20 min-w-[150px]">
+                        <CardContent className="p-3 flex items-center gap-3">
+                            <div className="h-9 w-9 rounded-xl bg-amber-50 flex items-center justify-center">
+                                <Calendar className="h-5 w-5 text-amber-600" />
+                            </div>
+                            <div>
+                                <p className="text-xl font-black text-foreground">{fahrzeuge.filter(f => f.status === 'reserviert').length}</p>
+                                <p className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">Reserviert</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card className="border-[#FF6B35]/20 min-w-[150px]">
+                        <CardContent className="p-3 flex items-center gap-3">
+                            <div className="h-9 w-9 rounded-xl bg-blue-50 flex items-center justify-center">
+                                <Wrench className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <div>
+                                <p className="text-xl font-black text-foreground">{fahrzeuge.filter(f => f.status === 'in_wartung').length}</p>
+                                <p className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">In Wartung</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card className="border-[#FF6B35]/20 min-w-[150px]">
+                        <CardContent className="p-3 flex items-center gap-3">
+                            <div className="h-9 w-9 rounded-xl bg-slate-50 flex items-center justify-center">
+                                <Car className="h-5 w-5 text-slate-500" />
+                            </div>
+                            <div>
+                                <p className="text-xl font-black text-foreground">{fahrzeuge.length}</p>
+                                <p className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">Gesamt</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Controls Section (Tabs, Search, Categories, Groups) */}
+                <div className="space-y-4">
                     <div className="flex items-center justify-between gap-4 flex-wrap">
-                        <TabsList>
-                            <TabsTrigger active={activeTab === 'fahrzeuge'} onClick={() => setActiveTab('fahrzeuge')}>
+                        <TabsList className="bg-slate-100/50">
+                            <TabsTrigger
+                                active={activeTab === 'fahrzeuge'}
+                                onClick={() => setActiveTab('fahrzeuge')}
+                                className={activeTab === 'fahrzeuge' ? "bg-white shadow-sm" : ""}
+                            >
                                 <Car className="h-4 w-4 mr-2" />
                                 Fahrzeuge
                             </TabsTrigger>
-                            <TabsTrigger active={activeTab === 'reservierungen'} onClick={() => setActiveTab('reservierungen')}>
+                            <TabsTrigger
+                                active={activeTab === 'reservierungen'}
+                                onClick={() => setActiveTab('reservierungen')}
+                                className={activeTab === 'reservierungen' ? "bg-white shadow-sm" : ""}
+                            >
                                 <Calendar className="h-4 w-4 mr-2" />
                                 Reservierungen ({reservierungen.length})
                             </TabsTrigger>
@@ -248,10 +258,9 @@ export default function FuhrparkPage() {
                         {activeTab === 'fahrzeuge' && (
                             <div className="relative w-full md:w-72">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <input
-                                    type="text"
-                                    placeholder="Suchen..."
-                                    className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 transition-all"
+                                <Input
+                                    placeholder="Suchen nach Bezeichnung oder Inventarnummer..."
+                                    className="pl-10 rounded-xl h-11 border-[#FF6B35]/10 bg-white"
                                     value={searchTerm}
                                     onChange={e => setSearchTerm(e.target.value)}
                                 />
@@ -261,46 +270,51 @@ export default function FuhrparkPage() {
 
                     {activeTab === 'fahrzeuge' && (
                         <div className="space-y-4">
-                            {/* Category Menu (Orange Theme) */}
-                            <div className="flex gap-2 p-1.5 overflow-x-auto border-2 border-[#FF6B35]/20 bg-white rounded-2xl shadow-sm scrollbar-hide">
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className={cn(
-                                        "rounded-xl whitespace-nowrap text-xs font-black transition-all h-9 px-4",
-                                        selectedKategorie === 'Alle'
-                                            ? "bg-[#FF6B35] text-white shadow-md shadow-[#FF6B35]/20 hover:bg-[#FF6B35]/90"
-                                            : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-                                    )}
-                                    onClick={() => setSelectedKategorie('Alle')}
-                                >
-                                    Alle
-                                </Button>
-                                {Object.entries(KATEGORIE_LABELS).map(([key, label]) => (
+                            {/* ORANGE CATEGORY MENU - ENSURING VISIBILITY */}
+                            <div className="bg-[#FF6B35]/5 p-1 rounded-2xl border-2 border-[#FF6B35]/20 h-14 flex items-center">
+                                <div className="flex gap-2 overflow-x-auto w-full px-2 scrollbar-hide py-1">
                                     <Button
-                                        key={key}
                                         variant="ghost"
                                         size="sm"
                                         className={cn(
-                                            "rounded-xl whitespace-nowrap text-xs font-black transition-all h-9 px-4",
-                                            selectedKategorie === key
-                                                ? "bg-[#FF6B35] text-white shadow-md shadow-[#FF6B35]/20 hover:bg-[#FF6B35]/90"
-                                                : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                            "rounded-xl whitespace-nowrap text-xs font-black transition-all h-9 px-5",
+                                            selectedKategorie === 'Alle'
+                                                ? "bg-[#FF6B35] text-white shadow-md shadow-[#FF6B35]/20 hover:bg-[#FF6B35]"
+                                                : "text-[#FF6B35] hover:bg-[#FF6B35]/10"
                                         )}
-                                        onClick={() => setSelectedKategorie(key)}
+                                        onClick={() => setSelectedKategorie('Alle')}
                                     >
-                                        {label}
+                                        Alle
                                     </Button>
-                                ))}
+                                    {Object.entries(KATEGORIE_LABELS).map(([key, label]) => (
+                                        <Button
+                                            key={key}
+                                            variant="ghost"
+                                            size="sm"
+                                            className={cn(
+                                                "rounded-xl whitespace-nowrap text-xs font-black transition-all h-9 px-5",
+                                                selectedKategorie === key
+                                                    ? "bg-[#FF6B35] text-white shadow-md shadow-[#FF6B35]/20 hover:bg-[#FF6B35]"
+                                                    : "text-[#FF6B35] hover:bg-[#FF6B35]/10"
+                                            )}
+                                            onClick={() => setSelectedKategorie(key)}
+                                        >
+                                            {label}
+                                        </Button>
+                                    ))}
+                                </div>
                             </div>
 
-                            {/* Group Navigation (Folders) */}
-                            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide px-1">
+                            {/* FOLDERS / GROUPS NAVIGATION */}
+                            <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
                                 <Button
                                     variant={selectedGroup === 'Alle' ? 'primary' : 'outline'}
                                     onClick={() => setSelectedGroup('Alle')}
                                     size="sm"
-                                    className="whitespace-nowrap px-4 rounded-full h-7 text-[10px] font-bold"
+                                    className={cn(
+                                        "h-8 rounded-full text-[11px] font-black uppercase tracking-wider px-5",
+                                        selectedGroup === 'Alle' ? "bg-[#FF6B35] text-white" : "text-muted-foreground"
+                                    )}
                                 >
                                     Alle Gruppen
                                 </Button>
@@ -310,7 +324,10 @@ export default function FuhrparkPage() {
                                         variant={selectedGroup === grp ? 'primary' : 'outline'}
                                         onClick={() => setSelectedGroup(grp)}
                                         size="sm"
-                                        className="whitespace-nowrap px-4 rounded-full h-7 text-[10px] font-bold"
+                                        className={cn(
+                                            "h-8 rounded-full text-[11px] font-black uppercase tracking-wider px-5",
+                                            selectedGroup === grp ? "bg-[#FF6B35] text-white" : "text-muted-foreground"
+                                        )}
                                     >
                                         {grp}
                                     </Button>
@@ -319,174 +336,147 @@ export default function FuhrparkPage() {
                         </div>
                     )}
                 </div>
+            </div>
 
-                {/* Content Area */}
-                <div className="pt-2">
-                    {/* Tab: Fahrzeuge */}
+            {/* --- SCROLLABLE CONTENT AREA --- */}
+            <div className="flex-1 overflow-y-auto pt-6">
+                <Tabs>
                     <TabsContent active={activeTab === 'fahrzeuge'}>
-                        <Card className="border-none shadow-none bg-transparent">
-                            <CardContent className="p-0">
-                                {loading ? (
-                                    <div className="py-20 flex justify-center">
-                                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                                    </div>
-                                ) : filteredFahrzeuge.length === 0 ? (
-                                    <div className="py-20 flex flex-col items-center gap-2">
-                                        <Car className="h-10 w-10 text-muted-foreground/40" />
-                                        <p className="text-muted-foreground font-bold">Keine Maschinen gefunden</p>
-                                    </div>
-                                ) : (
-                                    <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-card shadow-sm">
-                                        <Table className="border-none rounded-none">
-                                            <TableHeader className="sticky top-[184px] md:top-[160px] z-30 bg-slate-50 dark:bg-slate-900 border-b shadow-sm">
-                                                <TableRow className="hover:bg-transparent">
-                                                    <TableHead className="font-bold text-foreground text-xs h-10 px-4">BEZEICHNUNG</TableHead>
-                                                    <TableHead className="font-bold text-foreground text-xs h-10 px-4">INV.-NR.</TableHead>
-                                                    <TableHead className="font-bold text-foreground text-xs h-10 px-4">GRUPPE / TYP</TableHead>
-                                                    <TableHead className="font-bold text-foreground text-xs h-10 px-4">STANDORT</TableHead>
-                                                    <TableHead className="font-bold text-foreground text-xs h-10 px-4">FABRIKAT / MODELL</TableHead>
-                                                    <TableHead className="font-bold text-foreground text-xs h-10 px-4">STATUS</TableHead>
-                                                    <TableHead className="font-bold text-foreground text-xs h-10 px-4 text-right">AKTIONEN</TableHead>
+                        <div className="rounded-2xl border-2 border-[#FF6B35]/10 overflow-hidden bg-white shadow-sm mb-12">
+                            {loading ? (
+                                <div className="py-20 flex justify-center">
+                                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#FF6B35] border-t-transparent" />
+                                </div>
+                            ) : filteredFahrzeuge.length === 0 ? (
+                                <div className="py-20 flex flex-col items-center gap-3 text-center">
+                                    <Car className="h-12 w-12 text-slate-200" />
+                                    <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">Keine Maschinen im Fuhrpark gefunden</p>
+                                </div>
+                            ) : (
+                                <Table>
+                                    <TableHeader className="bg-slate-50/50 sticky top-0 z-20 shadow-sm border-b">
+                                        <TableRow className="hover:bg-transparent h-14">
+                                            <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-500 pl-6">Bezeichnung</TableHead>
+                                            <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-500">Inv.-Nr.</TableHead>
+                                            <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-500">Gruppe / Typ</TableHead>
+                                            <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-500">Standort</TableHead>
+                                            <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-500">Fabrikat / Modell</TableHead>
+                                            <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-500">Status</TableHead>
+                                            <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-500 text-right pr-6">Aktionen</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {filteredFahrzeuge.map(item => {
+                                            const statusCfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.verfuegbar;
+                                            return (
+                                                <TableRow key={item.id} className="group hover:bg-slate-50/80 transition-colors h-16 border-b border-slate-100 last:border-0">
+                                                    <TableCell className="pl-6">
+                                                        <div className="flex flex-col">
+                                                            <span className="font-bold text-slate-900">{item.bezeichnung}</span>
+                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                                                                {KATEGORIE_LABELS[item.kategorie] || item.kategorie}
+                                                            </span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="font-mono text-xs font-bold text-slate-600">
+                                                        {item.inventarnummer}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex flex-col">
+                                                            <span className="text-[10px] font-black text-slate-700 uppercase">{item.gruppe || 'Standard'}</span>
+                                                            {item.typ && <span className="text-[9px] text-slate-400">{item.typ}</span>}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-xs font-medium text-slate-500">—</TableCell>
+                                                    <TableCell>
+                                                        <div className="flex flex-col">
+                                                            <span className="text-xs font-bold text-slate-700">{item.fabrikat || '—'}</span>
+                                                            <span className="text-[10px] text-slate-400">{item.typ || '—'}</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Badge variant={statusCfg.variant} className="rounded-full px-3 py-0.5 text-[10px] font-bold uppercase tracking-widest">
+                                                            {statusCfg.label}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-right pr-6">
+                                                        <div className="flex justify-end gap-2">
+                                                            <Link href={`/${projektId}/fuhrpark/${item.id}`}>
+                                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-full transition-all">
+                                                                    <Eye className="h-4 w-4" />
+                                                                </Button>
+                                                            </Link>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 text-slate-400 hover:text-[#FF6B35] hover:bg-[#FF6B35]/5 rounded-full"
+                                                                onClick={() => handleReserve(item)}
+                                                            >
+                                                                <CalendarPlus className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full"
+                                                                onClick={() => handleDeleteFahrzeug(item.id)}
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </div>
+                                                    </TableCell>
                                                 </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {filteredFahrzeuge.map(item => {
-                                                    const statusCfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.verfuegbar;
-                                                    return (
-                                                        <TableRow key={item.id}>
-                                                            <TableCell>
-                                                                <div>
-                                                                    <span className="font-bold text-foreground">{item.bezeichnung}</span>
-                                                                    <p className="text-xs text-muted-foreground mt-0.5">{KATEGORIE_LABELS[item.kategorie] || item.kategorie}</p>
-                                                                </div>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <span className="font-semibold text-foreground">{item.inventarnummer}</span>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-wider bg-slate-50 dark:bg-slate-800/50">
-                                                                    {item.gruppe || 'Standard'}
-                                                                </Badge>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <div className="text-muted-foreground font-medium">
-                                                                    {item.fabrikat && <span>{item.fabrikat}</span>}
-                                                                    {item.typ && <span className="text-xs ml-1">/ {item.typ}</span>}
-                                                                </div>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <span className="text-muted-foreground font-medium">{item.baujahr || '–'}</span>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                {item.geprueftBis ? (
-                                                                    <span className="text-xs font-semibold text-muted-foreground">{item.geprueftBis}</span>
-                                                                ) : (
-                                                                    <span className="text-xs text-muted-foreground/50">–</span>
-                                                                )}
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <Badge variant={statusCfg.variant}>{statusCfg.label}</Badge>
-                                                            </TableCell>
-                                                            <TableCell className="text-right">
-                                                                <div className="flex justify-end gap-1">
-                                                                    <Link href={`/${projektId}/fuhrpark/${item.id}`}>
-                                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-muted hover:shadow-sm">
-                                                                            <Eye className="h-4 w-4" />
-                                                                        </Button>
-                                                                    </Link>
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        className="h-8 w-8 text-amber-500 hover:bg-amber-50 hover:shadow-sm"
-                                                                        onClick={() => handleReserve(item)}
-                                                                        title="Reservieren"
-                                                                    >
-                                                                        <CalendarPlus className="h-4 w-4" />
-                                                                    </Button>
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        className="h-8 w-8 text-muted-foreground/50 hover:text-red-600 hover:bg-red-50 hover:shadow-sm"
-                                                                        onClick={() => handleDeleteFahrzeug(item.id)}
-                                                                    >
-                                                                        <Trash2 className="h-4 w-4" />
-                                                                    </Button>
-                                                                </div>
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    );
-                                                })}
-                                            </TableBody>
-                                        </Table>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            )}
+                        </div>
                     </TabsContent>
 
-                    {/* Tab: Reservierungen */}
                     <TabsContent active={activeTab === 'reservierungen'}>
                         <div className="flex justify-end mb-4">
                             <Button
-                                className="font-bold shadow-lg shadow-primary/20"
+                                className="font-bold shadow-lg shadow-[#FF6B35]/20 bg-[#FF6B35] hover:bg-[#FF6B35]/90"
                                 onClick={() => { setSelectedFahrzeug(undefined); setModalOpen(true); }}
                             >
                                 <CalendarPlus className="h-5 w-5 mr-2" />
                                 Neue Reservierung
                             </Button>
                         </div>
-                        <Card>
+                        <Card className="border-none shadow-sm rounded-2xl overflow-hidden">
                             <CardContent className="p-0">
                                 {loading ? (
-                                    <div className="py-20 flex justify-center">
-                                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                                    </div>
+                                    <div className="py-20 flex justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>
                                 ) : reservierungen.length === 0 ? (
                                     <div className="py-20 flex flex-col items-center gap-2">
-                                        <Calendar className="h-10 w-10 text-muted-foreground/40" />
-                                        <p className="text-muted-foreground font-bold">Keine Reservierungen vorhanden</p>
+                                        <Calendar className="h-10 w-10 text-slate-200" />
+                                        <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Keine Reservierungen gefunden</p>
                                     </div>
                                 ) : (
-                                    <Table className="border-none rounded-none">
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Fahrzeug</TableHead>
-                                                <TableHead>Projekt</TableHead>
-                                                <TableHead>Baustelle</TableHead>
-                                                <TableHead>Von</TableHead>
-                                                <TableHead>Bis</TableHead>
-                                                <TableHead>Durch</TableHead>
-                                                <TableHead className="text-right">Aktionen</TableHead>
+                                    <Table>
+                                        <TableHeader className="bg-slate-50/50">
+                                            <TableRow className="h-12">
+                                                <TableHead className="font-bold text-[10px] pl-6">FAHRZEUG</TableHead>
+                                                <TableHead className="font-bold text-[10px]">PROJEKT</TableHead>
+                                                <TableHead className="font-bold text-[10px]">BAUSTELLE</TableHead>
+                                                <TableHead className="font-bold text-[10px]">ZEITRAUM</TableHead>
+                                                <TableHead className="font-bold text-[10px]">VON - BIS</TableHead>
+                                                <TableHead className="text-right font-bold text-[10px] pr-6">AKTIONEN</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             {reservierungen.map(res => (
-                                                <TableRow key={res.id}>
-                                                    <TableCell>
-                                                        <span className="font-bold text-foreground">{getFahrzeugName(res.fahrzeugId)}</span>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <span className="text-muted-foreground font-medium">
-                                                            {res.projektName || projekte.find(p => p.id === res.projektId)?.projektname || res.projektId}
-                                                        </span>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <span className="font-semibold text-foreground">{res.baustelle}</span>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <span className="text-xs font-semibold text-muted-foreground">{res.reserviertAb}</span>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <span className="text-xs font-semibold text-muted-foreground">{res.reserviertBis || 'offen'}</span>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <span className="text-muted-foreground font-medium">{res.reserviertDurch || '–'}</span>
-                                                    </TableCell>
-                                                    <TableCell className="text-right">
+                                                <TableRow key={res.id} className="h-14">
+                                                    <TableCell className="pl-6 font-bold text-slate-900">{getFahrzeugName(res.fahrzeugId)}</TableCell>
+                                                    <TableCell className="text-xs font-semibold text-slate-600">{res.projektName || res.projektId}</TableCell>
+                                                    <TableCell className="text-xs font-bold text-primary">{res.baustelle}</TableCell>
+                                                    <TableCell className="text-[10px] font-bold text-slate-500 uppercase">{res.reserviertAb}</TableCell>
+                                                    <TableCell className="text-[10px] font-bold text-slate-500 uppercase">{res.reserviertBis || 'offen'}</TableCell>
+                                                    <TableCell className="text-right pr-6">
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
-                                                            className="h-8 w-8 text-muted-foreground/50 hover:text-red-600 hover:bg-red-50 hover:shadow-sm"
+                                                            className="h-8 w-8 text-slate-300 hover:text-red-500"
                                                             onClick={() => handleDeleteReservierung(res.id)}
                                                         >
                                                             <Trash2 className="h-4 w-4" />
@@ -500,8 +490,8 @@ export default function FuhrparkPage() {
                             </CardContent>
                         </Card>
                     </TabsContent>
-                </div>
-            </Tabs>
+                </Tabs>
+            </div>
 
             {/* Reservation Modal */}
             <ReservierungModal
