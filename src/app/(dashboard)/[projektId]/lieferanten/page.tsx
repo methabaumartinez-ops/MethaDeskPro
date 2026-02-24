@@ -66,9 +66,9 @@ export default function LieferantenListPage() {
                         />
                     </div>
                     <Link href={`/${projektId}/lieferanten/erfassen`}>
-                        <Button className="font-bold shadow-lg shadow-primary/20 whitespace-nowrap">
-                            <Plus className="h-5 w-5 mr-2" />
-                            Hinzufügen
+                        <Button className="h-11 px-8 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest shadow-lg shadow-orange-200 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                            <Plus className="h-5 w-5" />
+                            <span>Hinzufügen</span>
                         </Button>
                     </Link>
                 </div>

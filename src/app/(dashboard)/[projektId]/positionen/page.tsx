@@ -60,14 +60,14 @@ export default function PositionenListPage() {
                     <p className="text-muted-foreground font-medium mt-1">Überblick über alle erfassten Positionen des Projekts.</p>
                 </div>
                 <Link href={`/${projektId}/positionen/erfassen`}>
-                    <Button className="font-bold shadow-lg shadow-primary/20">
-                        <Plus className="h-5 w-5 mr-2" />
-                        Position erfassen
+                    <Button className="h-11 px-8 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest shadow-lg shadow-orange-200 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                        <Plus className="h-5 w-5" />
+                        <span>Position erfassen</span>
                     </Button>
                 </Link>
             </div>
 
-            <Card>
+            <Card className="shadow-xl border-2 border-border overflow-hidden rounded-2xl">
                 <CardHeader className="pb-4">
                     <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
                         <div className="relative w-full md:w-96">

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IFC Viewer</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #f8fafc; /* match slate-50 */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        #viewer-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(248, 250, 252, 0.9);
+            z-index: 100;
+            transition: opacity 0.5s ease;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(234, 88, 12, 0.2);
+            border-top-color: #ea580c; /* orange-600 */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+        h2 { color: #0f172a; margin: 0 0 10px 0; margin-bottom: 5px; font-weight: 800; font-size: 1.25rem; letter-spacing: -0.025em; }
+        p { color: #64748b; margin: 0; font-size: 0.875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+        #error-message {
+            display: none;
+            color: #dc2626;
+            margin-top: 15px;
+            font-size: 0.875rem;
+            max-width: 80%;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="viewer-container"></div>
+    
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <h2>IFC Modell wird geladen</h2>
+        <p id="loading-status">Initialisierung...</p>
+        <div id="error-message"></div>
+    </div>
+
+    <!-- Include bundle from unpkg -->
+    <script src="https://unpkg.com/three@0.135.0/build/three.js"></script>
+    <script src="https://unpkg.com/web-ifc-viewer@1.0.211/dist/web-ifc-viewer.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const loadingStatus = document.getElementById('loading-status');
+            const errorMessage = document.getElementById('error-message');
+            
+            try {
+                // Parse URL parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                const modelUrl = urlParams.get('model');
+
+                if (!modelUrl) {
+                    throw new Error('Kein Modell via URL (?model=...) übergeben.');
+                }
+
+                loadingStatus.textContent = "Viewer wird gestartet...";
+
+                // Initialize Viewer
+                const container = document.getElementById('viewer-container');
+                const viewer = new IfcViewerAPI({ container });
+                
+                // Add basic setup
+                viewer.addAxes();
+                viewer.addGrid();
+
+                loadingStatus.textContent = "Modell wird heruntergeladen...";
+
+                // Important: Need to set WASM path for web-ifc
+                await viewer.IFC.setWasmPath("https://unpkg.com/web-ifc@0.0.36/");
+
+                // Load the model
+                const model = await viewer.IFC.loadIfcUrl(modelUrl);
+                
+                // Optional: Zoom to fit
+                // await viewer.shadowDropper.renderShadow(model.modelID);
+                
+                // Keep trying to load
+                loadingStatus.textContent = "Bereit.";
+                
+                // Hide overlay
+                loadingOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 500);
+
+            } catch (err) {
+                console.error("IFC Loading Error:", err);
+                document.querySelector('.spinner').style.display = 'none';
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = `Fehler: ${err.message || 'Das Modell konnte nicht geladen werden.'}`;
+            }
+        });
+    </script>
+</body>
+</html>

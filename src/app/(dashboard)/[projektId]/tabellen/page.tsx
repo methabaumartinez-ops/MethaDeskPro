@@ -351,7 +351,7 @@ export default function TabellenPage() {
                                 <Settings className="h-4 w-4 mr-2" />
                                 Spalten
                             </Button>
-                            <Button size="sm" onClick={handleExport}>
+                            <Button className="bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] h-9 px-6 rounded-full shadow-md flex items-center gap-2 transition-all hover:scale-105 active:scale-95" onClick={handleExport}>
                                 <HardDrive className="h-4 w-4 mr-2" />
                                 Exportieren
                             </Button>
@@ -371,7 +371,7 @@ export default function TabellenPage() {
                                     <p>Keine Einträge in dieser Tabelle gefunden.</p>
                                 </div>
                             ) : (
-                                <div className="rounded-md border overflow-x-auto">
+                                <div className="overflow-x-auto">
                                     <Table>
                                         <TableHeader className="bg-orange-50/50">
                                             <TableRow>

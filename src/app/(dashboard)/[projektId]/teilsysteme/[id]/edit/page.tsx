@@ -28,6 +28,7 @@ const teilsystemSchema = z.object({
     abgabePlaner: z.string().optional(),
     planStatus: z.string().optional(),
     wemaLink: z.string().optional(),
+    ifcUrl: z.string().optional(),
     status: z.string().min(1, 'Status ist erforderlich'),
 });
 
@@ -146,6 +147,7 @@ export default function TeilsystemEditPage() {
                     setValue('abgabePlaner', germanDateToISO(item.abgabePlaner));
                     setValue('planStatus', item.planStatus || 'offen');
                     setValue('wemaLink', item.wemaLink || '');
+                    setValue('ifcUrl', item.ifcUrl || '');
                     setValue('status', item.status);
                 } else {
                     router.push(`/${projektId}/teilsysteme`);
@@ -324,6 +326,19 @@ export default function TeilsystemEditPage() {
                                 {...register('status')}
                                 error={errors.status?.message}
                             />
+                        </div>
+
+                        {/* IFC Link */}
+                        <div className="pt-2">
+                            <Input
+                                label="IFC-Modell Link (Google Drive)"
+                                placeholder="https://drive.google.com/file/d/.../view"
+                                {...register('ifcUrl')}
+                                error={errors.ifcUrl?.message}
+                            />
+                            <p className="text-[10px] text-muted-foreground mt-1 ml-1 italic">
+                                Tragen Sie hier den Link zur IFC-Datei ein. Google Drive Links werden automatisch für die Vorschau optimiert.
+                            </p>
                         </div>
                     </CardContent>
                     <CardFooter className="bg-muted/30 border-t border-border p-6 flex justify-end gap-4">

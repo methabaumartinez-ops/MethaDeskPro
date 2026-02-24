@@ -49,7 +49,7 @@ export function DocumentViewer({ documents = [], title = "Dokumente & Pläne" }:
             isExpanded ? "fixed inset-0 z-50 bg-background/80 backdrop-blur-md p-4 flex items-center justify-center" : "h-full w-full"
         )}>
             <Card className={cn(
-                "h-full w-full bg-white border-2 border-border shadow-xl overflow-hidden flex flex-col",
+                "h-full w-full bg-white shadow-xl overflow-hidden flex flex-col",
                 isExpanded ? 'max-w-6xl max-h-[90vh]' : ''
             )}>
                 {/* Header / Toolbar */}

@@ -34,8 +34,6 @@ export default function TeilsystemDetailPage() {
     const [project, setProject] = useState<Projekt | null>(null);
     const [positionen, setPositionen] = useState<Position[]>([]);
     const [loading, setLoading] = useState(true);
-    const [uploadingIfc, setUploadingIfc] = useState(false);
-    const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [posToDelete, setPosToDelete] = useState<Position | null>(null);
 
@@ -60,22 +58,6 @@ export default function TeilsystemDetailPage() {
         loadData();
     }, [id, projektId]);
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.files?.[0] || !item) return;
-        setUploadingIfc(true);
-        try {
-            const file = e.target.files[0];
-            const url = await ProjectService.uploadImage(file, projektId, 'ifc');
-
-            const updated = await SubsystemService.updateTeilsystem(item.id, { ifcUrl: url });
-            setItem(updated);
-        } catch (error) {
-            console.error("Upload failed", error);
-            alert("Upload fehlgeschlagen");
-        } finally {
-            setUploadingIfc(false);
-        }
-    };
 
     if (loading) return (
         <div className="h-96 flex items-center justify-center">
@@ -191,13 +173,13 @@ export default function TeilsystemDetailPage() {
                             </div>
                         </div>
 
-                        <div className="text-right flex flex-col items-end gap-2">
+                        <div className="text-right flex flex-col items-end gap-3">
                             <StatusBadge status={item.status} />
                             {!isReadOnly && (
                                 <Link href={`/${projektId}/teilsysteme/${item.id}/edit`}>
-                                    <Button variant="ghost" size="sm" className="h-6 text-xs text-muted-foreground hover:text-primary">
-                                        <Edit className="h-3 w-3 mr-1" />
-                                        Bearbeiten
+                                    <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest shadow-lg shadow-orange-200 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                                        <Edit className="h-4 w-4" />
+                                        <span>Bearbeiten</span>
                                     </Button>
                                 </Link>
                             )}
@@ -253,28 +235,8 @@ export default function TeilsystemDetailPage() {
 
                 {/* Right: BIM Viewer */}
                 <div className="flex flex-col gap-6">
-                    <div className="min-h-[350px] lg:h-full relative group">
+                    <div className="min-h-[350px] lg:h-full relative group shadow-sm rounded-xl overflow-hidden">
                         <BimViewer modelName={`${item.name}${!item.ifcUrl ? '.ifc' : ''}`} modelUrl={item.ifcUrl} />
-
-                        {!isReadOnly && !item.ifcUrl && (
-                            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[1px]">
-                                <input
-                                    type="file"
-                                    className="hidden"
-                                    ref={fileInputRef}
-                                    accept=".ifc"
-                                    onChange={handleFileUpload}
-                                />
-                                <Button
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="shadow-xl"
-                                    disabled={uploadingIfc}
-                                >
-                                    <UploadCloud className="mr-2 h-4 w-4" />
-                                    {uploadingIfc ? 'Wird hochgeladen...' : 'IFC Datei hochladen'}
-                                </Button>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>
@@ -288,9 +250,9 @@ export default function TeilsystemDetailPage() {
                     </CardTitle>
                     {!isReadOnly && (
                         <Link href={`/${projektId}/teilsysteme/${id}/positionen/erfassen`}>
-                            <Button size="sm" className="font-bold h-8 shadow-md">
-                                <Plus className="h-3 w-3 mr-1" />
-                                Position hinzufügen
+                            <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white font-bold h-9 px-6 rounded-full shadow-md flex items-center gap-2 transition-all hover:scale-105">
+                                <Plus className="h-4 w-4" />
+                                <span>Position hinzufügen</span>
                             </Button>
                         </Link>
                     )}
