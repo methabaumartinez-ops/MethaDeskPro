@@ -143,7 +143,8 @@ export type FahrzeugKategorie =
   | 'baggerlader'
   | 'raupendumper'
   | 'minikran'
-  | 'turmdrehkran';
+  | 'turmdrehkran'
+  | 'raupenkran';
 
 export type FahrzeugStatus = 'verfuegbar' | 'reserviert' | 'in_wartung' | 'ausser_betrieb';
 
@@ -159,10 +160,14 @@ export interface Fahrzeug {
   kennzeichen?: string;
   plattformhoehe?: string;
   masse?: string;
+  laenge?: string;
+  breite?: string;
+  hoehe?: string;
   leistung?: string;
   gewicht?: string;
   reichweite?: string;
   nutzlast?: string;
+  maxLast?: string;
   antrieb?: string;
   baujahr?: number;
   spezHinweis?: string;
@@ -172,9 +177,13 @@ export interface Fahrzeug {
   status: FahrzeugStatus;
   bemerkung?: string;
   imageUrl?: string;
-  gruppe?: string; // e.g. "Scherenbühne elekr."
-  standort?: string; // Current location
+  gruppe?: string;
+  standort?: string;
   manualUrl?: string;
+  zusatzinfo?: string;
+  muldengroesse?: string;
+  bodendruckMax?: string;
+  kwInfo?: string[]; // To store the KW history (e.g. ["KW 13: Amriville", "KW 29: Unterhalt"])
 }
 
 export interface FahrzeugReservierung {

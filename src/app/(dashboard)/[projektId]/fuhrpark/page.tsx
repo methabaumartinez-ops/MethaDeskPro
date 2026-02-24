@@ -31,6 +31,7 @@ const KATEGORIE_LABELS: Record<string, string> = {
     raupendumper: 'Raupendumper',
     minikran: 'Minikran',
     turmdrehkran: 'Turmdrehkran',
+    raupenkran: 'Raupenkran',
 };
 
 const STATUS_CONFIG: Record<string, { label: string; variant: 'success' | 'warning' | 'error' | 'info' }> = {
@@ -258,14 +259,16 @@ export default function FuhrparkPage() {
                 </div>
 
                 {activeTab === 'fahrzeuge' && (
-                    <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b -mx-6 px-6 py-3 mb-4 shadow-sm scrollbar-hide">
-                        <div className="flex gap-2 overflow-x-auto">
+                    <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md -mx-6 px-6 py-3 mb-4 scrollbar-hide">
+                        <div className="flex gap-2 p-1.5 overflow-x-auto border-2 border-[#FF6B35]/20 bg-white rounded-2xl shadow-sm">
                             <Button
-                                variant={selectedKategorie === 'Alle' ? 'primary' : 'ghost'}
+                                variant="ghost"
                                 size="sm"
                                 className={cn(
-                                    "rounded-full whitespace-nowrap text-xs font-bold transition-all h-8",
-                                    selectedKategorie === 'Alle' ? "bg-primary text-white" : "hover:bg-slate-100 dark:hover:bg-slate-800"
+                                    "rounded-xl whitespace-nowrap text-xs font-black transition-all h-9 px-4",
+                                    selectedKategorie === 'Alle'
+                                        ? "bg-[#FF6B35] text-white shadow-md shadow-[#FF6B35]/20 hover:bg-[#FF6B35]/90"
+                                        : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
                                 )}
                                 onClick={() => setSelectedKategorie('Alle')}
                             >
@@ -274,11 +277,13 @@ export default function FuhrparkPage() {
                             {Object.entries(KATEGORIE_LABELS).map(([key, label]) => (
                                 <Button
                                     key={key}
-                                    variant={selectedKategorie === key ? 'primary' : 'ghost'}
+                                    variant="ghost"
                                     size="sm"
                                     className={cn(
-                                        "rounded-full whitespace-nowrap text-xs font-bold transition-all h-8",
-                                        selectedKategorie === key ? "bg-primary text-white" : "hover:bg-slate-100 dark:hover:bg-slate-800"
+                                        "rounded-xl whitespace-nowrap text-xs font-black transition-all h-9 px-4",
+                                        selectedKategorie === key
+                                            ? "bg-[#FF6B35] text-white shadow-md shadow-[#FF6B35]/20 hover:bg-[#FF6B35]/90"
+                                            : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
                                     )}
                                     onClick={() => setSelectedKategorie(key)}
                                 >
@@ -332,8 +337,8 @@ export default function FuhrparkPage() {
                                             <TableRow>
                                                 <TableHead>Bezeichnung</TableHead>
                                                 <TableHead>Inv.-Nr.</TableHead>
+                                                <TableHead>Gruppe</TableHead>
                                                 <TableHead>Fabrikat / Typ</TableHead>
-                                                <TableHead>Kennz.</TableHead>
                                                 <TableHead>Baujahr</TableHead>
                                                 <TableHead>Geprüft bis</TableHead>
                                                 <TableHead>Status</TableHead>
@@ -355,13 +360,15 @@ export default function FuhrparkPage() {
                                                             <span className="font-semibold text-foreground">{item.inventarnummer}</span>
                                                         </TableCell>
                                                         <TableCell>
+                                                            <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-wider bg-slate-50 dark:bg-slate-800/50">
+                                                                {item.gruppe || 'Standard'}
+                                                            </Badge>
+                                                        </TableCell>
+                                                        <TableCell>
                                                             <div className="text-muted-foreground font-medium">
                                                                 {item.fabrikat && <span>{item.fabrikat}</span>}
                                                                 {item.typ && <span className="text-xs ml-1">/ {item.typ}</span>}
                                                             </div>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <span className="text-muted-foreground font-medium">{item.kennzeichen || '–'}</span>
                                                         </TableCell>
                                                         <TableCell>
                                                             <span className="text-muted-foreground font-medium">{item.baujahr || '–'}</span>

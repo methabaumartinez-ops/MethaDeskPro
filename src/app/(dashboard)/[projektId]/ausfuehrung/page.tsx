@@ -36,6 +36,7 @@ const KATEGORIE_LABELS: Record<string, string> = {
     raupendumper: 'Raupendumper',
     minikran: 'Minikran',
     turmdrehkran: 'Turmdrehkran',
+    raupenkran: 'Raupenkran',
 };
 
 const STATUS_CONFIG: Record<string, { label: string; variant: 'success' | 'warning' | 'error' | 'info' }> = {
@@ -412,14 +413,16 @@ export default function AusfuehrungPage() {
                                 </TabsContent>
 
                                 <TabsContent active={activeTab === 'fahrzeuge'} className="mt-0 h-full">
-                                    <div className="bg-background/95 backdrop-blur-sm border-b -mx-4 px-4 py-2 mb-4 scrollbar-hide">
-                                        <div className="flex gap-2 overflow-x-auto">
+                                    <div className="bg-background/95 backdrop-blur-sm -mx-4 px-4 py-3 mb-4 scrollbar-hide">
+                                        <div className="flex gap-2 p-1.5 overflow-x-auto border-2 border-[#FF6B35]/20 bg-white rounded-2xl shadow-sm">
                                             <Button
-                                                variant={selectedKategorie === 'Alle' ? 'primary' : 'ghost'}
+                                                variant="ghost"
                                                 size="sm"
                                                 className={cn(
-                                                    "rounded-full whitespace-nowrap text-[10px] font-bold h-7",
-                                                    selectedKategorie === 'Alle' ? "bg-primary text-white" : "hover:bg-slate-100 dark:hover:bg-slate-800"
+                                                    "rounded-xl whitespace-nowrap text-[11px] font-black transition-all h-8 px-4",
+                                                    selectedKategorie === 'Alle'
+                                                        ? "bg-[#FF6B35] text-white shadow-md shadow-[#FF6B35]/20 hover:bg-[#FF6B35]/90"
+                                                        : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
                                                 )}
                                                 onClick={() => setSelectedKategorie('Alle')}
                                             >
@@ -428,11 +431,13 @@ export default function AusfuehrungPage() {
                                             {Object.entries(KATEGORIE_LABELS).map(([key, label]) => (
                                                 <Button
                                                     key={key}
-                                                    variant={selectedKategorie === key ? 'primary' : 'ghost'}
+                                                    variant="ghost"
                                                     size="sm"
                                                     className={cn(
-                                                        "rounded-full whitespace-nowrap text-[10px] font-bold h-7",
-                                                        selectedKategorie === key ? "bg-primary text-white" : "hover:bg-slate-100 dark:hover:bg-slate-800"
+                                                        "rounded-xl whitespace-nowrap text-[11px] font-black transition-all h-8 px-4",
+                                                        selectedKategorie === key
+                                                            ? "bg-[#FF6B35] text-white shadow-md shadow-[#FF6B35]/20 hover:bg-[#FF6B35]/90"
+                                                            : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
                                                     )}
                                                     onClick={() => setSelectedKategorie(key)}
                                                 >
@@ -466,9 +471,18 @@ export default function AusfuehrungPage() {
                                                                 onClick={() => router.push(`/${projektId}/fuhrpark/${item.id}`)}
                                                             >
                                                                 <TableCell className="p-3 px-4">
-                                                                    <div>
+                                                                    <div className="flex flex-col gap-1">
                                                                         <span className="font-bold text-foreground text-sm">{item.bezeichnung}</span>
-                                                                        <p className="text-[10px] text-muted-foreground mt-0.5">{KATEGORIE_LABELS[item.kategorie] || item.kategorie}</p>
+                                                                        <div className="flex gap-1 flex-wrap">
+                                                                            <Badge variant="outline" className="text-[9px] font-black uppercase tracking-tighter bg-slate-50 dark:bg-slate-800/50 h-4 px-1 leading-none border-primary/20 text-primary">
+                                                                                {KATEGORIE_LABELS[item.kategorie] || item.kategorie}
+                                                                            </Badge>
+                                                                            {item.gruppe && (
+                                                                                <Badge variant="outline" className="text-[9px] font-black uppercase tracking-tighter bg-slate-50 dark:bg-slate-800/50 h-4 px-1 leading-none text-muted-foreground border-slate-200">
+                                                                                    {item.gruppe}
+                                                                                </Badge>
+                                                                            )}
+                                                                        </div>
                                                                     </div>
                                                                 </TableCell>
                                                                 <TableCell className="p-3 px-4">

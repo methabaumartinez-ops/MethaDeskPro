@@ -10,7 +10,7 @@ import { ProjectService } from '@/lib/services/projectService';
 import { Fahrzeug } from '@/types';
 import {
     ArrowLeft, Car, Calendar, CheckCircle2, AlertTriangle,
-    FileText, UploadCloud, Download, ExternalLink, X
+    FileText, UploadCloud, Download, ExternalLink, X, Clock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -25,10 +25,14 @@ const LABEL_MAP: Record<string, string> = {
     farbe: 'Farbe',
     kennzeichen: 'Kennzeichen',
     plattformhoehe: 'Plattformhöhe',
-    masse: 'Masse (LxBxH)',
+    masse: 'Masse',
+    laenge: 'Länge',
+    breite: 'Breite',
+    hoehe: 'Höhe',
     leistung: 'Leistung',
     gewicht: 'Gewicht',
     nutzlast: 'Nutzlast',
+    maxLast: 'Max. Last',
     antrieb: 'Antrieb',
     baujahr: 'Baujahr',
     kaufjahr: 'Kaufjahr',
@@ -36,7 +40,10 @@ const LABEL_MAP: Record<string, string> = {
     abgaswartung: 'Abgaswartung',
     status: 'Status',
     bemerkung: 'Bemerkung',
-    spezHinweis: 'Spez. Hinweis'
+    spezHinweis: 'Spez. Hinweis',
+    zusatzinfo: 'Zusatzinfo',
+    muldengroesse: 'Muldengrösse',
+    bodendruckMax: 'Bodendruck Max.'
 };
 
 export default function FahrzeugDetailPage() {
@@ -140,7 +147,9 @@ export default function FahrzeugDetailPage() {
                             {[
                                 'kategorie', 'fabrikat', 'typ', 'seriennummer',
                                 'baujahr', 'antrieb', 'leistung', 'gewicht',
-                                'nutzlast', 'plattformhoehe', 'masse', 'reichweite'
+                                'nutzlast', 'maxLast', 'plattformhoehe', 'masse',
+                                'laenge', 'breite', 'hoehe', 'reichweite',
+                                'muldengroesse', 'bodendruckMax'
                             ].map(key => {
                                 const val = vehicle[key as keyof Fahrzeug];
                                 if (!val) return null;
@@ -163,7 +172,7 @@ export default function FahrzeugDetailPage() {
                         </CardHeader>
                         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                             {[
-                                'kaufjahr', 'geprueftBis', 'abgaswartung', 'spezHinweis', 'bemerkung', 'kennzeichen', 'standort'
+                                'kaufjahr', 'geprueftBis', 'abgaswartung', 'spezHinweis', 'zusatzinfo', 'bemerkung', 'kennzeichen', 'standort'
                             ].map(key => {
                                 const val = vehicle[key as keyof Fahrzeug];
                                 if (!val) return null;
@@ -255,7 +264,26 @@ export default function FahrzeugDetailPage() {
                         </CardFooter>
                     </Card>
 
-                    {/* Quick Specs Logic or Status Log could go here */}
+                    {/* History Section */}
+                    {vehicle.kwInfo && vehicle.kwInfo.length > 0 && (
+                        <Card>
+                            <CardHeader className="p-4 border-b bg-slate-50/50">
+                                <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                                    <Clock className="h-4 w-4" />
+                                    Standortverlauf (KW)
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-4">
+                                <ul className="space-y-2">
+                                    {vehicle.kwInfo.map((info, idx) => (
+                                        <li key={idx} className="text-xs font-semibold text-slate-600 dark:text-slate-400 border-l-2 border-primary/30 pl-3 py-1">
+                                            {info}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </div>
         </div>
