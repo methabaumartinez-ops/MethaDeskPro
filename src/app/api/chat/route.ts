@@ -42,6 +42,8 @@ export async function POST(req: Request) {
             messages,
         });
 
+        console.log('Stream result methods:', Object.keys(result));
+
         return result.toTextStreamResponse();
     } catch (error: any) {
         console.error('Chat error:', error);
