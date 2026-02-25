@@ -35,14 +35,22 @@ export async function POST(req: NextRequest) {
         const fileId = extractFileId(url);
 
         if (fileId && CLIENT_ID && CLIENT_SECRET && REFRESH_TOKEN) {
-            const oauth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
-            oauth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
-            const drive = google.drive({ version: 'v3', auth: oauth2Client });
-            const response = await drive.files.get(
-                { fileId, alt: 'media' },
-                { responseType: 'arraybuffer' }
-            );
-            ifcBuffer = response.data as ArrayBuffer;
+            try {
+                const oauth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+                oauth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+                const drive = google.drive({ version: 'v3', auth: oauth2Client });
+                const response = await drive.files.get(
+                    { fileId, alt: 'media' },
+                    { responseType: 'arraybuffer' }
+                );
+                ifcBuffer = response.data as ArrayBuffer;
+            } catch (oauthErr: any) {
+                console.warn('OAuth fallback triggered due to error:', oauthErr.message);
+                const directUrl = `https://drive.google.com/uc?export=download&confirm=t&id=${fileId}`;
+                const fallbackResponse = await fetch(directUrl);
+                if (!fallbackResponse.ok) throw new Error(`Fallback download failed: HTTP ${fallbackResponse.status}`);
+                ifcBuffer = await fallbackResponse.arrayBuffer();
+            }
         } else {
             const directUrl = fileId
                 ? `https://drive.google.com/uc?export=download&confirm=t&id=${fileId}`
@@ -52,10 +60,11 @@ export async function POST(req: NextRequest) {
             ifcBuffer = await response.arrayBuffer();
         }
 
-        // 2. Parse IFC with web-ifc — WASM runs perfectly in Node.js server-side
+        // 2. Parse IFC with web-ifc — WASM runs in Node.js server-side
         const ifcApi = new IfcAPI();
-        // Set absolute path to node_modules so Node.js finds web-ifc-node.wasm
-        const wasmDir = path.join(process.cwd(), 'node_modules', 'web-ifc') + path.sep;
+        // In standalone builds, node_modules is not fully available.
+        // web-ifc-node.wasm is copied to /public which IS included in standalone.
+        const wasmDir = path.join(process.cwd(), 'public') + path.sep;
         ifcApi.SetWasmPath(wasmDir, true); // true = absolute path
         await ifcApi.Init();
 
