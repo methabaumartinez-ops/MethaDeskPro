@@ -83,7 +83,14 @@ export function ReservierungModal({ isOpen, onClose, onSave, fahrzeug, projektId
     };
 
     const hasConflict = isDateConflict(form.reserviertAb, form.reserviertBis, form.fahrzeugId);
-    const today = new Date().toISOString().split('T')[0];
+
+    // Calculate technical today and the min reservation date (3 days from now)
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+
+    const minResDateObj = new Date();
+    minResDateObj.setDate(now.getDate() + 3);
+    const minReservationDate = minResDateObj.toISOString().split('T')[0];
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -97,8 +104,8 @@ export function ReservierungModal({ isOpen, onClose, onSave, fahrzeug, projektId
             return;
         }
 
-        if (form.reserviertAb < today) {
-            alert('Das Startdatum darf nicht in der Vergangenheit liegen.');
+        if (form.reserviertAb < minReservationDate) {
+            alert(`Reservierungen sind erst ab dem ${new Date(minResDateObj).toLocaleDateString('de-CH')} möglich (mindestens 3 Tage im Voraus).`);
             return;
         }
 
@@ -188,18 +195,21 @@ export function ReservierungModal({ isOpen, onClose, onSave, fahrzeug, projektId
                     {/* Baustelle input removed as requested */}
 
                     <div className="grid grid-cols-2 gap-4">
-                        <Input
-                            label="Reserviert ab"
-                            type="date"
-                            min={today}
-                            value={form.reserviertAb}
-                            onChange={e => setForm({ ...form, reserviertAb: e.target.value })}
-                            className={hasConflict ? "border-red-500 focus:ring-red-500" : ""}
-                        />
+                        <div className="space-y-1">
+                            <Input
+                                label="Reserviert ab"
+                                type="date"
+                                min={minReservationDate}
+                                value={form.reserviertAb}
+                                onChange={e => setForm({ ...form, reserviertAb: e.target.value })}
+                                className={hasConflict ? "border-red-500 focus:ring-red-500" : ""}
+                            />
+                            <p className="text-[10px] text-muted-foreground px-1">Min. 3 Tage Vorlauf</p>
+                        </div>
                         <Input
                             label="Reserviert bis"
                             type="date"
-                            min={form.reserviertAb || today}
+                            min={form.reserviertAb || minReservationDate}
                             value={form.reserviertBis}
                             onChange={e => setForm({ ...form, reserviertBis: e.target.value })}
                             className={hasConflict ? "border-red-500 focus:ring-red-500" : ""}
