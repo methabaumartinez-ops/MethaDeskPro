@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  serverExternalPackages: ['googleapis', 'google-auth-library'],
+  serverExternalPackages: ['googleapis', 'google-auth-library', '@xenova/transformers'],
   async headers() {
     return [
       {
