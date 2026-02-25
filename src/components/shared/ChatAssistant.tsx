@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
+// @ts-expect-error ai/react subpath export — resolve issue with bundler moduleResolution
 import { useChat } from 'ai/react';
 import { AnimatedRobot } from '@/components/shared/AnimatedRobot';
 import {
