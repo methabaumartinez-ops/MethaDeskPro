@@ -5,7 +5,7 @@ import { QdrantClient } from '@qdrant/js-client-rest';
 import dotenv from 'dotenv';
 import path from 'path';
 // Import raw data directly to avoid localStorage dependency in store.ts
-import { mockProjekte, mockTeilsysteme, mockPositionen, mockMaterial, mockMitarbeiter, mockFahrzeuge } from '../src/lib/mock/data.ts';
+import { mockProjekte, mockTeilsysteme, mockPositionen, mockMaterial, mockMitarbeiter, mockFahrzeuge } from '../src/lib/mock/data';
 
 // Load environment variables from .env
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
