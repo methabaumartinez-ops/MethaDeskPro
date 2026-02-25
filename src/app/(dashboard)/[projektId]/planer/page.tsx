@@ -10,7 +10,7 @@ import {
     Calendar, Search, Filter,
     Clock, CheckCircle2, FileText,
     Download, UploadCloud, FileType, X,
-    ChevronRight, Save, Image as ImageIcon, File
+    ChevronRight, Save, Image as ImageIcon, File, Copy
 } from 'lucide-react';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { ProjectService } from '@/lib/services/projectService';
@@ -266,11 +266,28 @@ export default function PlannerPage() {
 
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">WEMA Link</label>
-                                    <Input
-                                        value={selectedItem.wemaLink || ''}
-                                        onChange={(e) => updateItem(selectedItem.id, 'wemaLink', e.target.value)}
-                                        placeholder="Pfad oder URL"
-                                    />
+                                    <div className="flex gap-2">
+                                        <Input
+                                            value={selectedItem.wemaLink || ''}
+                                            onChange={(e) => updateItem(selectedItem.id, 'wemaLink', e.target.value)}
+                                            placeholder="Pfad oder URL"
+                                            className="flex-1"
+                                        />
+                                        {(selectedItem.wemaLink?.match(/^[a-zA-Z]:\\/) || selectedItem.wemaLink?.startsWith('\\\\')) && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="shrink-0 font-bold"
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(selectedItem.wemaLink || '');
+                                                    alert('Pfad kopiert!');
+                                                }}
+                                            >
+                                                <Copy className="h-4 w-4 mr-2" />
+                                                Kopieren
+                                            </Button>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* Dates Section */}

@@ -10,6 +10,31 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   serverExternalPackages: ['googleapis', 'google-auth-library'],
+  async headers() {
+    return [
+      {
+        source: '/ifc-viewer.html',
+        headers: [
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+        ],
+      },
+      {
+        // Serve WASM files with correct content-type
+        source: '/:file*.wasm',
+        headers: [
+          { key: 'Content-Type', value: 'application/wasm' },
+        ],
+      },
+    ];
+  },
+  webpack(config) {
+    // Allow importing .wasm files as assets
+    config.module.rules.push({
+      test: /\.wasm$/,
+      type: 'asset/resource',
+    });
+    return config;
+  },
 };
 
 export default nextConfig;

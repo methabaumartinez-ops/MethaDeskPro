@@ -1,131 +1,230 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IFC Viewer</title>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body, html {
-            margin: 0;
-            padding: 0;
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            background-color: #f8fafc; /* match slate-50 */
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
-        #viewer-container {
+        #canvas-container {
             width: 100%;
             height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
+            position: relative;
         }
-        #loading-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+        canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        #overlay {
+            position: fixed;
+            inset: 0;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            background-color: rgba(248, 250, 252, 0.9);
-            z-index: 100;
-            transition: opacity 0.5s ease;
+            justify-content: center;
+            background: rgba(248,250,252,0.95);
+            z-index: 10;
+            transition: opacity 0.5s;
+        }
+        #overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
         }
         .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(234, 88, 12, 0.2);
-            border-top-color: #ea580c; /* orange-600 */
+            width: 52px;
+            height: 52px;
+            border: 4px solid rgba(234,88,12,0.2);
+            border-top-color: #ea580c;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: spin 0.9s linear infinite;
             margin-bottom: 20px;
         }
-        @keyframes spin { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
-        }
-        h2 { color: #0f172a; margin: 0 0 10px 0; margin-bottom: 5px; font-weight: 800; font-size: 1.25rem; letter-spacing: -0.025em; }
-        p { color: #64748b; margin: 0; font-size: 0.875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
-        #error-message {
+        @keyframes spin { to { transform: rotate(360deg); } }
+        h2 { color: #0f172a; font-size: 1.1rem; font-weight: 800; margin-bottom: 6px; }
+        #status { color: #64748b; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+        #error {
             display: none;
+            margin-top: 16px;
+            padding: 12px 20px;
+            background: #fef2f2;
+            border: 1.5px solid #fca5a5;
+            border-radius: 10px;
             color: #dc2626;
-            margin-top: 15px;
-            font-size: 0.875rem;
+            font-size: 0.82rem;
+            font-weight: 700;
             max-width: 80%;
             text-align: center;
-            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div id="viewer-container"></div>
-    
-    <div id="loading-overlay">
+    <div id="canvas-container"></div>
+    <div id="overlay">
         <div class="spinner"></div>
         <h2>IFC Modell wird geladen</h2>
-        <p id="loading-status">Initialisierung...</p>
-        <div id="error-message"></div>
+        <p id="status">Initialisierung...</p>
+        <div id="error"></div>
     </div>
 
-    <!-- Include bundle from unpkg -->
-    <script src="https://unpkg.com/three@0.135.0/build/three.js"></script>
-    <script src="https://unpkg.com/web-ifc-viewer@1.0.211/dist/web-ifc-viewer.js"></script>
+    <script type="module">
+        import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+        import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
+        import * as WebIFC from "https://cdn.jsdelivr.net/npm/web-ifc@0.0.57/web-ifc-api.js";
 
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const loadingOverlay = document.getElementById('loading-overlay');
-            const loadingStatus = document.getElementById('loading-status');
-            const errorMessage = document.getElementById('error-message');
-            
+        const overlay = document.getElementById('overlay');
+        const statusEl = document.getElementById('status');
+        const errorEl = document.getElementById('error');
+
+        function setStatus(msg) { statusEl.textContent = msg; }
+        function showError(msg) {
+            document.querySelector('.spinner').style.display = 'none';
+            errorEl.style.display = 'block';
+            errorEl.textContent = msg;
+        }
+        function hideOverlay() {
+            overlay.classList.add('hidden');
+        }
+
+        async function main() {
+            const params = new URLSearchParams(window.location.search);
+            const modelUrl = params.get('model');
+            if (!modelUrl) { showError('Kein Modell übergeben (?model=...).'); return; }
+
+            // ── Three.js Scene ────────────────────────────────────────────────
+            const container = document.getElementById('canvas-container');
+            const w = container.clientWidth, h = container.clientHeight;
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(w, h);
+            renderer.setClearColor(0xf1f5f9);
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+
+            const scene = new THREE.Scene();
+            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            dirLight.position.set(10, 20, 10);
+            scene.add(dirLight);
+
+            const camera = new THREE.PerspectiveCamera(45, w / h, 0.01, 5000);
+            camera.position.set(10, 10, 10);
+
+            const controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.08;
+
+            // Grid helper
+            const grid = new THREE.GridHelper(50, 50, 0xcccccc, 0xdddddd);
+            scene.add(grid);
+
+            // Resize handler
+            window.addEventListener('resize', () => {
+                const W = container.clientWidth, H = container.clientHeight;
+                renderer.setSize(W, H);
+                camera.aspect = W / H;
+                camera.updateProjectionMatrix();
+            });
+
+            // Animation loop
+            renderer.setAnimationLoop(() => {
+                controls.update();
+                renderer.render(scene, camera);
+            });
+
+            // ── Download IFC ──────────────────────────────────────────────────
+            setStatus('Modell wird heruntergeladen...');
+            let ifcData;
             try {
-                // Parse URL parameters
-                const urlParams = new URLSearchParams(window.location.search);
-                const modelUrl = urlParams.get('model');
+                const resp = await fetch(modelUrl);
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+                const buf = await resp.arrayBuffer();
+                ifcData = new Uint8Array(buf);
+            } catch (e) {
+                showError(`Download-Fehler: ${e.message}`);
+                return;
+            }
 
-                if (!modelUrl) {
-                    throw new Error('Kein Modell via URL (?model=...) übergeben.');
+            // ── Parse IFC with web-ifc ────────────────────────────────────────
+            setStatus('IFC wird analysiert...');
+            const ifcApi = new WebIFC.IfcAPI();
+            ifcApi.SetWasmPath("https://cdn.jsdelivr.net/npm/web-ifc@0.0.57/", true);
+            await ifcApi.Init();
+
+            const modelID = ifcApi.OpenModel(ifcData, { COORDINATE_TO_ORIGIN: true });
+
+            setStatus('Geometrie wird aufgebaut...');
+            await ifcApi.StreamAllMeshes(modelID, (mesh) => {
+                const geom = new THREE.BufferGeometry();
+                const { vertexData, indexData } = mesh.geometry;
+
+                const vertices = new Float32Array(vertexData.buffer, vertexData.byteOffset, vertexData.size);
+                const indices  = new Uint32Array(indexData.buffer, indexData.byteOffset, indexData.size);
+
+                // IFC vertex stride: x,y,z, nx,ny,nz  (6 floats)
+                const positions = new Float32Array(vertices.length / 6 * 3);
+                const normals   = new Float32Array(vertices.length / 6 * 3);
+                for (let i = 0; i < vertices.length / 6; i++) {
+                    positions[i * 3]     = vertices[i * 6];
+                    positions[i * 3 + 1] = vertices[i * 6 + 1];
+                    positions[i * 3 + 2] = vertices[i * 6 + 2];
+                    normals[i * 3]       = vertices[i * 6 + 3];
+                    normals[i * 3 + 1]   = vertices[i * 6 + 4];
+                    normals[i * 3 + 2]   = vertices[i * 6 + 5];
                 }
 
-                loadingStatus.textContent = "Viewer wird gestartet...";
+                geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                geom.setAttribute('normal',   new THREE.BufferAttribute(normals, 3));
+                geom.setIndex(new THREE.BufferAttribute(indices, 1));
 
-                // Initialize Viewer
-                const container = document.getElementById('viewer-container');
-                const viewer = new IfcViewerAPI({ container });
-                
-                // Add basic setup
-                viewer.addAxes();
-                viewer.addGrid();
+                for (let i = 0; i < mesh.geometries.size(); i++) {
+                    const g = mesh.geometries.get(i);
+                    const { x, r, g: gr, b, a } = g.color;
+                    const mat = new THREE.MeshLambertMaterial({
+                        color: new THREE.Color(r, gr, b),
+                        transparent: a < 1,
+                        opacity: a,
+                        side: THREE.DoubleSide,
+                    });
+                    const m = new THREE.Mesh(geom, mat);
+                    m.applyMatrix4(new THREE.Matrix4().fromArray(g.flatTransformation));
+                    scene.add(m);
+                }
+                geom.dispose();
+                ifcApi.FlattenMesh(modelID, mesh.expressID);
+            });
 
-                loadingStatus.textContent = "Modell wird heruntergeladen...";
+            ifcApi.CloseModel(modelID);
 
-                // Important: Need to set WASM path for web-ifc
-                await viewer.IFC.setWasmPath("https://unpkg.com/web-ifc@0.0.36/");
-
-                // Load the model
-                const model = await viewer.IFC.loadIfcUrl(modelUrl);
-                
-                // Optional: Zoom to fit
-                // await viewer.shadowDropper.renderShadow(model.modelID);
-                
-                // Keep trying to load
-                loadingStatus.textContent = "Bereit.";
-                
-                // Hide overlay
-                loadingOverlay.style.opacity = '0';
-                setTimeout(() => {
-                    loadingOverlay.style.display = 'none';
-                }, 500);
-
-            } catch (err) {
-                console.error("IFC Loading Error:", err);
-                document.querySelector('.spinner').style.display = 'none';
-                errorMessage.style.display = 'block';
-                errorMessage.textContent = `Fehler: ${err.message || 'Das Modell konnte nicht geladen werden.'}`;
+            // Auto-fit camera
+            const box = new THREE.Box3().setFromObject(scene);
+            if (!box.isEmpty()) {
+                const center = box.getCenter(new THREE.Vector3());
+                const size = box.getSize(new THREE.Vector3()).length();
+                controls.target.copy(center);
+                camera.position.set(center.x + size, center.y + size * 0.5, center.z + size);
+                camera.near = size / 1000;
+                camera.far  = size * 10;
+                camera.updateProjectionMatrix();
+                controls.update();
+                grid.position.set(center.x, box.min.y, center.z);
             }
+
+            setStatus('Bereit.');
+            hideOverlay();
+        }
+
+        main().catch(e => {
+            console.error('[IFC Viewer]', e);
+            showError(`Fehler: ${e.message || 'Das Modell konnte nicht geladen werden.'}`);
         });
     </script>
 </body>

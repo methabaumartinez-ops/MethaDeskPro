@@ -12,8 +12,10 @@ import { Button } from '@/components/ui/button';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { EmployeeService } from '@/lib/services/employeeService';
 import { Teilsystem } from '@/types';
-import { ArrowLeft, Save, Calendar as CalendarIcon } from 'lucide-react';
+import { ArrowLeft, Save, Calendar as CalendarIcon, UploadCloud, FileType } from 'lucide-react';
 import Link from 'next/link';
+import { ProjectService } from '@/lib/services/projectService';
+import { cn } from '@/lib/utils';
 
 const teilsystemSchema = z.object({
     teilsystemNummer: z.string().optional(),
@@ -103,17 +105,23 @@ export default function TeilsystemEditPage() {
     const [loading, setLoading] = useState(true);
     const [mitarbeiter, setMitarbeiter] = useState<any[]>([]);
     const [loadingMitarbeiter, setLoadingMitarbeiter] = useState(true);
+    const [dragActive, setDragActive] = useState(false);
+    const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     const {
         register,
         handleSubmit,
         setValue,
+        watch,
         control,
         setError,
         formState: { errors, isSubmitting },
     } = useForm<TeilsystemValues>({
         resolver: zodResolver(teilsystemSchema),
     });
+
+    const currentIfcUrl = watch('ifcUrl');
 
     // Load mitarbeiter for dropdown
     useEffect(() => {
@@ -149,6 +157,15 @@ export default function TeilsystemEditPage() {
                     setValue('wemaLink', item.wemaLink || '');
                     setValue('ifcUrl', item.ifcUrl || '');
                     setValue('status', item.status);
+
+                    if (item.ifcUrl) {
+                        try {
+                            const url = new URL(item.ifcUrl);
+                            setSelectedFileName(url.searchParams.get('name') || 'Modell vorhanden');
+                        } catch (e) {
+                            setSelectedFileName('Modell vorhanden');
+                        }
+                    }
                 } else {
                     router.push(`/${projektId}/teilsysteme`);
                 }
@@ -162,10 +179,36 @@ export default function TeilsystemEditPage() {
         loadItem();
     }, [id, projektId, setValue, router]);
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setSelectedFileName(e.target.files[0].name);
+        }
+    };
+
+    const handleDrag = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === "dragenter" || e.type === "dragover") {
+            setDragActive(true);
+        } else if (e.type === "dragleave") {
+            setDragActive(false);
+        }
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            setSelectedFileName(e.dataTransfer.files[0].name);
+            if (fileInputRef.current) {
+                fileInputRef.current.files = e.dataTransfer.files;
+            }
+        }
+    };
+
     const onSubmit = async (data: TeilsystemValues) => {
         try {
-            await new Promise((resolve) => setTimeout(resolve, 800));
-
             // Check for unique system number (excluding current id)
             if (data.teilsystemNummer) {
                 const isUnique = await SubsystemService.isSystemnummerUnique(projektId, data.teilsystemNummer, id);
@@ -175,6 +218,12 @@ export default function TeilsystemEditPage() {
                 }
             }
 
+            let uploadedIfcUrl = data.ifcUrl;
+            if (fileInputRef.current?.files?.[0]) {
+                const file = fileInputRef.current.files[0];
+                uploadedIfcUrl = await ProjectService.uploadImage(file, projektId, 'ifc');
+            }
+
             // Convert ISO dates back to German format for storage
             const toSave = {
                 ...data,
@@ -182,13 +231,14 @@ export default function TeilsystemEditPage() {
                 eroeffnetAm: isoToGermanDate(data.eroeffnetAm),
                 montagetermin: isoToGermanDate(data.montagetermin),
                 abgabePlaner: isoToGermanDate(data.abgabePlaner),
+                ifcUrl: uploadedIfcUrl
             };
 
             await SubsystemService.updateTeilsystem(id, toSave as unknown as Partial<Teilsystem>);
             router.push(`/${projektId}/teilsysteme/${id}`);
         } catch (error) {
             console.error("Failed to update teilsystem:", error);
-            alert("Fehler beim Speichern des Teilsystems.");
+            alert("Fehler beim Speichern del Teilsystems.");
         }
     };
 
@@ -218,144 +268,183 @@ export default function TeilsystemEditPage() {
 
     return (
         <div className="w-full space-y-6 pb-8">
-            <Link href={`/${projektId}/teilsysteme`} className="inline-flex items-center text-sm font-bold text-muted-foreground hover:text-primary transition-colors">
+            <Link href={`/${projektId}/teilsysteme/${id}`} className="inline-flex items-center text-sm font-bold text-muted-foreground hover:text-primary transition-colors">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Zurück zur Übersicht
+                Zurück al Teilsystem
             </Link>
 
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Teilsystem bearbeiten</h1>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <Card className="shadow-xl border-2 border-border">
-                    <CardHeader className="bg-muted/30 border-b">
-                        <CardTitle className="text-lg">Teilsystem-Informationen</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-6 space-y-6">
-                        {/* First Row: System-Nr, KS */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+                    {/* Left Column: Form Data */}
+                    <Card className="lg:col-span-3 shadow-xl border-none">
+                        <CardHeader className="bg-muted/30 border-b">
+                            <CardTitle className="text-lg">Teilsystem-Informationen</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-6 space-y-6">
+                            {/* First Row: System-Nr, KS */}
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <Input
+                                    label="System-Nummer"
+                                    placeholder="z.B. 1050"
+                                    {...register('teilsystemNummer')}
+                                    error={errors.teilsystemNummer?.message}
+                                />
+                                <Input
+                                    label="KS"
+                                    placeholder="1 oder BKP"
+                                    {...register('ks')}
+                                    error={errors.ks?.message}
+                                />
+                            </div>
+
                             <Input
-                                label="System-Nummer"
-                                placeholder="z.B. 1050"
-                                {...register('teilsystemNummer')}
-                                error={errors.teilsystemNummer?.message}
+                                label="Bezeichnung *"
+                                placeholder="z.B. Baukran"
+                                {...register('name')}
+                                error={errors.name?.message}
                             />
-                            <Input
-                                label="KS"
-                                placeholder="1 oder BKP"
-                                {...register('ks')}
-                                error={errors.ks?.message}
-                            />
-                        </div>
 
-                        <Input
-                            label="Bezeichnung *"
-                            placeholder="z.B. Baukran"
-                            {...register('name')}
-                            error={errors.name?.message}
-                        />
+                            {/* Beschreibung */}
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-semibold text-foreground ml-1">Beschreibung</label>
+                                <textarea
+                                    className="flex min-h-[80px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-accent"
+                                    placeholder="Kurze Beschreibung des Systems..."
+                                    {...register('beschreibung')}
+                                />
+                            </div>
 
-                        {/* Beschreibung */}
-                        <div className="space-y-1.5">
-                            <label className="text-sm font-semibold text-foreground ml-1">Beschreibung</label>
-                            <textarea
-                                className="flex min-h-[80px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-accent"
-                                placeholder="Kurze Beschreibung des Systems..."
-                                {...register('beschreibung')}
-                            />
-                            {errors.beschreibung && <p className="text-xs font-medium text-red-500 ml-1">{errors.beschreibung.message}</p>}
-                        </div>
+                            {/* Bemerkung */}
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-semibold text-foreground ml-1">Bemerkung</label>
+                                <textarea
+                                    className="flex min-h-[60px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-accent"
+                                    placeholder="Zusätzliche Notizen..."
+                                    {...register('bemerkung')}
+                                />
+                            </div>
 
-                        {/* Bemerkung */}
-                        <div className="space-y-1.5">
-                            <label className="text-sm font-semibold text-foreground ml-1">Bemerkung</label>
-                            <textarea
-                                className="flex min-h-[60px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-accent"
-                                placeholder="Zusätzliche Notizen..."
-                                {...register('bemerkung')}
-                            />
-                        </div>
+                            {/* Opening info */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <DateInput
+                                    label="Eröffnet am"
+                                    {...register('eroeffnetAm')}
+                                />
+                                <FormSelect
+                                    label="Eröffnet durch"
+                                    options={mitarbeiterOptions}
+                                    {...register('eroeffnetDurch')}
+                                />
+                            </div>
 
-                        {/* Opening info - date picker + mitarbeiter dropdown */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <DateInput
-                                label="Eröffnet am"
-                                {...register('eroeffnetAm')}
-                            />
-                            <FormSelect
-                                label="Eröffnet durch"
-                                options={mitarbeiterOptions}
-                                {...register('eroeffnetDurch')}
-                            />
-                        </div>
+                            {/* Dates row */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <DateInput
+                                    label="Montagetermin"
+                                    {...register('montagetermin')}
+                                />
+                                <Input
+                                    label="Lieferfrist"
+                                    type="text"
+                                    placeholder="Tage oder Datum"
+                                    {...register('lieferfrist')}
+                                />
+                                <DateInput
+                                    label="Plan-Abgabe"
+                                    {...register('abgabePlaner')}
+                                />
+                            </div>
 
-                        {/* Dates row with calendar pickers */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <DateInput
-                                label="Montagetermin"
-                                {...register('montagetermin')}
-                            />
-                            <Input
-                                label="Lieferfrist"
-                                type="text"
-                                placeholder="Tage oder Datum"
-                                {...register('lieferfrist')}
-                            />
-                            <DateInput
-                                label="Plan-Abgabe"
-                                {...register('abgabePlaner')}
-                            />
-                        </div>
+                            {/* Status fields */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <FormSelect
+                                    label="Plan-Status"
+                                    options={planStatusOptions}
+                                    {...register('planStatus')}
+                                />
+                                <Input
+                                    label="WEMA Link"
+                                    placeholder="Pfad oder URL"
+                                    {...register('wemaLink')}
+                                />
+                                <FormSelect
+                                    label="Status *"
+                                    options={statusOptions}
+                                    {...register('status')}
+                                    error={errors.status?.message}
+                                />
+                            </div>
+                        </CardContent>
+                        <CardFooter className="bg-muted/30 border-t border-border p-6 flex justify-end gap-4">
+                            <Link href={`/${projektId}/teilsysteme/${id}`}>
+                                <Button type="button" variant="outline" className="font-bold">Abbrechen</Button>
+                            </Link>
+                            <Button type="submit" className="font-bold min-w-[140px]" disabled={isSubmitting}>
+                                {isSubmitting ? 'Wird gespeichert...' : (
+                                    <span className="flex items-center gap-2">
+                                        <Save className="h-4 w-4" />
+                                        Speichern
+                                    </span>
+                                )}
+                            </Button>
+                        </CardFooter>
+                    </Card>
 
-                        {/* Status fields */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <FormSelect
-                                label="Plan-Status"
-                                options={planStatusOptions}
-                                {...register('planStatus')}
-                            />
-                            <Input
-                                label="WEMA Link"
-                                placeholder="Pfad oder URL"
-                                {...register('wemaLink')}
-                            />
-                            <FormSelect
-                                label="Status *"
-                                options={statusOptions}
-                                {...register('status')}
-                                error={errors.status?.message}
-                            />
-                        </div>
-
-                        {/* IFC Link */}
-                        <div className="pt-2">
-                            <Input
-                                label="IFC-Modell Link (Google Drive)"
-                                placeholder="https://drive.google.com/file/d/.../view"
-                                {...register('ifcUrl')}
-                                error={errors.ifcUrl?.message}
-                            />
-                            <p className="text-[10px] text-muted-foreground mt-1 ml-1 italic">
-                                Tragen Sie hier den Link zur IFC-Datei ein. Google Drive Links werden automatisch für die Vorschau optimiert.
-                            </p>
-                        </div>
-                    </CardContent>
-                    <CardFooter className="bg-muted/30 border-t border-border p-6 flex justify-end gap-4">
-                        <Link href={`/${projektId}/teilsysteme`}>
-                            <Button type="button" variant="outline" className="font-bold">Abbrechen</Button>
-                        </Link>
-                        <Button type="submit" className="font-bold min-w-[140px]" disabled={isSubmitting}>
-                            {isSubmitting ? 'Wird gespeichert...' : (
-                                <span className="flex items-center gap-2">
-                                    <Save className="h-4 w-4" />
-                                    Speichern
-                                </span>
-                            )}
-                        </Button>
-                    </CardFooter>
-                </Card>
+                    {/* Right Column: IFC Upload Container */}
+                    <div className="space-y-6 sticky top-6 mt-1 lg:mt-[4.5rem]">
+                        <Card className="shadow-none border-2 border-dashed border-border bg-muted/30 flex flex-col">
+                            <CardHeader className="bg-transparent border-b-0 pb-0 pt-4 px-4">
+                                <CardTitle className="text-sm font-black text-foreground flex items-center gap-2">
+                                    <UploadCloud className="h-4 w-4 text-primary" />
+                                    IFC Modell
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent
+                                className={cn(
+                                    "flex flex-col items-center justify-center p-4 transition-colors cursor-pointer m-2 rounded-lg border-2 border-transparent hover:bg-muted/50",
+                                    dragActive ? "bg-primary/5 border-primary border-dashed" : ""
+                                )}
+                                onDragEnter={handleDrag}
+                                onDragLeave={handleDrag}
+                                onDragOver={handleDrag}
+                                onDrop={handleDrop}
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                <div className="bg-background p-3 rounded-full shadow-sm mb-3">
+                                    <FileType className="h-6 w-6 text-primary" />
+                                </div>
+                                <h3 className="text-xs font-bold text-foreground mb-1">
+                                    {currentIfcUrl ? 'IFC ersetzen' : 'IFC hierher ziehen'}
+                                </h3>
+                                <p className="text-[10px] font-medium text-muted-foreground mb-4 text-center">
+                                    Nur .ifc (Max. 200MB)
+                                </p>
+                                <Button type="button" size="sm" variant="outline" className="text-xs font-bold border-border h-8 px-4" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}>
+                                    Wählen
+                                </Button>
+                                <input
+                                    type="file"
+                                    className="hidden"
+                                    ref={fileInputRef}
+                                    accept=".ifc"
+                                    onChange={handleFileChange}
+                                />
+                                {selectedFileName && (
+                                    <div className="mt-3 p-2 bg-green-50 text-green-700 rounded text-xs font-bold flex items-center gap-2 w-full truncate">
+                                        <FileType className="h-3 w-3 flex-shrink-0" />
+                                        <span className="truncate">{selectedFileName}</span>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
             </form>
         </div>
     );
 }
+

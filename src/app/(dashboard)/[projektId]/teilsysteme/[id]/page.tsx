@@ -13,7 +13,7 @@ import { Teilsystem, Position, Projekt } from '@/types';
 import {
     ArrowLeft, Edit, ListTodo, Plus, FileText,
     Calendar, User as UserIcon, Clock, Link as LinkIcon,
-    MapPin, Eye, Trash2, ShieldCheck, Hash, Briefcase, LayoutDashboard
+    MapPin, Eye, Trash2, ShieldCheck, Hash, Briefcase, LayoutDashboard, Copy, ExternalLink
 } from 'lucide-react';
 import Link from 'next/link';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
@@ -211,9 +211,27 @@ export default function TeilsystemDetailPage() {
                                         </div>
                                         <div className="text-right">
                                             {field.isLink ? (
-                                                <a href={field.value} target="_blank" rel="noreferrer" className="text-xs font-bold text-primary truncate max-w-[150px] hover:underline block">
-                                                    {field.value || 'n/a'}
-                                                </a>
+                                                <div className="flex items-center gap-2 justify-end">
+                                                    {field.value?.match(/^[a-zA-Z]:\\/) || field.value?.startsWith('\\\\') ? (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-7 px-2 text-[10px] font-black uppercase text-primary hover:bg-primary/10 flex items-center gap-1.5"
+                                                            onClick={() => {
+                                                                navigator.clipboard.writeText(field.value || '');
+                                                                alert('Pfad kopiert! Sie können ihn im Windows Explorer einfügen.');
+                                                            }}
+                                                        >
+                                                            <Copy className="h-3 w-3" />
+                                                            Kopieren
+                                                        </Button>
+                                                    ) : (
+                                                        <a href={field.value} target="_blank" rel="noreferrer" className="text-xs font-bold text-primary truncate max-w-[150px] hover:underline flex items-center gap-1.5">
+                                                            <span>{field.value || 'n/a'}</span>
+                                                            <ExternalLink className="h-3 w-3" />
+                                                        </a>
+                                                    )}
+                                                </div>
                                             ) : (
                                                 <span className={cn("text-xs font-bold text-foreground", field.color)}>
                                                     {field.value || '—'}
