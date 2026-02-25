@@ -1,34 +1,18 @@
 // src/lib/hooks/usePermissions.ts
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { getPermissions, hasPermission, RolePermissions } from '@/lib/permissions';
-import type { UserRole } from '@/types';
-
-function getUserRoleFromCookie(): UserRole | undefined {
-    if (typeof document === 'undefined') return undefined;
-    // El token JWT es HttpOnly, pero guardamos el rol en localStorage al hacer login
-    try {
-        const userData = localStorage.getItem('methabau_user');
-        if (userData) {
-            const user = JSON.parse(userData);
-            return user.role as UserRole;
-        }
-    } catch {
-        return undefined;
-    }
-    return undefined;
-}
+import { useProjekt } from '@/lib/context/ProjektContext';
 
 export function usePermissions() {
-    const [role, setRole] = useState<UserRole | undefined>(undefined);
-    const [permissions, setPermissions] = useState<RolePermissions>(getPermissions(undefined));
+    const { currentUser } = useProjekt();
 
-    useEffect(() => {
-        const r = getUserRoleFromCookie();
-        setRole(r);
-        setPermissions(getPermissions(r));
-    }, []);
+    // Obtenemos el rol del usuario conectado
+    const role = currentUser?.role;
+
+    // Memorizamos los permisos para evitar cálculos innecesarios
+    const permissions = useMemo(() => getPermissions(role), [role]);
 
     return {
         role,

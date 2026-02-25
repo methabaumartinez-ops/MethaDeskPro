@@ -1,5 +1,6 @@
 import { DatabaseService } from './db';
 import { v4 as uuidv4 } from 'uuid';
+import type { UserRole } from '@/types';
 
 const SALT_LENGTH = 16;
 const ITERATIONS = 600000; // Current recommendation
@@ -176,7 +177,7 @@ export interface StoredUser {
     email: string;
     passwordHash: string;
     department?: string;
-    role: 'admin' | 'projektleiter' | 'mitarbeiter';
+    role: UserRole;
     createdAt: string;
     confirmed: boolean;
     confirmationToken?: string;
@@ -188,7 +189,7 @@ export interface SafeUser {
     nachname: string;
     email: string;
     department?: string;
-    role: 'admin' | 'projektleiter' | 'mitarbeiter';
+    role: UserRole;
 }
 
 function toSafeUser(user: StoredUser): SafeUser {

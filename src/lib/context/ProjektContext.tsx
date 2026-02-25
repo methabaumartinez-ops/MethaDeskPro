@@ -47,6 +47,16 @@ export function ProjektProvider({ children }: { children: React.ReactNode }) {
                 }
             }
 
+            // Load user from localStorage (for immediate permission check)
+            const storedUser = localStorage.getItem('methabau_user');
+            if (storedUser) {
+                try {
+                    _setCurrentUser(JSON.parse(storedUser));
+                } catch (e) {
+                    console.error("Failed to parse user", e);
+                }
+            }
+
             setLoading(false);
         }
 
@@ -64,6 +74,11 @@ export function ProjektProvider({ children }: { children: React.ReactNode }) {
 
     const setCurrentUser = useCallback((user: User | null) => {
         _setCurrentUser(user);
+        if (user) {
+            localStorage.setItem('methabau_user', JSON.stringify(user));
+        } else {
+            localStorage.removeItem('methabau_user');
+        }
     }, []);
 
     const logout = useCallback(async () => {
@@ -75,6 +90,7 @@ export function ProjektProvider({ children }: { children: React.ReactNode }) {
         _setCurrentUser(null);
         _setActiveProjekt(null);
         localStorage.removeItem('methabau_activeProjekt');
+        localStorage.removeItem('methabau_user');
         router.push('/login');
     }, [router]);
 
