@@ -224,8 +224,8 @@ export default function TeilsystemEditPage() {
                 try {
                     uploadedIfcUrl = await ProjectService.uploadImage(file, projektId, 'ifc');
                 } catch (uploadErr: any) {
-                    console.warn('IFC upload failed, keeping existing URL:', uploadErr?.message);
-                    // Upload failed (e.g. missing Drive credentials in production) — silently keep existing URL
+                    console.error('IFC upload failed:', uploadErr);
+                    throw new Error(`IFC Upload fehlgeschlagen: ${uploadErr.message || String(uploadErr)}`);
                 }
             }
 
