@@ -23,12 +23,18 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Printer, Share2, UploadCloud } from 'lucide-react';
 import { QRCodeSection } from '@/components/shared/QRCodeSection';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import DokumentePanel from '@/components/shared/DokumentePanel';
+import { usePermissions } from '@/lib/hooks/usePermissions';
 
 export default function TeilsystemDetailPage() {
     const { projektId, id } = useParams() as { projektId: string; id: string };
     const searchParams = useSearchParams();
     const router = useRouter();
-    const isReadOnly = searchParams.get('mode') === 'readOnly';
+    const { can, role } = usePermissions();
+    const isReadOnly = searchParams.get('mode') === 'readOnly' || !can('update');
+    const canManageLager = can('manageLagerorte');
+    const canViewKosten = can('viewKosten');
+    const canDelete = can('delete');
 
     const [item, setItem] = useState<Teilsystem | null>(null);
     const [project, setProject] = useState<Projekt | null>(null);
@@ -266,7 +272,7 @@ export default function TeilsystemDetailPage() {
                         <ListTodo className="h-5 w-5 text-primary" />
                         Zugehörige Positionen
                     </CardTitle>
-                    {!isReadOnly && (
+                    {(!isReadOnly && can('create')) && (
                         <Link href={`/${projektId}/teilsysteme/${id}/positionen/erfassen`}>
                             <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white font-bold h-9 px-6 rounded-full shadow-md flex items-center gap-2 transition-all hover:scale-105">
                                 <Plus className="h-4 w-4" />
@@ -313,7 +319,10 @@ export default function TeilsystemDetailPage() {
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
-                                                            className="h-8 w-8 text-muted-foreground/50 hover:text-red-600 hover:bg-red-50 hover:shadow-sm"
+                                                            className={cn(
+                                                                "h-8 w-8 text-muted-foreground/50 hover:text-red-600 hover:bg-red-50 hover:shadow-sm",
+                                                                !canDelete && "hidden"
+                                                            )}
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 setPosToDelete(pos);
@@ -339,7 +348,70 @@ export default function TeilsystemDetailPage() {
                 </CardContent>
             </Card>
 
+
+            {/* Bottom Grid: Kosten + Dokumente + QR */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Dokumente */}
+                <Card className="shadow-sm border-2 border-border md:col-span-2">
+                    <CardHeader className="border-b border-border py-3 px-4 bg-muted/30">
+                        <CardTitle className="text-sm font-black uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                            <FileText className="h-4 w-4" />
+                            Dokumente
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <React.Suspense fallback={<div className="p-4 text-sm text-muted-foreground">Laden...</div>}>
+                            <DokumentePanel entityId={id} entityType="teilsystem" projektId={projektId} readonly={isReadOnly} />
+                        </React.Suspense>
+                    </CardContent>
+                </Card>
+
+                {/* Quick Actions: Kosten + Lager */}
+                <div className="flex flex-col gap-4">
+                    {canViewKosten && (
+                        <Link href={`/${projektId}/kosten?ts=${id}`}>
+                            <Card className="shadow-sm border-2 border-border hover:border-primary/50 transition-colors cursor-pointer group">
+                                <CardContent className="p-4 flex items-center gap-3">
+                                    <div className="p-2 rounded-lg bg-green-100 text-green-700 text-xl">💰</div>
+                                    <div>
+                                        <p className="font-black text-sm text-foreground">Kostenerfassung</p>
+                                        <p className="text-xs text-muted-foreground">Stunden & Material für dieses TS</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                    )}
+
+                    <Link href={`/${projektId}/lager-scan`}>
+                        <Card className="shadow-sm border-2 border-border hover:border-primary/50 transition-colors cursor-pointer group">
+                            <CardContent className="p-4 flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-blue-100 text-blue-700 text-xl">📷</div>
+                                <div>
+                                    <p className="font-black text-sm text-foreground">Lager-Scan</p>
+                                    <p className="text-xs text-muted-foreground">QR-Code Einlagerung erfassen</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </Link>
+
+                    {canManageLager && (
+                        <Link href={`/${projektId}/lagerorte`}>
+                            <Card className="shadow-sm border-2 border-border hover:border-primary/50 transition-colors cursor-pointer group">
+                                <CardContent className="p-4 flex items-center gap-3">
+                                    <div className="p-2 rounded-lg bg-orange-100 text-orange-700 text-xl">📦</div>
+                                    <div>
+                                        <p className="font-black text-sm text-foreground">Lagerorte</p>
+                                        <p className="text-xs text-muted-foreground">QR-Codes verwalten</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                    )}
+                </div>
+            </div>
+
             <ConfirmDialog
+
                 isOpen={confirmOpen}
                 onClose={() => setConfirmOpen(false)}
                 onConfirm={async () => {

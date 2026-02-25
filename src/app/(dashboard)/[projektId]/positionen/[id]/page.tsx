@@ -8,20 +8,23 @@ import { SubsystemService } from '@/lib/services/subsystemService';
 import { Position, Unterposition, Teilsystem } from '@/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Edit, Plus, FileSpreadsheet, ListTodo, Printer, Share2 } from 'lucide-react';
+import { ArrowLeft, Edit, Plus, FileSpreadsheet, ListTodo, Printer, Share2, ShieldCheck } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import Link from 'next/link';
 import { QRCodeSVG } from 'qrcode.react';
 import { QRCodeSection } from '@/components/shared/QRCodeSection';
-import { DocumentViewer } from '@/components/shared/DocumentViewer';
+import DokumentePanel from '@/components/shared/DokumentePanel';
+import { TrackingTimeline } from '@/components/shared/TrackingTimeline';
 import { useSearchParams } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { usePermissions } from '@/lib/hooks/usePermissions';
 
 export default function PositionDetailPage() {
-    const { projektId, id } = useParams() as { projektId: string, id: string };
+    const { id, projektId } = useParams() as { id: string, projektId: string };
     const searchParams = useSearchParams();
-    const isReadOnly = searchParams.get('mode') === 'readOnly';
+    const { can, role } = usePermissions();
+    const isReadOnly = searchParams.get('mode') === 'readOnly' || !can('update');
     const [position, setPosition] = useState<Position | null>(null);
     const [teilsystem, setTeilsystem] = useState<Teilsystem | null>(null);
     const [unterpositionen, setUnterpositionen] = useState<Unterposition[]>([]);
@@ -147,13 +150,19 @@ export default function PositionDetailPage() {
                     <div className="flex items-center gap-6">
                         <div className="text-right flex flex-col items-end gap-3">
                             <StatusBadge status={position.status} />
-                            {!isReadOnly && (
+                            {(!isReadOnly && can('update')) && (
                                 <Link href={`/${projektId}/positionen/${position.id}/edit`}>
                                     <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest shadow-lg shadow-orange-200 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
                                         <Edit className="h-4 w-4" />
                                         <span>Bearbeiten</span>
                                     </Button>
                                 </Link>
+                            )}
+                            {isReadOnly && (
+                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase bg-muted px-2 py-1 rounded-md">
+                                    <ShieldCheck className="h-3.5 w-3.5 text-blue-500" />
+                                    Nur Lesezugriff
+                                </div>
                             )}
                         </div>
                     </div>
@@ -181,8 +190,26 @@ export default function PositionDetailPage() {
                                     <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Status</span>
                                     <StatusBadge status={position.status} />
                                 </div>
-                                <div className="px-4 py-6 bg-slate-50/50">
-                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-2">Beschreibung</span>
+                                {position.planStatus && (
+                                    <div className="px-4 py-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
+                                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Plan-Status</span>
+                                        <Badge variant="outline" className="font-black text-xs">{position.planStatus}</Badge>
+                                    </div>
+                                )}
+                                {position.beschichtung && (
+                                    <div className="px-4 py-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
+                                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Beschichtung</span>
+                                        <Badge variant="outline" className="font-bold text-xs">{position.beschichtung}</Badge>
+                                    </div>
+                                )}
+                                {position.gewicht && (
+                                    <div className="px-4 py-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
+                                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Gewicht</span>
+                                        <span className="text-sm font-bold">{position.gewicht} kg</span>
+                                    </div>
+                                )}
+                                <div className="px-4 py-6 bg-slate-50/50 dark:bg-slate-900/20">
+                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-2">Bezeichnung</span>
                                     <p className="text-sm font-medium text-foreground italic leading-relaxed">
                                         {position.name}
                                     </p>
@@ -192,17 +219,29 @@ export default function PositionDetailPage() {
                     </Card>
                 </div>
 
-                {/* Right: Document Preview (50% Width like BIM) */}
+                {/* Right: Dokumente & Tracking */}
                 <div className="flex flex-col gap-6">
-                    <div className="min-h-[400px] lg:h-full relative group shadow-sm rounded-xl bg-white overflow-hidden">
-                        <DocumentViewer
-                            documents={[
-                                { id: '1', name: 'Planhalle_A.pdf', type: 'pdf', url: '#', date: '12.02.2026', size: '2.4 MB' },
-                                { id: '2', name: 'Detail_Anschluss.jpg', type: 'image', url: 'https://images.unsplash.com/photo-1541888946425-d81bb19480c5?auto=format&fit=crop&q=80&w=300', date: '15.02.2026', size: '1.1 MB' },
-                            ]}
-                            title="Pläne & Medien"
-                        />
-                    </div>
+                    <Card className="shadow-sm border-2 border-border overflow-hidden">
+                        <CardHeader className="py-3 px-4 bg-muted/30 border-b border-border">
+                            <CardTitle className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                                📎 Dokumente
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <DokumentePanel
+                                entityId={id}
+                                entityType="position"
+                                projektId={projektId}
+                                readonly={isReadOnly}
+                            />
+                        </CardContent>
+                    </Card>
+
+                    <TrackingTimeline
+                        entityId={id}
+                        projektId={projektId}
+                        entityType="position"
+                    />
                 </div>
             </div>
 
@@ -213,7 +252,7 @@ export default function PositionDetailPage() {
                         <ListTodo className="h-5 w-5 text-primary" />
                         Unterpositionen / Komponenten
                     </CardTitle>
-                    {!isReadOnly && (
+                    {(!isReadOnly && can('create')) && (
                         <Link href={`/${projektId}/positionen/${id}/unterpositionen/erfassen`}>
                             <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white font-bold h-9 px-6 rounded-full shadow-md flex items-center gap-2 transition-all hover:scale-105">
                                 <Plus className="h-4 w-4" />
