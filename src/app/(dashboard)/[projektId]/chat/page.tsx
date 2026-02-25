@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect } from 'react';
+// @ts-expect-error ai/react subpath export — resolve issue with bundler moduleResolution
 import { useChat } from 'ai/react';
 import { useParams } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
