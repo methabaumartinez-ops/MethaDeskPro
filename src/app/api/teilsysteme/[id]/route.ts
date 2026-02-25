@@ -38,7 +38,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         // Fetch existing item to merge and avoid losing fields like projektId
         const existing = await DatabaseService.get('teilsysteme', id);
         const updatedData = {
-            ...(existing || {}),
+            ...(existing as Record<string, unknown> || {}),
             ...body,
             id
         };
