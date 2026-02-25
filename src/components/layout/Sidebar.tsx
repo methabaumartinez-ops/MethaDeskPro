@@ -9,32 +9,42 @@ import {
     Layers,
     ListTodo,
     Package,
-    Truck,
     Users,
-    FileText,
     LayoutDashboard,
     Calendar,
     Warehouse,
     Hammer,
     Car,
     MessageSquare,
+    QrCode,
+    DollarSign,
 } from 'lucide-react';
-import { useProjekt } from '@/lib/context/ProjektContext';
 import { ChatAssistant } from '@/components/shared/ChatAssistant';
 import { Signature } from '@/components/shared/Signature';
+import { usePermissions } from '@/lib/hooks/usePermissions';
+import { RolePermissions } from '@/lib/permissions';
+
+type MenuItem = {
+    title: string;
+    href: string;
+    icon: React.ElementType;
+    permission?: keyof RolePermissions;
+    subItems?: { title: string; href: string }[];
+};
 
 export function Sidebar({ projektId, className }: { projektId: string; className?: string }) {
     const pathname = usePathname();
+    const { can, role } = usePermissions();
 
-    const menuItems = [
+    const menuItems: MenuItem[] = [
         { title: 'Übersicht', href: `/${projektId}`, icon: LayoutDashboard },
         { title: 'Planer', href: `/${projektId}/planer`, icon: Calendar },
         { title: 'Produktion', href: `/${projektId}/teilsysteme`, icon: Layers },
-        // { title: 'Positionen', href: `/${projektId}/positionen`, icon: ListTodo }, // Hidden per request
         {
             title: 'Einkauf',
             href: `/einkauf`,
             icon: Package,
+            permission: 'viewKosten', // Solo los que ven costes ven compras
             subItems: [
                 { title: 'Globale Übersicht', href: `/einkauf` },
                 { title: 'Materialliste (Projekt)', href: `/${projektId}/material` },
@@ -43,18 +53,33 @@ export function Sidebar({ projektId, className }: { projektId: string; className
         },
         { title: 'Ausführung', href: `/${projektId}/ausfuehrung`, icon: Hammer },
         { title: 'Werkhof', href: `/${projektId}/werkhof`, icon: Warehouse },
-        { title: 'Fuhrpark', href: `/fuhrpark`, icon: Car },
-        { title: 'Mitarbeiter', href: `/${projektId}/mitarbeiter`, icon: Users },
-        { title: 'Tabellen', href: `/${projektId}/tabellen`, icon: ListTodo },
+        {
+            title: 'Lager & QR',
+            href: `/${projektId}/lagerorte`,
+            icon: QrCode,
+            permission: 'qrMove',
+            subItems: [
+                { title: '📦 Lagerorte verwalten', href: `/${projektId}/lagerorte` },
+                { title: '📷 QR Scan', href: `/${projektId}/lager-scan` },
+            ]
+        },
+        { title: 'Kostenerfassung', href: `/${projektId}/kosten`, icon: DollarSign, permission: 'viewKosten' },
+        { title: 'Fuhrpark', href: `/fuhrpark`, icon: Car, permission: 'viewKosten' }, // Por ahora restringido
+        { title: 'Mitarbeiter', href: `/${projektId}/mitarbeiter`, icon: Users, permission: 'manageUsers' },
+        { title: 'Tabellen', href: `/${projektId}/tabellen`, icon: ListTodo, permission: 'read' },
         { title: 'AI Assistant', href: `/${projektId}/chat`, icon: MessageSquare },
-
-        // { title: 'Berichte', href: `/${projektId}/berichte`, icon: FileText }, // Removed per request
     ];
+
+    // Filtrar items permitidos
+    const allowedItems = menuItems.filter(item => {
+        if (!item.permission) return true;
+        return can(item.permission);
+    });
 
     return (
         <aside className={cn("relative flex flex-col h-[calc(100vh-4rem)] w-64 border-r bg-white dark:bg-slate-950 dark:border-slate-800 transition-colors", className)}>
             <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2 pb-40">
-                {menuItems.map((item) => {
+                {allowedItems.map((item) => {
                     const isProjectRoot = item.href === `/${projektId}`;
                     const isActive =
                         (item.subItems && item.subItems.some(sub => pathname.startsWith(sub.href))) ||
@@ -110,7 +135,7 @@ export function Sidebar({ projektId, className }: { projektId: string; className
                 <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/50 p-3 border border-slate-200/50">
                     <div className="mb-2 px-1">
                         <p className="text-[10px] font-bold uppercase text-muted-foreground/60 tracking-widest leading-none mb-1">Version</p>
-                        <p className="text-[10px] font-extrabold text-foreground/70">v1.2.4-PRO</p>
+                        <p className="text-[10px] font-extrabold text-foreground/70">v1.3.0-PRO</p>
                     </div>
                     <div className="pt-2 border-t border-slate-200/50">
                         <Signature />
