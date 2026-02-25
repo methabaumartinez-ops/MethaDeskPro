@@ -236,9 +236,9 @@ export default function TeilsystemEditPage() {
 
             await SubsystemService.updateTeilsystem(id, toSave as unknown as Partial<Teilsystem>);
             router.push(`/${projektId}/teilsysteme/${id}`);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to update teilsystem:", error);
-            alert("Fehler beim Speichern del Teilsystems.");
+            alert(`Fehler beim Speichern des Teilsystems:\n\n${error?.message || String(error)}`);
         }
     };
 
