@@ -3,9 +3,9 @@ import path from 'path';
 import { google } from 'googleapis';
 import { IfcAPI } from 'web-ifc';
 
-const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN;
+const CLIENT_ID = process.env.GOOGLE_CLIENT_ID?.trim();
+const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET?.trim();
+const REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN?.trim();
 const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000';
 
 function extractFileId(url: string): string | null {

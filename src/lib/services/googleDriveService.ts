@@ -2,11 +2,11 @@ import 'server-only';
 import { google } from 'googleapis';
 import { Readable } from 'stream';
 
-const ROOT_FOLDER_ID = process.env.GOOGLE_ROOT_FOLDER_ID;
-const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN;
-const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/callback/google';
+const ROOT_FOLDER_ID = process.env.GOOGLE_ROOT_FOLDER_ID?.trim();
+const CLIENT_ID = process.env.GOOGLE_CLIENT_ID?.trim();
+const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET?.trim();
+const REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN?.trim();
+const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000';
 
 const getDriveClient = () => {
     if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH_TOKEN) {
