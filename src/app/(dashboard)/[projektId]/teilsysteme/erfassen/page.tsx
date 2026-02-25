@@ -119,7 +119,7 @@ export default function TeilsystemErfassenPage() {
                 eroeffnetDurch: resolveName(data.eroeffnetDurch),
                 status: data.status as any,
                 ifcUrl: uploadedIfcUrl
-            });
+            } as any);
             router.push(`/${projektId}/teilsysteme`);
         } catch (error: any) {
             console.error("Failed to create teilsystem", error);

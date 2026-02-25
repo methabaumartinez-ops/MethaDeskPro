@@ -101,7 +101,7 @@ export const mockTeilsysteme: Teilsystem[] = [
         eroeffnetAm: '17.07.2025',
         eroeffnetDurch: 'Moritz',
         montagetermin: 'Di 03.02.2026',
-        planStatus: 'fertig',
+        planStatus: 'freigegeben',
         wemaLink: '\\\\daten01\\data\\C',
         status: 'bestellt',
     },
@@ -115,7 +115,7 @@ export const mockTeilsysteme: Teilsystem[] = [
         eroeffnetAm: '17.09.2025',
         eroeffnetDurch: 'Andrej',
         montagetermin: 'Fr 06.02.2026',
-        planStatus: 'fertig',
+        planStatus: 'freigegeben',
         status: 'verbaut',
     },
     {
@@ -151,7 +151,7 @@ export const mockTeilsysteme: Teilsystem[] = [
         eroeffnetAm: '10.01.2026',
         eroeffnetDurch: 'Francisco Jose Martinez Sanchez',
         status: 'abgeschlossen',
-        planStatus: 'fertig',
+        planStatus: 'freigegeben',
         projektId: '29ff60bc-8e31-4085-b77a-01fe273d56e0'
     },
     {
@@ -163,7 +163,7 @@ export const mockTeilsysteme: Teilsystem[] = [
         eroeffnetAm: '01.02.2026',
         eroeffnetDurch: 'Moritz Munz',
         status: 'in_produktion',
-        planStatus: 'fertig',
+        planStatus: 'freigegeben',
         projektId: '29ff60bc-8e31-4085-b77a-01fe273d56e0'
     },
     {
