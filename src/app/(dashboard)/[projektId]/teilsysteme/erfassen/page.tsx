@@ -105,7 +105,12 @@ export default function TeilsystemErfassenPage() {
             let uploadedIfcUrl = undefined;
             if (fileInputRef.current?.files?.[0]) {
                 const file = fileInputRef.current.files[0];
-                uploadedIfcUrl = await ProjectService.uploadImage(file, projektId, 'ifc');
+                try {
+                    uploadedIfcUrl = await ProjectService.uploadImage(file, projektId, 'ifc');
+                } catch (uploadErr: any) {
+                    console.error('IFC upload failed:', uploadErr);
+                    throw new Error(`IFC Upload fehlgeschlagen: ${uploadErr.message || String(uploadErr)}`);
+                }
             }
 
             await SubsystemService.createTeilsystem({
@@ -116,9 +121,9 @@ export default function TeilsystemErfassenPage() {
                 ifcUrl: uploadedIfcUrl
             });
             router.push(`/${projektId}/teilsysteme`);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to create teilsystem", error);
-            alert("Fehler beim Speichern");
+            alert(`Fehler beim Speichern:\n\n${error?.message || String(error)}`);
         }
     };
 
