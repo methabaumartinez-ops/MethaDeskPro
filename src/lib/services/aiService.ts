@@ -114,19 +114,20 @@ export class AIService {
         if (context.lieferanten && context.lieferanten.length > 0) {
             text += `\n=== LIEFERANTEN ===\n`;
             context.lieferanten.forEach((l: any) => {
-                text += `- ${l.name}: Kontakt ${l.kontaktperson || 'N/A'}, Tel: ${l.telefon || 'N/A'}\n`;
+                text += `- ${l.name}: Kontakt ${l.kontakt || 'N/A'}, Tel: ${l.telefon || 'N/A'}\n`;
             });
         }
 
         if (context.bestellungen && context.bestellungen.length > 0) {
             text += `\n=== WERKHOF BESTELLUNGEN & LOGISTIK ===\n`;
             context.bestellungen.forEach((b: any) => {
-                text += `- Bestellung ${b.bestellnummer} (${b.titel}): Status ${b.status}, Bestellt von ${b.bestelltVon}, Datum ${new Date(b.erstelltAm).toLocaleDateString('de-CH')}\n`;
+                const datum = b.bestelldatum ? new Date(b.bestelldatum).toLocaleDateString('de-CH') : 'N/A';
+                text += `- Bestellung ${b.id} (${b.containerBez || 'Sin título'}): Status ${b.status}, Bestellt von ${b.bestelltVon}, Datum ${datum}\n`;
                 if (b.items && b.items.length > 0) {
                     text += `  Artikel:\n`;
                     b.items.forEach((item: any) => {
                         const readyMark = item.vorbereitet ? '[X] Bereit' : '[ ] Offen';
-                        text += `  - ${item.menge} ${item.einheit} ${item.name} | ${readyMark}\n`;
+                        text += `  - ${item.menge} ${item.einheit} ${item.materialName || 'Unbekannt'} | ${readyMark}\n`;
                     });
                 }
             });
