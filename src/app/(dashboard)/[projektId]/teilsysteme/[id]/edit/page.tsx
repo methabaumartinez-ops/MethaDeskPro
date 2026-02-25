@@ -221,7 +221,12 @@ export default function TeilsystemEditPage() {
             let uploadedIfcUrl = data.ifcUrl;
             if (fileInputRef.current?.files?.[0]) {
                 const file = fileInputRef.current.files[0];
-                uploadedIfcUrl = await ProjectService.uploadImage(file, projektId, 'ifc');
+                try {
+                    uploadedIfcUrl = await ProjectService.uploadImage(file, projektId, 'ifc');
+                } catch (uploadErr: any) {
+                    console.warn('IFC upload failed, keeping existing URL:', uploadErr?.message);
+                    // Upload failed (e.g. missing Drive credentials in production) — silently keep existing URL
+                }
             }
 
             // Convert ISO dates back to German format for storage
