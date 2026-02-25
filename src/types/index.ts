@@ -1,6 +1,20 @@
 // src/types/index.ts
 
-export type UserRole = 'admin' | 'projektleiter' | 'mitarbeiter';
+// ============================================================
+// ROLES Y PERMISOS
+// ============================================================
+
+export type UserRole =
+  | 'admin'
+  | 'projektleiter'
+  | 'bauprojektleiter'
+  | 'baufuhrer'
+  | 'planer'
+  | 'polier'
+  | 'monteur'
+  | 'werkhof'
+  | 'produktion'
+  | 'mitarbeiter';
 
 export interface User {
   id: string;
@@ -10,6 +24,41 @@ export interface User {
   department?: string;
   role: UserRole;
 }
+
+// ============================================================
+// ENUMS CONTROLADOS (Wertlisten)
+// ============================================================
+
+export type Abteilung =
+  | 'Blechabteilung'
+  | 'Schlosserei'
+  | 'AVOR'
+  | 'Einkauf'
+  | 'Zimmerei'
+  | 'Montage'
+  | 'Planung'
+  | 'Bau';
+
+export type Beschichtung =
+  | 'feuerverzinkt'
+  | 'pulverbeschichtet'
+  | 'nasslackiert'
+  | 'eloxiert'
+  | 'kunststoffbeschichtet'
+  | 'unbehandelt'
+  | 'andere';
+
+export type PlanStatus =
+  | 'offen'
+  | 'in_bearbeitung'
+  | 'freigegeben'
+  | 'fertig'
+  | 'geaendert'
+  | 'abgeschlossen';
+
+// ============================================================
+// PROJEKTE
+// ============================================================
 
 export type ProjektStatus = 'offen' | 'in arbeit' | 'abgeschlossen' | 'pausiert';
 
@@ -34,7 +83,21 @@ export interface Projekt {
   createdAt: string;
 }
 
-export type ItemStatus = 'offen' | 'in_produktion' | 'bestellt' | 'geliefert' | 'verbaut' | 'abgeschlossen';
+// ============================================================
+// ITEM STATUS (gemeinsam)
+// ============================================================
+
+export type ItemStatus =
+  | 'offen'
+  | 'in_produktion'
+  | 'bestellt'
+  | 'geliefert'
+  | 'verbaut'
+  | 'abgeschlossen';
+
+// ============================================================
+// TEILSYSTEME
+// ============================================================
 
 export interface Teilsystem {
   id: string;
@@ -49,37 +112,89 @@ export interface Teilsystem {
   montagetermin?: string;
   lieferfrist?: string;
   abgabePlaner?: string;
-  planStatus?: string;
+  planStatus?: PlanStatus;
   wemaLink?: string;
+  projektordnerLink?: string;
   imageUrl?: string;
   ifcUrl?: string;
   documentUrl?: string;
   status: ItemStatus;
 }
 
+// ============================================================
+// POSITIONEN
+// ============================================================
+
 export interface Position {
   id: string;
   teilsystemId: string;
+  projektId?: string;
   posNummer?: string;
   name: string;
+  beschreibung?: string;
   menge: number;
   einheit: string;
+  gewicht?: number;         // kg
+  oberflaeche?: number;     // m²
+  beschichtung?: Beschichtung;
+  lieferantId?: string;
+  beschichterId?: string;
+  lagerortId?: string;
+  planStatus?: PlanStatus;
+  planDatum?: string;
+  freiDatum?: string;
+  bestelltAm?: string;
+  geliefertAm?: string;
+  verbautAm?: string;
+  montagetermin?: string;
+  abteilung?: Abteilung;
+  bemerkung?: string;
   status: ItemStatus;
+  createdAt?: string;
+  updatedAt?: string;
 }
+
+// ============================================================
+// UNTERPOSITIONEN
+// ============================================================
 
 export interface Unterposition {
   id: string;
   positionId: string;
+  teilsystemId?: string;
+  projektId?: string;
   posNummer?: string;
   name: string;
+  beschreibung?: string;
   menge: number;
   einheit: string;
+  gewicht?: number;
+  oberflaeche?: number;
+  beschichtung?: Beschichtung;
+  lieferantId?: string;
+  beschichterId?: string;
+  lagerortId?: string;
+  planStatus?: PlanStatus;
+  planDatum?: string;
+  freiDatum?: string;
+  bestelltAm?: string;
+  geliefertAm?: string;
+  verbautAm?: string;
+  abteilung?: Abteilung;
+  bemerkung?: string;
   status: ItemStatus;
+  createdAt?: string;
+  updatedAt?: string;
 }
+
+// ============================================================
+// MATERIAL (Bestellungen)
+// ============================================================
 
 export interface Material {
   id: string;
   positionId?: string;
+  teilsystemId?: string;
   name: string;
   hersteller: string;
   artikelnummer?: string;
@@ -113,6 +228,10 @@ export interface MaterialBestellung {
   bemerkung?: string;
 }
 
+// ============================================================
+// WERTLISTEN (WL)
+// ============================================================
+
 export interface Lieferant {
   id: string;
   name: string;
@@ -123,15 +242,133 @@ export interface Lieferant {
   notizen?: string;
 }
 
+export interface WlBeschichter {
+  id: string;
+  name: string;
+  kontakt?: string;
+  email?: string;
+  telefon?: string;
+  adresse?: string;
+  notizen?: string;
+  beschichtungsarten?: Beschichtung[];
+  createdAt?: string;
+}
+
 export interface Mitarbeiter {
   id: string;
   vorname: string;
   nachname: string;
   rolle: string;
   email: string;
-  abteilung?: string;
+  abteilung?: Abteilung | string;
   image?: string;
+  stundensatz?: number;  // CHF/h für Kostenerfassung
 }
+
+// ============================================================
+// LAGERORT & LAGERBEWEGUNGEN (QR)
+// ============================================================
+
+export interface Lagerort {
+  id: string;
+  projektId: string;
+  bezeichnung: string;       // z.B. "Lager A - Regal 3"
+  beschreibung?: string;
+  qrCode?: string;          // QR code string (encode: "LAGERORT:{id}")
+  bereich?: string;         // z.B. "Werkhof", "Baustelle", "Extern"
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type LagerbewegungTyp = 'einlagerung' | 'auslagerung' | 'umlagerung';
+
+export interface Lagerbewegung {
+  id: string;
+  entityType: 'position' | 'unterposition';
+  entityId: string;
+  vonLagerortId?: string;
+  nachLagerortId: string;
+  typ: LagerbewegungTyp;
+  durchgefuehrtVon: string;   // User ID
+  durchgefuehrtVonName?: string;
+  zeitpunkt: string;           // ISO timestamp
+  bemerkung?: string;
+  projektId?: string;
+}
+
+// ============================================================
+// KOSTENERFASSUNG
+// ============================================================
+
+export interface TsStunden {
+  id: string;
+  teilsystemId: string;
+  projektId: string;
+  mitarbeiterId: string;
+  mitarbeiterName?: string;
+  datum: string;
+  stunden: number;
+  abteilung?: Abteilung | string;
+  taetigkeit?: string;       // z.B. "Montage", "Schweissen", "Planung"
+  bemerkung?: string;
+  createdAt?: string;
+}
+
+export interface TsMaterialkosten {
+  id: string;
+  teilsystemId: string;
+  projektId: string;
+  bezeichnung: string;
+  lieferantId?: string;
+  lieferantName?: string;
+  menge: number;
+  einheit: string;
+  einzelpreis: number;       // CHF
+  gesamtpreis?: number;     // berechnet: menge * einzelpreis
+  bestelldatum?: string;
+  lieferdatum?: string;
+  rechnungsnummer?: string;
+  bemerkung?: string;
+  createdAt?: string;
+}
+
+// ============================================================
+// DOKUMENTE
+// ============================================================
+
+export type DokumentTyp =
+  | 'PDF'
+  | 'DXF'
+  | 'Schnittliste'
+  | 'Auszug'
+  | 'IFC'
+  | 'Zeichnung'
+  | 'Lieferschein'
+  | 'Rechnung'
+  | 'Andere';
+
+export interface TsDokument {
+  id: string;
+  entityType: 'teilsystem' | 'position' | 'unterposition' | 'projekt';
+  entityId: string;
+  projektId?: string;
+  name: string;
+  typ: DokumentTyp;
+  url?: string;               // Google Drive URL oder externer Link
+  driveFileId?: string;       // Google Drive File ID
+  wemaLink?: string;
+  projektordnerLink?: string;
+  sendeDatum?: string;        // Datum gesendet
+  empfangsDatum?: string;     // Datum empfangen
+  bemerkung?: string;
+  hochgeladenVon?: string;    // User ID
+  hochgeladenVonName?: string;
+  createdAt?: string;
+}
+
+// ============================================================
+// FUHRPARK
+// ============================================================
 
 export type FahrzeugKategorie =
   | 'scherenbuehne'
@@ -183,7 +420,7 @@ export interface Fahrzeug {
   zusatzinfo?: string;
   muldengroesse?: string;
   bodendruckMax?: string;
-  kwInfo?: string[]; // To store the KW history (e.g. ["KW 13: Amriville", "KW 29: Unterhalt"])
+  kwInfo?: string[];
 }
 
 export interface FahrzeugReservierung {
