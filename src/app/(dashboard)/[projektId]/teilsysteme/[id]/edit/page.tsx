@@ -16,6 +16,7 @@ import { ArrowLeft, Save, Calendar as CalendarIcon, UploadCloud, FileType } from
 import Link from 'next/link';
 import { ProjectService } from '@/lib/services/projectService';
 import { cn } from '@/lib/utils';
+import { IfcImportModal, IfcExtractResult } from '@/components/shared/IfcImportModal';
 
 const teilsystemSchema = z.object({
     teilsystemNummer: z.string().optional(),
@@ -108,6 +109,8 @@ export default function TeilsystemEditPage() {
     const [dragActive, setDragActive] = useState(false);
     const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const [ifcExtractData, setIfcExtractData] = useState<IfcExtractResult | null>(null);
+    const [extracting, setExtracting] = useState(false);
 
     const {
         register,
@@ -240,6 +243,30 @@ export default function TeilsystemEditPage() {
             };
 
             await SubsystemService.updateTeilsystem(id, toSave as unknown as Partial<Teilsystem>);
+
+            // If IFC was newly uploaded, trigger extraction
+            if (fileInputRef.current?.files?.[0] && uploadedIfcUrl) {
+                setExtracting(true);
+                try {
+                    const res = await fetch('/api/ifc-extract', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url: uploadedIfcUrl, teilsystemId: id, projektId }),
+                    });
+                    if (res.ok) {
+                        const extractResult = await res.json();
+                        if (extractResult.summary.totalPositionen > 0 || extractResult.summary.totalMateriale > 0) {
+                            setIfcExtractData(extractResult);
+                            setExtracting(false);
+                            return; // Don't navigate — modal handles it
+                        }
+                    }
+                } catch (e) {
+                    console.warn('IFC extraction failed, continuing:', e);
+                }
+                setExtracting(false);
+            }
+
             router.push(`/${projektId}/teilsysteme/${id}`);
         } catch (error: any) {
             console.error("Failed to update teilsystem:", error);
@@ -449,6 +476,33 @@ export default function TeilsystemEditPage() {
                     </div>
                 </div>
             </form>
+
+            {/* IFC Extracting overlay */}
+            {extracting && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                    <div className="bg-background rounded-2xl shadow-2xl border-2 border-border p-10 flex flex-col items-center gap-4">
+                        <div className="w-14 h-14 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                        <h3 className="text-lg font-black text-foreground">Analysiere IFC...</h3>
+                        <p className="text-sm text-muted-foreground">Positionen, Unterpositionen und Material werden extrahiert</p>
+                    </div>
+                </div>
+            )}
+
+            {/* IFC Import Modal */}
+            {ifcExtractData && (
+                <IfcImportModal
+                    data={ifcExtractData}
+                    teilsystemId={id}
+                    projektId={projektId}
+                    onClose={() => {
+                        setIfcExtractData(null);
+                        router.push(`/${projektId}/teilsysteme/${id}`);
+                    }}
+                    onImported={() => {
+                        router.push(`/${projektId}/teilsysteme/${id}`);
+                    }}
+                />
+            )}
         </div>
     );
 }

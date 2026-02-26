@@ -275,7 +275,7 @@ export default function PositionDetailPage() {
                             <TableBody>
                                 {unterpositionen.length > 0 ? (
                                     unterpositionen.map((upos) => (
-                                        <TableRow key={upos.id} className="group hover:bg-muted/50 transition-colors cursor-pointer border-b border-border/50">
+                                        <TableRow key={upos.id} className="group hover:bg-muted/50 transition-colors cursor-pointer border-b border-border/50" onClick={() => router.push(`/${projektId}/unterpositionen/${upos.id}`)}>
                                             <TableCell className="px-6 py-4 font-black text-primary">{upos.posNummer || '—'}</TableCell>
                                             <TableCell className="px-6 py-4 font-bold text-foreground">{upos.name}</TableCell>
                                             <TableCell className="px-6 py-4 font-bold text-muted-foreground">

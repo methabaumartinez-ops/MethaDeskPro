@@ -14,6 +14,7 @@ import { EmployeeService } from '@/lib/services/employeeService';
 import { ArrowLeft, Save, Calendar, UploadCloud, FileType } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { IfcImportModal, IfcExtractResult } from '@/components/shared/IfcImportModal';
 
 const teilsystemSchema = z.object({
     teilsystemNummer: z.string().min(1, 'System-Nummer ist erforderlich'),
@@ -43,6 +44,9 @@ export default function TeilsystemErfassenPage() {
     const [dragActive, setDragActive] = React.useState(false);
     const [selectedFile, setSelectedFile] = React.useState<string | null>(null);
     const [mitarbeiter, setMitarbeiter] = React.useState<any[]>([]);
+    const [ifcExtractData, setIfcExtractData] = React.useState<IfcExtractResult | null>(null);
+    const [newTeilsystemId, setNewTeilsystemId] = React.useState<string | null>(null);
+    const [extracting, setExtracting] = React.useState(false);
     const [loadingMitarbeiter, setLoadingMitarbeiter] = React.useState(true);
 
     React.useEffect(() => {
@@ -113,13 +117,38 @@ export default function TeilsystemErfassenPage() {
                 }
             }
 
-            await SubsystemService.createTeilsystem({
+            const created = await SubsystemService.createTeilsystem({
                 ...data,
                 projektId,
                 eroeffnetDurch: resolveName(data.eroeffnetDurch),
                 status: data.status as any,
                 ifcUrl: uploadedIfcUrl
             } as any);
+
+            // If IFC was uploaded, trigger extraction
+            if (uploadedIfcUrl && created?.id) {
+                setNewTeilsystemId(created.id);
+                setExtracting(true);
+                try {
+                    const res = await fetch('/api/ifc-extract', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url: uploadedIfcUrl, teilsystemId: created.id, projektId }),
+                    });
+                    if (res.ok) {
+                        const extractResult = await res.json();
+                        if (extractResult.summary.totalPositionen > 0 || extractResult.summary.totalMateriale > 0) {
+                            setIfcExtractData(extractResult);
+                            setExtracting(false);
+                            return; // Don't navigate yet — modal will handle navigation
+                        }
+                    }
+                } catch (e) {
+                    console.warn('IFC extraction failed, continuing without import:', e);
+                }
+                setExtracting(false);
+            }
+
             router.push(`/${projektId}/teilsysteme`);
         } catch (error: any) {
             console.error("Failed to create teilsystem", error);
@@ -410,6 +439,33 @@ export default function TeilsystemErfassenPage() {
                     </div>
                 </div>
             </form>
+
+            {/* IFC Extracting overlay */}
+            {extracting && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                    <div className="bg-background rounded-2xl shadow-2xl border-2 border-border p-10 flex flex-col items-center gap-4">
+                        <div className="w-14 h-14 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                        <h3 className="text-lg font-black text-foreground">Analysiere IFC...</h3>
+                        <p className="text-sm text-muted-foreground">Positionen, Unterpositionen und Material werden extrahiert</p>
+                    </div>
+                </div>
+            )}
+
+            {/* IFC Import Modal */}
+            {ifcExtractData && newTeilsystemId && (
+                <IfcImportModal
+                    data={ifcExtractData}
+                    teilsystemId={newTeilsystemId}
+                    projektId={projektId}
+                    onClose={() => {
+                        setIfcExtractData(null);
+                        router.push(`/${projektId}/teilsysteme`);
+                    }}
+                    onImported={() => {
+                        router.push(`/${projektId}/teilsysteme/${newTeilsystemId}`);
+                    }}
+                />
+            )}
         </div>
     );
 }
