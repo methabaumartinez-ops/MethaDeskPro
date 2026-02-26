@@ -105,7 +105,7 @@ export function BimViewer({ modelName = 'IFC Modell', modelUrl }: { modelName?: 
                     const center = box.getCenter(new THREE.Vector3());
                     const sz = box.getSize(new THREE.Vector3()).length();
                     controls.target.copy(center);
-                    camera.position.set(center.x + sz * 0.8, center.y + sz * 0.5, center.z + sz * 0.8);
+                    camera.position.set(center.x + sz * 0.5, center.y + sz * 0.3, center.z + sz * 0.5);
                     camera.near = Math.max(0.001, sz / 2000);
                     camera.far = sz * 20;
                     camera.updateProjectionMatrix();
