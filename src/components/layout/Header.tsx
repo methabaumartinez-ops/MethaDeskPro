@@ -49,7 +49,7 @@ export function Header({ onMenuClick, hideProjectInfo = false }: { onMenuClick?:
     }, [theme, mounted]);
 
     return (
-        <header className="fixed top-0 z-40 w-full border-b bg-background transition-colors">
+        <header className="fixed top-0 z-50 w-full border-b bg-white dark:bg-slate-950 transition-colors shadow-sm">
             <div className="flex h-16 items-center justify-between px-4 sm:px-6">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon" className="lg:hidden" onClick={onMenuClick}>
@@ -57,7 +57,7 @@ export function Header({ onMenuClick, hideProjectInfo = false }: { onMenuClick?:
                     </Button>
 
                     <div className="flex items-center gap-2">
-                        <span className="hidden text-xl font-bold tracking-tight text-foreground sm:block cursor-pointer" onClick={() => router.push('/projekte')}>
+                        <span className="hidden text-xl font-bold tracking-tight text-foreground sm:block cursor-pointer" onClick={() => router.push('/welcome')}>
                             METHA<span className="text-primary">Desk</span> <span className="font-light text-muted-foreground text-sm align-top">pro</span>
                         </span>
                     </div>
@@ -111,7 +111,7 @@ export function Header({ onMenuClick, hideProjectInfo = false }: { onMenuClick?:
                         </Button>
 
                         {showConfig && (
-                            <div className="absolute right-0 top-12 w-48 bg-popover rounded-xl shadow-xl border p-2 animate-in fade-in slide-in-from-top-2 z-50">
+                            <div className="absolute right-0 top-12 w-48 bg-white dark:bg-slate-900 rounded-xl shadow-xl border p-2 animate-in fade-in slide-in-from-top-2 z-50">
                                 <div className="text-[10px] font-bold uppercase text-muted-foreground px-2 py-1 mb-1">Darstellung</div>
                                 <div className="space-y-1">
                                     <button

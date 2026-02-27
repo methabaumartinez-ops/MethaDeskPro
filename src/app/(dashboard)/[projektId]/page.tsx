@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Layers, ListTodo, Package, Users, Plus, ArrowUpRight, Clock } from 'lucide-react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { ProjectService } from '@/lib/services/projectService';
@@ -15,6 +15,12 @@ export default function OverviewPage() {
     const [loading, setLoading] = useState(true);
     const [counts, setCounts] = useState({ teilsysteme: 0, positionen: 0, material: 0, beteiligte: 0 });
     const [recentActivity, setRecentActivity] = useState<any[]>([]);
+
+    const router = useRouter();
+
+    useEffect(() => {
+        router.push(`/${projektId}/teilsysteme`);
+    }, [projektId, router]);
 
     useEffect(() => {
         const loadDashboardData = async () => {

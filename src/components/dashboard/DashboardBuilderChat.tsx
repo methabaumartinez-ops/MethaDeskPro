@@ -30,7 +30,7 @@ const QUESTIONS = [
     { id: 'notifications', text: 'Wie und wann möchtest du Benachrichtigungen über diese Funktionalität erhalten?' }
 ];
 
-export function DashboardBuilderChat({ userId, projektId }: { userId: string, projektId?: string }) {
+export function DashboardBuilderChat({ userId, projektId, isFloating = false }: { userId: string, projektId?: string, isFloating?: boolean }) {
     const [messages, setMessages] = useState<Message[]>([
         {
             id: '1',
@@ -110,7 +110,10 @@ export function DashboardBuilderChat({ userId, projektId }: { userId: string, pr
     };
 
     return (
-        <Card className="flex flex-col h-[600px] border-none shadow-2xl bg-white rounded-[2.5rem] overflow-hidden group">
+        <Card className={cn(
+            "flex flex-col h-[500px] border-none shadow-2xl bg-white rounded-[2rem] overflow-hidden group transition-all",
+            isFloating && "border border-slate-200 dark:border-slate-800"
+        )}>
             <div className="p-6 bg-gradient-to-r from-primary/10 to-transparent border-b border-white/20 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="p-2.5 bg-primary/20 rounded-2xl shadow-inner">

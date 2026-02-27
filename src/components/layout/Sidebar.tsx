@@ -8,10 +8,8 @@ import {
     BarChart3,
     Layers,
     ListTodo,
-    Package,
     Users,
     LayoutDashboard,
-    Calendar,
     Warehouse,
     Hammer,
     Car,
@@ -33,43 +31,42 @@ type MenuItem = {
     subItems?: { title: string; href: string }[];
 };
 
-export function Sidebar({ projektId, className }: { projektId: string; className?: string }) {
+export function Sidebar({ projektId, className, forceProjectSelection = false }: { projektId: string; className?: string; forceProjectSelection?: boolean }) {
     const pathname = usePathname();
     const { can, role } = usePermissions();
 
     const menuItems: MenuItem[] = [
-        { title: 'Übersicht', href: `/${projektId}`, icon: LayoutDashboard },
-        { title: 'Mein Dashboard', href: `/${projektId}/my-dashboard`, icon: Sparkles },
-        { title: 'Planer', href: `/${projektId}/planer`, icon: Calendar },
-        { title: 'Produktion', href: `/${projektId}/teilsysteme`, icon: Layers },
+        { title: 'My_Dashboard', href: forceProjectSelection ? '/projekte' : `/${projektId}/my-dashboard`, icon: Sparkles },
         {
-            title: 'Einkauf',
-            href: `/einkauf`,
-            icon: Package,
-            permission: 'viewKosten', // Solo los que ven costes ven compras
+            title: 'Produktion',
+            href: forceProjectSelection ? '/projekte' : `/${projektId}/planer`,
+            icon: Layers,
             subItems: [
-                { title: 'Globale Übersicht', href: `/einkauf` },
-                { title: 'Materialliste (Projekt)', href: `/${projektId}/material` },
-                { title: 'Lieferanten', href: `/${projektId}/lieferanten` }
+                { title: 'AVOR', href: forceProjectSelection ? '/projekte' : `/${projektId}/teilsysteme` },
+                { title: 'Einkauf', href: forceProjectSelection ? '/projekte' : `/${projektId}/material` },
+                { title: 'Planer', href: forceProjectSelection ? '/projekte' : `/${projektId}/planer` },
             ]
         },
-        { title: 'Ausführung', href: `/${projektId}/ausfuehrung`, icon: Hammer },
-        { title: 'Werkhof', href: `/${projektId}/werkhof`, icon: Warehouse },
+        { title: 'Ausführung', href: forceProjectSelection ? '/projekte' : `/${projektId}/ausfuehrung`, icon: Hammer },
+        { title: 'Werkhof', href: forceProjectSelection ? '/projekte' : `/${projektId}/werkhof`, icon: Warehouse },
+        { title: 'Fuhrpark', href: `/fuhrpark`, icon: Car, permission: 'viewKosten' },
         {
             title: 'Lager & QR',
-            href: `/${projektId}/lagerorte`,
+            href: forceProjectSelection ? '/projekte' : `/${projektId}/lagerorte`,
             icon: QrCode,
             permission: 'qrMove',
             subItems: [
-                { title: '📦 Lagerorte verwalten', href: `/${projektId}/lagerorte` },
-                { title: '📷 QR Scan', href: `/${projektId}/lager-scan` },
+                { title: '📦 Lagerorte verwalten', href: forceProjectSelection ? '/projekte' : `/${projektId}/lagerorte` },
+                { title: '📷 QR Scan', href: forceProjectSelection ? '/projekte' : `/${projektId}/lager-scan` },
             ]
         },
-        { title: 'Kostenerfassung', href: `/${projektId}/kosten`, icon: DollarSign, permission: 'viewKosten' },
-        { title: 'Fuhrpark', href: `/fuhrpark`, icon: Car, permission: 'viewKosten' }, // Por ahora restringido
-        { title: 'Mitarbeiter', href: `/${projektId}/mitarbeiter`, icon: Users, permission: 'manageUsers' },
-        { title: 'Tabellen', href: `/${projektId}/tabellen`, icon: ListTodo, permission: 'read' },
-        { title: 'AI Assistant', href: `/${projektId}/chat`, icon: MessageSquare },
+        // Pestañas técnicas que solo se muestran con proyecto seleccionado
+        ...(!forceProjectSelection ? [
+            { title: 'Kostenerfassung', href: `/${projektId}/kosten`, icon: DollarSign, permission: 'viewKosten' as keyof RolePermissions },
+            { title: 'Tabellen', href: `/${projektId}/tabellen`, icon: ListTodo, permission: 'read' as keyof RolePermissions },
+            { title: 'Analyse', href: `/${projektId}/analyse`, icon: BarChart3 },
+        ] : []),
+        { title: 'Mitarbeiter', href: forceProjectSelection ? '/projekte' : `/${projektId}/mitarbeiter`, icon: Users, permission: 'manageUsers' as keyof RolePermissions },
     ];
 
     // Filtrar items permitidos
@@ -84,8 +81,10 @@ export function Sidebar({ projektId, className }: { projektId: string; className
                 {allowedItems.map((item) => {
                     const isProjectRoot = item.href === `/${projektId}`;
                     const isActive =
-                        (item.subItems && item.subItems.some(sub => pathname.startsWith(sub.href))) ||
-                        (isProjectRoot ? pathname === item.href : (pathname === item.href || pathname.startsWith(`${item.href}/`)));
+                        !forceProjectSelection && (
+                            (item.subItems && item.subItems.some(sub => pathname.startsWith(sub.href))) ||
+                            (isProjectRoot ? pathname === item.href : (pathname === item.href || pathname.startsWith(`${item.href}/`)))
+                        );
 
                     return (
                         <div key={item.title}>
@@ -130,14 +129,14 @@ export function Sidebar({ projektId, className }: { projektId: string; className
                 })}
             </div>
 
-            <div className="absolute bottom-0 left-0 right-0 p-3 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md transition-colors border-t border-sidebar z-10">
+            <div className="absolute bottom-0 left-0 right-0 p-3 bg-white dark:bg-slate-950 transition-colors border-t border-sidebar z-10">
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between gap-2 bg-slate-50 dark:bg-slate-900/50 p-2 rounded-xl border border-slate-200/50">
                         <div className="flex flex-col gap-0.5">
                             <p className="text-[9px] font-bold uppercase text-muted-foreground/60 tracking-widest leading-none">Version</p>
                             <p className="text-[10px] font-extrabold text-foreground/70">v1.3.0-PRO</p>
                         </div>
-                        <ChatAssistant isSidebarMode={true} />
+                        {!pathname.includes('/planer') && <ChatAssistant isSidebarMode={true} />}
                     </div>
                     <Signature />
                 </div>

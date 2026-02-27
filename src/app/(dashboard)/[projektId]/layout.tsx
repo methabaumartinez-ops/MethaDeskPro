@@ -52,12 +52,19 @@ export default function DashboardLayout({
     }
 
     const isMyDashboard = pathname?.includes('/my-dashboard');
+    const isGlobalPage = pathname?.includes('/chat') ||
+        pathname?.includes('/my-dashboard') ||
+        pathname?.includes('/werkhof') ||
+        pathname?.includes('/mitarbeiter') ||
+        pathname?.includes('/lieferanten') ||
+        pathname?.includes('/fuhrpark') ||
+        pathname?.includes('/tabellen');
 
     return (
         <div className="min-h-screen bg-background transition-colors">
             <Header
                 onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                hideProjectInfo={isMyDashboard}
+                hideProjectInfo={isGlobalPage}
             />
 
             <div className="flex pt-16">
@@ -65,7 +72,7 @@ export default function DashboardLayout({
 
                 <main className="flex-1 lg:ml-64 flex flex-col min-h-[calc(100vh-4rem)] overflow-x-hidden">
                     <div className="p-[1cm] w-full flex-1">
-                        {!pathname?.includes('/chat') && !isMyDashboard && (
+                        {!isGlobalPage && (
                             <ProjectBanner />
                         )}
                         {children}
@@ -76,7 +83,7 @@ export default function DashboardLayout({
             {/* Mobile Sidebar Overlay */}
             {isMobileMenuOpen && (
                 <div
-                    className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm lg:hidden pointer-events-auto"
+                    className="fixed inset-0 z-50 bg-slate-900/90 lg:hidden pointer-events-auto"
                     onClick={() => setIsMobileMenuOpen(false)}
                 />
             )}

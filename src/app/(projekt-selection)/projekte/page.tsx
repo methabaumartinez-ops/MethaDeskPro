@@ -100,7 +100,7 @@ export default function ProjektePage() {
 
     return (
         <div className="min-h-screen bg-background pt-16">
-            <Header />
+            <Header hideProjectInfo={true} />
 
             <main className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10">
@@ -119,15 +119,15 @@ export default function ProjektePage() {
                 </div>
 
                 {loadingData ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {Array(4).fill(0).map((_, i) => (
                             <Card key={i} className="animate-pulse bg-muted h-64" />
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {projekte.map((p) => (
-                            <Card key={p.id} className="group hover:border-primary/30 transition-all hover:shadow-xl hover:-translate-y-1 duration-300 overflow-hidden relative">
+                            <Card key={p.id} className="group border-2 border-orange-500 transition-all hover:shadow-xl hover:-translate-y-1 duration-300 overflow-hidden relative bg-white">
                                 <div className="h-32 w-full overflow-hidden relative">
                                     <img
                                         src={getProjectImage(p)}

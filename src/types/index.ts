@@ -240,6 +240,7 @@ export interface BestellungItem {
   attachmentUrl?: string;
   attachmentId?: string;
   attachmentName?: string;
+  bemerkung?: string;
 }
 
 export interface MaterialBestellung {
@@ -251,6 +252,7 @@ export interface MaterialBestellung {
   bestelltVon: string;
   items: BestellungItem[];
   bemerkung?: string;
+  liefertermin?: string;
 }
 
 // ============================================================

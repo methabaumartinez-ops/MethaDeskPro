@@ -55,7 +55,7 @@ export default function LoginPage() {
             }
 
             setCurrentUser(result.user);
-            router.push('/projekte');
+            router.push('/welcome');
         } catch {
             setServerError('Verbindungsfehler. Bitte versuchen Sie es erneut.');
         }

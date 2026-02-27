@@ -7,7 +7,7 @@ import { useParams } from 'next/navigation';
 import { useChat } from 'ai/react';
 import { AnimatedRobot } from '@/components/shared/AnimatedRobot';
 import {
-    MessageSquare, X, Send, User, Sparkles,
+    MessageSquare, X, Send, User, Sparkles, Bot
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,15 @@ import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-export const ChatAssistant = ({ isSidebarMode = false }: { isSidebarMode?: boolean }) => {
+export const ChatAssistant = ({
+    isSidebarMode = false,
+    buttonLabel,
+    isHeaderMode = false
+}: {
+    isSidebarMode?: boolean;
+    buttonLabel?: string;
+    isHeaderMode?: boolean;
+}) => {
     const [isOpen, setIsOpen] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
     const { projektId } = useParams() as { projektId?: string };
@@ -54,7 +62,8 @@ export const ChatAssistant = ({ isSidebarMode = false }: { isSidebarMode?: boole
             {isOpen && (
                 <div className={cn(
                     "mb-4 w-[380px] h-[550px] animate-in slide-in-from-bottom-5 duration-300",
-                    isSidebarMode ? "fixed left-[260px] bottom-4 z-50 shadow-2xl" : ""
+                    isSidebarMode ? "fixed left-[260px] bottom-4 z-50 shadow-2xl" : "",
+                    isHeaderMode ? "fixed right-6 bottom-4 z-50 shadow-2xl" : ""
                 )}>
                     <Card className="h-full flex flex-col shadow-2xl border-slate-200 bg-white dark:bg-slate-950 overflow-hidden">
                         <CardHeader className="bg-primary p-4 flex flex-row items-center justify-between space-y-0">
@@ -153,20 +162,31 @@ export const ChatAssistant = ({ isSidebarMode = false }: { isSidebarMode?: boole
             <Button
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
-                    "h-20 w-20 rounded-full shadow-2xl transition-all duration-500 flex items-center justify-center p-0 overflow-hidden",
-                    isOpen ? "rotate-90 bg-slate-900 hover:bg-slate-800" : "bg-white hover:bg-slate-50 border-2 border-primary hover:scale-110",
+                    "rounded-full shadow-2xl transition-all duration-500 flex items-center justify-center p-0 overflow-hidden",
+                    isOpen ? "h-14 w-14 bg-slate-900 hover:bg-slate-800 rotate-90" : (
+                        buttonLabel
+                            ? "h-11 px-8 rounded-full bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest gap-2 shadow-lg shadow-orange-100"
+                            : "h-20 w-20 bg-white hover:bg-slate-50 border-2 border-primary hover:scale-110"
+                    ),
                     isSidebarMode ? "h-14 w-14" : ""
                 )}
             >
                 {isOpen ? (
                     <X className="h-6 w-6 text-white" />
                 ) : (
-                    <div className="relative h-full w-full flex items-center justify-center">
-                        <AnimatedRobot className="h-14 w-14 transition-transform hover:scale-110" isWaving={!isOpen} />
-                        <div className="absolute top-1 right-1 h-3 w-3 bg-white rounded-full flex items-center justify-center z-10 shadow-sm border border-slate-100">
-                            <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-ping" />
+                    buttonLabel ? (
+                        <div className="flex items-center gap-2">
+                            <Bot className="h-5 w-5" />
+                            <span>{buttonLabel}</span>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="relative h-full w-full flex items-center justify-center">
+                            <AnimatedRobot className="h-14 w-14 transition-transform hover:scale-110" isWaving={!isOpen} />
+                            <div className="absolute top-1 right-1 h-3 w-3 bg-white rounded-full flex items-center justify-center z-10 shadow-sm border border-slate-100">
+                                <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-ping" />
+                            </div>
+                        </div>
+                    )
                 )}
             </Button>
         </div>

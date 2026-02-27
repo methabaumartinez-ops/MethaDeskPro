@@ -20,6 +20,7 @@ export default function MyDashboardPage() {
     const { currentUser } = useProjekt();
     const [requests, setRequests] = useState<DashboardRequest[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(true);
+    const [isChatOpen, setIsChatOpen] = useState(true);
 
     useEffect(() => {
         const loadRequests = async () => {
@@ -53,20 +54,20 @@ export default function MyDashboardPage() {
 
     const features = [
         { icon: Layout, title: "Personalisierbarer Bereich", desc: "Jeder in unserem Team erhält sein eigenes, massgeschneidertes Dashboard." },
-        { icon: Cpu, title: "KI-gestützter Builder", desc: "Erstell komplexe Widgets einfach im Gespräch mit unserem Assistenten." },
+        { icon: Cpu, title: "KI-gestützter Builder", desc: "Erstell komplexe Widgets einfach im Gespräch mit nuestro asistente." },
         { icon: Zap, title: "Dynamische Generierung", desc: "Die Benutzeroberfläche passt sich in Echtzeit deinen Bedürfnissen an." },
         { icon: Workflow, title: "Vollständige Integration", desc: "Verbindet Dokumente und Prozesse direkt in Methadesk." }
     ];
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20 relative">
 
             {/* ONBOARDING BANNER */}
             <div className="relative overflow-hidden bg-slate-900 rounded-[2.5rem] p-10 shadow-2xl border border-white/10 group">
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/20 blur-[120px] rounded-full -mr-40 -mt-40 animate-pulse" />
                 <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-orange-500/10 blur-[80px] rounded-full -ml-20 -mb-20" />
 
-                <div className="relative z-10 flex flex-col md:flex-row gap-10 items-center">
+                <div className="relative z-10">
                     <div className="flex-1 space-y-6">
                         <div className="flex items-center gap-3">
                             <Badge className="bg-primary/20 text-primary border-primary/30 font-black uppercase tracking-widest px-4 py-1.5 rounded-full text-[10px]">
@@ -77,9 +78,9 @@ export default function MyDashboardPage() {
                         </div>
 
                         <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight leading-none">
-                            My Dashboard Builder <br />
+                            My Dashboard <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400">
-                                KI nach deinen Massen
+                                KI-Constructor
                             </span>
                         </h1>
 
@@ -99,11 +100,42 @@ export default function MyDashboardPage() {
                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">+50 Anfragen diese Woche</span>
                         </div>
                     </div>
-
-                    <div className="w-full md:w-[400px]">
-                        <DashboardBuilderChat userId={currentUser?.id || ''} projektId={projektId} />
-                    </div>
                 </div>
+            </div>
+
+            {/* FLOATING CHAT WIDGET */}
+            <div className={cn(
+                "fixed bottom-8 right-8 z-[100] transition-all duration-500 transform",
+                isChatOpen ? "w-[400px] translate-y-0 opacity-100" : "w-16 h-16 translate-y-2 opacity-90"
+            )}>
+                {isChatOpen ? (
+                    <div className="relative group">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute -top-3 -right-3 z-[110] bg-slate-900 text-white rounded-full h-8 w-8 shadow-xl hover:bg-primary transition-colors border-2 border-white"
+                            onClick={() => setIsChatOpen(false)}
+                        >
+                            <PanelTop className="h-4 w-4" />
+                        </Button>
+                        <DashboardBuilderChat
+                            userId={currentUser?.id || ''}
+                            projektId={projektId}
+                            isFloating={true}
+                        />
+                    </div>
+                ) : (
+                    <Button
+                        onClick={() => setIsChatOpen(true)}
+                        className="w-16 h-16 rounded-[2rem] shadow-2xl bg-primary text-white hover:scale-110 active:scale-95 transition-all p-0 flex items-center justify-center relative group"
+                    >
+                        <div className="absolute inset-0 bg-primary rounded-[2rem] animate-ping opacity-20 group-hover:hidden" />
+                        <Sparkles className="w-8 h-8 stroke-[2.5]" />
+                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 rounded-full border-2 border-white flex items-center justify-center">
+                            <span className="text-[10px] font-black">!</span>
+                        </div>
+                    </Button>
+                )}
             </div>
 
             {/* INFORMATION SECTION */}
@@ -135,7 +167,7 @@ export default function MyDashboardPage() {
                             {[
                                 { step: "1", text: "Überleg dir, welche Aufgaben du täglich wiederholst und automatisieren möchtest." },
                                 { step: "2", text: "Beschreibe deinem Assistenten im Chat, welche Daten du sehen und bearbeiten willst." },
-                                { step: "3", text: "Die IA analysiert die Viavilidad de tu estrucctura und erstellt die technischen Anforderungen." },
+                                { step: "3", text: "Die KI analysiert die Machbarkeit deiner Struktur und erstellt die technischen Anforderungen." },
                                 { step: "4", text: "Nach der Validierung wird die Funktionalität automatisch zu deiner Suite hinzugefügt." }
                             ].map((s, i) => (
                                 <div key={i} className="flex items-start gap-4">

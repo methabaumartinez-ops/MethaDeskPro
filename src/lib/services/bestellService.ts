@@ -104,6 +104,19 @@ export class BestellService {
         return this.updateBestellung(bestellungId, { items });
     }
 
+    static async updateItemBemerkung(bestellungId: string, itemId: string, bemerkung: string): Promise<MaterialBestellung> {
+        const bestellung = await this.getBestellung(bestellungId);
+        if (!bestellung) throw new Error("Bestellung not found");
+
+        const items = [...bestellung.items];
+        const itemIndex = items.findIndex((i: any) => i.id === itemId);
+        if (itemIndex > -1) {
+            items[itemIndex] = { ...items[itemIndex], bemerkung };
+        }
+
+        return this.updateBestellung(bestellungId, { items });
+    }
+
     static async deleteBestellung(id: string): Promise<void> {
         if (typeof window !== 'undefined') {
             const res = await fetch(`/api/bestellungen/${id}`, { method: 'DELETE' });

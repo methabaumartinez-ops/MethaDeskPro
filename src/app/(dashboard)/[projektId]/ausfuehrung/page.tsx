@@ -10,13 +10,12 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { SubsystemService } from '@/lib/services/subsystemService';
-import { EmployeeService } from '@/lib/services/employeeService';
 import { FleetService } from '@/lib/services/fleetService';
-import { Teilsystem, Mitarbeiter, Fahrzeug } from '@/types';
+import { Teilsystem, Fahrzeug } from '@/types';
 import {
     Search, Filter, Layers, Link as LinkIcon,
-    Users, Car, HardHat, Package, Truck, Plus, CheckCircle2, Clock, Inbox, Trash2, Send, Edit2, MessageSquare,
-    Eye, CalendarPlus, Wrench
+    Car, HardHat, Package, Truck, Plus, CheckCircle2, Clock, Inbox, Trash2, Send, Edit2, MessageSquare,
+    Eye, CalendarPlus, Wrench, Camera
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -54,7 +53,6 @@ export default function AusfuehrungPage() {
 
     // Data States
     const [subsystems, setSubsystems] = useState<Teilsystem[]>([]);
-    const [employees, setEmployees] = useState<Mitarbeiter[]>([]);
     const [vehicles, setVehicles] = useState<Fahrzeug[]>([]);
     const [bestellungen, setBestellungen] = useState<MaterialBestellung[]>([]);
 
@@ -63,7 +61,18 @@ export default function AusfuehrungPage() {
     const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
     const [newContainerBez, setNewContainerBez] = useState('');
     const [newBemerkung, setNewBemerkung] = useState('');
-    const [newOrderItems, setNewOrderItems] = useState<{ name: string, menge: string, einheit: string, tsnummer: string }[]>([{ name: '', menge: '', einheit: '', tsnummer: '' }]);
+    const [newLiefertermin, setNewLiefertermin] = useState('');
+    const [newOrderItems, setNewOrderItems] = useState<{
+        name: string,
+        menge: string,
+        einheit: string,
+        tsnummer: string,
+        attachmentUrl?: string,
+        attachmentId?: string,
+        attachmentName?: string,
+        bemerkung?: string,
+        showBemerkung?: boolean
+    }[]>([{ name: '', menge: '', einheit: '', tsnummer: '', bemerkung: '', showBemerkung: false }]);
 
     // Fahrzeug Reservation States
     const [modalOpen, setModalOpen] = useState(false);
@@ -78,14 +87,12 @@ export default function AusfuehrungPage() {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [subs, emps, vehs, best] = await Promise.all([
+                const [subs, vehs, best] = await Promise.all([
                     SubsystemService.getTeilsysteme(projektId),
-                    EmployeeService.getMitarbeiter(),
                     FleetService.getFahrzeuge(),
                     BestellService.getBestellungen(projektId)
                 ]);
                 setSubsystems(subs);
-                setEmployees(emps);
                 setVehicles(vehs);
                 setBestellungen(best);
 
@@ -113,11 +120,9 @@ export default function AusfuehrungPage() {
         (item.name?.toLowerCase() || '').includes(search.toLowerCase())
     );
 
-    const filteredEmployees = employees.filter(emp =>
-        (emp.vorname?.toLowerCase() || '').includes(search.toLowerCase()) ||
-        (emp.nachname?.toLowerCase() || '').includes(search.toLowerCase()) ||
-        (emp.rolle?.toLowerCase() || '').includes(search.toLowerCase()) ||
-        (emp.email?.toLowerCase() || '').includes(search.toLowerCase())
+    const filteredBestellungen = bestellungen.filter(b =>
+        (b.containerBez?.toLowerCase() || '').includes(search.toLowerCase()) ||
+        (b.bestelltVon?.toLowerCase() || '').includes(search.toLowerCase())
     );
 
     const filteredVehicles = vehicles.filter(veh => {
@@ -130,13 +135,8 @@ export default function AusfuehrungPage() {
         return matchesSearch && matchesKategorie;
     });
 
-    const filteredBestellungen = bestellungen.filter(b =>
-        (b.containerBez?.toLowerCase() || '').includes(search.toLowerCase()) ||
-        (b.bestelltVon?.toLowerCase() || '').includes(search.toLowerCase())
-    );
-
     const handleAddOrderItem = () => {
-        setNewOrderItems([...newOrderItems, { name: '', menge: '', einheit: '', tsnummer: '' }]);
+        setNewOrderItems([...newOrderItems, { name: '', menge: '', einheit: '', tsnummer: '', bemerkung: '', showBemerkung: false }]);
     };
 
     const handleRemoveOrderItem = (index: number) => {
@@ -164,30 +164,75 @@ export default function AusfuehrungPage() {
         }
     };
 
-    const handleUpdateOrderItem = (index: number, field: string, value: string) => {
+    const handleUpdateOrderItem = (index: number, field: string, value: any) => {
         const updated = [...newOrderItems];
         updated[index] = { ...updated[index], [field]: value };
 
-        // Auto-add new row if user is typing in the last row
-        if (index === newOrderItems.length - 1 && value.trim() !== '') {
-            updated.push({ name: '', menge: '', einheit: '', tsnummer: '' });
+        // Auto-add new row if user is typing in the last row (excluding auxiliary fields)
+        if (index === newOrderItems.length - 1 && !['attachmentUrl', 'attachmentId', 'attachmentName', 'showBemerkung'].includes(field) && typeof value === 'string' && value.trim() !== '') {
+            updated.push({ name: '', menge: '', einheit: '', tsnummer: '', bemerkung: '', showBemerkung: false });
         }
 
         setNewOrderItems(updated);
+    };
+
+    const handleFileUpload = async (index: number, file: File) => {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('projektId', projektId);
+            formData.append('type', 'image');
+
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!res.ok) throw new Error('Upload failed');
+            const data = await res.json();
+
+            const updated = [...newOrderItems];
+            updated[index] = {
+                ...updated[index],
+                attachmentUrl: data.url,
+                attachmentId: data.id,
+                attachmentName: file.name
+            };
+            setNewOrderItems(updated);
+        } catch (err) {
+            console.error("Upload error", err);
+            alert('Fehler beim Hochladen des Bildes');
+        }
     };
 
     const handleEditOrder = (order: MaterialBestellung) => {
         setEditingOrderId(order.id);
         setNewContainerBez(order.containerBez);
         setNewBemerkung(order.bemerkung || '');
+        setNewLiefertermin(order.liefertermin || '');
         const mappedItems = order.items.map(item => ({
             name: item.materialName,
             menge: item.menge.toString(),
             einheit: item.einheit,
-            tsnummer: item.tsnummer || ''
+            tsnummer: item.tsnummer || '',
+            attachmentUrl: item.attachmentUrl,
+            attachmentId: item.attachmentId,
+            attachmentName: item.attachmentName,
+            bemerkung: item.bemerkung || '',
+            showBemerkung: !!item.bemerkung
         }));
         // Add one empty row for easy entry
-        mappedItems.push({ name: '', menge: '', einheit: '', tsnummer: '' });
+        mappedItems.push({
+            name: '',
+            menge: '',
+            einheit: '',
+            tsnummer: '',
+            attachmentUrl: undefined,
+            attachmentId: undefined,
+            attachmentName: undefined,
+            bemerkung: '',
+            showBemerkung: false
+        });
         setNewOrderItems(mappedItems);
         setIsCreatingOrder(true);
     };
@@ -205,7 +250,11 @@ export default function AusfuehrungPage() {
                 menge: parseFloat(item.menge),
                 einheit: item.einheit || 'Stk',
                 vorbereitet: false,
-                tsnummer: item.tsnummer || undefined
+                tsnummer: item.tsnummer || undefined,
+                attachmentUrl: item.attachmentUrl,
+                attachmentId: item.attachmentId,
+                attachmentName: item.attachmentName,
+                bemerkung: item.bemerkung || undefined
             }));
 
             if (editingOrderId) {
@@ -213,6 +262,7 @@ export default function AusfuehrungPage() {
                 const updatedOrder = await BestellService.updateBestellung(editingOrderId, {
                     containerBez: newContainerBez,
                     bemerkung: newBemerkung,
+                    liefertermin: newLiefertermin,
                     items
                 });
                 setBestellungen(bestellungen.map(b => b.id === editingOrderId ? updatedOrder : b));
@@ -222,6 +272,7 @@ export default function AusfuehrungPage() {
                     projektId,
                     containerBez: newContainerBez,
                     bemerkung: newBemerkung,
+                    liefertermin: newLiefertermin,
                     bestelldatum: new Date().toISOString(),
                     status: 'angefragt',
                     bestelltVon: currentUser?.vorname ? `${currentUser.vorname.charAt(0)}.${currentUser.nachname}` : 'Unbekannt',
@@ -234,11 +285,13 @@ export default function AusfuehrungPage() {
             setEditingOrderId(null);
             setNewContainerBez('');
             setNewBemerkung('');
-            setNewOrderItems([{ name: '', menge: '', einheit: '', tsnummer: '' }]);
+            setNewLiefertermin('');
+            setNewOrderItems([{ name: '', menge: '', einheit: '', tsnummer: '', bemerkung: '', showBemerkung: false }]);
         } catch (error) {
             console.error("Fehler beim Speichern der Bestellung", error);
         }
     };
+
     const isOrderEditable = (bestelldatum: string) => {
         const orderDate = new Date(bestelldatum);
         const now = new Date();
@@ -264,7 +317,6 @@ export default function AusfuehrungPage() {
                     <h2 className="text-2xl font-black text-primary tracking-tight dark:text-orange-400">Ausführung</h2>
                     <p className="text-slate-500 font-medium text-xs">Übersicht und Ressourcen.</p>
                 </div>
-                {/* Global Actions or Legend could go here */}
             </div>
 
             <Tabs className="flex-1 flex flex-col overflow-hidden">
@@ -287,14 +339,6 @@ export default function AusfuehrungPage() {
                             Bestellung ({bestellungen.length})
                         </TabsTrigger>
                         <TabsTrigger
-                            active={activeTab === 'mitarbeiter'}
-                            onClick={() => setActiveTab('mitarbeiter')}
-                            className="flex items-center gap-2"
-                        >
-                            <Users className="h-4 w-4" />
-                            Mitarbeiter ({employees.length})
-                        </TabsTrigger>
-                        <TabsTrigger
                             active={activeTab === 'fahrzeuge'}
                             onClick={() => setActiveTab('fahrzeuge')}
                             className="flex items-center gap-2"
@@ -305,7 +349,6 @@ export default function AusfuehrungPage() {
                     </TabsList>
                 </div>
 
-                {/* Shared Search Bar (applies to active tab) */}
                 <Card className="flex-1 flex flex-col overflow-hidden border-none shadow-none bg-transparent">
                     <CardHeader className="py-0 px-0 pb-3 border-none">
                         <div className="flex gap-3 items-center">
@@ -313,10 +356,9 @@ export default function AusfuehrungPage() {
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                                 <Input
                                     placeholder={
-                                        activeTab === 'teilsysteme' ? "Suche nach Nummer oder Name..." :
-                                            activeTab === 'mitarbeiter' ? "Suche nach Name o. Rolle..." :
-                                                activeTab === 'logistik' ? "Suche nach Container o. Besteller..." :
-                                                    "Suche nach Bezeichnung oder Inventarnummer..."
+                                        activeTab === 'teilsysteme' ? "Suche nach Nummer o. Name..." :
+                                            activeTab === 'logistik' ? "Suche nach Container o. Besteller..." :
+                                                "Suche nach Bezeichnung o. Inventarnummer..."
                                     }
                                     className="pl-10 h-9 text-sm bg-background border-slate-200 dark:border-slate-800"
                                     value={search}
@@ -378,37 +420,6 @@ export default function AusfuehrungPage() {
                                         </div>
                                     ) : (
                                         <EmptyState label="Keine Teilsysteme gefunden" icon={Layers} />
-                                    )}
-                                </TabsContent>
-
-                                <TabsContent active={activeTab === 'mitarbeiter'} className="mt-0 h-full">
-                                    {filteredEmployees.length > 0 ? (
-                                        <div className="overflow-x-auto max-w-full">
-                                            <Table>
-                                                <TableHeader>
-                                                    <TableRow className="bg-muted/50 hover:bg-muted/50">
-                                                        <TableHead className="h-8 px-4 font-bold text-foreground text-xs">Vorname</TableHead>
-                                                        <TableHead className="h-8 px-4 font-bold text-foreground text-xs">Nachname</TableHead>
-                                                        <TableHead className="h-8 px-4 font-bold text-foreground text-xs">Rolle / Funktion</TableHead>
-                                                        <TableHead className="h-8 px-4 font-bold text-foreground text-xs">Abteilung</TableHead>
-                                                        <TableHead className="h-8 px-4 font-bold text-foreground text-xs">Email</TableHead>
-                                                    </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {filteredEmployees.map((emp) => (
-                                                        <TableRow key={emp.id} className="hover:bg-muted/50">
-                                                            <TableCell className="p-2 px-4 font-medium text-sm text-foreground">{emp.vorname}</TableCell>
-                                                            <TableCell className="p-2 px-4 font-bold text-sm text-foreground">{emp.nachname}</TableCell>
-                                                            <TableCell className="p-2 px-4 text-xs font-semibold text-primary">{emp.rolle || '—'}</TableCell>
-                                                            <TableCell className="p-2 px-4 text-xs text-muted-foreground">{emp.abteilung || '—'}</TableCell>
-                                                            <TableCell className="p-2 px-4 text-xs font-mono text-muted-foreground">{emp.email || '—'}</TableCell>
-                                                        </TableRow>
-                                                    ))}
-                                                </TableBody>
-                                            </Table>
-                                        </div>
-                                    ) : (
-                                        <EmptyState label="Keine Mitarbeiter gefunden" icon={Users} />
                                     )}
                                 </TabsContent>
 
@@ -541,20 +552,31 @@ export default function AusfuehrungPage() {
                                             <div className="flex justify-between items-center mb-6">
                                                 <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
                                                     <Package className="h-5 w-5 text-orange-500" />
-                                                    Neue Materialbestellung
+                                                    {editingOrderId ? 'Bestellung bearbeiten' : 'Neue Materialbestellung'}
                                                 </h3>
-                                                <Button variant="ghost" size="sm" onClick={() => setIsCreatingOrder(false)}>Abbrechen</Button>
+                                                <Button variant="ghost" size="sm" onClick={() => { setIsCreatingOrder(false); setEditingOrderId(null); }}>Abbrechen</Button>
                                             </div>
 
                                             <div className="space-y-4">
-                                                <div>
-                                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">Container / Lieferort</label>
-                                                    <Input
-                                                        placeholder="z.B. Container EG Ost, Werkzeugkiste 3..."
-                                                        value={newContainerBez}
-                                                        onChange={e => setNewContainerBez(e.target.value)}
-                                                        className="font-medium"
-                                                    />
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">Container / Lieferort</label>
+                                                        <Input
+                                                            placeholder="z.B. Container EG Ost..."
+                                                            value={newContainerBez}
+                                                            onChange={e => setNewContainerBez(e.target.value)}
+                                                            className="font-medium h-10"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">Spätester Liefertermin</label>
+                                                        <Input
+                                                            type="date"
+                                                            value={newLiefertermin}
+                                                            onChange={e => setNewLiefertermin(e.target.value)}
+                                                            className="font-medium h-10"
+                                                        />
+                                                    </div>
                                                 </div>
 
                                                 <div>
@@ -575,43 +597,91 @@ export default function AusfuehrungPage() {
                                                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Materialliste</label>
                                                     </div>
 
-                                                    <div className="space-y-2">
+                                                    <div className="space-y-3">
                                                         {newOrderItems.map((item, idx) => (
-                                                            <div key={idx} className="flex gap-2 items-start">
-                                                                <Input
-                                                                    placeholder="TS-Nr. (opt.)"
-                                                                    value={item.tsnummer}
-                                                                    onChange={e => handleUpdateOrderItem(idx, 'tsnummer', e.target.value)}
-                                                                    className="w-28"
-                                                                />
-                                                                <Input
-                                                                    placeholder="Bezeichnung (z.B. Schrauben M12)"
-                                                                    value={item.name}
-                                                                    onChange={e => handleUpdateOrderItem(idx, 'name', e.target.value)}
-                                                                    className="flex-1"
-                                                                />
-                                                                <Input
-                                                                    placeholder="Menge"
-                                                                    type="number"
-                                                                    value={item.menge}
-                                                                    onChange={e => handleUpdateOrderItem(idx, 'menge', e.target.value)}
-                                                                    className="w-24"
-                                                                />
-                                                                <Input
-                                                                    placeholder="Einh."
-                                                                    value={item.einheit}
-                                                                    onChange={e => handleUpdateOrderItem(idx, 'einheit', e.target.value)}
-                                                                    className="w-20"
-                                                                />
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="text-slate-400 hover:text-red-500 hover:bg-red-50 shrink-0"
-                                                                    onClick={() => handleRemoveOrderItem(idx)}
-                                                                    disabled={newOrderItems.length === 1}
-                                                                >
-                                                                    <Trash2 className="h-4 w-4" />
-                                                                </Button>
+                                                            <div key={idx} className="flex flex-col gap-1.5 p-2 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                                                                <div className="flex gap-2 items-center">
+                                                                    <Input
+                                                                        placeholder="TS-Nr."
+                                                                        value={item.tsnummer}
+                                                                        onChange={e => handleUpdateOrderItem(idx, 'tsnummer', e.target.value)}
+                                                                        className="w-20 text-[10px] h-9 rounded-xl bg-white"
+                                                                    />
+                                                                    <Input
+                                                                        placeholder="Bezeichnung (z.B. Schrauben M12)"
+                                                                        value={item.name}
+                                                                        onChange={e => handleUpdateOrderItem(idx, 'name', e.target.value)}
+                                                                        className="flex-1 text-xs h-9 rounded-xl bg-white"
+                                                                    />
+                                                                    <Input
+                                                                        placeholder="Menge"
+                                                                        type="number"
+                                                                        value={item.menge}
+                                                                        onChange={e => handleUpdateOrderItem(idx, 'menge', e.target.value)}
+                                                                        className="w-20 text-xs h-9 rounded-xl bg-white text-center"
+                                                                    />
+                                                                    <Input
+                                                                        placeholder="Einh."
+                                                                        value={item.einheit}
+                                                                        onChange={e => handleUpdateOrderItem(idx, 'einheit', e.target.value)}
+                                                                        className="w-16 text-xs h-9 rounded-xl bg-white text-center"
+                                                                    />
+                                                                    <div className="flex gap-1 shrink-0">
+                                                                        <input
+                                                                            type="file"
+                                                                            id={`file-upload-${idx}`}
+                                                                            className="hidden"
+                                                                            accept="image/*"
+                                                                            onChange={(e) => {
+                                                                                const file = e.target.files?.[0];
+                                                                                if (file) handleFileUpload(idx, file);
+                                                                            }}
+                                                                        />
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            size="icon"
+                                                                            className={cn(
+                                                                                "h-9 w-9 rounded-xl border-slate-200 transition-all bg-white",
+                                                                                item.attachmentUrl ? "bg-blue-50 text-blue-600 border-blue-200" : "text-slate-400 hover:text-orange-600 hover:bg-orange-50"
+                                                                            )}
+                                                                            onClick={() => document.getElementById(`file-upload-${idx}`)?.click()}
+                                                                            title={item.attachmentName || "Foto hinzufügen"}
+                                                                        >
+                                                                            <Camera className="h-4 w-4" />
+                                                                        </Button>
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            size="icon"
+                                                                            className={cn(
+                                                                                "h-9 w-9 rounded-xl border-slate-200 transition-all bg-white",
+                                                                                item.showBemerkung || item.bemerkung ? "bg-orange-50 text-orange-600 border-orange-200" : "text-slate-400 hover:text-orange-600 hover:bg-orange-50"
+                                                                            )}
+                                                                            onClick={() => handleUpdateOrderItem(idx, 'showBemerkung', !item.showBemerkung)}
+                                                                            title="Kommentar hinzufügen"
+                                                                        >
+                                                                            <MessageSquare className="h-4 w-4" />
+                                                                        </Button>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-9 w-9 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                                                            onClick={() => handleRemoveOrderItem(idx)}
+                                                                            disabled={newOrderItems.length === 1}
+                                                                        >
+                                                                            <Trash2 className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </div>
+                                                                </div>
+                                                                {(item.showBemerkung || item.bemerkung) && (
+                                                                    <div className="px-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                                                                        <Input
+                                                                            placeholder="Zusatzinfo / Kommentar zu diesem Artikel..."
+                                                                            value={item.bemerkung}
+                                                                            onChange={e => handleUpdateOrderItem(idx, 'bemerkung', e.target.value)}
+                                                                            className="text-xs h-8 bg-white border-orange-100 focus:border-orange-500 rounded-lg italic"
+                                                                        />
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         ))}
                                                     </div>
@@ -623,7 +693,7 @@ export default function AusfuehrungPage() {
                                                         onClick={handleSubmitOrder}
                                                     >
                                                         <Send className="h-4 w-4" />
-                                                        Bestellung auslösen
+                                                        {editingOrderId ? 'Bestellung speichern' : 'Bestellung auslösen'}
                                                     </Button>
                                                 </div>
                                             </div>
@@ -647,9 +717,10 @@ export default function AusfuehrungPage() {
                                                         onClick={() => {
                                                             setIsCreatingOrder(true);
                                                             setEditingOrderId(null);
-                                                            setNewContainerBez(activeProjekt ? `${activeProjekt.projektnummer} - ${activeProjekt.projektname}` : '');
+                                                            setNewContainerBez(activeProjekt ? activeProjekt.projektname : '');
                                                             setNewBemerkung('');
-                                                            setNewOrderItems([{ name: '', menge: '', einheit: '', tsnummer: '' }]);
+                                                            setNewLiefertermin('');
+                                                            setNewOrderItems([{ name: '', menge: '', einheit: '', tsnummer: '', bemerkung: '', showBemerkung: false }]);
                                                         }}
                                                     >
                                                         <Plus className="h-4 w-4" />
@@ -681,7 +752,7 @@ export default function AusfuehrungPage() {
                                                                     )}>
                                                                         {bestellung.status.replace('_', ' ')}
                                                                     </span>
-                                                                    {(bestellung.status === 'angefragt' || bestellung.status === 'in_bearbeitung') && isOrderEditable(bestellung.bestelldatum) && (
+                                                                    {isOrderEditable(bestellung.bestelldatum) && (
                                                                         <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-400 hover:text-orange-600 hover:bg-orange-50" onClick={() => handleEditOrder(bestellung)}>
                                                                             <Edit2 className="h-3 w-3" />
                                                                         </Button>
@@ -732,7 +803,7 @@ export default function AusfuehrungPage() {
                     </CardContent>
                 </Card>
             </Tabs>
-            {/* Reservation Modal */}
+
             <ReservierungModal
                 isOpen={modalOpen}
                 onClose={() => { setModalOpen(false); setSelectedFahrzeug(undefined); }}
@@ -740,7 +811,6 @@ export default function AusfuehrungPage() {
                 fahrzeug={selectedFahrzeug}
                 projektId={projektId}
             />
-
         </div>
     );
 }
@@ -753,3 +823,4 @@ function EmptyState({ label, icon: Icon }: { label: string; icon: any }) {
         </div>
     );
 }
+
