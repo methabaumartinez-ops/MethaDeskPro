@@ -75,24 +75,22 @@ export default function UnterpositionDetailPage() {
 
                     <div className="h-12 w-[1px] bg-border mx-2" />
 
-                    <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-3">
+                        <Button
+                            className="bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest shadow-lg shadow-orange-200 rounded-full h-9 px-6 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+                            onClick={() => router.back()}
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            Zurück
+                        </Button>
                         {!isReadOnly && (
                             <Link href={`/${projektId}/unterpositionen/${unterposition.id}/edit`}>
-                                <Button size="sm" className="font-black bg-primary hover:bg-primary/90 text-primary-foreground h-9 px-4 rounded-xl shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-2">
-                                    <Edit className="h-3.5 w-3.5" />
+                                <Button className="font-black bg-orange-600 hover:bg-orange-700 text-white h-9 px-6 rounded-full shadow-lg shadow-orange-200 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 uppercase text-xs tracking-widest">
+                                    <Edit className="h-4 w-4" />
                                     <span>Bearbeiten</span>
                                 </Button>
                             </Link>
                         )}
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="bg-muted hover:bg-muted/80 text-foreground font-bold h-9 text-xs border-none rounded-xl transition-all"
-                            onClick={() => router.back()}
-                        >
-                            <ArrowLeft className="h-3 w-3 mr-1" />
-                            Zurück
-                        </Button>
                     </div>
                 </div>
             </div>
@@ -116,7 +114,7 @@ export default function UnterpositionDetailPage() {
                             </div>
                             <div className="space-y-1">
                                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Material</span>
-                                <p className="text-sm font-bold text-foreground">{unterposition.material || '—'}</p>
+                                <p className="text-sm font-bold text-foreground">{(unterposition as any).material || '—'}</p>
                             </div>
                             <div className="space-y-1">
                                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Gewicht</span>
@@ -125,36 +123,36 @@ export default function UnterpositionDetailPage() {
 
                             <div className="space-y-1">
                                 <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Höhenkote OK</span>
-                                <p className="text-sm font-black">{(unterposition.ifcMeta as any)?.ok || '—'}</p>
+                                <p className="text-sm font-black">{(unterposition as any).ifcMeta?.ok || '—'}</p>
                             </div>
                             <div className="space-y-1">
                                 <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Höhenkote UK</span>
-                                <p className="text-sm font-black">{(unterposition.ifcMeta as any)?.uk || '—'}</p>
+                                <p className="text-sm font-black">{(unterposition as any).ifcMeta?.uk || '—'}</p>
                             </div>
                             <div className="space-y-1">
                                 <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Superficies (m²)</span>
-                                <p className="text-sm font-bold">{(unterposition.ifcMeta as any)?.area || '—'}</p>
+                                <p className="text-sm font-bold">{(unterposition as any).ifcMeta?.area || '—'}</p>
                             </div>
                             <div className="space-y-1">
                                 <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Color / Finish</span>
                                 <div className="flex items-center gap-2">
-                                    <div className="h-3 w-3 rounded-full border border-border" style={{ backgroundColor: String((unterposition.ifcMeta as any)?.color || 'transparent') }} />
-                                    <span className="text-xs font-bold">{(unterposition.ifcMeta as any)?.color || '—'}</span>
+                                    <div className="h-3 w-3 rounded-full border border-border" style={{ backgroundColor: String((unterposition as any).ifcMeta?.color || 'transparent') }} />
+                                    <span className="text-xs font-bold">{(unterposition as any).ifcMeta?.color || '—'}</span>
                                 </div>
                             </div>
 
                             <div className="col-span-2 md:col-span-4 grid grid-cols-3 gap-2 p-3 bg-muted/30 rounded-lg border border-border/50">
                                 <div className="space-y-0.5">
                                     <span className="text-[9px] font-black text-muted-foreground uppercase">Länge</span>
-                                    <p className="text-xs font-bold">{(unterposition.ifcMeta as any)?.dimensions?.length || '—'}</p>
+                                    <p className="text-xs font-bold">{(unterposition as any).ifcMeta?.dimensions?.length || '—'}</p>
                                 </div>
                                 <div className="space-y-0.5">
                                     <span className="text-[9px] font-black text-muted-foreground uppercase">Breite</span>
-                                    <p className="text-xs font-bold">{(unterposition.ifcMeta as any)?.dimensions?.width || '—'}</p>
+                                    <p className="text-xs font-bold">{(unterposition as any).ifcMeta?.dimensions?.width || '—'}</p>
                                 </div>
                                 <div className="space-y-0.5">
                                     <span className="text-[9px] font-black text-muted-foreground uppercase">Höhe</span>
-                                    <p className="text-xs font-bold">{(unterposition.ifcMeta as any)?.dimensions?.height || '—'}</p>
+                                    <p className="text-xs font-bold">{(unterposition as any).ifcMeta?.dimensions?.height || '—'}</p>
                                 </div>
                             </div>
 
@@ -170,7 +168,7 @@ export default function UnterpositionDetailPage() {
                                     {unterposition.ifcChildGlobalId || '—'}
                                 </div>
                             </div>
-                            
+
                             {unterposition.beschreibung && (
                                 <div className="col-span-2 md:col-span-4 space-y-1">
                                     <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Beschreibung / Notiz</span>

@@ -69,10 +69,18 @@ export default function PositionDetailPage() {
         <div className="space-y-6 animate-in fade-in duration-500 pb-10">
             {/* Header / Navigation */}
             <div className="flex justify-end gap-3 shrink-0">
-                <Button variant="secondary" size="sm" className="font-bold h-9 text-xs bg-background text-foreground hover:bg-muted border border-border shadow-sm" onClick={() => router.back()}>
-                    <ArrowLeft className="h-3 w-3 mr-1" />
+                <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest shadow-lg shadow-orange-200 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95" onClick={() => router.back()}>
+                    <ArrowLeft className="h-4 w-4" />
                     Zurück
                 </Button>
+                {(!isReadOnly && can('update')) && (
+                    <Link href={`/${projektId}/positionen/${position.id}/edit`}>
+                        <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest shadow-lg shadow-orange-200 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                            <Edit className="h-4 w-4" />
+                            <span>Bearbeiten</span>
+                        </Button>
+                    </Link>
+                )}
             </div>
 
             {/* STICKY HEADER - MATCHING TS STYLE */}
@@ -150,14 +158,6 @@ export default function PositionDetailPage() {
                     <div className="flex items-center gap-6">
                         <div className="text-right flex flex-col items-end gap-3">
                             <StatusBadge status={position.status} />
-                            {(!isReadOnly && can('update')) && (
-                                <Link href={`/${projektId}/positionen/${position.id}/edit`}>
-                                    <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest shadow-lg shadow-orange-200 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
-                                        <Edit className="h-4 w-4" />
-                                        <span>Bearbeiten</span>
-                                    </Button>
-                                </Link>
-                            )}
                             {isReadOnly && (
                                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase bg-muted px-2 py-1 rounded-md">
                                     <ShieldCheck className="h-3.5 w-3.5 text-blue-500" />

@@ -106,17 +106,23 @@ export default function TeilsystemDetailPage() {
             {/* Project Context Header (Compact) */}
             {/* Project Context Header (Compact) */}
             {/* Project Context Header (Compact) */}
-            {/* Back Button */}
-            {!isReadOnly && (
-                <div className="flex justify-end mb-4">
-                    <Link href={`/${projektId}/teilsysteme`}>
-                        <Button variant="secondary" size="sm" className="font-bold h-9 text-xs bg-background text-foreground hover:bg-muted border border-border shadow-sm">
-                            <ArrowLeft className="h-3 w-3 mr-1" />
-                            Zurück
+            {/* Navigation Buttons */}
+            <div className="flex justify-end items-center gap-3 mb-4">
+                <Link href={`/${projektId}/teilsysteme`}>
+                    <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest shadow-lg shadow-orange-200 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                        <ArrowLeft className="h-4 w-4" />
+                        Zurück
+                    </Button>
+                </Link>
+                {!isReadOnly && (
+                    <Link href={`/${projektId}/teilsysteme/${item.id}/edit`}>
+                        <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest shadow-lg shadow-orange-200 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                            <Edit className="h-4 w-4" />
+                            <span>Bearbeiten</span>
                         </Button>
                     </Link>
-                </div>
-            )}
+                )}
+            </div>
 
             {/* Top Section: Details & BIM */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -184,14 +190,6 @@ export default function TeilsystemDetailPage() {
 
                         <div className="text-right flex flex-col items-end gap-3">
                             <StatusBadge status={item.status} />
-                            {!isReadOnly && (
-                                <Link href={`/${projektId}/teilsysteme/${item.id}/edit`}>
-                                    <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest shadow-lg shadow-orange-200 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
-                                        <Edit className="h-4 w-4" />
-                                        <span>Bearbeiten</span>
-                                    </Button>
-                                </Link>
-                            )}
                             {isReadOnly && (
                                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase bg-muted px-2 py-1 rounded-md">
                                     <ShieldCheck className="h-3.5 w-3.5 text-blue-500" />
