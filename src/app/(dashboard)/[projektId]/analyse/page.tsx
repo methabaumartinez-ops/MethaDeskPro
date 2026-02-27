@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { KostenService } from '@/lib/services/kostenService';
 import { EmployeeService } from '@/lib/services/employeeService';
-import { Teilsystem, TsStunden, TsMaterialkosten, Mitarbeiter } from '@/types';
+import { Teilsystem, TsStunden, TsMaterialkosten, Mitarbeiter, ABTEILUNGEN_CONFIG } from '@/types';
 
 // Helper to format currency in CHF
 const formatCHF = (value: number) => {
@@ -130,24 +130,23 @@ export default function AnalysePage() {
     });
 
     // Grouping by Department/Entity
-    const entityData: Record<string, { actual: number, budget: number }> = {};
-    const departments = ['Blechabteilung', 'Schlosserei', 'AVOR', 'Einkauf', 'Zimmerei', 'Montage', 'Planung', 'Bau'];
+    const entityData: Record<string, { actual: number, budget: number, name: string }> = {};
 
-    departments.forEach(dept => {
-        const labor = stunden.filter(s => s.abteilung === dept).reduce((sum, s) => {
+    ABTEILUNGEN_CONFIG.forEach((dept: { id: string, name: string }) => {
+        const labor = stunden.filter(s => s.abteilung === dept.name || s.abteilungId === dept.id).reduce((sum, s) => {
             const emp = mitarbeiter.find(m => m.id === s.mitarbeiterId);
             return sum + (s.stunden * (emp?.stundensatz ?? 80));
         }, 0);
 
+        // For now, material is assigned to 'Einkauf' as a placeholder or by teilsystem if we had that mapping
         const material = materialkosten.filter(m => {
-            // If material has no explicit department, we might want to categorize it
-            // For now, only if teilsystem assigned to it?
-            return dept === 'Einkauf'; // Placeholder until material-dept link is stronger
+            // Future: if material had abteilungId, filter by it here
+            return dept.id === 'einkauf';
         }).reduce((sum, m) => sum + (m.gesamtpreis ?? m.menge * m.einzelpreis), 0);
 
-        const total = labor + (dept === 'Einkauf' ? totalMaterial : 0);
+        const total = labor + material;
         if (total > 0) {
-            entityData[dept] = { actual: total, budget: 0 }; // No mock budget
+            entityData[dept.id] = { actual: total, budget: 0, name: dept.name };
         }
     });
 
@@ -322,9 +321,9 @@ export default function AnalysePage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
-                            {Object.entries(entityData).map(([name, data], i) => (
+                            {Object.entries(entityData).map(([id, data], i) => (
                                 <tr key={i} className="hover:bg-slate-50/50 transition-colors group">
-                                    <td className="px-8 py-4 font-black text-slate-700 text-sm">{name}</td>
+                                    <td className="px-8 py-4 font-black text-slate-700 text-sm">{data.name}</td>
                                     <td className="px-8 py-4 font-black text-slate-800 text-sm text-right">{formatCHF(data.actual)}</td>
                                 </tr>
                             ))}

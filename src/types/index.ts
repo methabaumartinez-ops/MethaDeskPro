@@ -29,15 +29,19 @@ export interface User {
 // ENUMS CONTROLADOS (Wertlisten)
 // ============================================================
 
-export type Abteilung =
-  | 'Blechabteilung'
-  | 'Schlosserei'
-  | 'AVOR'
-  | 'Einkauf'
-  | 'Zimmerei'
-  | 'Montage'
-  | 'Planung'
-  | 'Bau';
+export const ABTEILUNGEN_CONFIG = [
+  { id: 'blech', name: 'Blechabteilung' },
+  { id: 'schlosserei', name: 'Schlosserei' },
+  { id: 'avor', name: 'AVOR' },
+  { id: 'einkauf', name: 'Einkauf' },
+  { id: 'zimmerei', name: 'Zimmerei' },
+  { id: 'montage', name: 'Montage' },
+  { id: 'planung', name: 'Planung' },
+  { id: 'bau', name: 'Bau' },
+] as const;
+
+export type Abteilung = typeof ABTEILUNGEN_CONFIG[number]['name'];
+export type AbteilungId = typeof ABTEILUNGEN_CONFIG[number]['id'];
 
 export type Beschichtung =
   | 'feuerverzinkt'
@@ -336,6 +340,7 @@ export interface TsStunden {
   datum: string;
   stunden: number;
   abteilung?: Abteilung | string;
+  abteilungId?: AbteilungId | string;
   taetigkeit?: string;       // z.B. "Montage", "Schweissen", "Planung"
   bemerkung?: string;
   createdAt?: string;

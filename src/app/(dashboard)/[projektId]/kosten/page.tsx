@@ -10,14 +10,16 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { EmployeeService } from '@/lib/services/employeeService';
-import { Teilsystem, Mitarbeiter, TsStunden, TsMaterialkosten, Abteilung } from '@/types';
+import { Teilsystem, Mitarbeiter, TsStunden, TsMaterialkosten, Abteilung, ABTEILUNGEN_CONFIG } from '@/types';
 import { Clock, Package2, Plus, Trash2, Download, ChevronDown, ChevronUp, DollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useProjekt } from '@/lib/context/ProjektContext';
 
 const ABTEILUNGEN: Abteilung[] = ['Blechabteilung', 'Schlosserei', 'AVOR', 'Einkauf', 'Zimmerei', 'Montage', 'Planung', 'Bau'];
 
 export default function KostenPage() {
     const { projektId } = useParams<{ projektId: string }>();
+    const { currentUser } = useProjekt();
     const searchParams = useSearchParams();
     const tsFilter = searchParams.get('ts');
 
@@ -36,6 +38,14 @@ export default function KostenPage() {
         mitarbeiterId: '', datum: new Date().toISOString().split('T')[0],
         stunden: '', abteilung: '', taetigkeit: '', bemerkung: '',
     });
+
+    // Auto-set department from user profile
+    useEffect(() => {
+        if (currentUser?.department && !stundenForm.abteilung && showStundenForm) {
+            setStundenForm(prev => ({ ...prev, abteilung: currentUser.department as string }));
+        }
+    }, [currentUser, showStundenForm]);
+
     const [materialForm, setMaterialForm] = useState({
         bezeichnung: '', menge: '1', einheit: 'Stk', einzelpreis: '', bestelldatum: '', bemerkung: '',
     });
@@ -75,6 +85,9 @@ export default function KostenPage() {
         setSaving(true);
         try {
             const ma = mitarbeiter.find(m => m.id === stundenForm.mitarbeiterId);
+            const deptConfig = ABTEILUNGEN.find(a => a === stundenForm.abteilung);
+            const abteilungId = ABTEILUNGEN_CONFIG.find(c => c.name === stundenForm.abteilung)?.id;
+
             await fetch('/api/kosten/stunden', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -83,6 +96,7 @@ export default function KostenPage() {
                     stunden: parseFloat(stundenForm.stunden),
                     teilsystemId: selectedTs,
                     projektId,
+                    abteilungId, // Enviar el ID del departamento
                     mitarbeiterName: ma ? `${ma.vorname} ${ma.nachname}` : stundenForm.mitarbeiterId,
                 }),
             });
