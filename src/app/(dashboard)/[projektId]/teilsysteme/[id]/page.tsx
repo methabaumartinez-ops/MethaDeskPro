@@ -10,15 +10,18 @@ import { SubsystemService } from '@/lib/services/subsystemService';
 import { ProjectService } from '@/lib/services/projectService';
 import { PositionService } from '@/lib/services/positionService';
 import { Teilsystem, Position, Projekt } from '@/types';
-MapPin, Eye, Trash2, ShieldCheck, Hash, Briefcase, LayoutDashboard, Copy, ExternalLink,
-    Video, Maximize2
+import {
+    ArrowLeft, Edit, ListTodo, Plus, FileText,
+    Calendar, User as UserIcon, Clock, Link as LinkIcon,
+    MapPin, Eye, Trash2, ShieldCheck, Hash, Briefcase, LayoutDashboard, Copy, ExternalLink,
+    Video, Maximize2, Printer, Share2, UploadCloud
 } from 'lucide-react';
 import Link from 'next/link';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { QRCodeSVG } from 'qrcode.react';
-import { Printer, Share2, UploadCloud } from 'lucide-react';
+
 import { QRCodeSection } from '@/components/shared/QRCodeSection';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import DokumentePanel from '@/components/shared/DokumentePanel';
