@@ -14,9 +14,9 @@ export async function GET(req: Request) {
     if (error) {
         return new NextResponse(
             `<html><body style="font-family:sans-serif;padding:40px;">
-                <h1 style="color:red;">❌ Error de autorización</h1>
+                <h1 style="color:red;">❌ Autorisierungsfehler</h1>
                 <p>${error}</p>
-                <a href="/api/auth/google">Intentar de nuevo</a>
+                <a href="/api/auth/google">Erneut versuchen</a>
             </body></html>`,
             { headers: { 'Content-Type': 'text/html' } }
         );
@@ -25,8 +25,8 @@ export async function GET(req: Request) {
     if (!code) {
         return new NextResponse(
             `<html><body style="font-family:sans-serif;padding:40px;">
-                <h1>⚠️ Falta el código de autorización</h1>
-                <a href="/api/auth/google">Ir a autorizar</a>
+                <h1>⚠️ Autorisierungscode fehlt</h1>
+                <a href="/api/auth/google">Zur Autorisierung gehen</a>
             </body></html>`,
             { headers: { 'Content-Type': 'text/html' } }
         );
@@ -41,24 +41,24 @@ export async function GET(req: Request) {
     try {
         const { tokens } = await oauth2Client.getToken(code);
 
-        const refreshToken = tokens.refresh_token || '(No se recibió refresh_token. Intenta de nuevo con prompt=consent)';
+        const refreshToken = tokens.refresh_token || '(Kein Refresh-Token erhalten. Versuchen Sie es erneut mit prompt=consent)';
 
         return new NextResponse(
             `<html>
             <head><title>Google Drive - Token obtenido</title></head>
             <body style="font-family:sans-serif;padding:40px;max-width:800px;margin:0 auto;">
-                <h1 style="color:green;">✅ Autorización exitosa</h1>
+                <h1 style="color:green;">✅ Autorisierung erfolgreich</h1>
                 <h2>Refresh Token:</h2>
                 <textarea readonly style="width:100%;height:80px;font-family:monospace;font-size:14px;padding:10px;border:2px solid #ccc;border-radius:8px;">${refreshToken}</textarea>
                 <br/><br/>
                 <div style="background:#f0f7ff;border:1px solid #0066cc;border-radius:8px;padding:20px;">
-                    <h3>📋 Instrucciones:</h3>
+                    <h3>📋 Anweisungen:</h3>
                     <ol>
-                        <li>Copia el <strong>Refresh Token</strong> de arriba</li>
-                        <li>Abre el archivo <code>.env</code> en la raíz del proyecto</li>
-                        <li>Reemplaza el valor de <code>GOOGLE_REFRESH_TOKEN=</code> con el token copiado</li>
-                        <li>Reinicia el servidor de desarrollo (<code>npm run dev</code>)</li>
-                        <li>¡Listo! Los archivos ahora se subirán a Google Drive</li>
+                        <li>Kopieren Sie das oben stehende <strong>Refresh Token</strong></li>
+                        <li>Öffnen Sie die Datei <code>.env</code> im Stammverzeichnis des Projekts</li>
+                        <li>Ersetzen Sie den Wert von <code>GOOGLE_REFRESH_TOKEN=</code> durch das kopierte Token</li>
+                        <li>Starten Sie den Entwicklungsserver neu (<code>npm run dev</code>)</li>
+                        <li>Fertig! Dateien werden nun auf Google Drive hochgeladen</li>
                     </ol>
                 </div>
                 <br/>
@@ -72,7 +72,7 @@ export async function GET(req: Request) {
         console.error('Error exchanging code for tokens:', err);
         return new NextResponse(
             `<html><body style="font-family:sans-serif;padding:40px;">
-                <h1 style="color:red;">❌ Error al obtener tokens</h1>
+                <h1 style="color:red;">❌ Fehler beim Abrufen der Tokens</h1>
                 <pre>${err instanceof Error ? err.message : String(err)}</pre>
                 <br/>
                 <a href="/api/auth/google">Intentar de nuevo</a>

@@ -99,7 +99,7 @@ export default function UnterpositionDetailPage() {
                 <Card className="md:col-span-2 shadow-sm border-none bg-card/50 backdrop-blur-sm">
                     <CardHeader className="py-3 px-4 bg-muted/30 border-b">
                         <CardTitle className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                            Detalles de la Unterposition
+                            Unterposition Details
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-6 space-y-6">
@@ -130,7 +130,7 @@ export default function UnterpositionDetailPage() {
                                 <p className="text-sm font-black">{(unterposition as any).ifcMeta?.uk || '—'}</p>
                             </div>
                             <div className="space-y-1">
-                                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Superficies (m²)</span>
+                                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Flächen (m²)</span>
                                 <p className="text-sm font-bold">{(unterposition as any).ifcMeta?.area || '—'}</p>
                             </div>
                             <div className="space-y-1">
@@ -208,7 +208,7 @@ export default function UnterpositionDetailPage() {
                         </CardHeader>
                         <CardContent className="p-4 space-y-4">
                             <p className="text-[10px] font-medium text-muted-foreground leading-relaxed">
-                                Acceda a los PropertySets originales extraídos del modelo IFC para auditoría técnica.
+                                Greifen Sie auf die originalen PropertySets zu, die zur technischen Prüfung aus dem IFC-Modell extrahiert wurden.
                             </p>
                             <Button
                                 variant="outline"
@@ -223,7 +223,7 @@ export default function UnterpositionDetailPage() {
                                 }}
                             >
                                 <Eye className="h-3 w-3 mr-2" />
-                                Ver IFC Data (JSON)
+                                IFC-Daten anzeigen (JSON)
                             </Button>
                         </CardContent>
                     </Card>

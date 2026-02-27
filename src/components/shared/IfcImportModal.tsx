@@ -120,7 +120,7 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
             for (const p of selectedPos) {
                 const overlaps = selectedUPos.find(u => u.posNummer === p.posNummer);
                 if (overlaps) {
-                    log.push(`⚠️ WARNUNG: Position ${p.posNummer} tiene el mismo ID que una pieza.`);
+                    log.push(`⚠️ WARNUNG: Position ${p.posNummer} hat die gleiche ID wie ein Teil.`);
                 }
             }
 

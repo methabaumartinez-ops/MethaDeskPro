@@ -92,7 +92,7 @@ ${contextText}`;
         console.error('Chat error:', error);
         let message = error.message || 'Ein Fehler ist aufgetreten.';
         if (error.status === 429 || message.toLowerCase().includes('quota')) {
-            message = 'API-Quota überschritten. Bitte versuchen Sie es in un paar Minuten erneut o prüfen Sie Ihren Tarif.';
+            message = 'API-Quota überschritten. Bitte versuchen Sie es in ein paar Minuten erneut oder prüfen Sie Ihren Tarif.';
         }
         return new Response(JSON.stringify({ error: message }), { status: error.status || 500 });
     }

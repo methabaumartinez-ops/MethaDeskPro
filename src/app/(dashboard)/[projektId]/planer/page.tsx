@@ -414,7 +414,7 @@ export default function PlannerPage() {
                             ) : (
                                 <>
                                     <UploadCloud className="h-8 w-8 text-slate-300 mb-2" />
-                                    <p className="text-xs font-bold text-slate-500 text-center">Bild/Plan hochladen</p>
+                                    <p className="text-xs font-bold text-slate-500 text-center">Skizze/Plan hochladen</p>
                                     <span className="text-[10px] text-slate-400 mt-1">Drag & Drop</span>
                                 </>
                             )}

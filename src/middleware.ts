@@ -33,7 +33,7 @@ export async function middleware(request: NextRequest) {
         return addSecurityHeaders(NextResponse.next());
     }
 
-    // Verificar token de la cookie
+    // Cookie-Token überprüfen
     const token = request.cookies.get('methabau_token')?.value;
 
     if (!token) {
