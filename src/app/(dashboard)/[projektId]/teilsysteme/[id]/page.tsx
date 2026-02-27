@@ -292,35 +292,33 @@ export default function TeilsystemDetailPage() {
                 {/* Right: Actions & BIM Viewer (1/3 width) */}
                 <div className="flex flex-col gap-4">
                     {/* Reorganized Quick Actions (Matching User Image) */}
-                    <Card className="shadow-sm border-2 border-orange-200 rounded-3xl overflow-hidden bg-card">
-                        <CardContent className="p-6 flex flex-col gap-4 items-center">
-                            {/* Row 1: Kosten & Lager-Scan */}
-                            <div className="flex items-center gap-4 w-full justify-center">
-                                {canViewKosten && (
-                                    <Link href={`/${projektId}/kosten?ts=${id}`} className="flex-1 max-w-[160px]">
-                                        <Button variant="outline" className="w-full h-14 border-2 border-green-200 bg-green-50/30 hover:bg-green-100 text-green-700 font-black uppercase text-[11px] tracking-widest rounded-2xl flex items-center justify-center gap-3 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[2px]">
-                                            <span className="text-xl">💰</span>
-                                            <span>Kosten</span>
-                                        </Button>
-                                    </Link>
-                                )}
-                                <Link href={`/${projektId}/lager-scan`} className="flex-1 max-w-[160px]">
-                                    <Button variant="outline" className="w-full h-14 border-2 border-blue-200 bg-blue-50/30 hover:bg-blue-100 text-blue-700 font-black uppercase text-[11px] tracking-widest rounded-2xl flex items-center justify-center gap-3 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[2px]">
-                                        <span className="text-xl">📷</span>
-                                        <span>Lager-Scan</span>
-                                    </Button>
-                                </Link>
-                            </div>
-
-                            {/* Row 2: Lagerorte (Centered) */}
-                            {canManageLager && (
-                                <Link href={`/${projektId}/lagerorte`} className="w-full max-w-[200px]">
-                                    <Button variant="outline" className="w-full h-14 border-2 border-orange-200 bg-orange-50/30 hover:bg-orange-100 text-orange-700 font-black uppercase text-[11px] tracking-widest rounded-2xl flex items-center justify-center gap-3 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[2px]">
-                                        <span className="text-xl">📦</span>
-                                        <span>Lagerorte</span>
+                    <Card className="shadow-sm border-2 border-orange-600 rounded-3xl overflow-hidden bg-white/50 backdrop-blur-sm">
+                        <CardContent className="p-8 flex flex-col gap-6 items-center">
+                            {/* Row 1: Kosten Erfassen (Full width or centered) */}
+                            {canViewKosten && (
+                                <Link href={`/${projektId}/kosten?ts=${id}`} className="w-full max-w-[340px]">
+                                    <Button variant="outline" className="w-full h-14 border-2 border-green-400 bg-green-50 hover:bg-green-100 text-green-700 font-black uppercase text-[12px] tracking-widest rounded-2xl flex items-center justify-center gap-4 transition-all shadow-md border-b-4 active:border-b-2 active:translate-y-[2px]">
+                                        <span className="text-2xl">💰</span>
+                                        <span>Kosten erfassen</span>
                                     </Button>
                                 </Link>
                             )}
+
+                            {/* Row 2: Einlagern & Auslagern */}
+                            <div className="flex items-center gap-6 w-full justify-center">
+                                <Link href={`/${projektId}/lager-scan?type=teilsystem&id=${id}&action=einlagerung&qr=TEILSYSTEM:${id}`} className="flex-1 max-w-[160px]">
+                                    <Button variant="outline" className="w-full h-14 border-2 border-blue-400 bg-blue-50 hover:bg-blue-100 text-blue-700 font-black uppercase text-[12px] tracking-widest rounded-2xl flex items-center justify-center gap-4 transition-all shadow-md border-b-4 active:border-b-2 active:translate-y-[2px]">
+                                        <span className="text-2xl">📥</span>
+                                        <span>Einlagern</span>
+                                    </Button>
+                                </Link>
+                                <Link href={`/${projektId}/lager-scan?type=teilsystem&id=${id}&action=auslagerung&qr=TEILSYSTEM:${id}`} className="flex-1 max-w-[160px]">
+                                    <Button variant="outline" className="w-full h-14 border-2 border-orange-400 bg-orange-50 hover:bg-orange-100 text-orange-700 font-black uppercase text-[12px] tracking-widest rounded-2xl flex items-center justify-center gap-4 transition-all shadow-md border-b-4 active:border-b-2 active:translate-y-[2px]">
+                                        <span className="text-2xl">📤</span>
+                                        <span>Auslagern</span>
+                                    </Button>
+                                </Link>
+                            </div>
                         </CardContent>
                     </Card>
 

@@ -126,6 +126,7 @@ export interface Teilsystem {
   missingFields?: string[];
   importWarnings?: string[];
   documentUrl?: string;
+  lagerortId?: string;
   status: ItemStatus;
   createdAt?: string;
   updatedAt?: string;
@@ -308,7 +309,7 @@ export type LagerbewegungTyp = 'einlagerung' | 'auslagerung' | 'umlagerung';
 
 export interface Lagerbewegung {
   id: string;
-  entityType: 'position' | 'unterposition';
+  entityType: 'teilsystem' | 'position' | 'unterposition';
   entityId: string;
   vonLagerortId?: string;
   nachLagerortId: string;

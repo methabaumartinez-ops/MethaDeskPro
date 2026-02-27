@@ -46,14 +46,39 @@ export default function LagerScanSeite() {
     const [errorMsg, setErrorMsg] = useState('');
     const [loading, setLoading] = useState(false);
 
+    // Support for URL parameters (deep links)
+    React.useEffect(() => {
+        const searchParams = new URLSearchParams(window.location.search);
+        const type = searchParams.get('type') as any;
+        const id = searchParams.get('id');
+        const action = searchParams.get('action') as LagerbewegungTyp;
+        const qr = searchParams.get('qr');
+
+        if (type && id && action) {
+            setState({
+                typ: action,
+                entityType: type,
+                entityId: id,
+                entityQr: qr || `${type.toUpperCase()}:${id}`
+            });
+            setStep('scan-lagerort');
+        }
+    }, []);
+
     function handleEntityScan(qrText: string) {
         const parsed = parseEntityQr(qrText);
-        if (!parsed) {
-            setErrorMsg(`Ungültiger QR-Code: "${qrText}"\nErwartet: POSITION:id oder UNTERPOSITION:id`);
+        // Also support TEILSYSTEM:id
+        let finalParsed = parsed;
+        if (!finalParsed && qrText.startsWith('TEILSYSTEM:')) {
+            finalParsed = { entityType: 'teilsystem' as any, entityId: qrText.replace('TEILSYSTEM:', '') };
+        }
+
+        if (!finalParsed) {
+            setErrorMsg(`Ungültiger QR-Code: "${qrText}"\nErwartet: TEILSYSTEM:id, POSITION:id oder UNTERPOSITION:id`);
             setStep('error');
             return;
         }
-        setState(s => ({ ...s, entityQr: qrText, entityType: parsed.entityType, entityId: parsed.entityId }));
+        setState(s => ({ ...s, entityQr: qrText, entityType: finalParsed.entityType, entityId: finalParsed.entityId }));
         setStep('scan-lagerort');
     }
 
@@ -248,7 +273,7 @@ export default function LagerScanSeite() {
                     <CardContent className="p-6 space-y-3">
                         {[
                             { label: 'Bewegungsart', value: `${selectedTyp?.icon} ${selectedTyp?.label}` },
-                            { label: 'Bauteil-Typ', value: state.entityType === 'position' ? 'Position' : 'Unterposition' },
+                            { label: 'Bauteil-Typ', value: state.entityType === 'teilsystem' ? 'Teilsystem' : state.entityType === 'position' ? 'Position' : 'Unterposition' },
                             { label: 'Bauteil-ID', value: state.entityId, mono: true },
                             { label: 'Lagerort-ID', value: state.lagerortId, mono: true },
                         ].map(row => (

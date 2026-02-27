@@ -55,6 +55,9 @@ export async function POST(request: NextRequest) {
                 await PositionService.updatePosition(entityId, { lagerortId: nachLagerortId });
             } else if (entityType === 'unterposition') {
                 await SubPositionService.updateUnterposition(entityId, { lagerortId: nachLagerortId });
+            } else if (entityType === 'teilsystem') {
+                const { SubsystemService } = await import('@/lib/services/subsystemService');
+                await SubsystemService.updateTeilsystem(entityId, { lagerortId: nachLagerortId });
             }
         } catch (updateError) {
             console.warn('[Lagerbewegung] Could not update entity lagerortId:', updateError);
