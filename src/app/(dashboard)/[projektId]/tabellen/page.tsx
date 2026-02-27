@@ -10,7 +10,6 @@ import {
     Users,
     Truck,
     Package as PackageIcon,
-    Settings,
     HardDrive,
     Box,
     Car
@@ -329,32 +328,31 @@ export default function TabellenPage() {
             {/* Content Area */}
             <div className="flex-1 overflow-y-auto bg-slate-50/50 rounded-xl border p-6">
                 <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-2xl font-bold flex items-center gap-2">
-                                {tables.find(t => t.id === activeTable)?.icon &&
-                                    React.createElement(tables.find(t => t.id === activeTable)!.icon, { className: "h-6 w-6 text-slate-400" })
-                                }
-                                {tables.find(t => t.id === activeTable)?.label}
-                            </h1>
-                            <p className="text-muted-foreground">
-                                {tables.find(t => t.id === activeTable)?.description}
-                                {selectedProject && selectedProject !== 'all' && !['mitarbeiter', 'lieferanten', 'fahrzeuge'].includes(activeTable) && (
-                                    <span className="ml-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
-                                        {projects.find(p => p.id === selectedProject)?.name}
-                                    </span>
-                                )}
-                            </p>
-                        </div>
-                        <div className="flex gap-2">
-                            <Button variant="outline" size="sm">
-                                <Settings className="h-4 w-4 mr-2" />
-                                Spalten
-                            </Button>
-                            <Button className="bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] h-9 px-6 rounded-full shadow-md flex items-center gap-2 transition-all hover:scale-105 active:scale-95" onClick={handleExport}>
-                                <HardDrive className="h-4 w-4 mr-2" />
-                                Exportieren
-                            </Button>
+                    {/* Sticky Table Header Section */}
+                    <div className="sticky top-0 z-40 bg-slate-50/95 backdrop-blur-md -mx-6 px-6 py-6 border-b shadow-sm mb-4">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div>
+                                <h1 className="text-2xl font-black flex items-center gap-2 text-slate-900">
+                                    {tables.find(t => t.id === activeTable)?.icon &&
+                                        React.createElement(tables.find(t => t.id === activeTable)!.icon, { className: "h-6 w-6 text-primary" })
+                                    }
+                                    {tables.find(t => t.id === activeTable)?.label}
+                                </h1>
+                                <p className="text-xs font-bold text-muted-foreground mt-0.5">
+                                    {tables.find(t => t.id === activeTable)?.description}
+                                    {selectedProject && selectedProject !== 'all' && !['mitarbeiter', 'lieferanten', 'fahrzeuge'].includes(activeTable) && (
+                                        <span className="ml-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
+                                            {projects.find(p => p.id === selectedProject)?.name}
+                                        </span>
+                                    )}
+                                </p>
+                            </div>
+                            <div className="flex gap-2">
+                                <Button className="bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] h-9 px-6 rounded-full shadow-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95" onClick={handleExport}>
+                                    <HardDrive className="h-4 w-4 mr-2" />
+                                    Exportieren
+                                </Button>
+                            </div>
                         </div>
                     </div>
 
@@ -372,7 +370,7 @@ export default function TabellenPage() {
                                 </div>
                             ) : (
                                 <div className="overflow-x-auto">
-                                    <Table>
+                                    <Table className="[&_th]:top-[92px]">
                                         <TableHeader className="bg-orange-50/50">
                                             <TableRow>
                                                 {columns.map(col => (

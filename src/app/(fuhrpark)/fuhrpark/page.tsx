@@ -178,7 +178,7 @@ export default function FuhrparkPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-md -mx-4 px-4 py-4 border-b shadow-sm mb-4 flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Fuhrpark</h1>
                     <p className="text-muted-foreground font-medium mt-1">Bühnen und Baumaschinen – Verwaltung und Disposition.</p>
@@ -283,7 +283,7 @@ export default function FuhrparkPage() {
                                 </div>
                             ) : (
                                 <div className="overflow-x-auto">
-                                    <Table className="border-none rounded-none">
+                                    <Table className="border-none rounded-none [&_th]:top-[82px]">
                                         <TableHeader>
                                             <TableRow>
                                                 <TableHead>Bezeichnung</TableHead>
@@ -384,7 +384,7 @@ export default function FuhrparkPage() {
                                     <p className="text-muted-foreground font-bold">Keine Reservierungen vorhanden</p>
                                 </div>
                             ) : (
-                                <Table className="border-none rounded-none">
+                                <Table className="border-none rounded-none [&_th]:top-[82px]">
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>Fahrzeug</TableHead>

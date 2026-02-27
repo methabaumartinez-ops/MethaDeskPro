@@ -175,16 +175,16 @@ export default function KostenPage() {
     );
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500 pb-10">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="space-y-6 animate-in fade-in duration-500 pb-10 h-full overflow-y-auto scrollbar-hide -m-2 p-2">
+            {/* Sticky Header Section */}
+            <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-md -mx-2 px-6 py-6 border-b shadow-sm mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-all">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Kostenerfassung</h1>
-                    <p className="text-muted-foreground font-medium mt-1">Stunden und Material pro Teilsystem erfassen</p>
+                    <h1 className="text-3xl font-black text-foreground tracking-tight uppercase">Kostenerfassung</h1>
+                    <p className="text-muted-foreground font-black text-[10px] uppercase tracking-widest mt-1">Stunden & Material pro Teilsystem</p>
                 </div>
                 {selectedTs && (
-                    <Button variant="outline" onClick={exportCsv} className="font-bold gap-2">
-                        <Download className="h-4 w-4" />
+                    <Button variant="outline" onClick={exportCsv} className="font-extrabold gap-2 border-2 hover:bg-primary/5">
+                        <Download className="h-4 w-4 text-primary" />
                         CSV Export
                     </Button>
                 )}
@@ -303,7 +303,7 @@ export default function KostenPage() {
                                         <p className="text-sm font-bold text-muted-foreground">Keine Stundenerfassungen für dieses TS</p>
                                     </div>
                                 ) : (
-                                    <Table>
+                                    <Table className="[&_th]:top-[100px]">
                                         <TableHeader>
                                             <TableRow className="bg-muted/30">
                                                 <TableHead className="font-black">Datum</TableHead>
@@ -383,7 +383,7 @@ export default function KostenPage() {
                                         <p className="text-sm font-bold text-muted-foreground">Keine Materialkosten für dieses TS</p>
                                     </div>
                                 ) : (
-                                    <Table>
+                                    <Table className="[&_th]:top-[100px]">
                                         <TableHeader>
                                             <TableRow className="bg-muted/30">
                                                 <TableHead className="font-black">Bezeichnung</TableHead>
