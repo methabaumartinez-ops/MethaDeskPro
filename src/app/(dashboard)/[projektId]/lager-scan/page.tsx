@@ -13,11 +13,15 @@ import { LagerbewegungTyp } from '@/types';
 
 type ScanStep = 'idle' | 'scan-entity' | 'scan-lagerort' | 'confirm' | 'done' | 'error';
 
-lagerortQr ?: string;
-lagerortId ?: string;
-typ: LagerbewegungTyp;
-entityName ?: string;
-entityNummer ?: string;
+interface ScanState {
+    entityQr?: string;
+    entityType?: 'teilsystem' | 'position' | 'unterposition';
+    entityId?: string;
+    lagerortQr?: string;
+    lagerortId?: string;
+    typ: LagerbewegungTyp;
+    entityName?: string;
+    entityNummer?: string;
 }
 
 function parseEntityQr(qrText: string): { entityType: 'position' | 'unterposition'; entityId: string } | null {
