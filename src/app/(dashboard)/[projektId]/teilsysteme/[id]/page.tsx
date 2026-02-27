@@ -290,39 +290,59 @@ export default function TeilsystemDetailPage() {
 
                 {/* Right: Actions & BIM Viewer (1/3 width) */}
                 <div className="flex flex-col gap-4">
-                    {/* Quick Actions (Green Box in reference) */}
-                    <div className="bg-card p-4 rounded-2xl shadow-sm border-2 border-border flex flex-wrap items-center justify-center gap-3">
-                        {canViewKosten && (
-                            <Link href={`/${projektId}/kosten?ts=${id}`}>
-                                <Button variant="outline" size="sm" className="h-12 px-5 border-2 border-green-200 bg-green-50/50 hover:bg-green-100 text-green-700 font-black uppercase text-[11px] tracking-widest rounded-xl flex items-center gap-2 transition-all shadow-sm">
-                                    <span className="text-xl">💰</span>
-                                    <span>Kosten</span>
-                                </Button>
-                            </Link>
-                        )}
-                        <Link href={`/${projektId}/lager-scan`}>
-                            <Button variant="outline" size="sm" className="h-12 px-5 border-2 border-blue-200 bg-blue-50/50 hover:bg-blue-100 text-blue-700 font-black uppercase text-[11px] tracking-widest rounded-xl flex items-center gap-2 transition-all shadow-sm">
-                                <span className="text-xl">📷</span>
-                                <span>Lager-Scan</span>
-                            </Button>
-                        </Link>
-                        {canManageLager && (
-                            <Link href={`/${projektId}/lagerorte`}>
-                                <Button variant="outline" size="sm" className="h-12 px-5 border-2 border-orange-200 bg-orange-50/50 hover:bg-orange-100 text-orange-700 font-black uppercase text-[11px] tracking-widest rounded-xl flex items-center gap-2 transition-all shadow-sm">
-                                    <span className="text-xl">📦</span>
-                                    <span>Lagerorte</span>
-                                </Button>
-                            </Link>
-                        )}
-                    </div>
+                    {/* Reorganized Quick Actions (Matching User Image) */}
+                    <Card className="shadow-sm border-2 border-orange-200 rounded-3xl overflow-hidden bg-card">
+                        <CardContent className="p-6 flex flex-col gap-4 items-center">
+                            {/* Row 1: Kosten & Lager-Scan */}
+                            <div className="flex items-center gap-4 w-full justify-center">
+                                {canViewKosten && (
+                                    <Link href={`/${projektId}/kosten?ts=${id}`} className="flex-1 max-w-[160px]">
+                                        <Button variant="outline" className="w-full h-14 border-2 border-green-200 bg-green-50/30 hover:bg-green-100 text-green-700 font-black uppercase text-[11px] tracking-widest rounded-2xl flex items-center justify-center gap-3 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[2px]">
+                                            <span className="text-xl">💰</span>
+                                            <span>Kosten</span>
+                                        </Button>
+                                    </Link>
+                                )}
+                                <Link href={`/${projektId}/lager-scan`} className="flex-1 max-w-[160px]">
+                                    <Button variant="outline" className="w-full h-14 border-2 border-blue-200 bg-blue-50/30 hover:bg-blue-100 text-blue-700 font-black uppercase text-[11px] tracking-widest rounded-2xl flex items-center justify-center gap-3 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[2px]">
+                                        <span className="text-xl">📷</span>
+                                        <span>Lager-Scan</span>
+                                    </Button>
+                                </Link>
+                            </div>
+
+                            {/* Row 2: Lagerorte (Centered) */}
+                            {canManageLager && (
+                                <Link href={`/${projektId}/lagerorte`} className="w-full max-w-[200px]">
+                                    <Button variant="outline" className="w-full h-14 border-2 border-orange-200 bg-orange-50/30 hover:bg-orange-100 text-orange-700 font-black uppercase text-[11px] tracking-widest rounded-2xl flex items-center justify-center gap-3 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[2px]">
+                                        <span className="text-xl">📦</span>
+                                        <span>Lagerorte</span>
+                                    </Button>
+                                </Link>
+                            )}
+                        </CardContent>
+                    </Card>
 
                     {/* BIM Viewer (Red Box in reference) */}
-                    <div className="h-[430px] relative group shadow-md border-2 border-border rounded-xl overflow-hidden bg-muted/20">
-                        <div className="absolute top-3 left-3 z-10">
-                            <Badge className="bg-background/90 backdrop-blur-sm text-foreground border-border text-[10px] font-black uppercase px-2 py-1">
-                                IFC Model Viewer
+                    <div className="h-[430px] relative group shadow-md border-2 border-orange-600 rounded-3xl overflow-hidden bg-muted/20">
+                        <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
+                            <div className="bg-orange-600 text-white p-2 rounded-2xl shadow-lg ring-4 ring-orange-600/20">
+                                <Video className="h-5 w-5" />
+                            </div>
+                            <Badge className="bg-white/90 backdrop-blur-md text-slate-800 border-none px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm">
+                                Model Viewer
                             </Badge>
                         </div>
+
+                        <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+                            <Button variant="secondary" size="icon" className="h-10 w-10 rounded-2xl bg-white/90 backdrop-blur-md shadow-sm border-none hover:bg-white text-slate-600">
+                                <Maximize2 className="h-4 w-4" />
+                            </Button>
+                            <Button variant="secondary" size="icon" className="h-10 w-10 rounded-2xl bg-white/90 backdrop-blur-md shadow-sm border-none hover:bg-white text-slate-600">
+                                <ExternalLink className="h-4 w-4" />
+                            </Button>
+                        </div>
+
                         <BimViewer modelName={`${item.name}${!item.ifcUrl ? '.ifc' : ''}`} modelUrl={item.ifcUrl} />
                     </div>
                 </div>
