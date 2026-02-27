@@ -102,7 +102,7 @@ export type ItemStatus =
 export interface Teilsystem {
   id: string;
   projektId: string;
-  ks?: string;
+  ks?: string | number;
   teilsystemNummer?: string;
   name: string;
   beschreibung: string;
@@ -117,8 +117,18 @@ export interface Teilsystem {
   projektordnerLink?: string;
   imageUrl?: string;
   ifcUrl?: string;
+  ifcFileName?: string;
+  ifcChecksum?: string;
+  ifcSchema?: string;
+  ifcUnits?: { length: string; weight: string;[key: string]: string };
+  importVersion?: number;
+  fallbackUsed?: boolean;
+  missingFields?: string[];
+  importWarnings?: string[];
   documentUrl?: string;
   status: ItemStatus;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // ============================================================
@@ -149,6 +159,10 @@ export interface Position {
   montagetermin?: string;
   abteilung?: Abteilung;
   bemerkung?: string;
+  groupingMethod?: 'REAL_PARENT' | 'FALLBACK_GROUP' | 'AUTO_GROUP';
+  groupingKey?: string;
+  ifcParentGlobalId?: string;
+  ifcMeta?: any; // psets + summary
   status: ItemStatus;
   createdAt?: string;
   updatedAt?: string;
@@ -182,6 +196,13 @@ export interface Unterposition {
   verbautAm?: string;
   abteilung?: Abteilung;
   bemerkung?: string;
+  materialProp?: string;
+  oberflaecheProp?: string;
+  dimensions?: { laenge_mm?: number; breite_mm?: number; staerke_mm?: number;[key: string]: any };
+  gewichtKg?: number;
+  ifcChildGlobalId?: string;
+  ifcType?: string;
+  rawPsets?: any;
   status: ItemStatus;
   createdAt?: string;
   updatedAt?: string;
@@ -215,6 +236,9 @@ export interface BestellungItem {
   einheit: string;
   vorbereitet: boolean;
   tsnummer?: string;
+  attachmentUrl?: string;
+  attachmentId?: string;
+  attachmentName?: string;
 }
 
 export interface MaterialBestellung {
@@ -434,4 +458,26 @@ export interface FahrzeugReservierung {
   reserviertDurch?: string;
   bemerkung?: string;
   createdAt: string;
+}
+// ============================================================
+// IFC IMPORT LOG (PRO)
+// ============================================================
+export interface IFCImportLog {
+  id: string;
+  teilsystemId: string;
+  fileName: string;
+  checksum: string;
+  importedAt: string;
+  importedBy: string;
+  elementsTotal: number;
+  positionsCreated: number;
+  unterpositionsCreated: number;
+  fallbackUsed: boolean;
+  orphansCount: number;
+  warnings: string[];
+  missingFields: string[];
+  debugPaths: {
+    ifcRaw?: string;
+    dbSeed?: string;
+  };
 }

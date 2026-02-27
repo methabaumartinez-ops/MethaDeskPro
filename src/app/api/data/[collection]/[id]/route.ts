@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { DatabaseService } from '@/lib/services/db';
 import { cookies } from 'next/headers';
 import { getUserFromToken } from '@/lib/services/authService';
+import { ProjectService } from '@/lib/services/projectService';
+import { SubsystemService } from '@/lib/services/subsystemService';
+import { PositionService } from '@/lib/services/positionService';
 
 const ALLOWED_COLLECTIONS = [
     'projekte', 'teilsysteme', 'positionen', 'unterpositionen',
@@ -73,7 +76,21 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ colle
             return NextResponse.json({ error: 'Nur Administratoren können Daten löschen.' }, { status: 403 });
         }
 
-        await DatabaseService.delete(collection, id);
+        // Use high-level services for cascade deletion if available
+        switch (collection) {
+            case 'projekte':
+                await ProjectService.deleteProjekt(id);
+                break;
+            case 'teilsysteme':
+                await SubsystemService.deleteTeilsystem(id);
+                break;
+            case 'positionen':
+                await PositionService.deletePosition(id);
+                break;
+            default:
+                await DatabaseService.delete(collection, id);
+        }
+
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error(`API Error deleting item from collection:`, error);

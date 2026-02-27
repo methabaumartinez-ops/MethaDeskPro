@@ -47,7 +47,11 @@ export default function TeilsystemErfassenPage() {
     const [ifcExtractData, setIfcExtractData] = React.useState<IfcExtractResult | null>(null);
     const [newTeilsystemId, setNewTeilsystemId] = React.useState<string | null>(null);
     const [extracting, setExtracting] = React.useState(false);
+    const [analyzing, setAnalyzing] = React.useState(false);
+    const [importingAuto, setImportingAuto] = React.useState(false);
     const [loadingMitarbeiter, setLoadingMitarbeiter] = React.useState(true);
+    const [selectedFileObj, setSelectedFileObj] = React.useState<File | null>(null);
+    const [uploadedIfcUrl, setUploadedIfcUrl] = React.useState<string | null>(null);
 
     React.useEffect(() => {
         const load = async () => {
@@ -156,6 +160,82 @@ export default function TeilsystemErfassenPage() {
         }
     };
 
+    const handleAutoImport = async (e?: React.MouseEvent) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        if (!selectedFileObj || !projektId) return;
+
+        setImportingAuto(true);
+        try {
+            const { ProjectService } = await import('@/lib/services/projectService');
+
+            // 1. Upload to Drive if not already uploaded
+            let url = uploadedIfcUrl;
+            if (!url) {
+                url = await ProjectService.uploadImage(selectedFileObj, projektId, 'ifc');
+                setUploadedIfcUrl(url);
+            }
+
+            // 2. Trigger auto-import endpoint
+            // We pass the current form values so they are prioritized over IFC metadata
+            const formValues = watch();
+
+            const res = await fetch('/api/teilsystem-import', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    url: url,
+                    filename: selectedFileObj.name,
+                    projektId,
+                    user: currentUser ? `${currentUser.vorname} ${currentUser.nachname}` : 'system-import',
+                    overrides: {
+                        teilsystemNummer: formValues.teilsystemNummer,
+                        name: formValues.name,
+                        beschreibung: formValues.beschreibung,
+                    }
+                }),
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Import failed');
+            }
+
+            const result = await res.json();
+
+            // 3. If it's a new or existing TS, we still want to trigger the extraction of positions
+            if (result.teilsystem?.id) {
+                setNewTeilsystemId(result.teilsystem.id);
+                setExtracting(true);
+
+                const extractRes = await fetch('/api/ifc-extract', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        url: url,
+                        teilsystemId: result.teilsystem.id,
+                        projektId
+                    }),
+                });
+
+                if (extractRes.ok) {
+                    const extractData = await extractRes.json();
+                    setIfcExtractData(extractData);
+                } else {
+                    router.push(`/${projektId}/teilsysteme/${result.teilsystem.id}`);
+                }
+            }
+        } catch (error: any) {
+            console.error("Auto-import failed", error);
+            alert(`Auto-Import fehlgeschlagen: ${error.message}`);
+        } finally {
+            setImportingAuto(false);
+            setExtracting(false);
+        }
+    };
+
     const mitarbeiterOptions = [
         { label: 'Bitte wählen...', value: '' },
         ...mitarbeiter.map(m => ({ label: `${m.vorname} ${m.nachname}`, value: m.id }))
@@ -174,9 +254,56 @@ export default function TeilsystemErfassenPage() {
         { label: 'Fertig', value: 'fertig' },
     ];
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
-            setSelectedFile(e.target.files[0].name);
+            const file = e.target.files[0];
+            setSelectedFile(file.name);
+            setSelectedFileObj(file);
+            // Auto-analysis removed as per user request
+        }
+    };
+
+    const handleAnalyze = async (file: File) => {
+        if (!projektId) return;
+        setAnalyzing(true);
+        try {
+            const { ProjectService } = await import('@/lib/services/projectService');
+            // Upload temporary or use direct if possible? For now, upload to Drive as it's the current pipeline
+            const uploadedUrl = await ProjectService.uploadImage(file, projektId, 'ifc');
+            setUploadedIfcUrl(uploadedUrl);
+
+            const res = await fetch('/api/ifc-metadata', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: uploadedUrl, filename: file.name, projektId }),
+            });
+
+            if (res.ok) {
+                const result = await res.json();
+                if (result.metadata) {
+                    const meta = result.metadata;
+                    if (meta.teilsystemNummer) setValue('teilsystemNummer', meta.teilsystemNummer);
+                    if (meta.name) setValue('name', meta.name);
+
+                    // Specific mapping for METHABAU fields if rawMetadata is present
+                    if (result.rawMetadata) {
+                        const raw = result.rawMetadata;
+                        const blocks = [];
+                        if (raw.Gebäude) blocks.push(`Gebäude: ${raw.Gebäude}`);
+                        if (raw.Geschoss) blocks.push(`Geschoss: ${raw.Geschoss}`);
+                        if (raw.Abschnitt) blocks.push(`Abschnitt: ${raw.Abschnitt}`);
+                        if (blocks.length > 0) setValue('beschreibung', blocks.join(' | '));
+                    } else if (meta.beschreibung) {
+                        setValue('beschreibung', meta.beschreibung);
+                    }
+
+                    if (meta.bemerkung) setValue('bemerkung', meta.bemerkung);
+                }
+            }
+        } catch (err) {
+            console.error("Analysis failed", err);
+        } finally {
+            setAnalyzing(false);
         }
     };
 
@@ -195,7 +322,10 @@ export default function TeilsystemErfassenPage() {
         e.stopPropagation();
         setDragActive(false);
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            setSelectedFile(e.dataTransfer.files[0].name);
+            const file = e.dataTransfer.files[0];
+            setSelectedFile(file.name);
+            setSelectedFileObj(file);
+            // Auto-analysis removed as per user request
         }
     };
 
@@ -429,9 +559,33 @@ export default function TeilsystemErfassenPage() {
                                     onChange={handleFileChange}
                                 />
                                 {selectedFile && (
-                                    <div className="mt-3 p-2 bg-green-50 text-green-700 rounded text-xs font-bold flex items-center gap-2 w-full truncate">
-                                        <FileType className="h-3 w-3 flex-shrink-0" />
-                                        <span className="truncate">{selectedFile}</span>
+                                    <div className="mt-4 w-full space-y-3">
+                                        <div className="p-2 bg-green-50 text-green-700 rounded text-xs font-bold flex items-center gap-2 w-full truncate border border-green-200">
+                                            <FileType className="h-3 w-3 flex-shrink-0" />
+                                            <span className="truncate">{selectedFile}</span>
+                                        </div>
+
+                                        {selectedFile.toLowerCase().endsWith('.ifc') && (
+                                            <div className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    className="w-full text-[10px] font-bold h-8"
+                                                    onClick={(e) => { e.stopPropagation(); selectedFileObj && handleAnalyze(selectedFileObj); }}
+                                                    disabled={analyzing}
+                                                >
+                                                    {analyzing ? 'Analysiere...' : 'Erneut analysieren'}
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    className="w-full bg-orange-600 hover:bg-orange-700 text-white text-[10px] font-black uppercase tracking-wider h-10 shadow-lg shadow-orange-200 animate-in zoom-in-95 duration-200"
+                                                    onClick={(e) => handleAutoImport(e)}
+                                                    disabled={importingAuto || extracting || analyzing}
+                                                >
+                                                    {importingAuto ? 'Importiere...' : 'Auto-Erfassen & Alle Extrahieren'}
+                                                </Button>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </CardContent>
@@ -440,13 +594,21 @@ export default function TeilsystemErfassenPage() {
                 </div>
             </form>
 
-            {/* IFC Extracting overlay */}
-            {extracting && (
-                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                    <div className="bg-background rounded-2xl shadow-2xl border-2 border-border p-10 flex flex-col items-center gap-4">
+            {/* IFC Extracting/Importing overlay */}
+            {(extracting || importingAuto || analyzing) && (
+                <div className="fixed inset-0 z-50 bg-white/80 backdrop-blur-md flex items-center justify-center">
+                    <div className="bg-white rounded-2xl shadow-2xl border-2 border-border p-10 flex flex-col items-center gap-4">
                         <div className="w-14 h-14 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                        <h3 className="text-lg font-black text-foreground">Analysiere IFC...</h3>
-                        <p className="text-sm text-muted-foreground">Positionen, Unterpositionen und Material werden extrahiert</p>
+                        <h3 className="text-lg font-black text-foreground">
+                            {analyzing ? 'Analysiere Modell...' : (importingAuto ? 'Erstelle Teilsystem...' : 'Extrahiere Positionen...')}
+                        </h3>
+                        <p className="text-sm text-muted-foreground text-center">
+                            {analyzing
+                                ? 'Metadaten werden für das Formular extrahiert.'
+                                : (importingAuto
+                                    ? 'Daten werden aus dem IFC extrahiert und Teilsystem wird angelegt.'
+                                    : 'Positionen, Unterpositionen und Material werden extrahiert')}
+                        </p>
                     </div>
                 </div>
             )}

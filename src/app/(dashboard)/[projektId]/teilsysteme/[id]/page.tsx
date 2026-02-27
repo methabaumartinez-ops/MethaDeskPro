@@ -89,6 +89,9 @@ export default function TeilsystemDetailPage() {
         { label: 'System-Nr.', value: item.teilsystemNummer, icon: Hash },
         { label: 'KS / Kostenstelle', value: item.ks, icon: Briefcase },
         { label: 'Bezeichnung', value: item.name, icon: FileText },
+        { label: 'Gebäude', value: (item as any).gebäude || (item.beschreibung?.match(/Gebäude: (.*?)(?: \||$)/)?.[1]), icon: MapPin },
+        { label: 'Abschnitt', value: (item as any).abschnitt || (item.beschreibung?.match(/Abschnitt: (.*?)(?: \||$)/)?.[1]), icon: MapPin },
+        { label: 'Geschoss', value: (item as any).geschoss || (item.beschreibung?.match(/Geschoss: (.*?)(?: \||$)/)?.[1]), icon: MapPin },
         { label: 'Eröffnet am', value: item.eroeffnetAm, icon: Calendar },
         { label: 'Von', value: item.eroeffnetDurch, icon: UserIcon },
         { label: 'Montage', value: item.montagetermin, icon: Clock, color: 'text-orange-600' },
@@ -218,13 +221,13 @@ export default function TeilsystemDetailPage() {
                                         <div className="text-right">
                                             {field.isLink ? (
                                                 <div className="flex items-center gap-2 justify-end">
-                                                    {field.value?.match(/^[a-zA-Z]:\\/) || field.value?.startsWith('\\\\') ? (
+                                                    {String(field.value)?.match(/^[a-zA-Z]:\\/) || String(field.value)?.startsWith('\\\\') ? (
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
                                                             className="h-7 px-2 text-[10px] font-black uppercase text-primary hover:bg-primary/10 flex items-center gap-1.5"
                                                             onClick={() => {
-                                                                navigator.clipboard.writeText(field.value || '');
+                                                                navigator.clipboard.writeText(String(field.value) || '');
                                                                 alert('Pfad kopiert! Sie können ihn im Windows Explorer einfügen.');
                                                             }}
                                                         >
@@ -232,7 +235,7 @@ export default function TeilsystemDetailPage() {
                                                             Kopieren
                                                         </Button>
                                                     ) : (
-                                                        <a href={field.value} target="_blank" rel="noreferrer" className="text-xs font-bold text-primary truncate max-w-[150px] hover:underline flex items-center gap-1.5">
+                                                        <a href={String(field.value)} target="_blank" rel="noreferrer" className="text-xs font-bold text-primary truncate max-w-[150px] hover:underline flex items-center gap-1.5">
                                                             <span>{field.value || 'n/a'}</span>
                                                             <ExternalLink className="h-3 w-3" />
                                                         </a>
@@ -249,6 +252,38 @@ export default function TeilsystemDetailPage() {
                             </div>
                         </CardContent>
                     </Card>
+
+                    {/* IFC Import Metadata Block */}
+                    {item.ifcFileName && (
+                        <Card className="shadow-sm border-2 border-primary/20 bg-primary/5">
+                            <CardHeader className="py-3 px-4 bg-primary/10 border-b border-primary/10">
+                                <CardTitle className="text-xs font-black uppercase tracking-wider text-primary flex items-center gap-2">
+                                    <UploadCloud className="h-3.5 w-3.5" />
+                                    IFC Import Info
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-4 grid grid-cols-2 gap-y-3 gap-x-6">
+                                <div className="space-y-1">
+                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Datei</p>
+                                    <p className="text-xs font-bold truncate" title={item.ifcFileName}>{item.ifcFileName}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Checksum</p>
+                                    <p className="text-[10px] font-mono font-bold truncate text-muted-foreground">{item.ifcChecksum || '—'}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Schema / Units</p>
+                                    <p className="text-xs font-bold">{item.ifcSchema || 'IFC2X3'} / {item.ifcUnits ? 'Metric' : 'Standard'}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Fallback used</p>
+                                    <Badge variant={item.fallbackUsed ? "error" : "outline"} className="text-[9px] h-4 font-black">
+                                        {item.fallbackUsed ? "YES (Rule A-B-C)" : "NO (Native)"}
+                                    </Badge>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
 
                     {/* Remark (Compact) */}
                     <div className="bg-orange-50/50 dark:bg-orange-950/10 border-2 border-primary/30 p-4 rounded-lg text-sm text-muted-foreground italic">
@@ -298,7 +333,16 @@ export default function TeilsystemDetailPage() {
                                     {positionen.map((pos) => (
                                         <TableRow key={pos.id} className="group hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => router.push(`/${projektId}/positionen/${pos.id}`)}>
                                             <TableCell className="font-black text-primary py-4">{pos.posNummer || '—'}</TableCell>
-                                            <TableCell className="font-bold text-foreground">{pos.name}</TableCell>
+                                            <TableCell className="py-4">
+                                                <div className="flex flex-col gap-0.5">
+                                                    <span className="font-bold text-foreground">{pos.name}</span>
+                                                    {pos.beschreibung && (
+                                                        <span className="text-[10px] text-muted-foreground font-medium truncate max-w-[400px]" title={pos.beschreibung}>
+                                                            {pos.beschreibung.replace(/ \| /g, ' • ')}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </TableCell>
                                             <TableCell className="font-bold text-muted-foreground">
                                                 <Badge variant="outline" className="font-black">{pos.menge} {pos.einheit}</Badge>
                                             </TableCell>

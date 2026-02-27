@@ -223,11 +223,56 @@ export class DatabaseService {
     }
 
     /**
+     * Delete multiple items by filter
+     */
+    static async deleteByFilter(collectionName: string, filter: any): Promise<void> {
+        if (this.useMock) {
+            console.log(`[DatabaseService] Mock deleteByFilter ${collectionName}:`, filter);
+            // Mock implementation: filter and remove
+            let items: any[] = [];
+            switch (collectionName) {
+                case 'teilsysteme':
+                    items = mockStore.getTeilsysteme() || [];
+                    const pId = filter.must?.find((m: any) => m.key === 'projektId')?.match;
+                    mockStore.saveTeilsysteme(items.filter((t: any) => t.projektId !== pId));
+                    break;
+                case 'positionen':
+                    items = mockStore.getPositionen() || [];
+                    const tsId = filter.must?.find((m: any) => m.key === 'teilsystemId')?.match;
+                    mockStore.savePositionen(items.filter((p: any) => p.teilsystemId !== tsId));
+                    break;
+                case 'unterpositionen':
+                    items = mockStore.getUnterpositionen() || [];
+                    const posId = filter.must?.find((m: any) => m.key === 'positionId')?.match;
+                    mockStore.saveUnterpositionen(items.filter((u: any) => u.positionId !== posId));
+                    break;
+            }
+            return;
+        }
+
+        try {
+            await qdrantClient.delete(collectionName, {
+                filter: filter
+            });
+        } catch (error) {
+            console.error(`[DatabaseService] Error deleting by filter from ${collectionName}:`, error);
+            throw error;
+        }
+    }
+
+    /**
      * Delete an item
      */
     static async delete(collectionName: string, id: string): Promise<void> {
         if (this.useMock) {
-            // Mock delete not fully implemented here but could be
+            const items = await this.list<any>(collectionName);
+            const filtered = items.filter(i => i.id !== id);
+            switch (collectionName) {
+                case 'projekte': mockStore.saveProjekte(filtered); break;
+                case 'teilsysteme': mockStore.saveTeilsysteme(filtered); break;
+                case 'positionen': mockStore.savePositionen(filtered); break;
+                case 'unterpositionen': mockStore.saveUnterpositionen(filtered); break;
+            }
             return;
         }
         try {

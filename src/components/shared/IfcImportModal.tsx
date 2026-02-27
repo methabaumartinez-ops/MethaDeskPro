@@ -5,28 +5,46 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Check, X, Package, Layers, FileStack, ChevronRight, Loader2 } from 'lucide-react';
+import { Check, X, Package, Layers, FileText, ListTodo, Loader2, FileStack, ChevronRight } from 'lucide-react';
 import { PositionService } from '@/lib/services/positionService';
 import { SubPositionService } from '@/lib/services/subPositionService';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type ExtractedPosition = {
     tempId: string;
+    posNr: string;
     name: string;
     beschreibung: string;
     menge: number;
     einheit: string;
     expressID: number;
     ifcType: string;
+    weight?: number;
+    length?: string;
+    width?: string;
+    height?: string;
+    rawPsets?: any;
+    ok?: string | number | null;
+    uk?: string | number | null;
 };
 
 type ExtractedUnterposition = {
     tempId: string;
     parentExpressID: number;
+    posNummer: string;
     name: string;
     beschreibung: string;
     menge: number;
     einheit: string;
+    material: string;
+    gewicht: number;
+    dimensions?: any;
+    rawPsets?: any;
+    ok?: string | number | null;
+    uk?: string | number | null;
+    area?: string | number | null;
+    color?: string | number | null;
+    remark?: string | number | null;
 };
 
 type ExtractedMaterial = {
@@ -38,9 +56,18 @@ type ExtractedMaterial = {
 };
 
 export type IfcExtractResult = {
-    positionen: ExtractedPosition[];
-    unterpositionen: ExtractedUnterposition[];
-    materiale: ExtractedMaterial[];
+    tsInfo?: {
+        nummer?: string;
+        name?: string;
+        building?: string;
+        section?: string;
+        floor?: string;
+    };
+    positionen: any[];
+    unterpositionen: any[];
+    materiale: any[];
+    warnings?: string[];
+    debugLogs?: string[];
     summary: { totalPositionen: number; totalUnterpositionen: number; totalMateriale: number };
 };
 
@@ -72,11 +99,12 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
     const [importing, setImporting] = useState(false);
     const [done, setDone] = useState(false);
     const [importLog, setImportLog] = useState<string[]>([]);
+    const [showRawJson, setShowRawJson] = useState<any>(null);
 
     // Local mutable copies
-    const [positions, setPositions] = useState(data.positionen.map(p => ({ ...p, selected: true })));
-    const [unterpos, setUnterpos] = useState(data.unterpositionen.map(u => ({ ...u, selected: true })));
-    const [materials, setMaterials] = useState(data.materiale.map(m => ({ ...m, selected: true })));
+    const [positions, setPositions] = useState((data.positionen || []).map(p => ({ ...p, selected: true })));
+    const [unterpos, setUnterpos] = useState((data.unterpositionen || []).map(u => ({ ...u, selected: true })));
+    const [materials, setMaterials] = useState((data.materiale || []).map(m => ({ ...m, selected: true })));
 
     const selectedPos = positions.filter(p => p.selected);
     const selectedUPos = unterpos.filter(u => u.selected);
@@ -88,6 +116,14 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
         const log: string[] = [];
 
         try {
+            // Anti-confusion rule: Group check
+            for (const p of selectedPos) {
+                const overlaps = selectedUPos.find(u => u.posNummer === p.posNummer);
+                if (overlaps) {
+                    log.push(`⚠️ WARNUNG: Position ${p.posNummer} tiene el mismo ID que una pieza.`);
+                }
+            }
+
             // Map expressID → real DB positionId
             const expressIdToPositionId = new Map<number, string>();
 
@@ -98,41 +134,62 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
                     const created = await PositionService.createPosition({
                         teilsystemId,
                         projektId,
-                        posNummer: String(i + 1).padStart(3, '0'),
+                        posNummer: p.posNr || String(i + 1).padStart(3, '0'),
                         name: p.name,
                         beschreibung: p.beschreibung,
                         menge: Number(p.menge),
-                        einheit: p.einheit,
+                        einheit: p.einheit || 'Stk',
                         status: 'offen',
+                        weight: Number(p.weight || 0),
+                        ifcMeta: {
+                            psets: p.rawPsets,
+                            dimensions: { length: p.length, width: p.width, height: p.height },
+                            ok: p.ok,
+                            uk: p.uk
+                        },
+                        groupingMethod: p.ifcType === 'Fallback' ? 'FALLBACK_GROUP' : 'REAL_PARENT',
                     } as any);
                     expressIdToPositionId.set(p.expressID, created.id);
-                    log.push(`✅ Position: ${p.name}`);
+                    log.push(`✅ Position: ${p.posNr || ''} ${p.name}`);
                 } catch (e: any) {
                     log.push(`❌ Position: ${p.name} — ${e.message}`);
                 }
             }
 
-            // 2. Create Unterpositionen (link to parent if parent was imported)
-            let uposCounter = 1;
+            // 2. Create Unterpositionen (link to parent)
             for (const u of selectedUPos) {
                 const parentPositionId = expressIdToPositionId.get(u.parentExpressID);
-                if (!parentPositionId) {
+                if (!parentPositionId && u.parentExpressID !== 0) {
                     log.push(`⚠️ Unterposition: ${u.name} — parent nicht importiert, übersprungen`);
                     continue;
                 }
+
+                const targetPosId = parentPositionId || expressIdToPositionId.get(0);
+
                 try {
                     await SubPositionService.createUnterposition({
-                        positionId: parentPositionId,
+                        positionId: targetPosId,
                         teilsystemId,
                         projektId,
-                        posNummer: String(uposCounter++).padStart(3, '0'),
+                        posNummer: u.posNummer || '001',
                         name: u.name,
                         beschreibung: u.beschreibung,
                         menge: Number(u.menge),
-                        einheit: u.einheit,
+                        einheit: u.einheit || 'Stk',
+                        material: u.material,
+                        gewicht: u.gewicht,
+                        ifcMeta: {
+                            psets: u.rawPsets,
+                            dimensions: u.dimensions,
+                            ok: u.ok,
+                            uk: u.uk,
+                            area: u.area,
+                            color: u.color,
+                            remark: u.remark
+                        },
                         status: 'offen',
                     } as any);
-                    log.push(`✅ Unterposition: ${u.name}`);
+                    log.push(`✅ Unterposition: ${u.posNummer || ''} ${u.name}`);
                 } catch (e: any) {
                     log.push(`❌ Unterposition: ${u.name} — ${e.message}`);
                 }
@@ -210,12 +267,17 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
 
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
-                    <div>
+                    <div className="flex-1">
                         <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">IFC ANALYSE</span>
                         <h2 className="text-xl font-black text-foreground">Extrahierte Daten importieren</h2>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                            Wähle, welche Elemente du importieren möchtest. Felder können noch bearbeitet werden.
-                        </p>
+                        {data.tsInfo && (
+                            <div className="mt-1 flex flex-wrap gap-2">
+                                {data.tsInfo.nummer && <Badge variant="info" className="text-[10px] font-black">SYSTEM: {data.tsInfo.nummer}</Badge>}
+                                {data.tsInfo.building && <Badge variant="outline" className="text-[10px] font-black border-primary/30 text-primary">GEBÄUDE: {data.tsInfo.building}</Badge>}
+                                {data.tsInfo.floor && <Badge variant="outline" className="text-[10px] font-black">GESCHOSS: {data.tsInfo.floor}</Badge>}
+                                {data.tsInfo.section && <Badge variant="outline" className="text-[10px] font-black">ABSCHNITT: {data.tsInfo.section}</Badge>}
+                            </div>
+                        )}
                     </div>
                     <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
                         <X className="h-4 w-4" />
@@ -257,21 +319,30 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
                                             onChange={e => setPositions(prev => prev.map(p => ({ ...p, selected: e.target.checked })))}
                                         />
                                     </TableHead>
-                                    <TableHead className="font-black text-foreground">Bezeichnung</TableHead>
-                                    <TableHead className="font-black text-foreground w-24">Menge</TableHead>
-                                    <TableHead className="font-black text-foreground w-20">Einheit</TableHead>
-                                    <TableHead className="font-black text-foreground w-32">IFC-Typ</TableHead>
+                                    <TableHead className="font-black text-foreground w-10">#</TableHead>
+                                    <TableHead className="font-black text-foreground w-40">Bezeichnung</TableHead>
+                                    <TableHead className="font-black text-foreground">Beschreibung</TableHead>
+                                    <TableHead className="font-black text-foreground w-20 text-right">Gewicht</TableHead>
+                                    <TableHead className="font-black text-foreground w-10">Data</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {positions.length === 0 ? (
-                                    <TableRow><TableCell colSpan={5} className="text-center py-10 text-muted-foreground text-sm">Keine Positionen extrahiert</TableCell></TableRow>
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="text-center py-10">
+                                            <p className="text-muted-foreground text-sm font-bold">Keine Positionen extrahiert</p>
+                                        </TableCell>
+                                    </TableRow>
                                 ) : positions.map((p, i) => (
                                     <TableRow key={p.tempId} className={`border-b border-border/40 ${p.selected ? '' : 'opacity-40'}`}>
                                         <TableCell>
-                                            <input type="checkbox" checked={p.selected}
+                                            <input type="checkbox"
+                                                checked={p.selected}
                                                 onChange={e => setPositions(prev => prev.map((x, j) => j === i ? { ...x, selected: e.target.checked } : x))}
                                             />
+                                        </TableCell>
+                                        <TableCell className="font-bold text-xs uppercase text-primary">
+                                            {p.posNr}
                                         </TableCell>
                                         <TableCell>
                                             <EditCell value={p.name}
@@ -279,17 +350,22 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <EditCell value={p.menge} type="number"
-                                                onChange={v => setPositions(prev => prev.map((x, j) => j === i ? { ...x, menge: parseFloat(v) || 1 } : x))}
+                                            <EditCell value={p.beschreibung}
+                                                onChange={v => setPositions(prev => prev.map((x, j) => j === i ? { ...x, beschreibung: v } : x))}
                                             />
                                         </TableCell>
-                                        <TableCell>
-                                            <EditCell value={p.einheit}
-                                                onChange={v => setPositions(prev => prev.map((x, j) => j === i ? { ...x, einheit: v } : x))}
-                                            />
+                                        <TableCell className="text-right">
+                                            <div className="flex items-center justify-end gap-1">
+                                                <EditCell value={p.weight || 0} type="number"
+                                                    onChange={v => setPositions(prev => prev.map((x, j) => j === i ? { ...x, weight: parseFloat(v) || 0 } : x))}
+                                                />
+                                                <span className="text-[9px] text-muted-foreground font-black">kg</span>
+                                            </div>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant="outline" className="text-[10px] font-black truncate max-w-[120px]">{p.ifcType.replace('Ifc', '')}</Badge>
+                                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowRawJson(p.rawPsets)}>
+                                                <FileText className="h-3 w-3" />
+                                            </Button>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -308,15 +384,16 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
                                             onChange={e => setUnterpos(prev => prev.map(u => ({ ...u, selected: e.target.checked })))}
                                         />
                                     </TableHead>
+                                    <TableHead className="font-black text-foreground w-10">#</TableHead>
                                     <TableHead className="font-black text-foreground">Bezeichnung</TableHead>
-                                    <TableHead className="font-black text-foreground w-24">Menge</TableHead>
-                                    <TableHead className="font-black text-foreground w-20">Einheit</TableHead>
+                                    <TableHead className="font-black text-foreground w-20 text-right">Gewicht</TableHead>
+                                    <TableHead className="font-black text-foreground w-10">Data</TableHead>
                                     <TableHead className="font-black text-foreground w-36">Parent Element</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {unterpos.length === 0 ? (
-                                    <TableRow><TableCell colSpan={5} className="text-center py-10 text-muted-foreground text-sm">Keine Unterpositionen extrahiert</TableCell></TableRow>
+                                    <TableRow><TableCell colSpan={6} className="text-center py-10 text-muted-foreground text-sm">Keine Unterpositionen extrahiert</TableCell></TableRow>
                                 ) : unterpos.map((u, i) => {
                                     const parent = positions.find(p => p.expressID === u.parentExpressID);
                                     return (
@@ -326,24 +403,33 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
                                                     onChange={e => setUnterpos(prev => prev.map((x, j) => j === i ? { ...x, selected: e.target.checked } : x))}
                                                 />
                                             </TableCell>
-                                            <TableCell>
-                                                <EditCell value={u.name}
-                                                    onChange={v => setUnterpos(prev => prev.map((x, j) => j === i ? { ...x, name: v } : x))}
-                                                />
+                                            <TableCell className="font-bold text-xs uppercase">
+                                                {u.posNummer}
                                             </TableCell>
                                             <TableCell>
-                                                <EditCell value={u.menge} type="number"
-                                                    onChange={v => setUnterpos(prev => prev.map((x, j) => j === i ? { ...x, menge: parseFloat(v) || 1 } : x))}
-                                                />
+                                                <div className="flex flex-col">
+                                                    <EditCell value={u.name}
+                                                        onChange={v => setUnterpos(prev => prev.map((x, j) => j === i ? { ...x, name: v } : x))}
+                                                    />
+                                                    <span className="text-[9px] text-muted-foreground uppercase font-black px-1">{u.beschreibung}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex items-center justify-end gap-1">
+                                                    <EditCell value={u.gewicht || 0} type="number"
+                                                        onChange={v => setUnterpos(prev => prev.map((x, j) => j === i ? { ...x, gewicht: parseFloat(v) || 0 } : x))}
+                                                    />
+                                                    <span className="text-[9px] text-muted-foreground font-black">kg</span>
+                                                </div>
                                             </TableCell>
                                             <TableCell>
-                                                <EditCell value={u.einheit}
-                                                    onChange={v => setUnterpos(prev => prev.map((x, j) => j === i ? { ...x, einheit: v } : x))}
-                                                />
+                                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowRawJson(u.rawPsets)}>
+                                                    <FileText className="h-3 w-3" />
+                                                </Button>
                                             </TableCell>
                                             <TableCell>
                                                 <span className="text-[10px] font-bold text-muted-foreground truncate block max-w-[130px]">
-                                                    {parent?.name || `#${u.parentExpressID}`}
+                                                    {parent?.name || (u.parentExpressID === 0 ? "AUTO-GROUP" : `#${u.parentExpressID}`)}
                                                 </span>
                                             </TableCell>
                                         </TableRow>
@@ -409,14 +495,20 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
 
                 {/* Footer */}
                 <div className="px-6 py-4 border-t border-border bg-muted/30 flex items-center justify-between">
-                    <div className="text-xs text-muted-foreground font-semibold">
-                        <span className="text-foreground font-black">{selectedPos.length}</span> Pos. ·{' '}
-                        <span className="text-foreground font-black">{selectedUPos.length}</span> UPos. ·{' '}
-                        <span className="text-foreground font-black">{selectedMat.length}</span> Mat. ausgewählt
+                    <div className="text-xs text-muted-foreground font-semibold flex items-center gap-4">
+                        <span>
+                            <span className="text-foreground font-black">{selectedPos.length}</span> Pos. ·{' '}
+                            <span className="text-foreground font-black">{selectedUPos.length}</span> UPos. ·{' '}
+                            <span className="text-foreground font-black">{selectedMat.length}</span> Mat.
+                        </span>
+                        <div className="h-4 w-px bg-border" />
+                        <span className="text-primary font-black">
+                            GESAMTGEWICHT: {selectedPos.reduce((sum, p) => sum + (Number(p.weight) || 0) * Number(p.menge), 0).toFixed(2)} kg
+                        </span>
                     </div>
                     <div className="flex gap-3">
                         <Button variant="outline" onClick={onClose} className="font-bold">
-                            Überspringen
+                            Abbrechen
                         </Button>
                         <Button
                             onClick={handleImport}
@@ -431,6 +523,25 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
                         </Button>
                     </div>
                 </div>
+
+                {/* Raw JSON Viewer Overlay */}
+                {showRawJson && (
+                    <div className="absolute inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center p-8 animate-in fade-in duration-200" onClick={() => setShowRawJson(null)}>
+                        <div className="bg-white rounded-xl shadow-2xl border-2 border-border w-full max-w-2xl max-h-full flex flex-col" onClick={e => e.stopPropagation()}>
+                            <div className="px-6 py-4 border-b border-border bg-muted/30 flex items-center justify-between">
+                                <h3 className="font-black text-foreground">IFC Raw Psets (JSON)</h3>
+                                <Button variant="ghost" size="icon" onClick={() => setShowRawJson(null)}>
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            <div className="flex-1 overflow-auto p-6 bg-muted/20">
+                                <pre className="text-[10px] font-mono whitespace-pre-wrap leading-relaxed">
+                                    {JSON.stringify(showRawJson, null, 2)}
+                                </pre>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

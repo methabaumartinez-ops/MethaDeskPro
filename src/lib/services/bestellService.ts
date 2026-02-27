@@ -78,6 +78,32 @@ export class BestellService {
         return this.updateBestellung(bestellungId, { items });
     }
 
+    static async updateItemAttachment(bestellungId: string, itemId: string, attachment: { url: string; id: string; name: string } | null): Promise<MaterialBestellung> {
+        const bestellung = await this.getBestellung(bestellungId);
+        if (!bestellung) throw new Error("Bestellung not found");
+
+        const items = [...bestellung.items];
+        const itemIndex = items.findIndex((i: any) => i.id === itemId);
+        if (itemIndex > -1) {
+            if (attachment) {
+                items[itemIndex] = {
+                    ...items[itemIndex],
+                    attachmentUrl: attachment.url,
+                    attachmentId: attachment.id,
+                    attachmentName: attachment.name
+                };
+            } else {
+                const newItem = { ...items[itemIndex] };
+                delete newItem.attachmentUrl;
+                delete newItem.attachmentId;
+                delete newItem.attachmentName;
+                items[itemIndex] = newItem;
+            }
+        }
+
+        return this.updateBestellung(bestellungId, { items });
+    }
+
     static async deleteBestellung(id: string): Promise<void> {
         if (typeof window !== 'undefined') {
             const res = await fetch(`/api/bestellungen/${id}`, { method: 'DELETE' });

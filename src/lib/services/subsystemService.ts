@@ -86,17 +86,31 @@ export const SubsystemService = {
 
     async deleteTeilsystem(id: string): Promise<void> {
         if (typeof window !== 'undefined') {
-            try {
-                const res = await fetch(`/api/teilsysteme/${id}`, {
-                    method: 'DELETE',
-                });
-                if (!res.ok) throw new Error('Failed to delete teilsystem');
-                return;
-            } catch (error) {
-                console.error("Client fetch error:", error);
-                throw error;
-            }
+            const res = await fetch(`/api/teilsysteme/${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Failed to delete teilsystem');
+            return;
         }
+
+        // 1. Get all positions for this TS to clean their children (UPos and Materials)
+        const positions = await PositionService.getPositionenByTeilsystem(id);
+
+        for (const pos of positions) {
+            // Delete Unterpositionen for this position
+            await DatabaseService.deleteByFilter('unterpositionen', {
+                must: [{ key: 'positionId', match: { value: pos.id } }]
+            });
+            // Delete Materials for this position
+            await DatabaseService.deleteByFilter('material', {
+                must: [{ key: 'positionId', match: { value: pos.id } }]
+            });
+        }
+
+        // 2. Delete all parent positions in one batch
+        await DatabaseService.deleteByFilter('positionen', {
+            must: [{ key: 'teilsystemId', match: { value: id } }]
+        });
+
+        // 3. Finally delete the Teilsystem itself
         return DatabaseService.delete('teilsysteme', id);
     },
 

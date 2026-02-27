@@ -8,7 +8,7 @@ import { SubsystemService } from '@/lib/services/subsystemService';
 import { Unterposition, Position, Teilsystem } from '@/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Edit, FileText } from 'lucide-react';
+import { ArrowLeft, Edit, FileText, UploadCloud, Eye } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import Link from 'next/link';
 import { QRCodeSection } from '@/components/shared/QRCodeSection';
@@ -105,7 +105,7 @@ export default function UnterpositionDetailPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-6 space-y-6">
-                        <div className="grid grid-cols-2 gap-8">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                             <div className="space-y-1">
                                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Menge & Einheit</span>
                                 <p className="text-xl font-bold text-foreground">{unterposition.menge} {unterposition.einheit}</p>
@@ -114,8 +114,72 @@ export default function UnterpositionDetailPage() {
                                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Status</span>
                                 <div><StatusBadge status={unterposition.status} /></div>
                             </div>
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Material</span>
+                                <p className="text-sm font-bold text-foreground">{unterposition.material || '—'}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Gewicht</span>
+                                <p className="text-sm font-bold text-foreground">{unterposition.gewicht || 0} kg</p>
+                            </div>
+
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Höhenkote OK</span>
+                                <p className="text-sm font-black">{(unterposition.ifcMeta as any)?.ok || '—'}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Höhenkote UK</span>
+                                <p className="text-sm font-black">{(unterposition.ifcMeta as any)?.uk || '—'}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Superficies (m²)</span>
+                                <p className="text-sm font-bold">{(unterposition.ifcMeta as any)?.area || '—'}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Color / Finish</span>
+                                <div className="flex items-center gap-2">
+                                    <div className="h-3 w-3 rounded-full border border-border" style={{ backgroundColor: String((unterposition.ifcMeta as any)?.color || 'transparent') }} />
+                                    <span className="text-xs font-bold">{(unterposition.ifcMeta as any)?.color || '—'}</span>
+                                </div>
+                            </div>
+
+                            <div className="col-span-2 md:col-span-4 grid grid-cols-3 gap-2 p-3 bg-muted/30 rounded-lg border border-border/50">
+                                <div className="space-y-0.5">
+                                    <span className="text-[9px] font-black text-muted-foreground uppercase">Länge</span>
+                                    <p className="text-xs font-bold">{(unterposition.ifcMeta as any)?.dimensions?.length || '—'}</p>
+                                </div>
+                                <div className="space-y-0.5">
+                                    <span className="text-[9px] font-black text-muted-foreground uppercase">Breite</span>
+                                    <p className="text-xs font-bold">{(unterposition.ifcMeta as any)?.dimensions?.width || '—'}</p>
+                                </div>
+                                <div className="space-y-0.5">
+                                    <span className="text-[9px] font-black text-muted-foreground uppercase">Höhe</span>
+                                    <p className="text-xs font-bold">{(unterposition.ifcMeta as any)?.dimensions?.height || '—'}</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">IFC Typ</span>
+                                <div className="text-sm font-bold flex items-center gap-2">
+                                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-100 h-5 px-1.5">{unterposition.ifcType || 'n/a'}</Badge>
+                                </div>
+                            </div>
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">GlobalId</span>
+                                <div className="text-[10px] font-mono font-bold bg-muted px-2 py-1 rounded truncate" title={unterposition.ifcChildGlobalId}>
+                                    {unterposition.ifcChildGlobalId || '—'}
+                                </div>
+                            </div>
+                            
+                            {unterposition.beschreibung && (
+                                <div className="col-span-2 md:col-span-4 space-y-1">
+                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Beschreibung / Notiz</span>
+                                    <p className="text-sm font-medium italic text-muted-foreground">"{unterposition.beschreibung}"</p>
+                                </div>
+                            )}
+
                             {parentPosition && (
-                                <div className="space-y-1 col-span-2">
+                                <div className="space-y-1 col-span-2 md:col-span-4 pt-2 border-t border-border/50">
                                     <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Hierarchy</span>
                                     <div className="flex items-center gap-2 overflow-hidden truncate">
                                         {teilsystem && (
@@ -136,10 +200,37 @@ export default function UnterpositionDetailPage() {
                     </CardContent>
                 </Card>
 
-                <div className="md:col-span-1">
-                    <DocumentViewer
-                        documents={[]} // Empty for now to show fallback
-                    />
+                <div className="md:col-span-1 space-y-6">
+                    <Card className="shadow-sm border-2 border-primary/20 bg-primary/5">
+                        <CardHeader className="py-3 px-4 bg-primary/10 border-b border-primary/10">
+                            <CardTitle className="text-xs font-black uppercase tracking-wider text-primary flex items-center gap-2">
+                                <UploadCloud className="h-3.5 w-3.5" />
+                                IFC Raw Data
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-4 space-y-4">
+                            <p className="text-[10px] font-medium text-muted-foreground leading-relaxed">
+                                Acceda a los PropertySets originales extraídos del modelo IFC para auditoría técnica.
+                            </p>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full font-black text-[10px] uppercase h-9 bg-white hover:bg-white/80"
+                                onClick={() => {
+                                    const win = window.open('', '_blank');
+                                    if (win) {
+                                        win.document.write(`<pre style="font-family:monospace;padding:20px;background:#f8f9fa;">${JSON.stringify(unterposition.rawPsets || {}, null, 2)}</pre>`);
+                                        win.document.title = `Raw Psets: ${unterposition.name}`;
+                                    }
+                                }}
+                            >
+                                <Eye className="h-3 w-3 mr-2" />
+                                Ver IFC Data (JSON)
+                            </Button>
+                        </CardContent>
+                    </Card>
+
+                    <DocumentViewer documents={[]} />
                 </div>
             </div>
         </div>

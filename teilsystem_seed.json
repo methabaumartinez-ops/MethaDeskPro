@@ -1,0 +1,34 @@
+{
+    "teilsystem": {
+        "system_nummer": "7610",
+        "ks": 1,
+        "bezeichnung": "Gitterrostboden",
+        "beschreibung": "Gebäude: Halle A | Geschoss: L01 | Abschnitt: Nord",
+        "bemerkung": "Layer: S-STEEL-BEAM\nIFC: IFC2X3 | Units: m\nSource file: Project_7610_v1.ifc",
+        "eroeffnet_am": "2026-02-26T10:45:00Z",
+        "eroeffnet_durch": "system-import",
+        "montagetermin": null,
+        "plan_abgabe": null,
+        "lieferfrist": null,
+        "plan_status": "Offen",
+        "wema_link": null,
+        "status": "Offen",
+        "ifc": {
+            "file_name": "Project_7610_v1.ifc",
+            "file_url": "https://drive.google.com/active/file/d/1abc123.../view",
+            "checksum": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "schema": "IFC2X3",
+            "units": {
+                "length": "m"
+            }
+        },
+        "ifc_pset_methabau_teilsystem": {
+            "TEILSYSTEM": "7610",
+            "Teilsystemname": "Gitterrostboden",
+            "Layer": "S-STEEL-BEAM",
+            "Gebäude": "Halle A",
+            "Abschnitt": "Nord",
+            "Geschoss": "L01"
+        }
+    }
+}

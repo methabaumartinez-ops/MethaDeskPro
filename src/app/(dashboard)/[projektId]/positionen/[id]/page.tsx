@@ -208,11 +208,100 @@ export default function PositionDetailPage() {
                                         <span className="text-sm font-bold">{position.gewicht} kg</span>
                                     </div>
                                 )}
-                                <div className="px-4 py-6 bg-slate-50/50 dark:bg-slate-900/20">
-                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-2">Bezeichnung</span>
-                                    <p className="text-sm font-medium text-foreground italic leading-relaxed">
+                                <div className="px-4 py-4 bg-slate-50/50 dark:bg-slate-900/20">
+                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-1">Bezeichnung</span>
+                                    <p className="text-sm font-bold text-foreground">
                                         {position.name}
                                     </p>
+                                </div>
+                                <div className="px-4 py-4 bg-orange-50/30 dark:bg-orange-900/10 border-l-2 border-orange-400">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Metadaten / Details</span>
+                                        <Badge variant="outline" className="text-[9px] h-4 border-orange-200 bg-orange-50 text-orange-700">IFC Extrakt</Badge>
+                                    </div>
+                                    <div className="text-xs text-foreground leading-relaxed font-medium space-y-2">
+                                        {position.beschichtung && (
+                                            <div className="flex justify-between items-center text-[10px] font-bold pb-1 border-b border-orange-100">
+                                                <span className="text-orange-600 uppercase">Beschichtung:</span>
+                                                <span className="bg-orange-100 px-1.5 rounded">{position.beschichtung}</span>
+                                            </div>
+                                        )}
+
+                                        {(position.ifcMeta as any)?.ok || (position.ifcMeta as any)?.uk ? (
+                                            <div className="flex gap-4 pb-1 border-b border-orange-100">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] font-black text-orange-600 uppercase">Höhenkote OK</span>
+                                                    <span className="text-sm font-black">{(position.ifcMeta as any).ok || '—'}</span>
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] font-black text-orange-600 uppercase">Höhenkote UK</span>
+                                                    <span className="text-sm font-black">{(position.ifcMeta as any).uk || '—'}</span>
+                                                </div>
+                                            </div>
+                                        ) : null}
+
+                                        {(position.ifcMeta as any)?.dimensions ? (
+                                            <div className="grid grid-cols-3 gap-2 pb-1 border-b border-orange-100">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] font-black text-orange-600 uppercase">Länge</span>
+                                                    <span className="text-xs font-bold">{(position.ifcMeta as any).dimensions.length || (position as any).length || '—'}</span>
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] font-black text-orange-600 uppercase">Breite</span>
+                                                    <span className="text-xs font-bold">{(position.ifcMeta as any).dimensions.width || (position as any).width || '—'}</span>
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] font-black text-orange-600 uppercase">Höhe/Dicke</span>
+                                                    <span className="text-xs font-bold">{(position.ifcMeta as any).dimensions.height || (position as any).height || '—'}</span>
+                                                </div>
+                                            </div>
+                                        ) : null}
+
+                                        {(position.ifcMeta as any)?.area || (position.ifcMeta as any)?.color ? (
+                                            <div className="flex gap-4 pb-1 border-b border-orange-100">
+                                                {(position.ifcMeta as any).area && (
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[9px] font-black text-orange-600 uppercase">Oberfläche</span>
+                                                        <span className="text-xs font-bold">{(position.ifcMeta as any).area} m²</span>
+                                                    </div>
+                                                )}
+                                                {(position.ifcMeta as any).color && (
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[9px] font-black text-orange-600 uppercase">Farbe</span>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <div className="h-2 w-2 rounded-full border border-orange-200" style={{ backgroundColor: (position.ifcMeta as any).color }} />
+                                                            <span className="text-xs font-bold">{(position.ifcMeta as any).color}</span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : null}
+
+                                        <div className="pt-1">
+                                            <span className="text-[9px] font-black text-orange-600 uppercase block mb-1">METHABAU Info</span>
+                                            <div className="space-y-1">
+                                                {position.beschreibung?.split(' | ').map((line, idx) => (
+                                                    <div key={idx} className="flex gap-2">
+                                                        <span className="text-orange-400">•</span>
+                                                        <span>{line}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {position.groupingMethod && (
+                                            <div className="pt-2 mt-2 border-t border-orange-200 space-y-1">
+                                                <div className="flex justify-between items-center text-[10px] font-bold">
+                                                    <span className="text-orange-600 uppercase">Gruppe-Method:</span>
+                                                    <span className="bg-orange-100 px-1.5 rounded">{position.groupingMethod}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-[10px] font-bold">
+                                                    <span className="text-orange-600 uppercase">Gruppe-Key:</span>
+                                                    <span className="bg-orange-100 px-1.5 rounded truncate max-w-[150px]">{position.groupingKey}</span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>

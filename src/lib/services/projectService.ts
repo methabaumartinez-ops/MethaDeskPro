@@ -1,5 +1,6 @@
 
 import { DatabaseService } from '@/lib/services/db';
+import { SubsystemService } from '@/lib/services/subsystemService';
 import { Projekt } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -98,6 +99,11 @@ export const ProjectService = {
             const res = await fetch(`/api/data/projekte/${id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Failed to delete project');
             return;
+        }
+        // Cascade: Delete all Teilsysteme first
+        const teilsysteme = await SubsystemService.getTeilsysteme(id);
+        for (const ts of teilsysteme) {
+            await SubsystemService.deleteTeilsystem(ts.id);
         }
         return DatabaseService.delete('projekte', id);
     }

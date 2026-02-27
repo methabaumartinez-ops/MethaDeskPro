@@ -479,8 +479,8 @@ export default function TeilsystemEditPage() {
 
             {/* IFC Extracting overlay */}
             {extracting && (
-                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                    <div className="bg-background rounded-2xl shadow-2xl border-2 border-border p-10 flex flex-col items-center gap-4">
+                <div className="fixed inset-0 z-50 bg-white/80 backdrop-blur-md flex items-center justify-center">
+                    <div className="bg-white rounded-2xl shadow-2xl border-2 border-border p-10 flex flex-col items-center gap-4">
                         <div className="w-14 h-14 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
                         <h3 className="text-lg font-black text-foreground">Analysiere IFC...</h3>
                         <p className="text-sm text-muted-foreground">Positionen, Unterpositionen und Material werden extrahiert</p>

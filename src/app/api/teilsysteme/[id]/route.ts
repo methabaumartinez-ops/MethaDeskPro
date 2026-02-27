@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { DatabaseService } from '@/lib/services/db';
+import { SubsystemService } from '@/lib/services/subsystemService';
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
@@ -54,7 +55,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
-        await DatabaseService.delete('teilsysteme', id);
+        // USE THE SERVICE FOR CASCADE DELETE
+        await SubsystemService.deleteTeilsystem(id);
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error("API Error deleting teilsystem:", error);

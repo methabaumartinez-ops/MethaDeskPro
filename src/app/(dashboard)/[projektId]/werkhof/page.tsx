@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { BestellService } from '@/lib/services/bestellService';
 import { ProjectService } from '@/lib/services/projectService';
 import { MaterialBestellung, BestellungItem, Projekt } from '@/types';
-import { Warehouse, Package, CheckCircle2, Circle, Truck, Inbox, ArrowRight, Check, Edit2, MessageSquare } from 'lucide-react';
+import { Warehouse, Package, CheckCircle2, Circle, Truck, Inbox, ArrowRight, Check, Edit2, MessageSquare, Camera } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function WerkhofPage() {
@@ -176,26 +176,106 @@ export default function WerkhofPage() {
                                                 )}
                                                 onClick={() => handleToggleItem(bestellung.id, item)}
                                             >
-                                                <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-3 overflow-hidden">
                                                     <div className={cn(
                                                         "h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors",
                                                         item.vorbereitet ? "border-emerald-500 bg-emerald-500 text-white" : "border-slate-300 text-transparent"
                                                     )}>
                                                         <Check className="h-3 w-3" />
                                                     </div>
-                                                    <span className={cn(
-                                                        "text-sm font-bold",
-                                                        item.vorbereitet ? "text-slate-500 line-through decoration-slate-300" : "text-slate-700"
-                                                    )}>
-                                                        {item.materialName}
-                                                        {item.tsnummer && <span className="ml-2 text-[10px] bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded no-underline font-mono">TS: {item.tsnummer}</span>}
-                                                    </span>
+                                                    <div className="flex flex-col min-w-0">
+                                                        <span className={cn(
+                                                            "text-sm font-bold truncate",
+                                                            item.vorbereitet ? "text-slate-500 line-through decoration-slate-300" : "text-slate-700"
+                                                        )}>
+                                                            {item.materialName}
+                                                            {item.tsnummer && <span className="ml-2 text-[10px] bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded no-underline font-mono">TS: {item.tsnummer}</span>}
+                                                        </span>
+                                                        {item.attachmentUrl && (
+                                                            <a
+                                                                href={item.attachmentUrl}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-[10px] text-blue-500 hover:underline flex items-center gap-1 mt-0.5"
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            >
+                                                                <Package className="h-3 w-3" />
+                                                                {item.attachmentName || 'Anhang'}
+                                                            </a>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                                <div className={cn(
-                                                    "text-xs font-black px-2.5 py-1 rounded",
-                                                    item.vorbereitet ? "text-slate-400 bg-transparent" : "text-orange-600 bg-orange-50"
-                                                )}>
-                                                    {item.menge} {item.einheit}
+                                                <div className="flex items-center gap-2">
+                                                    <div className="relative">
+                                                        <input
+                                                            type="file"
+                                                            id={`file-${bestellung.id}-${item.id}`}
+                                                            className="hidden"
+                                                            onChange={async (e) => {
+                                                                const file = e.target.files?.[0];
+                                                                if (!file) return;
+
+                                                                try {
+                                                                    const formData = new FormData();
+                                                                    formData.append('file', file);
+                                                                    formData.append('projektId', bestellung.projektId);
+                                                                    formData.append('type', 'image');
+
+                                                                    const res = await fetch('/api/upload', {
+                                                                        method: 'POST',
+                                                                        body: formData
+                                                                    });
+
+                                                                    if (!res.ok) throw new Error('Upload failed');
+                                                                    const data = await res.json();
+
+                                                                    await BestellService.updateItemAttachment(bestellung.id, item.id, {
+                                                                        url: data.url,
+                                                                        id: data.id,
+                                                                        name: file.name
+                                                                    });
+
+                                                                    // Update local state
+                                                                    setBestellungen(current => current.map(b => {
+                                                                        if (b.id === bestellung.id) {
+                                                                            return {
+                                                                                ...b,
+                                                                                items: b.items.map(i => i.id === item.id ? {
+                                                                                    ...i,
+                                                                                    attachmentUrl: data.url,
+                                                                                    attachmentId: data.id,
+                                                                                    attachmentName: file.name
+                                                                                } : i)
+                                                                            };
+                                                                        }
+                                                                        return b;
+                                                                    }));
+                                                                } catch (err) {
+                                                                    console.error("Upload error", err);
+                                                                }
+                                                            }}
+                                                        />
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className={cn(
+                                                                "h-7 w-7",
+                                                                item.attachmentUrl ? "text-blue-500" : "text-slate-400 hover:text-orange-600"
+                                                            )}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                document.getElementById(`file-${bestellung.id}-${item.id}`)?.click();
+                                                            }}
+                                                        >
+                                                            <Camera className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                    <div className={cn(
+                                                        "text-xs font-black px-2.5 py-1 rounded",
+                                                        item.vorbereitet ? "text-slate-400 bg-transparent" : "text-orange-600 bg-orange-50"
+                                                    )}>
+                                                        {item.menge} {item.einheit}
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}

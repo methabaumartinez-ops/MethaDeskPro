@@ -1,6 +1,8 @@
+import { v4 as uuidv4 } from 'uuid';
+import { SubPositionService } from './subPositionService';
+import { MaterialService } from './materialService';
 import { DatabaseService } from '@/lib/services/db';
 import { Position } from '@/types';
-import { v4 as uuidv4 } from 'uuid';
 
 export const PositionService = {
     async getPositionen(): Promise<Position[]> {
@@ -28,10 +30,9 @@ export const PositionService = {
             if (!res.ok) throw new Error('Failed to fetch positions');
             return await res.json();
         }
-        const all = await this.getPositionen();
-        return all.filter(p => p.teilsystemId === teilsystemId);
+        const filter = { must: [{ key: 'teilsystemId', match: { value: teilsystemId } }] };
+        return DatabaseService.list<Position>('positionen', filter);
     },
-
     async createPosition(position: Partial<Position>): Promise<Position> {
         if (typeof window !== 'undefined') {
             const res = await fetch('/api/data/positionen', {
@@ -73,6 +74,18 @@ export const PositionService = {
             if (!res.ok) throw new Error('Failed to delete position');
             return;
         }
+        // Cascade: Delete Unterpositionen
+        const upos = await SubPositionService.getUnterpositionen(id);
+        for (const u of upos) {
+            await SubPositionService.deleteUnterposition(u.id);
+        }
+
+        // Cascade: Delete Material
+        const materials = await MaterialService.getMaterialByPosition(id);
+        for (const m of materials) {
+            await MaterialService.deleteMaterial(m.id);
+        }
+
         return DatabaseService.delete('positionen', id);
     }
 };
