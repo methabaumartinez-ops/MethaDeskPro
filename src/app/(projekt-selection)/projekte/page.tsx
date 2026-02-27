@@ -119,16 +119,16 @@ export default function ProjektePage() {
                 </div>
 
                 {loadingData ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {Array(4).fill(0).map((_, i) => (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {Array(8).fill(0).map((_, i) => (
                             <Card key={i} className="animate-pulse bg-muted h-64" />
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {projekte.map((p) => (
                             <Card key={p.id} className="group border-2 border-orange-500 transition-all hover:shadow-xl hover:-translate-y-1 duration-300 overflow-hidden relative bg-white">
-                                <div className="h-32 w-full overflow-hidden relative">
+                                <div className="h-28 w-full overflow-hidden relative">
                                     <img
                                         src={getProjectImage(p)}
                                         alt="Projektbild"
@@ -137,66 +137,66 @@ export default function ProjektePage() {
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-50" />
 
                                     {/* Action buttons overlay */}
-                                    <div className="absolute top-3 left-3 flex gap-2">
+                                    <div className="absolute top-2 left-2 flex gap-1.5">
                                         <Button
                                             variant="secondary"
                                             size="icon"
-                                            className="h-8 w-8 rounded-lg bg-white/90 hover:bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                            className="h-7 w-7 rounded-lg bg-white/90 hover:bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
                                             onClick={(e) => handleEdit(e, p)}
                                             title="Projekt bearbeiten"
                                         >
-                                            <Pencil className="h-4 w-4 text-slate-700" />
+                                            <Pencil className="h-3.5 w-3.5 text-slate-700" />
                                         </Button>
                                         <Button
                                             variant="danger"
                                             size="icon"
-                                            className="h-8 w-8 rounded-lg bg-red-600/80 hover:bg-red-600 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                            className="h-7 w-7 rounded-lg bg-red-600/80 hover:bg-red-600 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
                                             onClick={(e) => handleExportAndDelete(e, p)}
                                             title="Exportieren und Löschen"
                                             disabled={deletingId === p.id}
                                         >
                                             {deletingId === p.id ? (
-                                                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                                <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
                                             ) : (
-                                                <Trash2 className="h-4 w-4 text-white" />
+                                                <Trash2 className="h-3.5 w-3.5 text-white" />
                                             )}
                                         </Button>
                                     </div>
 
-                                    <div className="absolute top-4 right-4">
-                                        <Badge variant={p.status === 'in arbeit' ? 'info' : 'warning'} className="shadow-sm">
+                                    <div className="absolute top-3 right-3">
+                                        <Badge variant={p.status === 'in arbeit' ? 'info' : 'warning'} className="shadow-sm text-[10px] px-1.5 py-0">
                                             {p.status}
                                         </Badge>
                                     </div>
                                 </div>
-                                <CardHeader className="pb-4 pt-6 relative">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-md border border-primary/20">
+                                <CardHeader className="pb-2 pt-4 relative">
+                                    <div className="flex justify-between items-start mb-1">
+                                        <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-md border border-primary/20">
                                             {p.projektnummer}
                                         </span>
                                     </div>
-                                    <CardTitle className="text-xl font-bold text-foreground line-clamp-1">
+                                    <CardTitle className="text-lg font-bold text-foreground line-clamp-1">
                                         {p.projektname}
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
-                                        <MapPin className="h-4 w-4 text-muted-foreground/60" />
-                                        <span>{p.ort}, {p.kanton}</span>
+                                <CardContent className="space-y-2 pb-4">
+                                    <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
+                                        <MapPin className="h-3.5 w-3.5 text-muted-foreground/60" />
+                                        <span className="line-clamp-1">{p.ort}, {p.kanton}</span>
                                     </div>
-                                    <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
-                                        <Calendar className="h-4 w-4 text-muted-foreground/60" />
-                                        <span>Erstellt am {new Date(p.createdAt).toLocaleDateString('de-CH')}</span>
+                                    <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
+                                        <Calendar className="h-3.5 w-3.5 text-muted-foreground/60" />
+                                        <span>{new Date(p.createdAt).toLocaleDateString('de-CH')}</span>
                                     </div>
                                 </CardContent>
-                                <CardFooter className="pt-2">
+                                <CardFooter className="pt-0 pb-4">
                                     <Button
                                         onClick={() => handleSelect(p)}
-                                        className="w-full font-bold group-hover:bg-primary group-hover:shadow-primary/20"
+                                        className="w-full h-9 text-sm font-bold group-hover:bg-primary group-hover:shadow-primary/20"
                                         variant="secondary"
                                     >
                                         Projekt öffnen
-                                        <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                        <ArrowRight className="ml-2 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                                     </Button>
                                 </CardFooter>
                             </Card>
