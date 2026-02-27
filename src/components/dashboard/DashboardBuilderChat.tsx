@@ -77,100 +77,35 @@ export function DashboardBuilderChat({ userId, projektId }: { userId: string, pr
             setIsCollecting(true);
             setRequirements(prev => ({ ...prev, rawJson: { initialRequest: currentInput } }));
 
-            // Detect if the initial message is already detailed enough to skip the first question
-            // We use length and some "desire" keywords as a heuristic
-            const isDetailed = currentInput.length > 50 ||
-                (currentInput.toLowerCase().includes("möchte") && currentInput.length > 30);
-
-            setTimeout(() => {
-                let content = '';
-                if (isDetailed) {
-                    setCurrentStep(1);
-                    setQuestionsAsked(1); // The first interaction (detailed message) counts as resolving one part
-                    setRequirements(prev => ({ ...prev, widgetType: currentInput }));
-                    content = `Alles klar! Ich verstehe, was du bauen möchtest. Um tiefer einzusteigen, ${QUESTIONS[1].text.charAt(0).toLowerCase() + QUESTIONS[1].text.slice(1)}`;
-                } else {
-                    setQuestionsAsked(1);
-                    content = `Alles klar! Gehen wir ins Detail. ${QUESTIONS[0].text}`;
-                }
-
-                const assistantMessage: Message = {
-                    id: uuidv4(),
-                    role: 'assistant',
-                    content,
-                    timestamp: new Date()
-                };
-                setMessages(prev => [...prev, assistantMessage]);
-            }, 600);
-            return;
-        }
-
-        // Step logic
-        const currentQuestionField = QUESTIONS[currentStep].id;
-        const nextStep = currentStep + 1;
-
-        setRequirements(prev => ({ ...prev, [currentQuestionField]: currentInput }));
-
-        // Limit to 3 questions maximum
-        const nextQuestionsAsked = questionsAsked + 1;
-        setQuestionsAsked(nextQuestionsAsked);
-
-        if (nextStep < QUESTIONS.length && nextQuestionsAsked < 3) {
-            setCurrentStep(nextStep);
-            setTimeout(() => {
-                const assistantMessage: Message = {
-                    id: uuidv4(),
-                    role: 'assistant',
-                    content: QUESTIONS[nextStep].text,
-                    timestamp: new Date()
-                };
-                setMessages(prev => [...prev, assistantMessage]);
-            }, 600);
-        } else {
-            // Final step: stop either because we ran out of questions or reached the 3-question limit
-            setIsSaving(true);
             setTimeout(async () => {
                 const assistantMessage: Message = {
                     id: uuidv4(),
                     role: 'assistant',
-                    content: 'Vielen Dank! Wir haben nun genügend Informationen für die Analyse gesammelt. Wir haben eine strukturierte Anfrage generiert, die zur Verarbeitung geht. Du kannst deine gesendeten Anfragen im unteren Bereich sehen.',
+                    content: 'Vielen Dank für dein Feedback! Wie bereits erwähnt, befindet sich dieser Bereich aktuell noch im Aufbau und wir haben momentan noch nicht alle notwendigen Ressourcen freigeschaltet. Wir haben deine Nachricht jedoch gespeichert und unser Team wird sie analysieren. Sobald der Builder bereit ist, wirst du hier voll durchstarten können!',
                     timestamp: new Date()
                 };
                 setMessages(prev => [...prev, assistantMessage]);
 
-                // Save to DB
+                // Save to DB as a simple feedback request
                 const newRequest: Partial<DashboardRequest> = {
                     userId,
                     projektId,
-                    title: (requirements as any).widgetType || 'Neue Funktionalität',
-                    description: messages.find(m => m.role === 'user')?.content || 'Dashboard Anfrage',
+                    title: 'Feedback / Beta-Anfrage',
+                    description: currentInput,
                     status: 'pending',
                     requirements: {
-                        ...requirements,
-                        [currentQuestionField]: currentInput // ensure last answer is recorded
-                    } as AICollectedRequirements
+                        initialRequest: currentInput,
+                        widgetType: 'Beta Feedback'
+                    } as any
                 };
 
                 try {
                     await DashboardService.upsertRequest(newRequest);
-                    // Also save log
-                    await DashboardService.saveConversationLog({
-                        userId,
-                        requestId: newRequest.id,
-                        messages: messages.concat(userMessage, assistantMessage).map(m => ({
-                            role: m.role as any,
-                            content: m.content,
-                            timestamp: m.timestamp.toISOString()
-                        }))
-                    });
                 } catch (error) {
                     console.error("Error saving request:", error);
-                } finally {
-                    setIsSaving(false);
-                    setIsCollecting(false);
-                    setCurrentStep(0);
                 }
             }, 800);
+            return;
         }
     };
 
