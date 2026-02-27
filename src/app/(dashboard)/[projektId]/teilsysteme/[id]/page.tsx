@@ -129,13 +129,39 @@ export default function TeilsystemDetailPage() {
                 {/* Left: System Details */}
                 <div className="flex flex-col gap-6">
                     {/* Header Card */}
-                    <div className="flex justify-between items-center bg-card p-6 rounded-2xl shadow-sm border-2 border-border gap-6">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-card p-6 rounded-2xl shadow-sm border-2 border-border gap-6">
                         <div className="space-y-1">
                             <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">TEILSYSTEM</span>
                             <div className="flex items-baseline gap-3">
                                 <span className="text-3xl font-black text-foreground tracking-tight select-none">TS {(item.teilsystemNummer || '').replace(/^ts\s?/i, '')}</span>
                                 <h1 className="text-3xl font-black text-foreground tracking-tight">{item.name}</h1>
                             </div>
+                        </div>
+
+                        {/* Integrated Quick Actions Container */}
+                        <div className="flex flex-wrap items-center gap-2 border-l border-border/50 pl-6 h-auto md:h-16">
+                            {canViewKosten && (
+                                <Link href={`/${projektId}/kosten?ts=${id}`}>
+                                    <Button variant="outline" size="sm" className="h-10 px-4 border-2 border-green-200 bg-green-50/50 hover:bg-green-100 text-green-700 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center gap-2 transition-all">
+                                        <span className="text-base">💰</span>
+                                        <span className="hidden sm:inline">Kosten</span>
+                                    </Button>
+                                </Link>
+                            )}
+                            <Link href={`/${projektId}/lager-scan`}>
+                                <Button variant="outline" size="sm" className="h-10 px-4 border-2 border-blue-200 bg-blue-50/50 hover:bg-blue-100 text-blue-700 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center gap-2 transition-all">
+                                    <span className="text-base">📷</span>
+                                    <span className="hidden sm:inline">Lager-Scan</span>
+                                </Button>
+                            </Link>
+                            {canManageLager && (
+                                <Link href={`/${projektId}/lagerorte`}>
+                                    <Button variant="outline" size="sm" className="h-10 px-4 border-2 border-orange-200 bg-orange-50/50 hover:bg-orange-100 text-orange-700 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center gap-2 transition-all">
+                                        <span className="text-base">📦</span>
+                                        <span className="hidden sm:inline">Lagerorte</span>
+                                    </Button>
+                                </Link>
+                            )}
                         </div>
 
                         {/* Integrated QR Code */}
@@ -391,66 +417,20 @@ export default function TeilsystemDetailPage() {
             </Card>
 
 
-            {/* Bottom Grid: Kosten + Dokumente + QR */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Dokumente */}
-                <Card className="shadow-sm border-2 border-border md:col-span-2">
-                    <CardHeader className="border-b border-border py-3 px-4 bg-muted/30">
-                        <CardTitle className="text-sm font-black uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                            <FileText className="h-4 w-4" />
-                            Dokumente
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <React.Suspense fallback={<div className="p-4 text-sm text-muted-foreground">Laden...</div>}>
-                            <DokumentePanel entityId={id} entityType="teilsystem" projektId={projektId} readonly={isReadOnly} />
-                        </React.Suspense>
-                    </CardContent>
-                </Card>
-
-                {/* Quick Actions: Kosten + Lager */}
-                <div className="flex flex-col gap-4">
-                    {canViewKosten && (
-                        <Link href={`/${projektId}/kosten?ts=${id}`}>
-                            <Card className="shadow-sm border-2 border-border hover:border-primary/50 transition-colors cursor-pointer group">
-                                <CardContent className="p-4 flex items-center gap-3">
-                                    <div className="p-2 rounded-lg bg-green-100 text-green-700 text-xl">💰</div>
-                                    <div>
-                                        <p className="font-black text-sm text-foreground">Kostenerfassung</p>
-                                        <p className="text-xs text-muted-foreground">Stunden & Material für dieses TS</p>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </Link>
-                    )}
-
-                    <Link href={`/${projektId}/lager-scan`}>
-                        <Card className="shadow-sm border-2 border-border hover:border-primary/50 transition-colors cursor-pointer group">
-                            <CardContent className="p-4 flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-blue-100 text-blue-700 text-xl">📷</div>
-                                <div>
-                                    <p className="font-black text-sm text-foreground">Lager-Scan</p>
-                                    <p className="text-xs text-muted-foreground">QR-Code Einlagerung erfassen</p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </Link>
-
-                    {canManageLager && (
-                        <Link href={`/${projektId}/lagerorte`}>
-                            <Card className="shadow-sm border-2 border-border hover:border-primary/50 transition-colors cursor-pointer group">
-                                <CardContent className="p-4 flex items-center gap-3">
-                                    <div className="p-2 rounded-lg bg-orange-100 text-orange-700 text-xl">📦</div>
-                                    <div>
-                                        <p className="font-black text-sm text-foreground">Lagerorte</p>
-                                        <p className="text-xs text-muted-foreground">QR-Codes verwalten</p>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </Link>
-                    )}
-                </div>
-            </div>
+            {/* Bottom Section: Dokumente (Full Width) */}
+            <Card className="shadow-sm border-2 border-border">
+                <CardHeader className="border-b border-border py-3 px-4 bg-muted/30">
+                    <CardTitle className="text-sm font-black uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Dokumente & Pläne
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                    <React.Suspense fallback={<div className="p-4 text-sm text-muted-foreground">Laden...</div>}>
+                        <DokumentePanel entityId={id} entityType="teilsystem" projektId={projektId} readonly={isReadOnly} />
+                    </React.Suspense>
+                </CardContent>
+            </Card>
 
             <ConfirmDialog
 
