@@ -13,13 +13,11 @@ import { LagerbewegungTyp } from '@/types';
 
 type ScanStep = 'idle' | 'scan-entity' | 'scan-lagerort' | 'confirm' | 'done' | 'error';
 
-interface ScanState {
-    entityQr?: string;
-    entityType?: 'position' | 'unterposition';
-    entityId?: string;
-    lagerortQr?: string;
-    lagerortId?: string;
-    typ: LagerbewegungTyp;
+lagerortQr ?: string;
+lagerortId ?: string;
+typ: LagerbewegungTyp;
+entityName ?: string;
+entityNummer ?: string;
 }
 
 function parseEntityQr(qrText: string): { entityType: 'position' | 'unterposition'; entityId: string } | null {
@@ -46,6 +44,40 @@ export default function LagerScanSeite() {
     const [errorMsg, setErrorMsg] = useState('');
     const [loading, setLoading] = useState(false);
 
+    async function fetchEntityDetails(type: string, id: string) {
+        try {
+            let name = '';
+            let nummer = '';
+
+            if (type === 'teilsystem') {
+                const { SubsystemService } = await import('@/lib/services/subsystemService');
+                const item = await SubsystemService.getTeilsystemById(id);
+                if (item) {
+                    name = item.name;
+                    nummer = String(item.teilsystemNummer || '');
+                }
+            } else if (type === 'position') {
+                const { PositionService } = await import('@/lib/services/positionService');
+                const item = await PositionService.getPositionById(id);
+                if (item) {
+                    name = item.name;
+                    nummer = item.posNummer || '';
+                }
+            } else if (type === 'unterposition') {
+                const { SubPositionService } = await import('@/lib/services/subPositionService');
+                const item = await SubPositionService.getUnterpositionById(id);
+                if (item) {
+                    name = item.name;
+                    nummer = item.posNummer || '';
+                }
+            }
+
+            setState(s => ({ ...s, entityName: name, entityNummer: nummer }));
+        } catch (err) {
+            console.error('Error fetching entity details:', err);
+        }
+    }
+
     // Support for URL parameters (deep links)
     React.useEffect(() => {
         const searchParams = new URLSearchParams(window.location.search);
@@ -62,6 +94,7 @@ export default function LagerScanSeite() {
                 entityQr: qr || `${type.toUpperCase()}:${id}`
             });
             setStep('scan-lagerort');
+            fetchEntityDetails(type, id);
         }
     }, []);
 
@@ -78,8 +111,9 @@ export default function LagerScanSeite() {
             setStep('error');
             return;
         }
-        setState(s => ({ ...s, entityQr: qrText, entityType: finalParsed.entityType, entityId: finalParsed.entityId }));
+        setState(s => ({ ...s, entityQr: qrText, entityType: finalParsed!.entityType, entityId: finalParsed!.entityId }));
         setStep('scan-lagerort');
+        fetchEntityDetails(finalParsed.entityType, finalParsed.entityId);
     }
 
     function handleLagerortScan(qrText: string) {
@@ -247,9 +281,21 @@ export default function LagerScanSeite() {
                 <Card className="border-2 border-border shadow-md">
                     <CardHeader className="border-b bg-muted/30 py-4 px-6">
                         <CardTitle className="text-base font-black">Schritt 3: Lagerort scannen</CardTitle>
-                        <div className="mt-2 p-3 bg-muted rounded-lg">
-                            <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider mb-1">Gescanntes Bauteil</p>
-                            <code className="text-xs font-mono text-foreground">{state.entityQr}</code>
+                        <div className="mt-2 p-4 bg-primary/5 border border-primary/10 rounded-xl">
+                            <p className="text-[10px] font-black uppercase text-primary tracking-widest mb-1.5 flex items-center gap-2">
+                                <Package className="h-3 w-3" />
+                                {state.entityType === 'teilsystem' ? 'Teilsystem' : state.entityType === 'position' ? 'Position' : 'Unterposition'}
+                            </p>
+                            <div className="flex flex-col gap-0.5">
+                                {state.entityNummer && (
+                                    <span className="text-xs font-black text-slate-500">
+                                        NR. {state.entityNummer}
+                                    </span>
+                                )}
+                                <span className="text-base font-extrabold text-foreground leading-tight">
+                                    {state.entityName || 'Laden...'}
+                                </span>
+                            </div>
                         </div>
                     </CardHeader>
                     <CardContent className="p-6">
