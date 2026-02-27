@@ -20,7 +20,7 @@ export default function MyDashboardPage() {
     const { currentUser } = useProjekt();
     const [requests, setRequests] = useState<DashboardRequest[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(true);
-    const [isChatOpen, setIsChatOpen] = useState(true);
+    const [isChatOpen, setIsChatOpen] = useState(false);
 
     useEffect(() => {
         const loadRequests = async () => {
