@@ -125,9 +125,9 @@ export default function TeilsystemDetailPage() {
             </div>
 
             {/* Top Section: Details & BIM */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Left: System Details */}
-                <div className="flex flex-col gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left: System Details (2/3 width) */}
+                <div className="lg:col-span-2 flex flex-col gap-6">
                     {/* Header Card */}
                     <div className="flex justify-between items-center bg-card p-6 rounded-2xl shadow-sm border-2 border-border gap-6">
                         <div className="space-y-1">
@@ -199,100 +199,130 @@ export default function TeilsystemDetailPage() {
                         </div>
                     </div>
 
-                    {/* Details Grid */}
-                    <Card className="shadow-sm border-2 border-border">
-                        <CardHeader className="py-3 px-4 bg-muted/30 border-b border-border">
-                            <CardTitle className="text-xs font-black uppercase tracking-wider text-muted-foreground">System Details</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border">
-                                {detailFields.map((field, i) => (
-                                    <div key={i} className={cn(
-                                        "px-4 py-3 flex items-center justify-between hover:bg-muted/30 transition-colors border-b border-border",
-                                    )}>
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-1.5 bg-muted rounded-md">
-                                                <field.icon className={cn("h-3.5 w-3.5 text-muted-foreground", field.color)} />
-                                            </div>
-                                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">{field.label}</span>
-                                        </div>
-                                        <div className="text-right">
-                                            {field.isLink ? (
-                                                <div className="flex items-center gap-2 justify-end">
-                                                    {String(field.value)?.match(/^[a-zA-Z]:\\/) || String(field.value)?.startsWith('\\\\') ? (
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="h-7 px-2 text-[10px] font-black uppercase text-primary hover:bg-primary/10 flex items-center gap-1.5"
-                                                            onClick={() => {
-                                                                navigator.clipboard.writeText(String(field.value) || '');
-                                                                alert('Pfad kopiert! Sie können ihn im Windows Explorer einfügen.');
-                                                            }}
-                                                        >
-                                                            <Copy className="h-3 w-3" />
-                                                            Kopieren
-                                                        </Button>
+                    {/* Details Container */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="md:col-span-2">
+                            <Card className="shadow-sm border-2 border-border h-full">
+                                <CardHeader className="py-3 px-4 bg-muted/30 border-b border-border">
+                                    <CardTitle className="text-xs font-black uppercase tracking-wider text-muted-foreground">System Details</CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-0">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border">
+                                        {detailFields.map((field, i) => (
+                                            <div key={i} className={cn(
+                                                "px-4 py-2 flex items-center justify-between hover:bg-muted/30 transition-colors border-b border-border",
+                                            )}>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="p-1 bg-muted rounded-md">
+                                                        <field.icon className={cn("h-3 w-3 text-muted-foreground", field.color)} />
+                                                    </div>
+                                                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight">{field.label}</span>
+                                                </div>
+                                                <div className="text-right">
+                                                    {field.isLink ? (
+                                                        <div className="flex items-center gap-1.5 justify-end">
+                                                            {String(field.value)?.match(/^[a-zA-Z]:\\/) || String(field.value)?.startsWith('\\\\') ? (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="h-6 px-1.5 text-[9px] font-black uppercase text-primary hover:bg-primary/10 flex items-center gap-1"
+                                                                    onClick={() => {
+                                                                        navigator.clipboard.writeText(String(field.value) || '');
+                                                                        alert('Pfad kopiert!');
+                                                                    }}
+                                                                >
+                                                                    <Copy className="h-2.5 w-2.5" />
+                                                                    Copy
+                                                                </Button>
+                                                            ) : (
+                                                                <a href={String(field.value)} target="_blank" rel="noreferrer" className="text-[11px] font-bold text-primary truncate max-w-[100px] hover:underline flex items-center gap-1">
+                                                                    <span>Link</span>
+                                                                    <ExternalLink className="h-2.5 w-2.5" />
+                                                                </a>
+                                                            )}
+                                                        </div>
                                                     ) : (
-                                                        <a href={String(field.value)} target="_blank" rel="noreferrer" className="text-xs font-bold text-primary truncate max-w-[150px] hover:underline flex items-center gap-1.5">
-                                                            <span>{field.value || 'n/a'}</span>
-                                                            <ExternalLink className="h-3 w-3" />
-                                                        </a>
+                                                        <span className={cn("text-[11px] font-bold text-foreground", field.color)}>
+                                                            {field.value || '—'}
+                                                        </span>
                                                     )}
                                                 </div>
-                                            ) : (
-                                                <span className={cn("text-xs font-bold text-foreground", field.color)}>
-                                                    {field.value || '—'}
-                                                </span>
-                                            )}
-                                        </div>
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        <div className="flex flex-col gap-6">
+                            {/* IFC Metadata */}
+                            {item.ifcFileName && (
+                                <Card className="shadow-sm border-2 border-primary/20 bg-primary/5">
+                                    <CardHeader className="py-2 px-3 bg-primary/10 border-b border-primary/10">
+                                        <CardTitle className="text-[10px] font-black uppercase tracking-wider text-primary flex items-center gap-1.5">
+                                            <UploadCloud className="h-3 w-3" />
+                                            IFC Info
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="p-3 space-y-2">
+                                        <div className="space-y-0.5">
+                                            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Datei</p>
+                                            <p className="text-[10px] font-bold truncate" title={item.ifcFileName}>{item.ifcFileName}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Grouping</p>
+                                            <Badge variant={item.fallbackUsed ? "error" : "outline"} className="text-[8px] h-3.5 px-1 font-black">
+                                                {item.fallbackUsed ? "Fallback" : "Native"}
+                                            </Badge>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                            {/* Remark */}
+                            <div className="bg-orange-50/50 dark:bg-orange-950/10 border-2 border-primary/30 p-3 rounded-lg text-xs text-muted-foreground italic h-full">
+                                <span className="font-bold text-primary not-italic text-[10px] uppercase block mb-1">Bemerkung:</span>
+                                {item.bemerkung || 'Keine Bemerkung.'}
                             </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* IFC Import Metadata Block */}
-                    {item.ifcFileName && (
-                        <Card className="shadow-sm border-2 border-primary/20 bg-primary/5">
-                            <CardHeader className="py-3 px-4 bg-primary/10 border-b border-primary/10">
-                                <CardTitle className="text-xs font-black uppercase tracking-wider text-primary flex items-center gap-2">
-                                    <UploadCloud className="h-3.5 w-3.5" />
-                                    IFC Import Info
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-4 grid grid-cols-2 gap-y-3 gap-x-6">
-                                <div className="space-y-1">
-                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Datei</p>
-                                    <p className="text-xs font-bold truncate" title={item.ifcFileName}>{item.ifcFileName}</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Checksum</p>
-                                    <p className="text-[10px] font-mono font-bold truncate text-muted-foreground">{item.ifcChecksum || '—'}</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Schema / Units</p>
-                                    <p className="text-xs font-bold">{item.ifcSchema || 'IFC2X3'} / {item.ifcUnits ? 'Metric' : 'Standard'}</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Fallback used</p>
-                                    <Badge variant={item.fallbackUsed ? "error" : "outline"} className="text-[9px] h-4 font-black">
-                                        {item.fallbackUsed ? "YES (Rule A-B-C)" : "NO (Native)"}
-                                    </Badge>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    {/* Remark (Compact) */}
-                    <div className="bg-orange-50/50 dark:bg-orange-950/10 border-2 border-primary/30 p-4 rounded-lg text-sm text-muted-foreground italic">
-                        <span className="font-bold text-primary not-italic text-xs uppercase mr-2">Bemerkung:</span>
-                        {item.bemerkung || 'Keine Bemerkung vorhanden.'}
+                        </div>
                     </div>
                 </div>
 
-                {/* Right: BIM Viewer */}
-                <div className="flex flex-col gap-6">
-                    <div className="min-h-[350px] lg:h-full relative group shadow-sm rounded-xl overflow-hidden">
+                {/* Right: Actions & BIM Viewer (1/3 width) */}
+                <div className="flex flex-col gap-4">
+                    {/* Quick Actions (Green Box in reference) */}
+                    <div className="bg-card p-4 rounded-2xl shadow-sm border-2 border-border flex flex-wrap items-center justify-center gap-3">
+                        {canViewKosten && (
+                            <Link href={`/${projektId}/kosten?ts=${id}`}>
+                                <Button variant="outline" size="sm" className="h-12 px-5 border-2 border-green-200 bg-green-50/50 hover:bg-green-100 text-green-700 font-black uppercase text-[11px] tracking-widest rounded-xl flex items-center gap-2 transition-all shadow-sm">
+                                    <span className="text-xl">💰</span>
+                                    <span>Kosten</span>
+                                </Button>
+                            </Link>
+                        )}
+                        <Link href={`/${projektId}/lager-scan`}>
+                            <Button variant="outline" size="sm" className="h-12 px-5 border-2 border-blue-200 bg-blue-50/50 hover:bg-blue-100 text-blue-700 font-black uppercase text-[11px] tracking-widest rounded-xl flex items-center gap-2 transition-all shadow-sm">
+                                <span className="text-xl">📷</span>
+                                <span>Lager-Scan</span>
+                            </Button>
+                        </Link>
+                        {canManageLager && (
+                            <Link href={`/${projektId}/lagerorte`}>
+                                <Button variant="outline" size="sm" className="h-12 px-5 border-2 border-orange-200 bg-orange-50/50 hover:bg-orange-100 text-orange-700 font-black uppercase text-[11px] tracking-widest rounded-xl flex items-center gap-2 transition-all shadow-sm">
+                                    <span className="text-xl">📦</span>
+                                    <span>Lagerorte</span>
+                                </Button>
+                            </Link>
+                        )}
+                    </div>
+
+                    {/* BIM Viewer (Red Box in reference) */}
+                    <div className="h-[430px] relative group shadow-md border-2 border-border rounded-xl overflow-hidden bg-muted/20">
+                        <div className="absolute top-3 left-3 z-10">
+                            <Badge className="bg-background/90 backdrop-blur-sm text-foreground border-border text-[10px] font-black uppercase px-2 py-1">
+                                IFC Model Viewer
+                            </Badge>
+                        </div>
                         <BimViewer modelName={`${item.name}${!item.ifcUrl ? '.ifc' : ''}`} modelUrl={item.ifcUrl} />
                     </div>
                 </div>
