@@ -247,31 +247,8 @@ export default function TeilsystemDetailPage() {
                     </Card>
                 </div>
 
-                {/* Column 2: IFC INFO & BEMERKUNG (Middle Boxes in Photo) */}
+                {/* Column 2: BEMERKUNG (Middle Box - Replaces IFC Info) */}
                 <div className="lg:col-span-3 flex flex-col gap-6">
-                    {/* IFC Info Section */}
-                    <Card className="shadow-sm border-2 border-border overflow-hidden bg-card">
-                        <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border">
-                            <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                <UploadCloud className="h-3.5 w-3.5 text-primary" />
-                                IFC Info
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-4 space-y-4">
-                            <div className="space-y-1">
-                                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em]">Datei</p>
-                                <p className="text-[11px] font-black truncate text-foreground" title={item.ifcFileName}>{item.ifcFileName || 'Keine IFC Datei'}</p>
-                            </div>
-                            <div className="space-y-1.5">
-                                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em]">Grouping</p>
-                                <Badge variant={item.fallbackUsed ? "error" : "outline"} className="text-[9px] px-1.5 font-extrabold uppercase tracking-tight">
-                                    {item.fallbackUsed ? "Fallback Mode" : "Native Extraction"}
-                                </Badge>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Bemerkung Section */}
                     <Card className="shadow-sm border-2 border-primary/20 bg-orange-50/10 flex-1 overflow-hidden">
                         <CardHeader className="py-2.5 px-4 bg-primary/5 border-b border-primary/10">
                             <CardTitle className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
@@ -287,7 +264,7 @@ export default function TeilsystemDetailPage() {
                     </Card>
                 </div>
 
-                {/* Column 3: ACTIONS & MODEL VIEWER (Right Boxes in Photo) */}
+                {/* Column 3: ACTIONS & MODEL VIEWER (Right Area) */}
                 <div className="lg:col-span-4 flex flex-col gap-6">
                     {/* Action Buttons Section */}
                     <Card className="shadow-lg border-2 border-orange-600 rounded-[2rem] overflow-hidden bg-white/70 backdrop-blur-xl">
@@ -326,8 +303,8 @@ export default function TeilsystemDetailPage() {
                         </CardContent>
                     </Card>
 
-                    {/* BIM Viewer Section (Red border in Photo) */}
-                    <div className="h-[400px] relative group shadow-xl border-4 border-red-500 rounded-[2rem] overflow-hidden bg-slate-900/5 ring-8 ring-red-500/5">
+                    {/* BIM Viewer Section (Occupies full space of Col 3) */}
+                    <div className="h-full min-h-[500px] relative group shadow-xl border-4 border-red-500 rounded-[2rem] overflow-hidden bg-slate-900/5 ring-8 ring-red-500/5">
                         {/* Custom Viewer Overlay */}
                         <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
                             <div className="bg-orange-600 text-white p-2.5 rounded-2xl shadow-lg ring-4 ring-orange-600/20">

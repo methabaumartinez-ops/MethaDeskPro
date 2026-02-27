@@ -191,7 +191,7 @@ export default function KostenPage() {
             </div>
 
             {/* Teilsystem selector */}
-            <Card className="border-2 border-border shadow-sm">
+            <Card className="border-2 border-primary/50 shadow-md bg-primary/5">
                 <CardContent className="p-4">
                     <div className="flex flex-col sm:flex-row gap-4 items-end">
                         <div className="flex-1">
@@ -244,15 +244,15 @@ export default function KostenPage() {
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
                                 className={cn(
-                                    'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all',
+                                    'flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-black transition-all uppercase tracking-wider',
                                     activeTab === tab
-                                        ? 'bg-background text-foreground shadow-sm'
-                                        : 'text-muted-foreground hover:text-foreground'
+                                        ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105'
+                                        : 'text-muted-foreground hover:text-primary hover:bg-primary/5'
                                 )}
                             >
                                 {tab === 'stunden' ? <Clock className="h-4 w-4" /> : <Package2 className="h-4 w-4" />}
                                 {tab === 'stunden' ? 'Stunden' : 'Material'}
-                                <Badge variant={activeTab === tab ? 'default' : 'outline'} className="text-[10px] h-4 px-1.5">
+                                <Badge variant={activeTab === tab ? 'default' : 'outline'} className={cn("text-[10px] h-4 px-1.5 transition-colors", activeTab === tab ? "bg-white text-primary hover:bg-white" : "")}>
                                     {tab === 'stunden' ? stunden.length : material.length}
                                 </Badge>
                             </button>

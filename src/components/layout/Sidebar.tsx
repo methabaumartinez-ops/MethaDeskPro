@@ -48,18 +48,17 @@ export function Sidebar({ projektId, className, forceProjectSelection = false }:
             ]
         },
         { title: 'Ausführung', href: forceProjectSelection ? '/projekte' : `/${projektId}/ausfuehrung`, icon: Hammer },
-        { title: 'Werkhof', href: forceProjectSelection ? '/projekte' : `/${projektId}/werkhof`, icon: Warehouse },
-        { title: 'Fuhrpark', href: `/fuhrpark`, icon: Car, permission: 'viewKosten' },
         {
-            title: 'Lager & QR',
-            href: forceProjectSelection ? '/projekte' : `/${projektId}/lagerorte`,
-            icon: QrCode,
-            permission: 'qrMove',
+            title: 'Werkhof',
+            href: forceProjectSelection ? '/projekte' : `/${projektId}/werkhof`,
+            icon: Warehouse,
             subItems: [
-                { title: '📦 Lagerorte verwalten', href: forceProjectSelection ? '/projekte' : `/${projektId}/lagerorte` },
-                { title: '📷 QR Scan', href: forceProjectSelection ? '/projekte' : `/${projektId}/lager-scan` },
+                { title: 'Bestellungen', href: forceProjectSelection ? '/projekte' : `/${projektId}/werkhof` },
+                { title: 'Lager & QR', href: forceProjectSelection ? '/projekte' : `/${projektId}/lagerorte` },
+                { title: 'QR Scan', href: forceProjectSelection ? '/projekte' : `/${projektId}/lager-scan` },
             ]
         },
+        { title: 'Fuhrpark', href: `/fuhrpark`, icon: Car, permission: 'viewKosten' },
         // Pestañas técnicas que solo se muestran con proyecto seleccionado
         ...(!forceProjectSelection ? [
             { title: 'Kostenerfassung', href: `/${projektId}/kosten`, icon: DollarSign, permission: 'viewKosten' as keyof RolePermissions },

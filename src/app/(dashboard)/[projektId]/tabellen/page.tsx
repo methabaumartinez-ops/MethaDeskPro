@@ -339,9 +339,9 @@ export default function TabellenPage() {
                             </h1>
                             <p className="text-muted-foreground">
                                 {tables.find(t => t.id === activeTable)?.description}
-                                {selectedProject && selectedProject !== 'all' && (
-                                    <span className="ml-2 bg-primary/10 text-primary px-2 py-0.5 rounded text-xs font-mono">
-                                        Filter: {projects.find(p => p.id === selectedProject)?.projektnummer} - {projects.find(p => p.id === selectedProject)?.name}
+                                {selectedProject && selectedProject !== 'all' && !['mitarbeiter', 'lieferanten', 'fahrzeuge'].includes(activeTable) && (
+                                    <span className="ml-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
+                                        {projects.find(p => p.id === selectedProject)?.name}
                                     </span>
                                 )}
                             </p>
