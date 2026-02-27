@@ -42,12 +42,12 @@ export default function MyDashboardPage() {
 
     const examples = [
         {
-            title: "Beispiel 1: Dokumenten-Automatisierung",
-            text: "Ich möchte einen Container, in dem ich Dokumente hochladen kann und das System erkennt, ob es sich um Sicherheitslisten oder Lieferscheine handelt und diese automatisch per E-Mail versendet."
+            title: "Beispiel 1: Montage-Monitor",
+            text: "Ich möchte ein Widget, das alle Teilsysteme (TS) anzeigt, deren Montagetermin in den nächsten 2 Wochen liegt. Ich möchte die Projektnummer, den TS-Namen und das Datum sehen und die Termine direkt im Dashboard bearbeiten können."
         },
         {
-            title: "Beispiel 2: Vorfall-Monitor",
-            text: "Ich benötige ein Widget, das meine offenen Projekt-Vorfälle anzeigt und mich benachrichtigt, wenn ein neuer hinzugefügt wird."
+            title: "Beispiel 2: Dokumenten-Wächter",
+            text: "Ich möchte einen Container, in dem ich Dokumente hochladen kann und das System erkennt automatisch, ob es sich um Sicherheitslisten oder Lieferscheine handelt."
         }
     ];
 
@@ -133,9 +133,9 @@ export default function MyDashboardPage() {
                         </h3>
                         <div className="space-y-4">
                             {[
-                                { step: "1", text: "Sag unserem Assistenten über den Chat, was du benötigst." },
-                                { step: "2", text: "Wir führen dich mit Fragen durch alle technischen Details." },
-                                { step: "3", text: "Die KI analysiert die Machbarkeit deiner Struktur und erstellt die technischen Anforderungen." },
+                                { step: "1", text: "Überleg dir, welche Aufgaben du täglich wiederholst und automatisieren möchtest." },
+                                { step: "2", text: "Beschreibe deinem Assistenten im Chat, welche Daten du sehen und bearbeiten willst." },
+                                { step: "3", text: "Die IA analysiert die Viavilidad de tu estrucctura und erstellt die technischen Anforderungen." },
                                 { step: "4", text: "Nach der Validierung wird die Funktionalität automatisch zu deiner Suite hinzugefügt." }
                             ].map((s, i) => (
                                 <div key={i} className="flex items-start gap-4">

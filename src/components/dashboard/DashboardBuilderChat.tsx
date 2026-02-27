@@ -35,13 +35,13 @@ export function DashboardBuilderChat({ userId, projektId }: { userId: string, pr
         {
             id: '1',
             role: 'assistant',
-            content: 'Wir bauen dein zukünftiges personalisiertes Dashboard. Bitte beachte, dass dies eine **Beta-Version** ist und der Builder aktuell noch erstellt wird.',
+            content: 'Wir bauen dein zukünftiges personalisiertes Dashboard. Denk an Aufgaben, die du jeden Tag wiederholst: Was möchtest du automatisieren oder direkt im Blick haben?',
             timestamp: new Date()
         },
         {
             id: '2',
             role: 'assistant',
-            content: 'Momentan fehlen uns noch einige Ressourcen für den vollen Zugriff. Du kannst uns aber bereits deine Wünsche mitteilen, damit wir die Umsetzung analysieren können.',
+            content: 'Dies ist eine **Beta-Version**. Erzähl uns von deinen repetitiven Prozessen (z.B. Montagetermine überwachen), damit wir analysieren können, wie wir sie für dich vereinfachen.',
             timestamp: new Date()
         }
     ]);
