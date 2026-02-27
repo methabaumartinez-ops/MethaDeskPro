@@ -10,10 +10,8 @@ import { SubsystemService } from '@/lib/services/subsystemService';
 import { ProjectService } from '@/lib/services/projectService';
 import { PositionService } from '@/lib/services/positionService';
 import { Teilsystem, Position, Projekt } from '@/types';
-import {
-    ArrowLeft, Edit, ListTodo, Plus, FileText,
-    Calendar, User as UserIcon, Clock, Link as LinkIcon,
-    MapPin, Eye, Trash2, ShieldCheck, Hash, Briefcase, LayoutDashboard, Copy, ExternalLink
+MapPin, Eye, Trash2, ShieldCheck, Hash, Briefcase, LayoutDashboard, Copy, ExternalLink,
+    Video, Maximize2
 } from 'lucide-react';
 import Link from 'next/link';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
