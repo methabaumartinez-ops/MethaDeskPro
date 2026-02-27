@@ -129,39 +129,13 @@ export default function TeilsystemDetailPage() {
                 {/* Left: System Details */}
                 <div className="flex flex-col gap-6">
                     {/* Header Card */}
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-card p-6 rounded-2xl shadow-sm border-2 border-border gap-6">
+                    <div className="flex justify-between items-center bg-card p-6 rounded-2xl shadow-sm border-2 border-border gap-6">
                         <div className="space-y-1">
                             <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">TEILSYSTEM</span>
                             <div className="flex items-baseline gap-3">
                                 <span className="text-3xl font-black text-foreground tracking-tight select-none">TS {(item.teilsystemNummer || '').replace(/^ts\s?/i, '')}</span>
                                 <h1 className="text-3xl font-black text-foreground tracking-tight">{item.name}</h1>
                             </div>
-                        </div>
-
-                        {/* Integrated Quick Actions Container */}
-                        <div className="flex flex-wrap items-center gap-2 border-l border-border/50 pl-6 h-auto md:h-16">
-                            {canViewKosten && (
-                                <Link href={`/${projektId}/kosten?ts=${id}`}>
-                                    <Button variant="outline" size="sm" className="h-10 px-4 border-2 border-green-200 bg-green-50/50 hover:bg-green-100 text-green-700 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center gap-2 transition-all">
-                                        <span className="text-base">💰</span>
-                                        <span className="hidden sm:inline">Kosten</span>
-                                    </Button>
-                                </Link>
-                            )}
-                            <Link href={`/${projektId}/lager-scan`}>
-                                <Button variant="outline" size="sm" className="h-10 px-4 border-2 border-blue-200 bg-blue-50/50 hover:bg-blue-100 text-blue-700 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center gap-2 transition-all">
-                                    <span className="text-base">📷</span>
-                                    <span className="hidden sm:inline">Lager-Scan</span>
-                                </Button>
-                            </Link>
-                            {canManageLager && (
-                                <Link href={`/${projektId}/lagerorte`}>
-                                    <Button variant="outline" size="sm" className="h-10 px-4 border-2 border-orange-200 bg-orange-50/50 hover:bg-orange-100 text-orange-700 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center gap-2 transition-all">
-                                        <span className="text-base">📦</span>
-                                        <span className="hidden sm:inline">Lagerorte</span>
-                                    </Button>
-                                </Link>
-                            )}
                         </div>
 
                         {/* Integrated QR Code */}
