@@ -7,7 +7,7 @@ import { LogOut, User, FolderSync, Menu, Settings, Sun, Moon, Monitor } from 'lu
 import { useRouter } from 'next/navigation';
 // import { mockStore } from '@/lib/mock/store'; // Removed
 
-export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
+export function Header({ onMenuClick, hideProjectInfo = false }: { onMenuClick?: () => void, hideProjectInfo?: boolean }) {
     const { activeProjekt, currentUser, logout } = useProjekt();
     const router = useRouter();
 
@@ -49,7 +49,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
     }, [theme, mounted]);
 
     return (
-        <header className="fixed top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md transition-colors">
+        <header className="fixed top-0 z-40 w-full border-b bg-background transition-colors">
             <div className="flex h-16 items-center justify-between px-4 sm:px-6">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon" className="lg:hidden" onClick={onMenuClick}>
@@ -62,7 +62,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
                         </span>
                     </div>
 
-                    {activeProjekt && (
+                    {activeProjekt && !hideProjectInfo && (
                         <div className="hidden items-center gap-2 ml-8 lg:flex">
                             <div className="h-4 w-[1px] bg-border mx-2" />
                             <div className="flex flex-col">

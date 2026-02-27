@@ -482,3 +482,50 @@ export interface IFCImportLog {
     dbSeed?: string;
   };
 }
+
+// ============================================================
+// DASHBOARD BUILDER (Requests & Results)
+// ============================================================
+
+export interface DashboardRequest {
+  id: string;
+  userId: string;
+  projektId?: string;
+  title: string;
+  description: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  createdAt: string;
+  updatedAt: string;
+  requirements: AICollectedRequirements;
+}
+
+export interface AICollectedRequirements {
+  widgetType: string;
+  inputData: string;
+  behavior: string;
+  automations?: string;
+  permissions?: string;
+  visualFormat?: string;
+  fileActions?: string;
+  integrations?: string;
+  notifications?: string;
+  rawJson?: any;
+}
+
+export interface DashboardUserSession {
+  id: string;
+  userId: string;
+  lastActive: string;
+  conversationState: any;
+}
+
+export interface AIConversationLog {
+  id: string;
+  requestId: string;
+  userId: string;
+  messages: {
+    role: 'user' | 'assistant' | 'system';
+    content: string;
+    timestamp: string;
+  }[];
+}

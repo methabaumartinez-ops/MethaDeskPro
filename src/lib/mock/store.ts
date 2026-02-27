@@ -68,6 +68,18 @@ export const mockStore = {
     },
     saveBestellungen: (bestellungen: any) => saveToStorage('bestellungen', bestellungen),
 
+    getDashboardRequests: (userId?: string) => {
+        const all = getFromStorage('dashboard_requests', []);
+        return userId ? all.filter((r: any) => r.userId === userId) : all;
+    },
+    saveDashboardRequests: (requests: any) => saveToStorage('dashboard_requests', requests),
+
+    getConversationLogs: (requestId?: string) => {
+        const all = getFromStorage('conversation_logs', []);
+        return requestId ? all.filter((l: any) => l.requestId === requestId) : all;
+    },
+    saveConversationLogs: (logs: any) => saveToStorage('conversation_logs', logs),
+
     // Helpers
     login: (email: string) => {
         const users = mockStore.getUsers();

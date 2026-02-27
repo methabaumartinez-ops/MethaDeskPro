@@ -260,7 +260,7 @@ export default function FahrzeugDetailPage() {
                             )}
                         </CardContent>
                         <CardFooter className="p-3 bg-slate-50/50 border-t justify-center">
-                            <p className="text-[10px] text-muted-foreground">Bildgröße optimiert für Übersicht</p>
+                            <p className="text-[10px] text-muted-foreground">Bildgrösse optimiert für Übersicht</p>
                         </CardFooter>
                     </Card>
 

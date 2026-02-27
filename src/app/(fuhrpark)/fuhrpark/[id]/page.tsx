@@ -32,7 +32,7 @@ const STATUS_OPTIONS = [
     { label: 'Verfügbar', value: 'verfuegbar' },
     { label: 'Reserviert', value: 'reserviert' },
     { label: 'In Wartung', value: 'in_wartung' },
-    { label: 'Außer Betrieb', value: 'ausser_betrieb' },
+    { label: 'Ausser Betrieb', value: 'ausser_betrieb' },
 ];
 
 const ANTRIEB_OPTIONS = [
@@ -46,7 +46,7 @@ const STATUS_CONFIG: Record<string, { label: string; variant: 'success' | 'warni
     verfuegbar: { label: 'Verfügbar', variant: 'success' },
     reserviert: { label: 'Reserviert', variant: 'warning' },
     in_wartung: { label: 'In Wartung', variant: 'info' },
-    ausser_betrieb: { label: 'Außer Betrieb', variant: 'error' },
+    ausser_betrieb: { label: 'Ausser Betrieb', variant: 'error' },
 };
 
 export default function FahrzeugDetailPage() {

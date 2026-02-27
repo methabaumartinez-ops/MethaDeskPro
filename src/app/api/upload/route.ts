@@ -29,7 +29,7 @@ export async function POST(req: Request) {
 
         // 2. File Size Validation
         if (file.size > MAX_FILE_SIZE) {
-            return NextResponse.json({ error: 'Datei ist zu groß (max. 10MB).' }, { status: 400 });
+            return NextResponse.json({ error: 'Datei ist zu gross (max. 10MB).' }, { status: 400 });
         }
 
         // 3. Extension Validation

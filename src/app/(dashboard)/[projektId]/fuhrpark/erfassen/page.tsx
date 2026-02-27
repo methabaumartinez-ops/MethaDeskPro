@@ -31,7 +31,7 @@ const STATUS_OPTIONS = [
     { label: 'Verfügbar', value: 'verfuegbar' },
     { label: 'Reserviert', value: 'reserviert' },
     { label: 'In Wartung', value: 'in_wartung' },
-    { label: 'Außer Betrieb', value: 'ausser_betrieb' },
+    { label: 'Ausser Betrieb', value: 'ausser_betrieb' },
 ];
 
 const ANTRIEB_OPTIONS = [

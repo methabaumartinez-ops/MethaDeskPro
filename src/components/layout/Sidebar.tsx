@@ -18,6 +18,7 @@ import {
     MessageSquare,
     QrCode,
     DollarSign,
+    Sparkles,
 } from 'lucide-react';
 import { ChatAssistant } from '@/components/shared/ChatAssistant';
 import { Signature } from '@/components/shared/Signature';
@@ -38,6 +39,7 @@ export function Sidebar({ projektId, className }: { projektId: string; className
 
     const menuItems: MenuItem[] = [
         { title: 'Übersicht', href: `/${projektId}`, icon: LayoutDashboard },
+        { title: 'Mein Dashboard', href: `/${projektId}/my-dashboard`, icon: Sparkles },
         { title: 'Planer', href: `/${projektId}/planer`, icon: Calendar },
         { title: 'Produktion', href: `/${projektId}/teilsysteme`, icon: Layers },
         {

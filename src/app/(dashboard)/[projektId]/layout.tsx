@@ -51,16 +51,21 @@ export default function DashboardLayout({
         );
     }
 
+    const isMyDashboard = pathname?.includes('/my-dashboard');
+
     return (
         <div className="min-h-screen bg-background transition-colors">
-            <Header onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
+            <Header
+                onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                hideProjectInfo={isMyDashboard}
+            />
 
             <div className="flex pt-16">
                 <Sidebar projektId={projektId} className="fixed left-0 top-16 z-30 hidden lg:block" />
 
                 <main className="flex-1 lg:ml-64 flex flex-col min-h-[calc(100vh-4rem)] overflow-x-hidden">
                     <div className="p-[1cm] w-full flex-1">
-                        {!pathname?.includes('/chat') && (
+                        {!pathname?.includes('/chat') && !isMyDashboard && (
                             <ProjectBanner />
                         )}
                         {children}

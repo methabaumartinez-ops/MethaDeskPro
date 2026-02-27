@@ -88,6 +88,18 @@ export class DatabaseService {
                 case 'reservierungen': result = mockStore.getReservierungen() || []; break;
                 case 'lieferanten': result = mockStore.getLieferanten() || []; break;
                 case 'users': result = mockStore.getUsers() || []; break;
+                case 'dashboard_requests': {
+                    let userIdMatch = filter?.must?.find((m: any) => m.key === 'userId');
+                    let userId = typeof userIdMatch?.match === 'object' ? userIdMatch.match.value : userIdMatch?.match;
+                    result = mockStore.getDashboardRequests(userId) || [];
+                    break;
+                }
+                case 'conversation_logs': {
+                    let requestIdMatch = filter?.must?.find((m: any) => m.key === 'requestId');
+                    let requestId = typeof requestIdMatch?.match === 'object' ? requestIdMatch.match.value : requestIdMatch?.match;
+                    result = mockStore.getConversationLogs(requestId) || [];
+                    break;
+                }
                 default: result = [];
             }
             return result as unknown as T[];
@@ -190,6 +202,18 @@ export class DatabaseService {
                     const mIdx = material.findIndex((m: any) => m.id === id);
                     if (mIdx > -1) material[mIdx] = newItem; else material.push(newItem);
                     mockStore.saveMaterial(material);
+                    break;
+                case 'dashboard_requests':
+                    const dRequests = mockStore.getDashboardRequests() || [];
+                    const dIdx = dRequests.findIndex((r: any) => r.id === id);
+                    if (dIdx > -1) dRequests[dIdx] = newItem; else dRequests.push(newItem);
+                    mockStore.saveDashboardRequests(dRequests);
+                    break;
+                case 'conversation_logs':
+                    const logs = mockStore.getConversationLogs() || [];
+                    const lIdx = logs.findIndex((l: any) => l.id === id);
+                    if (lIdx > -1) logs[lIdx] = newItem; else logs.push(newItem);
+                    mockStore.saveConversationLogs(logs);
                     break;
                 // ... (other cases simplified for now)
             }
