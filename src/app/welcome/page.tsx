@@ -93,7 +93,7 @@ export default function WelcomePage() {
                                     <div className="space-y-1">
                                         <h3 className="text-lg font-black text-slate-900 tracking-tight">Arbeiten am Projekt</h3>
                                         <p className="text-[12px] text-slate-500 font-medium leading-tight opacity-70">
-                                            Wähle ein proyecto aus, verwalte Teilsysteme, Positionen und steuere deine Baustellen.
+                                            Wähle ein Projekt aus, verwalte Teilsysteme, Positionen und steuere deine Baustellen.
                                         </p>
                                     </div>
                                     <Button className="w-full h-9 rounded-lg font-black uppercase tracking-widest group-hover:shadow-lg group-hover:shadow-primary/20 transition-all text-[10px]">
