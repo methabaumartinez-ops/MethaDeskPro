@@ -184,18 +184,30 @@ export default function LagerScanSeite() {
     return (
         <div className="max-w-xl mx-auto space-y-6 animate-in fade-in duration-500 pb-10">
 
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">QR Lager-Scan</h1>
-                    <p className="text-muted-foreground font-medium mt-1">Lagerort eines Bauteils erfassen</p>
+            {/* Header / Navigation Section */}
+            <div className="flex justify-between items-center mb-6 px-2">
+                <div className="flex items-center gap-6">
+                    {/* Brand Logo */}
+                    <div className="flex items-center gap-1 select-none">
+                        <span className="text-2xl font-black tracking-tighter text-slate-800 dark:text-slate-200">
+                            METHA<span className="text-orange-500">Desk</span>
+                            <span className="ml-1 text-slate-400 font-light text-xs align-top mt-1">pro</span>
+                        </span>
+                    </div>
+
+                    <div className="h-6 w-[1px] bg-border/60" />
+
+                    <Link href={`/${projektId}/lagerorte`}>
+                        <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                            <ArrowLeft className="h-4 w-4" />
+                            Zurück
+                        </Button>
+                    </Link>
                 </div>
-                <Link href={`/${projektId}/lagerorte`}>
-                    <Button variant="outline" size="sm" className="font-bold gap-2">
-                        <Package className="h-3.5 w-3.5" />
-                        Lagerorte
-                    </Button>
-                </Link>
+
+                <div className="flex items-center gap-4">
+                    <h1 className="text-xl font-black text-slate-400 uppercase tracking-[0.2em] hidden md:block">QR Lager-Scan</h1>
+                </div>
             </div>
 
             {/* Progress Bar */}
@@ -322,32 +334,32 @@ export default function LagerScanSeite() {
                                     variant="outline"
                                     onClick={() => setSelectionMode('camera')}
                                     className={cn(
-                                        "h-48 flex flex-col items-center justify-center gap-4 border-2 transition-all rounded-[2rem] relative overflow-hidden group shadow-lg",
+                                        "h-56 flex flex-col items-center justify-center gap-4 border-2 transition-all rounded-[2.5rem] relative overflow-hidden group shadow-lg",
                                         selectionMode === 'camera'
-                                            ? "border-primary bg-primary/5 shadow-primary/20 scale-105"
-                                            : "border-slate-100 hover:border-primary/30 hover:shadow-xl bg-white"
+                                            ? "border-blue-500 bg-blue-50/50 shadow-blue-500/20 scale-105"
+                                            : "border-slate-100 hover:border-blue-400/30 hover:shadow-xl bg-white"
                                     )}
                                 >
                                     <div className={cn(
-                                        "w-24 h-24 rounded-3xl flex items-center justify-center transition-transform duration-500 group-hover:scale-110",
-                                        selectionMode === 'camera' ? "bg-primary/10" : "bg-slate-50"
+                                        "w-28 h-28 rounded-[2rem] flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-inner",
+                                        selectionMode === 'camera' ? "bg-blue-600 shadow-blue-900/40" : "bg-blue-500 shadow-blue-700/30"
                                     )}>
                                         <img
                                             src="/images/camera_scan.png"
                                             alt="Camera Scan"
-                                            className="w-20 h-20 object-contain drop-shadow-xl"
+                                            className="w-20 h-20 object-contain drop-shadow-2xl"
                                         />
                                     </div>
                                     <div className="flex flex-col items-center">
                                         <span className={cn(
                                             "font-black uppercase tracking-[0.2em] text-[10px]",
-                                            selectionMode === 'camera' ? "text-primary" : "text-slate-400"
+                                            selectionMode === 'camera' ? "text-blue-600" : "text-slate-400"
                                         )}>Schritt 3a</span>
-                                        <span className="font-black text-sm text-foreground">Kamera Scan</span>
+                                        <span className="font-black text-sm text-slate-800">Kamera Scan</span>
                                     </div>
                                     {selectionMode === 'camera' && (
-                                        <div className="absolute top-0 right-0 p-2">
-                                            <div className="h-2 w-2 rounded-full bg-primary animate-ping" />
+                                        <div className="absolute top-4 right-4 animate-bounce">
+                                            <div className="h-3 w-3 rounded-full bg-blue-500 shadow-lg shadow-blue-500/50" />
                                         </div>
                                     )}
                                 </Button>
@@ -357,20 +369,20 @@ export default function LagerScanSeite() {
                                     variant="outline"
                                     onClick={() => setSelectionMode('manual')}
                                     className={cn(
-                                        "h-48 flex flex-col items-center justify-center gap-4 border-2 transition-all rounded-[2rem] relative overflow-hidden group shadow-lg",
+                                        "h-56 flex flex-col items-center justify-center gap-4 border-2 transition-all rounded-[2.5rem] relative overflow-hidden group shadow-lg",
                                         selectionMode === 'manual'
-                                            ? "border-orange-500 bg-orange-500/5 shadow-orange-500/20 scale-105"
-                                            : "border-slate-100 hover:border-orange-500/30 hover:shadow-xl bg-white"
+                                            ? "border-orange-500 bg-orange-50/50 shadow-orange-500/20 scale-105"
+                                            : "border-slate-100 hover:border-orange-400/30 hover:shadow-xl bg-white"
                                     )}
                                 >
                                     <div className={cn(
-                                        "w-24 h-24 rounded-3xl flex items-center justify-center transition-transform duration-500 group-hover:scale-110",
-                                        selectionMode === 'manual' ? "bg-orange-500/10" : "bg-slate-50"
+                                        "w-28 h-28 rounded-[2rem] flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:-rotate-3 shadow-inner",
+                                        selectionMode === 'manual' ? "bg-orange-600 shadow-orange-900/40" : "bg-orange-500 shadow-orange-700/30"
                                     )}>
                                         <img
                                             src="/images/pointing_hand.png"
                                             alt="Manual Selection"
-                                            className="w-20 h-20 object-contain drop-shadow-xl"
+                                            className="w-20 h-20 object-contain drop-shadow-2xl"
                                         />
                                     </div>
                                     <div className="flex flex-col items-center">
@@ -378,11 +390,11 @@ export default function LagerScanSeite() {
                                             "font-black uppercase tracking-[0.2em] text-[10px]",
                                             selectionMode === 'manual' ? "text-orange-600" : "text-slate-400"
                                         )}>Schritt 3b</span>
-                                        <span className="font-black text-sm text-foreground">Manuelle Auswahl</span>
+                                        <span className="font-black text-sm text-slate-800">Manuelle Auswahl</span>
                                     </div>
                                     {selectionMode === 'manual' && (
-                                        <div className="absolute top-0 right-0 p-2">
-                                            <div className="h-2 w-2 rounded-full bg-orange-500 animate-ping" />
+                                        <div className="absolute top-4 right-4 animate-bounce">
+                                            <div className="h-3 w-3 rounded-full bg-orange-500 shadow-lg shadow-orange-500/50" />
                                         </div>
                                     )}
                                 </Button>
@@ -425,7 +437,7 @@ export default function LagerScanSeite() {
                         </div>
                     </CardContent>
                     <CardFooter className="border-t bg-muted/20 px-6 py-4">
-                        <Button variant="ghost" onClick={() => setStep('scan-entity')} className="font-bold gap-2">
+                        <Button variant="outline" onClick={() => setStep('scan-entity')} className="font-black uppercase text-[10px] tracking-widest h-10 px-6 rounded-full border-2 border-slate-200 hover:bg-slate-50 transition-all gap-2">
                             <ArrowLeft className="h-4 w-4" />
                             Zurück
                         </Button>

@@ -14,7 +14,7 @@ import {
     ArrowLeft, Edit, ListTodo, Plus, FileText,
     Calendar, User as UserIcon, Clock, Link as LinkIcon,
     MapPin, Eye, Trash2, ShieldCheck, Hash, Briefcase, LayoutDashboard, Copy, ExternalLink,
-    Video, Maximize2, Printer, Share2, UploadCloud
+    Video, Maximize2, Printer, Share2, UploadCloud, Download, X
 } from 'lucide-react';
 import Link from 'next/link';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
@@ -43,6 +43,7 @@ export default function TeilsystemDetailPage() {
     const [loading, setLoading] = useState(true);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [posToDelete, setPosToDelete] = useState<Position | null>(null);
+    const [showQrModal, setShowQrModal] = useState(false);
 
     useEffect(() => {
         const loadData = async () => {
@@ -104,17 +105,30 @@ export default function TeilsystemDetailPage() {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-10">
-            {/* Navigation Buttons */}
-            <div className="flex justify-end items-center gap-3 mb-4">
-                <Link href={`/${projektId}/teilsysteme`}>
-                    <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
-                        <ArrowLeft className="h-4 w-4" />
-                        Zurück
-                    </Button>
-                </Link>
+            {/* Header / Navigation Section */}
+            <div className="flex justify-between items-center mb-6 px-2">
+                <div className="flex items-center gap-6">
+                    {/* Brand Logo */}
+                    <div className="flex items-center gap-1 select-none">
+                        <span className="text-2xl font-black tracking-tighter text-slate-800 dark:text-slate-200">
+                            METHA<span className="text-orange-500">Desk</span>
+                            <span className="ml-1 text-slate-400 font-light text-xs align-top mt-1">pro</span>
+                        </span>
+                    </div>
+
+                    <div className="h-6 w-[1px] bg-border/60" />
+
+                    <Link href={`/${projektId}/teilsysteme`}>
+                        <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                            <ArrowLeft className="h-4 w-4" />
+                            Zurück
+                        </Button>
+                    </Link>
+                </div>
+
                 {!isReadOnly && (
                     <Link href={`/${projektId}/teilsysteme/${item.id}/edit`}>
-                        <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                        <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
                             <Edit className="h-4 w-4" />
                             <span>Bearbeiten</span>
                         </Button>
@@ -133,51 +147,14 @@ export default function TeilsystemDetailPage() {
                 </div>
 
                 <div className="hidden md:flex items-center gap-4 border-x border-border/50 px-8 h-16">
-                    <div className="bg-white p-1.5 rounded-lg border border-border">
+                    <div
+                        className="bg-white p-1.5 rounded-lg border border-border cursor-pointer hover:shadow-md transition-all active:scale-95"
+                        onClick={() => setShowQrModal(true)}
+                    >
                         <QRCodeSVG
                             value={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/teilsystem/${item.id}`}
                             size={56}
                         />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-muted-foreground hover:text-primary"
-                            onClick={() => {
-                                const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/share/teilsystem/${item.id}`;
-                                const printWindow = window.open('', '', 'width=600,height=600');
-                                if (printWindow) {
-                                    printWindow.document.write(`<html><body style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center;font-family:sans-serif;">
-                                        <div style="padding:40px;border:2px solid #000;border-radius:20px;">
-                                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}" />
-                                            <h1>${item.name}</h1>
-                                            <p>TS ${item.teilsystemNummer || ''}</p>
-                                        </div>
-                                        <script>window.onload=()=>{window.print();window.close();};</script>
-                                    </body></html>`);
-                                    printWindow.document.close();
-                                }
-                            }}
-                        >
-                            <Printer className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-muted-foreground hover:text-primary"
-                            onClick={() => {
-                                const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/share/teilsystem/${item.id}`;
-                                if (navigator.share) {
-                                    navigator.share({ title: item.name, url });
-                                } else {
-                                    navigator.clipboard.writeText(url);
-                                    alert('Link kopiert!');
-                                }
-                            }}
-                        >
-                            <Share2 className="h-3.5 w-3.5" />
-                        </Button>
                     </div>
                 </div>
 
@@ -436,6 +413,140 @@ export default function TeilsystemDetailPage() {
                     </React.Suspense>
                 </CardContent>
             </Card>
+
+            {/* Teilsystem QR Modal */}
+            {showQrModal && item && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setShowQrModal(false)} />
+                    <div className="relative bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl border-2 border-primary/20 p-8 flex flex-col items-center gap-6 animate-in zoom-in slide-in-from-bottom-4 duration-300">
+                        <button
+                            onClick={() => setShowQrModal(false)}
+                            className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600"
+                        >
+                            <X className="h-5 w-5" />
+                        </button>
+
+                        <div className="text-center space-y-1">
+                            <h2 className="text-2xl font-black text-slate-900 leading-tight px-4">{item.name}</h2>
+                            <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">
+                                TS {(item.teilsystemNummer || '').replace(/^ts\s?/i, '')}
+                            </p>
+                        </div>
+
+                        <div className="bg-white p-6 rounded-[2rem] border-4 border-primary/10 shadow-inner group flex flex-col items-center gap-4">
+                            <div id="ts-qr-container">
+                                <QRCodeSVG
+                                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/teilsystem/${item.id}`}
+                                    size={220}
+                                    level="H"
+                                    className="drop-shadow-sm group-hover:scale-105 transition-transform duration-500"
+                                />
+                            </div>
+                            {/* Logo Preview */}
+                            <div className="flex items-center gap-1 select-none">
+                                <span className="text-2xl font-black tracking-tighter text-slate-800">
+                                    METHA<span className="text-orange-500">Desk</span>
+                                    <span className="ml-1 text-slate-400 font-light text-xs align-top mt-1">pro</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="text-center">
+                            <p className="text-sm font-bold text-slate-700">
+                                Anzahl Positionen: <span className="text-primary font-black">{positionen.length}</span>
+                            </p>
+                        </div>
+
+                        <div className="flex gap-4 w-full justify-center">
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-12 w-12 rounded-2xl border-2 hover:bg-primary hover:text-white transition-all hover:scale-110 active:scale-90 shadow-sm"
+                                title="Download"
+                                onClick={() => {
+                                    const svg = document.querySelector('#ts-qr-container svg') as SVGElement;
+                                    if (!svg) return;
+                                    const svgClone = svg.cloneNode(true) as SVGElement;
+                                    svgClone.setAttribute('width', '1000');
+                                    svgClone.setAttribute('height', '1150');
+                                    svgClone.setAttribute('viewBox', '0 0 220 250');
+
+                                    const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                                    group.setAttribute('transform', 'translate(0, 225)');
+                                    group.innerHTML = `
+                                        <text x="50%" y="15" font-family="Arial, sans-serif" font-weight="900" font-size="16" text-anchor="middle">
+                                            <tspan fill="#1e293b">METHA</tspan><tspan fill="#f97316">Desk</tspan><tspan fill="#94a3b8" font-size="10" font-weight="100" dy="-4">pro</tspan>
+                                        </text>
+                                    `;
+                                    svgClone.appendChild(group);
+
+                                    const serializer = new XMLSerializer();
+                                    const source = serializer.serializeToString(svgClone);
+                                    const url = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(source)}`;
+                                    const link = document.createElement('a');
+                                    link.href = url;
+                                    link.download = `TS_${item.teilsystemNummer || item.id}.svg`;
+                                    link.click();
+                                }}
+                            >
+                                <Download className="h-5 w-5" />
+                            </Button>
+
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-12 w-12 rounded-2xl border-2 hover:bg-primary hover:text-white transition-all hover:scale-110 active:scale-90 shadow-sm"
+                                title="Print"
+                                onClick={() => {
+                                    const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/share/teilsystem/${item.id}`;
+                                    const printWindow = window.open('', '', 'width=600,height=800');
+                                    if (printWindow) {
+                                        printWindow.document.write(`
+                                            <html>
+                                                <body style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;font-family:sans-serif;background:#fff;">
+                                                    <div style="padding:40px;border:4px solid #f1f5f9;border-radius:40px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.05);">
+                                                        <h1 style="margin:0 0 5px 0;font-size:24px;color:#0f172a;font-weight:900;">${item.name}</h1>
+                                                        <p style="margin:0 0 30px 0;font-size:14px;color:#64748b;font-weight:bold;letter-spacing:0.1em;text-transform:uppercase;">TS ${item.teilsystemNummer || ''}</p>
+                                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}" style="width:300px;height:300px;margin-bottom:30px;" />
+                                                        <p style="margin:0 0 30px 0;font-size:16px;color:#334155;font-weight:bold;">Anzahl Positionen: ${positionen.length}</p>
+                                                        <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+                                                            <span style="color:#1e293b;font-weight:900;font-size:24px;letter-spacing:-1px;">METHA</span>
+                                                            <span style="color:#f97316;font-weight:900;font-size:24px;letter-spacing:-1px;">Desk</span>
+                                                            <span style="color:#94a3b8;font-weight:300;font-size:12px;margin-bottom:8px;">pro</span>
+                                                        </div>
+                                                    </div>
+                                                    <script>window.onload=()=>{window.print();window.close();};</script>
+                                                </body>
+                                            </html>
+                                        `);
+                                        printWindow.document.close();
+                                    }
+                                }}
+                            >
+                                <Printer className="h-5 w-5" />
+                            </Button>
+
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-12 w-12 rounded-2xl border-2 hover:bg-primary hover:text-white transition-all hover:scale-110 active:scale-90 shadow-sm"
+                                title="Share"
+                                onClick={() => {
+                                    const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/share/teilsystem/${item.id}`;
+                                    if (navigator.share) {
+                                        navigator.share({ title: item.name, url });
+                                    } else {
+                                        navigator.clipboard.writeText(url);
+                                        alert('Link kopiert!');
+                                    }
+                                }}
+                            >
+                                <Share2 className="h-5 w-5" />
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <ConfirmDialog
                 isOpen={confirmOpen}

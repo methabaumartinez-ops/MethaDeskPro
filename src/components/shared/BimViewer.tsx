@@ -54,11 +54,13 @@ export function BimViewer({ modelName = 'IFC Modell', modelUrl }: { modelName?: 
         scene.add(new THREE.GridHelper(100, 50, 0xcccccc, 0xe2e8f0));
 
         const onResize = () => {
+            if (!container) return;
             const W = container.clientWidth, H = container.clientHeight;
             renderer.setSize(W, H);
             camera.aspect = W / H;
             camera.updateProjectionMatrix();
         };
+
         window.addEventListener('resize', onResize);
         renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
 
@@ -118,8 +120,11 @@ export function BimViewer({ modelName = 'IFC Modell', modelUrl }: { modelName?: 
             }
         })();
 
+        const resizeTimeout = setTimeout(onResize, 100);
+
         return () => {
             destroyed = true;
+            clearTimeout(resizeTimeout);
             window.removeEventListener('resize', onResize);
             renderer.setAnimationLoop(null);
             renderer.dispose();
@@ -128,9 +133,17 @@ export function BimViewer({ modelName = 'IFC Modell', modelUrl }: { modelName?: 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [modelUrl]);
 
+    // Force resize calculation when expansion state toggles
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+        }, 310); // slightly more than the duration-300 transition
+        return () => clearTimeout(timer);
+    }, [isExpanded]);
+
     return (
         <div className={isExpanded
-            ? 'fixed inset-0 z-50 bg-background p-4 flex items-center justify-center animate-in fade-in zoom-in duration-300'
+            ? 'fixed inset-0 z-[100] bg-background p-4 flex items-center justify-center animate-in fade-in zoom-in duration-300'
             : 'h-full w-full relative'}>
             <Card className={`h-full w-full bg-white shadow-xl overflow-hidden relative group ${isExpanded ? 'rounded-none' : ''}`}>
 

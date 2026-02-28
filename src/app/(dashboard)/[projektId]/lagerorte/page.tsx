@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Lagerort } from '@/types';
 import { LagerortService } from '@/lib/services/lagerortService';
 import QrCodeGenerator from '@/components/shared/QrCodeGenerator';
-import { Plus, QrCode, MapPin, Package, Pencil, Trash2, X, ScanLine, Construction, Warehouse, Globe, Factory, Truck, Map, ExternalLink, Download, Printer, Share2 } from 'lucide-react';
+import { Plus, QrCode, MapPin, Package, Pencil, Trash2, X, ScanLine, Construction, Warehouse, Globe, Factory, Truck, Map, ExternalLink, Download, Printer, Share2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
@@ -94,23 +94,40 @@ export default function LagerorteSeite() {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-10">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Lagerorte</h1>
-                    <p className="text-muted-foreground font-medium mt-1">QR-Codes für Lagerorte verwalten</p>
-                </div>
-                <div className="flex gap-2">
-                    <Link href={`/${projektId}/lager-scan`}>
-                        <Button variant="outline" className="font-bold gap-2">
-                            <ScanLine className="h-4 w-4" />
-                            QR Scan
+            {/* Header / Navigation Section */}
+            <div className="flex justify-between items-center mb-6 px-2">
+                <div className="flex items-center gap-6">
+                    {/* Brand Logo */}
+                    <div className="flex items-center gap-1 select-none">
+                        <span className="text-2xl font-black tracking-tighter text-slate-800 dark:text-slate-200">
+                            METHA<span className="text-orange-500">Desk</span>
+                            <span className="ml-1 text-slate-400 font-light text-xs align-top mt-1">pro</span>
+                        </span>
+                    </div>
+
+                    <div className="h-6 w-[1px] bg-border/60" />
+
+                    <Link href={`/${projektId}/dashboard`}>
+                        <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                            <ArrowLeft className="h-4 w-4" />
+                            Zurück
                         </Button>
                     </Link>
-                    <Button onClick={openCreate} className="font-bold gap-2">
-                        <Plus className="h-4 w-4" />
-                        Lagerort hinzufügen
-                    </Button>
+                </div>
+
+                <div className="flex items-center gap-4">
+                    <h1 className="text-xl font-black text-slate-400 uppercase tracking-[0.2em] hidden md:block">Lagerorte</h1>
+                    <div className="flex gap-2 ml-4">
+                        <Link href={`/${projektId}/lager-scan`}>
+                            <Button variant="outline" className="h-10 px-4 font-black uppercase text-[10px] tracking-widest rounded-xl border-2 flex gap-2">
+                                <ScanLine className="h-4 w-4" />
+                                QR Scan
+                            </Button>
+                        </Link>
+                        <Button onClick={openCreate} className="h-10 px-6 font-black uppercase text-[10px] tracking-widest rounded-xl shadow-lg shadow-primary/20 flex gap-2">
+                            <Plus className="h-4 w-4" /> NEU
+                        </Button>
+                    </div>
                 </div>
             </div>
 
@@ -190,7 +207,7 @@ export default function LagerorteSeite() {
                         </CardHeader>
                         <CardContent className="p-10 flex flex-col items-center gap-8">
                             {/* QR Section */}
-                            <div className="relative group">
+                            <div className="relative group flex flex-col items-center gap-4">
                                 <div className="p-6 bg-white rounded-[2.5rem] shadow-2xl border-2 border-orange-100 ring-8 ring-orange-500/5 group-hover:ring-orange-500/10 transition-all">
                                     <QrCodeGenerator
                                         content={selectedQr.qrCode || `LAGERORT:${selectedQr.id}`}
@@ -198,6 +215,13 @@ export default function LagerorteSeite() {
                                         size={220}
                                         className="rounded-none"
                                     />
+                                </div>
+                                {/* Logo Preview */}
+                                <div className="flex items-center gap-1 select-none">
+                                    <span className="text-2xl font-black tracking-tighter text-slate-800">
+                                        METHA<span className="text-orange-500">Desk</span>
+                                        <span className="ml-1 text-slate-400 font-light text-xs align-top mt-1">pro</span>
+                                    </span>
                                 </div>
                             </div>
 
@@ -235,9 +259,8 @@ export default function LagerorteSeite() {
                                             logoGroup.setAttribute('transform', `translate(${vbValues[2] / 2}, ${vbValues[3] + 6})`);
 
                                             logoGroup.innerHTML = `
-                                                <rect x="-18" y="-5" width="36" height="10" rx="1" fill="#000000" />
-                                                <text x="0" y="2" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="5px" text-anchor="middle">
-                                                    <tspan fill="#F26A21">METHA</tspan><tspan fill="#FFFFFF">BAU</tspan>
+                                                <text x="0" y="2" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="5.5px" text-anchor="middle">
+                                                    <tspan fill="#1e293b">METHA</tspan><tspan fill="#F26A21">Desk</tspan><tspan fill="#94a3b8" font-size="3.5px" font-weight="100" dy="-1.5">pro</tspan>
                                                 </text>
                                             `;
                                             clonedSvg.appendChild(logoGroup);
@@ -270,9 +293,10 @@ export default function LagerorteSeite() {
                                                         <head><title>Print QR</title></head>
                                                         <body style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;font-family:sans-serif;">
                                                             <div style="transform:scale(1.5);">${svg.outerHTML}</div>
-                                                            <div style="background-color:black;padding:6px 16px;border-radius:4px;display:flex;align-items:center;justify-content:center;margin-top:30px;">
-                                                                <span style="color:#F26A21;font-family:sans-serif;font-weight:900;font-size:18px;letter-spacing:1px;">METHA</span>
-                                                                <span style="color:white;font-family:sans-serif;font-weight:900;font-size:18px;letter-spacing:1px;">BAU</span>
+                                                            <div style="display:flex;align-items:center;justify-content:center;margin-top:30px;gap:4px;">
+                                                                <span style="color:#1e293b;font-family:sans-serif;font-weight:900;font-size:32px;letter-spacing:-1px;">METHA</span>
+                                                                <span style="color:#F26A21;font-family:sans-serif;font-weight:900;font-size:32px;letter-spacing:-1px;">Desk</span>
+                                                                <span style="color:#94a3b8;font-family:sans-serif;font-weight:300;font-size:14px;margin-bottom:12px;">pro</span>
                                                             </div>
                                                             <h2 style="margin-top:20px;text-transform:uppercase;font-weight:900;margin-bottom:5px;">${selectedQr.bezeichnung}</h2>
                                                             <p style="margin-top:0px;color:#f97316;letter-spacing:2px;font-size:12px;font-weight:700;">LAGERORT QR-CODE</p>
