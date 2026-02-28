@@ -163,30 +163,19 @@ export const ChatAssistant = ({
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
                     "rounded-full shadow-2xl transition-all duration-500 flex items-center justify-center p-0 overflow-hidden",
-                    isOpen ? "h-14 w-14 bg-slate-900 hover:bg-slate-800 rotate-90" : (
-                        buttonLabel
-                            ? "h-11 px-8 rounded-full bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest gap-2 shadow-lg shadow-orange-100"
-                            : "h-20 w-20 bg-white hover:bg-slate-50 border-2 border-primary hover:scale-110"
-                    ),
-                    isSidebarMode ? "h-14 w-14" : ""
+                    isOpen ? "h-14 w-14 bg-slate-900 hover:bg-slate-800 rotate-90" : "h-14 w-14 bg-white hover:bg-slate-50 border-2 border-primary hover:scale-110 shadow-lg",
+                    isSidebarMode ? "h-10 w-10 border-none bg-transparent hover:bg-white/10" : "fixed bottom-6 right-6"
                 )}
             >
                 {isOpen ? (
                     <X className="h-6 w-6 text-white" />
                 ) : (
-                    buttonLabel ? (
-                        <div className="flex items-center gap-2">
-                            <Bot className="h-5 w-5" />
-                            <span>{buttonLabel}</span>
+                    <div className="relative h-full w-full flex items-center justify-center bg-white">
+                        <AnimatedRobot className="h-10 w-10 transition-transform hover:scale-110" isWaving={!isOpen} />
+                        <div className="absolute top-2 right-2 h-2.5 w-2.5 bg-white rounded-full flex items-center justify-center z-10 shadow-sm border border-slate-100">
+                            <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-ping" />
                         </div>
-                    ) : (
-                        <div className="relative h-full w-full flex items-center justify-center">
-                            <AnimatedRobot className="h-14 w-14 transition-transform hover:scale-110" isWaving={!isOpen} />
-                            <div className="absolute top-1 right-1 h-3 w-3 bg-white rounded-full flex items-center justify-center z-10 shadow-sm border border-slate-100">
-                                <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-ping" />
-                            </div>
-                        </div>
-                    )
+                    </div>
                 )}
             </Button>
         </div>

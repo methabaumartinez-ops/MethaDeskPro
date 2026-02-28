@@ -9,6 +9,7 @@ import { ProjectService } from '@/lib/services/projectService';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Signature } from '@/components/shared/Signature';
+import { ChatAssistant } from '@/components/shared/ChatAssistant';
 
 export default function DashboardLayout({
     children,
@@ -100,7 +101,11 @@ export default function DashboardLayout({
                     <Sidebar projektId={projektId} className="w-full h-full border-none" />
                 </div>
             </div>
+
+            {/* Global Chat Assistant */}
+            {!isMyDashboard && (
+                <ChatAssistant />
+            )}
         </div>
     );
 }
-

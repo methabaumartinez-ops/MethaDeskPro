@@ -135,9 +135,6 @@ export function Sidebar({ projektId, className, forceProjectSelection = false }:
                             <p className="text-[9px] font-bold uppercase text-muted-foreground/60 tracking-widest leading-none">Version</p>
                             <p className="text-[10px] font-extrabold text-foreground/70">v1.3.0-PRO</p>
                         </div>
-                        {!['/planer', '/teilsysteme', '/material'].some(p => pathname.includes(p)) && (
-                            <ChatAssistant isSidebarMode={true} />
-                        )}
                     </div>
                     <Signature />
                 </div>

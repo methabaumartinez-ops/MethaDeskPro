@@ -153,7 +153,6 @@ export default function PlannerPage() {
                     <p className="text-slate-500 font-medium mt-1">Überwachen Sie Meilensteine, Planabgaben und Lieferfristen.</p>
                 </div>
                 <div className="flex gap-2">
-                    <ChatAssistant buttonLabel="METHABot" isHeaderMode={true} />
                     <Button variant="outline" className="font-bold gap-2">
                         <Download className="h-4 w-4" />
                         Exportieren
