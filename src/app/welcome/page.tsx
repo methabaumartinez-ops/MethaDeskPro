@@ -168,12 +168,10 @@ export default function WelcomePage() {
                 </div>
             </div>
 
-            <footer className="py-8 border-t border-slate-200/50 bg-white/30 backdrop-blur-sm self-stretch flex flex-col items-center lg:ml-64 relative z-20">
-                <div className="mb-4">
-                    <Signature />
-                </div>
-                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
-                    © {new Date().getFullYear()} METHABAU AG. PRO-SUITE v1.3
+            <footer className="py-6 bg-white/30 backdrop-blur-sm self-stretch flex flex-row items-end justify-between px-8 lg:ml-64 relative z-20">
+                <Signature />
+                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest opacity-60">
+                    © {new Date().getFullYear()} METHABAU AG. v1.3
                 </p>
             </footer>
         </div>

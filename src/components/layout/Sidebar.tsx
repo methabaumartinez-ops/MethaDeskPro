@@ -128,15 +128,13 @@ export function Sidebar({ projektId, className, forceProjectSelection = false }:
                 })}
             </div>
 
-            <div className="absolute bottom-0 left-0 right-0 p-3 bg-white dark:bg-slate-950 transition-colors border-t border-sidebar z-10">
-                <div className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between gap-2 bg-slate-50 dark:bg-slate-900/50 p-2 rounded-xl border border-slate-200/50">
-                        <div className="flex flex-col gap-0.5">
-                            <p className="text-[9px] font-bold uppercase text-muted-foreground/60 tracking-widest leading-none">Version</p>
-                            <p className="text-[10px] font-extrabold text-foreground/70">v1.3.0-PRO</p>
-                        </div>
-                    </div>
+            <div className="absolute bottom-0 left-0 right-0 p-3 bg-white dark:bg-slate-950 transition-colors z-10">
+                <div className="flex items-end justify-between gap-2">
                     <Signature />
+                    <div className="flex flex-col items-end gap-0.5 opacity-60">
+                        <p className="text-[8px] font-bold uppercase text-muted-foreground/60 tracking-widest leading-none">Version</p>
+                        <p className="text-[9px] font-extrabold text-foreground/70">v1.3.0-PRO</p>
+                    </div>
                 </div>
             </div>
         </aside>

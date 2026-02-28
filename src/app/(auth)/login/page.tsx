@@ -122,8 +122,13 @@ export default function LoginPage() {
                     </div>
                 </CardContent>
             </Card>
-            <div className="fixed bottom-8 left-0 right-0">
-                <Signature />
+            <div className="fixed bottom-6 left-8 flex items-end justify-between right-8 pointer-events-none">
+                <div className="pointer-events-auto">
+                    <Signature />
+                </div>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider opacity-60">
+                    v1.3
+                </p>
             </div>
         </div>
     );

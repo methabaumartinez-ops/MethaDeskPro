@@ -205,8 +205,11 @@ export default function ProjektePage() {
                 )}
             </main>
 
-            <footer className="py-12 border-t border-slate-100 mt-12">
+            <footer className="py-12 mt-12 flex flex-row items-end justify-between px-8">
                 <Signature />
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider opacity-60">
+                    © {new Date().getFullYear()} METHABAU AG. v1.3
+                </p>
             </footer>
         </div>
     );
