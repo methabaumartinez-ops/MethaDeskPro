@@ -3,15 +3,17 @@
 // Genera un QR code SVG en cliente usando la librería qrcode
 
 import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 interface QrCodeGeneratorProps {
     content: string;
     label?: string;
     size?: number;
     showDownload?: boolean;
+    className?: string;
 }
 
-export default function QrCodeGenerator({ content, label, size = 200, showDownload = true }: QrCodeGeneratorProps) {
+export default function QrCodeGenerator({ content, label, size = 200, showDownload = true, className }: QrCodeGeneratorProps) {
     const [qrSvg, setQrSvg] = useState<string>('');
     const [loading, setLoading] = useState(true);
 
@@ -49,19 +51,10 @@ export default function QrCodeGenerator({ content, label, size = 200, showDownlo
     }
 
     return (
-        <div className="qr-container">
-            <div
-                style={{ width: size, height: size }}
-                dangerouslySetInnerHTML={{ __html: qrSvg }}
-                className="qr-svg-wrapper"
-            />
-            {label && <p className="qr-label">{label}</p>}
-            <p className="qr-content-text">{content}</p>
-            {showDownload && qrSvg && (
-                <button onClick={handleDownload} className="btn btn-secondary btn-sm">
-                    ⬇ QR herunterladen
-                </button>
-            )}
-        </div>
+        <div
+            style={{ width: size, height: size }}
+            dangerouslySetInnerHTML={{ __html: qrSvg }}
+            className={cn("qr-svg-wrapper bg-white p-1 rounded-sm", className)}
+        />
     );
 }

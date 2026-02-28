@@ -10,11 +10,17 @@ import { Badge } from '@/components/ui/badge';
 import { Lagerort } from '@/types';
 import { LagerortService } from '@/lib/services/lagerortService';
 import QrCodeGenerator from '@/components/shared/QrCodeGenerator';
-import { Plus, QrCode, MapPin, Package, Pencil, Trash2, X, ScanLine } from 'lucide-react';
+import { Plus, QrCode, MapPin, Package, Pencil, Trash2, X, ScanLine, Construction, Warehouse, Globe, Factory, Truck, Map, ExternalLink, Download, Printer, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
-const BEREICHE = ['Werkhof', 'Baustelle', 'Extern', 'Lager', 'Produktion'];
+const BEREICHE = [
+    { name: 'Werkhof', icon: Truck, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' },
+    { name: 'Baustelle', icon: Construction, color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-200' },
+    { name: 'Extern', icon: Globe, color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-200' },
+    { name: 'Lager', icon: Warehouse, color: 'text-slate-600', bg: 'bg-slate-50', border: 'border-slate-200' },
+    { name: 'Produktion', icon: Factory, color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200' },
+];
 
 export default function LagerorteSeite() {
     const { projektId } = useParams<{ projektId: string }>();
@@ -25,7 +31,7 @@ export default function LagerorteSeite() {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
 
-    const [form, setForm] = useState({ bezeichnung: '', beschreibung: '', bereich: '' });
+    const [form, setForm] = useState({ bezeichnung: '', beschreibung: '', bereich: '', planUrl: '' });
 
     useEffect(() => { loadLagerorte(); }, [projektId]);
 
@@ -48,7 +54,7 @@ export default function LagerorteSeite() {
             } else {
                 await LagerortService.createLagerort({ ...form, projektId });
             }
-            setForm({ bezeichnung: '', beschreibung: '', bereich: '' });
+            setForm({ bezeichnung: '', beschreibung: '', bereich: '', planUrl: '' });
             setShowForm(false);
             setEditingId(null);
             await loadLagerorte();
@@ -65,24 +71,25 @@ export default function LagerorteSeite() {
 
     function startEdit(l: Lagerort) {
         setEditingId(l.id);
-        setForm({ bezeichnung: l.bezeichnung, beschreibung: l.beschreibung || '', bereich: l.bereich || '' });
+        setForm({
+            bezeichnung: l.bezeichnung,
+            beschreibung: l.beschreibung || '',
+            bereich: l.bereich || '',
+            planUrl: l.planUrl || ''
+        });
         setShowForm(true);
         setSelectedQr(null);
     }
 
     function openCreate() {
         setEditingId(null);
-        setForm({ bezeichnung: '', beschreibung: '', bereich: '' });
+        setForm({ bezeichnung: '', beschreibung: '', bereich: '', planUrl: '' });
         setShowForm(true);
         setSelectedQr(null);
     }
 
-    const bereichColor = (b?: string) => {
-        if (b === 'Baustelle') return 'bg-orange-100 text-orange-700';
-        if (b === 'Werkhof') return 'bg-blue-100 text-blue-700';
-        if (b === 'Extern') return 'bg-purple-100 text-purple-700';
-        if (b === 'Produktion') return 'bg-green-100 text-green-700';
-        return 'bg-muted text-muted-foreground';
+    const getBereichInfo = (name?: string) => {
+        return BEREICHE.find(b => b.name === name) || { icon: MapPin, color: 'text-muted-foreground', bg: 'bg-muted', border: 'border-border' };
     };
 
     return (
@@ -109,23 +116,24 @@ export default function LagerorteSeite() {
 
             {/* Form Modal */}
             {showForm && (
-                <Card className="border-2 border-primary/30 shadow-xl">
-                    <CardHeader className="border-b bg-muted/30 py-3 px-6 flex flex-row items-center justify-between">
-                        <CardTitle className="text-base font-black">
+                <Card className="border-2 border-primary/30 shadow-xl overflow-hidden rounded-2xl">
+                    <CardHeader className="border-b bg-muted/30 py-4 px-6 flex flex-row items-center justify-between">
+                        <CardTitle className="text-lg font-black uppercase tracking-tight">
                             {editingId ? 'Lagerort bearbeiten' : 'Neuer Lagerort'}
                         </CardTitle>
-                        <Button variant="ghost" size="icon" onClick={() => setShowForm(false)} className="h-8 w-8">
+                        <Button variant="ghost" size="icon" onClick={() => setShowForm(false)} className="h-8 w-8 rounded-full">
                             <X className="h-4 w-4" />
                         </Button>
                     </CardHeader>
                     <CardContent className="p-6">
-                        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <Input
                                 label="Bezeichnung *"
                                 value={form.bezeichnung}
                                 onChange={e => setForm(s => ({ ...s, bezeichnung: e.target.value }))}
                                 placeholder="z.B. Lager A — Regal 3"
                                 required
+                                className="font-medium"
                             />
                             <Select
                                 label="Bereich"
@@ -133,22 +141,29 @@ export default function LagerorteSeite() {
                                 onChange={e => setForm(s => ({ ...s, bereich: e.target.value }))}
                                 options={[
                                     { label: '— Bereich auswählen —', value: '' },
-                                    ...BEREICHE.map(b => ({ label: b, value: b }))
+                                    ...BEREICHE.map(b => ({ label: b.name, value: b.name }))
                                 ]}
                             />
+                            <Input
+                                label="Plan URL (Google Drive / Link)"
+                                value={form.planUrl}
+                                onChange={e => setForm(s => ({ ...s, planUrl: e.target.value }))}
+                                placeholder="https://..."
+                                className="md:col-span-2"
+                            />
                             <div className="md:col-span-2 space-y-1.5">
-                                <label className="text-sm font-semibold text-foreground ml-1">Beschreibung</label>
+                                <label className="text-sm font-semibold text-foreground ml-1 font-mono uppercase tracking-wider text-[10px]">Beschreibung</label>
                                 <textarea
                                     value={form.beschreibung}
                                     onChange={e => setForm(s => ({ ...s, beschreibung: e.target.value }))}
-                                    className="flex min-h-[72px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all"
+                                    className="flex min-h-[80px] w-full rounded-2xl border-2 border-input bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all font-medium"
                                     placeholder="Optionale Beschreibung..."
                                 />
                             </div>
-                            <div className="md:col-span-2 flex justify-end gap-3 pt-2">
-                                <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>Abbrechen</Button>
-                                <Button type="submit" disabled={saving} className="font-bold min-w-[120px]">
-                                    {saving ? 'Speichert...' : editingId ? 'Aktualisieren' : 'Erstellen'}
+                            <div className="md:col-span-2 flex justify-end gap-3 pt-4 border-t mt-2">
+                                <Button type="button" variant="ghost" onClick={() => setShowForm(false)} className="font-bold">Abbrechen</Button>
+                                <Button type="submit" disabled={saving} className="font-black px-8 rounded-xl shadow-lg shadow-primary/20">
+                                    {saving ? 'Speichert...' : editingId ? 'AKTUALISIEREN' : 'ERSTELLEN'}
                                 </Button>
                             </div>
                         </form>
@@ -156,110 +171,259 @@ export default function LagerorteSeite() {
                 </Card>
             )}
 
-            {/* QR Modal */}
+            {/* QR Overlay Modal */}
             {selectedQr && (
-                <Card className="border-2 border-primary/30 shadow-xl max-w-sm mx-auto">
-                    <CardHeader className="border-b bg-muted/30 py-3 px-6 flex flex-row items-center justify-between">
-                        <CardTitle className="text-base font-black flex items-center gap-2">
-                            <QrCode className="h-4 w-4 text-primary" />
-                            {selectedQr.bezeichnung}
-                        </CardTitle>
-                        <Button variant="ghost" size="icon" onClick={() => setSelectedQr(null)} className="h-8 w-8">
-                            <X className="h-4 w-4" />
-                        </Button>
-                    </CardHeader>
-                    <CardContent className="p-6 flex flex-col items-center gap-4">
-                        <QrCodeGenerator
-                            content={selectedQr.qrCode || `LAGERORT:${selectedQr.id}`}
-                            label={selectedQr.bezeichnung}
-                            size={220}
-                            showDownload={true}
-                        />
-                        <code className="text-xs bg-muted px-3 py-1.5 rounded-lg font-mono text-muted-foreground">
-                            {selectedQr.qrCode || `LAGERORT:${selectedQr.id}`}
-                        </code>
-                    </CardContent>
-                </Card>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in zoom-in duration-200">
+                    <Card className="border-4 border-orange-500 shadow-2xl w-full max-w-sm rounded-[3rem] overflow-hidden bg-white animate-in slide-in-from-bottom-8 duration-300">
+                        <CardHeader className="border-b-2 border-orange-100 bg-orange-50/50 py-5 px-8 flex flex-row items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-orange-500 rounded-xl shadow-lg ring-4 ring-orange-500/20">
+                                    <QrCode className="h-5 w-5 text-white" />
+                                </div>
+                                <CardTitle className="text-base font-black uppercase tracking-tight text-slate-800">
+                                    {selectedQr.bezeichnung}
+                                </CardTitle>
+                            </div>
+                            <Button variant="ghost" size="icon" onClick={() => setSelectedQr(null)} className="h-9 w-9 rounded-full hover:bg-orange-100/50 text-slate-400 hover:text-orange-600 transition-colors">
+                                <X className="h-5 w-5" />
+                            </Button>
+                        </CardHeader>
+                        <CardContent className="p-10 flex flex-col items-center gap-8">
+                            {/* QR Section */}
+                            <div className="relative group">
+                                <div className="p-6 bg-white rounded-[2.5rem] shadow-2xl border-2 border-orange-100 ring-8 ring-orange-500/5 group-hover:ring-orange-500/10 transition-all">
+                                    <QrCodeGenerator
+                                        content={selectedQr.qrCode || `LAGERORT:${selectedQr.id}`}
+                                        label={selectedQr.bezeichnung}
+                                        size={220}
+                                        className="rounded-none"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Label Section */}
+                            <div className="text-center">
+                                <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-1">
+                                    {selectedQr.bezeichnung}
+                                </h3>
+                                <p className="text-[10px] font-bold text-orange-500/70 uppercase tracking-[0.2em] font-mono">
+                                    Lagerort QR-Code
+                                </p>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="grid grid-cols-3 gap-3 w-full border-t-2 border-orange-50 pt-8">
+                                <Button
+                                    variant="outline"
+                                    className="flex flex-col h-20 rounded-2xl border-2 border-slate-100 hover:border-orange-500 hover:bg-orange-50 transition-all group/btn"
+                                    onClick={() => {
+                                        const svg = document.querySelector('.qr-svg-wrapper svg');
+                                        if (svg) {
+                                            const clonedSvg = svg.cloneNode(true) as SVGSVGElement;
+
+                                            // Expand height and viewBox to fit the logo
+                                            const originalWidth = parseInt(clonedSvg.getAttribute('width') || '220');
+                                            const originalHeight = parseInt(clonedSvg.getAttribute('height') || '220');
+                                            const originalViewBox = clonedSvg.getAttribute('viewBox') || '0 0 45 45';
+                                            const vbValues = originalViewBox.split(' ').map(Number);
+
+                                            clonedSvg.setAttribute('height', (originalHeight + 60).toString());
+                                            clonedSvg.setAttribute('viewBox', `${vbValues[0]} ${vbValues[1]} ${vbValues[2]} ${vbValues[3] + 12}`);
+
+                                            // Add Logo Group
+                                            const logoGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                                            logoGroup.setAttribute('transform', `translate(${vbValues[2] / 2}, ${vbValues[3] + 6})`);
+
+                                            logoGroup.innerHTML = `
+                                                <rect x="-18" y="-5" width="36" height="10" rx="1" fill="#000000" />
+                                                <text x="0" y="2" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="5px" text-anchor="middle">
+                                                    <tspan fill="#F26A21">METHA</tspan><tspan fill="#FFFFFF">BAU</tspan>
+                                                </text>
+                                            `;
+                                            clonedSvg.appendChild(logoGroup);
+
+                                            const svgData = new XMLSerializer().serializeToString(clonedSvg);
+                                            const blob = new Blob([svgData], { type: 'image/svg+xml' });
+                                            const url = URL.createObjectURL(blob);
+                                            const a = document.createElement('a');
+                                            a.href = url;
+                                            a.download = `QR_${selectedQr.bezeichnung.replace(/\s+/g, '_')}.svg`;
+                                            a.click();
+                                            URL.revokeObjectURL(url);
+                                        }
+                                    }}
+                                >
+                                    <Download className="h-5 w-5 mb-2 text-slate-400 group-hover/btn:text-orange-600 group-hover/btn:scale-110 transition-all" />
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 group-hover/btn:text-orange-700">Herunt.</span>
+                                </Button>
+
+                                <Button
+                                    variant="outline"
+                                    className="flex flex-col h-20 rounded-2xl border-2 border-slate-100 hover:border-orange-500 hover:bg-orange-50 transition-all group/btn"
+                                    onClick={() => {
+                                        const svg = document.querySelector('.qr-svg-wrapper svg');
+                                        if (svg) {
+                                            const printWin = window.open('', '', 'width=600,height=600');
+                                            if (printWin) {
+                                                printWin.document.write(`
+                                                    <html>
+                                                        <head><title>Print QR</title></head>
+                                                        <body style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;font-family:sans-serif;">
+                                                            <div style="transform:scale(1.5);">${svg.outerHTML}</div>
+                                                            <div style="background-color:black;padding:6px 16px;border-radius:4px;display:flex;align-items:center;justify-content:center;margin-top:30px;">
+                                                                <span style="color:#F26A21;font-family:sans-serif;font-weight:900;font-size:18px;letter-spacing:1px;">METHA</span>
+                                                                <span style="color:white;font-family:sans-serif;font-weight:900;font-size:18px;letter-spacing:1px;">BAU</span>
+                                                            </div>
+                                                            <h2 style="margin-top:20px;text-transform:uppercase;font-weight:900;margin-bottom:5px;">${selectedQr.bezeichnung}</h2>
+                                                            <p style="margin-top:0px;color:#f97316;letter-spacing:2px;font-size:12px;font-weight:700;">LAGERORT QR-CODE</p>
+                                                            <script>setTimeout(() => { window.print(); window.close(); }, 500);</script>
+                                                        </body>
+                                                    </html>
+                                                `);
+                                                printWin.document.close();
+                                            }
+                                        }
+                                    }}
+                                >
+                                    <Printer className="h-5 w-5 mb-2 text-slate-400 group-hover/btn:text-orange-600 group-hover/btn:scale-110 transition-all" />
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 group-hover/btn:text-orange-700">Drucken</span>
+                                </Button>
+
+                                <Button
+                                    variant="outline"
+                                    className="flex flex-col h-20 rounded-2xl border-2 border-slate-100 hover:border-orange-500 hover:bg-orange-50 transition-all group/btn"
+                                    onClick={() => {
+                                        if (navigator.share) {
+                                            navigator.share({
+                                                title: `Lagerort: ${selectedQr.bezeichnung}`,
+                                                text: `QR Code für Lagerort ${selectedQr.bezeichnung}`,
+                                                url: window.location.href
+                                            }).catch(console.error);
+                                        } else {
+                                            navigator.clipboard.writeText(window.location.href);
+                                            alert('Link kopiert!');
+                                        }
+                                    }}
+                                >
+                                    <Share2 className="h-5 w-5 mb-2 text-slate-400 group-hover/btn:text-orange-600 group-hover/btn:scale-110 transition-all" />
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 group-hover/btn:text-orange-700">Teilen</span>
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
             )}
 
             {/* Lagerorte Grid */}
             {loading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {[1, 2, 3, 4].map(i => (
-                        <div key={i} className="h-40 bg-muted rounded-2xl animate-pulse" />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[1, 2, 3].map(i => (
+                        <div key={i} className="h-48 bg-muted rounded-[2rem] animate-pulse" />
                     ))}
                 </div>
             ) : lagerorte.length === 0 ? (
-                <Card className="border-2 border-dashed border-border">
-                    <CardContent className="py-20 flex flex-col items-center justify-center gap-4 text-center">
-                        <div className="p-4 rounded-full bg-muted">
-                            <Package className="h-10 w-10 text-muted-foreground/50" />
+                <Card className="border-2 border-dashed border-border rounded-[3rem]">
+                    <CardContent className="py-24 flex flex-col items-center justify-center gap-6 text-center">
+                        <div className="p-6 rounded-[2rem] bg-muted ring-8 ring-muted/30">
+                            <Package className="h-12 w-12 text-muted-foreground/30" />
                         </div>
                         <div>
-                            <h3 className="font-black text-foreground">Keine Lagerorte vorhanden</h3>
-                            <p className="text-sm text-muted-foreground mt-1">Erstellen Sie den ersten Lagerort für dieses Projekt.</p>
+                            <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Keine Lagerorte vorhanden</h3>
+                            <p className="text-sm text-muted-foreground mt-2 max-w-xs mx-auto">Verwalten Sie Ihre Materialien effizienter durch das Erstellen von markierten Lagerorten.</p>
                         </div>
-                        <Button onClick={openCreate} className="font-bold gap-2">
-                            <Plus className="h-4 w-4" /> Ersten Lagerort erstellen
+                        <Button onClick={openCreate} className="font-black gap-2 px-8 h-12 rounded-2xl shadow-xl shadow-primary/20">
+                            <Plus className="h-5 w-5" /> ERSTEN LAGERORT ERSTELLEN
                         </Button>
                     </CardContent>
                 </Card>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {lagerorte.map(l => (
-                        <Card key={l.id} className="border-2 border-border hover:border-primary/40 transition-all group shadow-sm hover:shadow-md">
-                            <CardHeader className="py-4 px-4 border-b border-border/50 bg-muted/20">
-                                <div className="flex items-start justify-between gap-2">
-                                    <div className="flex-1 min-w-0">
-                                        <CardTitle className="text-sm font-black text-foreground truncate">{l.bezeichnung}</CardTitle>
-                                        {l.bereich && (
-                                            <span className={cn('inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold', bereichColor(l.bereich))}>
-                                                {l.bereich}
-                                            </span>
-                                        )}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {lagerorte.map(l => {
+                        const info = getBereichInfo(l.bereich);
+                        return (
+                            <Card key={l.id} className="border-2 border-border hover:border-primary/40 transition-all group shadow-sm hover:shadow-xl rounded-[2rem] overflow-hidden flex flex-col bg-white">
+                                <CardHeader className="py-5 px-6 border-b border-border/50 bg-muted/5 flex-none">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <div className={cn("p-2 rounded-xl border shrink-0", info.bg, info.border)}>
+                                                    <info.icon className={cn("h-5 w-5", info.color)} />
+                                                </div>
+                                                <span className={cn('px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border', info.bg, info.border, info.color)}>
+                                                    {l.bereich || 'Diversas'}
+                                                </span>
+                                            </div>
+                                            <CardTitle className="text-lg font-black text-slate-800 leading-tight">
+                                                {l.bezeichnung}
+                                            </CardTitle>
+                                        </div>
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            className="h-9 w-9 p-0 rounded-xl font-bold shrink-0 shadow-sm border border-border"
+                                            onClick={() => setSelectedQr(selectedQr?.id === l.id ? null : l)}
+                                            title="QR Code anzeigen"
+                                        >
+                                            <QrCode className="h-4 w-4" />
+                                        </Button>
                                     </div>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-8 px-3 text-xs font-bold shrink-0 gap-1.5"
-                                        onClick={() => setSelectedQr(selectedQr?.id === l.id ? null : l)}
-                                    >
-                                        <QrCode className="h-3.5 w-3.5" />
-                                        QR
-                                    </Button>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="px-4 py-3">
-                                {l.beschreibung ? (
-                                    <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{l.beschreibung}</p>
-                                ) : (
-                                    <p className="text-xs text-muted-foreground/50 italic mb-3">Keine Beschreibung</p>
-                                )}
-                                <code className="block text-[10px] font-mono text-muted-foreground bg-muted px-2 py-1 rounded-md truncate mb-3">
-                                    {l.qrCode || `LAGERORT:${l.id}`}
-                                </code>
-                                <div className="flex gap-1.5">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground flex-1"
-                                        onClick={() => startEdit(l)}
-                                    >
-                                        <Pencil className="h-3 w-3 mr-1" />
-                                        Bearbeiten
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-7 w-7 text-muted-foreground/50 hover:text-red-600 hover:bg-red-50"
-                                        onClick={() => handleDelete(l.id)}
-                                    >
-                                        <Trash2 className="h-3.5 w-3.5" />
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
+                                </CardHeader>
+                                <CardContent className="px-6 py-5 flex-1 flex flex-col">
+                                    <div className="flex-1">
+                                        {l.beschreibung ? (
+                                            <p className="text-xs text-muted-foreground line-clamp-3 mb-4 font-medium leading-relaxed italic">
+                                                "{l.beschreibung}"
+                                            </p>
+                                        ) : (
+                                            <p className="text-xs text-muted-foreground/40 italic mb-4">Keine Beschreibung vorhanden...</p>
+                                        )}
+
+                                        <div className="flex flex-col gap-2 mb-5">
+                                            <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground bg-muted/50 px-3 py-2 rounded-xl border border-border/50">
+                                                <ScanLine className="h-3 w-3 shrink-0" />
+                                                <span className="truncate uppercase tracking-tighter">{l.qrCode || `LAGERORT:${l.id}`}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col gap-2">
+                                        {l.planUrl && (
+                                            <a
+                                                href={l.planUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="w-full h-10 border-2 border-orange-500 bg-orange-50/50 hover:bg-orange-100/70 text-orange-700 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm group/plan cursor-pointer"
+                                            >
+                                                <Map className="h-3.5 w-3.5 group-hover/plan:scale-110 transition-transform" />
+                                                Plan ansehen
+                                                <ExternalLink className="h-2.5 w-2.5 opacity-50" />
+                                            </a>
+                                        )}
+
+                                        <div className="flex gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-9 px-3 text-[10px] font-black uppercase tracking-wider text-muted-foreground hover:text-slate-800 hover:bg-slate-100 flex-1 rounded-xl"
+                                                onClick={() => startEdit(l)}
+                                            >
+                                                <Pencil className="h-3.5 w-3.5 mr-2" />
+                                                Edit
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-9 w-9 text-muted-foreground/40 hover:text-red-600 hover:bg-red-50 rounded-xl"
+                                                onClick={() => handleDelete(l.id)}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
                 </div>
             )}
         </div>

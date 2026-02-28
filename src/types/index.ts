@@ -307,6 +307,7 @@ export interface Lagerort {
   beschreibung?: string;
   qrCode?: string;          // QR code string (encode: "LAGERORT:{id}")
   bereich?: string;         // z.B. "Werkhof", "Baustelle", "Extern"
+  planUrl?: string;          // URL to a plan or map
   createdAt?: string;
   updatedAt?: string;
 }

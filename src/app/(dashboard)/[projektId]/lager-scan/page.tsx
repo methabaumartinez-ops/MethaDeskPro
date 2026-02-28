@@ -5,11 +5,13 @@ import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ScanLine, Package, MapPin, CheckCircle2, XCircle, ArrowLeft, ArrowRight } from 'lucide-react';
+import { ScanLine, Package, MapPin, CheckCircle2, XCircle, ArrowLeft, ArrowRight, Camera, Search, Warehouse } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import QrScanner from '@/components/shared/QrScanner';
-import { LagerbewegungTyp } from '@/types';
+import { LagerbewegungTyp, Lagerort } from '@/types';
+import { LagerortService } from '@/lib/services/lagerortService';
+import { Select } from '@/components/ui/select';
 
 type ScanStep = 'idle' | 'scan-entity' | 'scan-lagerort' | 'confirm' | 'done' | 'error';
 
@@ -47,6 +49,15 @@ export default function LagerScanSeite() {
     const [state, setState] = useState<ScanState>({ typ: 'einlagerung' });
     const [errorMsg, setErrorMsg] = useState('');
     const [loading, setLoading] = useState(false);
+    const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
+    const [selectionMode, setSelectionMode] = useState<'none' | 'camera' | 'manual'>('none');
+
+    // Fetch lagerorte for manual selection
+    React.useEffect(() => {
+        if (projektId) {
+            LagerortService.getLagerorte(projektId).then(setLagerorte).catch(console.error);
+        }
+    }, [projektId]);
 
     async function fetchEntityDetails(type: string, id: string) {
         try {
@@ -303,7 +314,115 @@ export default function LagerScanSeite() {
                         </div>
                     </CardHeader>
                     <CardContent className="p-6">
-                        <QrScanner onScan={handleLagerortScan} label="" />
+                        <div className="flex flex-col gap-6">
+                            {/* Mode Selection Buttons */}
+                            <div className="grid grid-cols-2 gap-6">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setSelectionMode('camera')}
+                                    className={cn(
+                                        "h-48 flex flex-col items-center justify-center gap-4 border-2 transition-all rounded-[2rem] relative overflow-hidden group shadow-lg",
+                                        selectionMode === 'camera'
+                                            ? "border-primary bg-primary/5 shadow-primary/20 scale-105"
+                                            : "border-slate-100 hover:border-primary/30 hover:shadow-xl bg-white"
+                                    )}
+                                >
+                                    <div className={cn(
+                                        "w-24 h-24 rounded-3xl flex items-center justify-center transition-transform duration-500 group-hover:scale-110",
+                                        selectionMode === 'camera' ? "bg-primary/10" : "bg-slate-50"
+                                    )}>
+                                        <img
+                                            src="/images/camera_scan.png"
+                                            alt="Camera Scan"
+                                            className="w-20 h-20 object-contain drop-shadow-xl"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col items-center">
+                                        <span className={cn(
+                                            "font-black uppercase tracking-[0.2em] text-[10px]",
+                                            selectionMode === 'camera' ? "text-primary" : "text-slate-400"
+                                        )}>Schritt 3a</span>
+                                        <span className="font-black text-sm text-foreground">Kamera Scan</span>
+                                    </div>
+                                    {selectionMode === 'camera' && (
+                                        <div className="absolute top-0 right-0 p-2">
+                                            <div className="h-2 w-2 rounded-full bg-primary animate-ping" />
+                                        </div>
+                                    )}
+                                </Button>
+
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setSelectionMode('manual')}
+                                    className={cn(
+                                        "h-48 flex flex-col items-center justify-center gap-4 border-2 transition-all rounded-[2rem] relative overflow-hidden group shadow-lg",
+                                        selectionMode === 'manual'
+                                            ? "border-orange-500 bg-orange-500/5 shadow-orange-500/20 scale-105"
+                                            : "border-slate-100 hover:border-orange-500/30 hover:shadow-xl bg-white"
+                                    )}
+                                >
+                                    <div className={cn(
+                                        "w-24 h-24 rounded-3xl flex items-center justify-center transition-transform duration-500 group-hover:scale-110",
+                                        selectionMode === 'manual' ? "bg-orange-500/10" : "bg-slate-50"
+                                    )}>
+                                        <img
+                                            src="/images/pointing_hand.png"
+                                            alt="Manual Selection"
+                                            className="w-20 h-20 object-contain drop-shadow-xl"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col items-center">
+                                        <span className={cn(
+                                            "font-black uppercase tracking-[0.2em] text-[10px]",
+                                            selectionMode === 'manual' ? "text-orange-600" : "text-slate-400"
+                                        )}>Schritt 3b</span>
+                                        <span className="font-black text-sm text-foreground">Manuelle Auswahl</span>
+                                    </div>
+                                    {selectionMode === 'manual' && (
+                                        <div className="absolute top-0 right-0 p-2">
+                                            <div className="h-2 w-2 rounded-full bg-orange-500 animate-ping" />
+                                        </div>
+                                    )}
+                                </Button>
+                            </div>
+
+                            {/* View Content based on selection */}
+                            {selectionMode === 'camera' && (
+                                <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                                    <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider px-2">
+                                        <ScanLine className="h-3 w-3" />
+                                        QR-Code Scannen
+                                    </div>
+                                    <QrScanner onScan={handleLagerortScan} label="" />
+                                </div>
+                            )}
+
+                            {selectionMode === 'manual' && (
+                                <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                                    <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider px-2">
+                                        <Search className="h-3 w-3" />
+                                        In Liste Suchen
+                                    </div>
+                                    <Select
+                                        value={state.lagerortId}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            const lo = lagerorte.find(l => l.id === val);
+                                            if (lo) handleLagerortScan(lo.qrCode || `LAGERORT:${lo.id}`);
+                                        }}
+                                        options={[
+                                            { label: 'Bitte wählen...', value: '' },
+                                            ...lagerorte.map(lo => ({
+                                                label: `${lo.bezeichnung} (${lo.bereich})`,
+                                                value: lo.id
+                                            }))
+                                        ]}
+                                    />
+                                </div>
+                            )}
+                        </div>
                     </CardContent>
                     <CardFooter className="border-t bg-muted/20 px-6 py-4">
                         <Button variant="ghost" onClick={() => setStep('scan-entity')} className="font-bold gap-2">
