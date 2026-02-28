@@ -182,7 +182,7 @@ export default function TeilsystemDetailPage() {
                 </div>
 
                 <div className="text-right flex flex-col items-end gap-3">
-                    <StatusBadge status={item.status} />
+                    <StatusBadge status={item.status} className="px-5 py-1.5 text-sm rounded-xl shadow-md border-b-4 border-green-600/20 ring-4 ring-green-50/50" />
                     {isReadOnly && (
                         <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase bg-muted px-2 py-1 rounded-md">
                             <ShieldCheck className="h-3.5 w-3.5 text-blue-500" />
@@ -192,21 +192,21 @@ export default function TeilsystemDetailPage() {
                 </div>
             </div>
 
-            {/* Main 3-Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Main Layout Container */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
 
-                {/* Column 1: SYSTEM DETAILS (Left Box in Photo) */}
-                <div className="lg:col-span-5 h-full">
-                    <Card className="shadow-sm border-2 border-border h-full overflow-hidden">
-                        <CardHeader className="py-3 px-4 bg-muted/30 border-b border-border">
-                            <CardTitle className="text-xs font-black uppercase tracking-wider text-muted-foreground">System Details</CardTitle>
+                {/* Column 1: SYSTEM DETAILS (Left) */}
+                <div className="lg:col-span-5">
+                    <Card className="shadow-sm border-2 border-border overflow-hidden h-full flex flex-col">
+                        <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
+                            <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">System Details</CardTitle>
                         </CardHeader>
-                        <CardContent className="p-0">
+                        <CardContent className="p-0 flex-1 bg-white">
                             <div className="grid grid-cols-1 divide-y divide-border">
                                 {detailFields.map((field, i) => (
-                                    <div key={i} className="px-4 py-3 flex items-center justify-between hover:bg-muted/5 transition-colors">
+                                    <div key={i} className="px-4 py-1.5 flex items-center justify-between hover:bg-muted/5 transition-colors">
                                         <div className="flex items-center gap-2">
-                                            <div className="p-1 bg-muted rounded-md">
+                                            <div className="p-1 bg-muted rounded-md shrink-0">
                                                 <field.icon className={cn("h-3 w-3 text-muted-foreground", field.color)} />
                                             </div>
                                             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">{field.label}</span>
@@ -218,24 +218,24 @@ export default function TeilsystemDetailPage() {
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
-                                                            className="h-6 px-1.5 text-[9px] font-black uppercase text-primary hover:bg-primary/10 flex items-center gap-1"
+                                                            className="h-5 px-1.5 text-[8px] font-black uppercase text-primary hover:bg-primary/10 flex items-center gap-1"
                                                             onClick={() => {
                                                                 navigator.clipboard.writeText(String(field.value) || '');
                                                                 alert('Pfad kopiert!');
                                                             }}
                                                         >
-                                                            <Copy className="h-2.5 w-2.5" />
+                                                            <Copy className="h-2 w-2" />
                                                             Copy
                                                         </Button>
                                                     ) : (
-                                                        <a href={String(field.value)} target="_blank" rel="noreferrer" className="text-[11px] font-bold text-primary truncate max-w-[150px] hover:underline flex items-center gap-1">
+                                                        <a href={String(field.value)} target="_blank" rel="noreferrer" className="text-[10px] font-bold text-primary truncate max-w-[120px] hover:underline flex items-center gap-1">
                                                             <span>Link</span>
-                                                            <ExternalLink className="h-2.5 w-2.5" />
+                                                            <ExternalLink className="h-2 w-2" />
                                                         </a>
                                                     )}
                                                 </div>
                                             ) : (
-                                                <span className={cn("text-[11px] font-bold text-foreground", field.color)}>
+                                                <span className={cn("text-[10px] font-bold text-foreground", field.color)}>
                                                     {field.value || '—'}
                                                 </span>
                                             )}
@@ -247,80 +247,81 @@ export default function TeilsystemDetailPage() {
                     </Card>
                 </div>
 
-                {/* Column 2: BEMERKUNG (Middle Box - Replaces IFC Info) */}
-                <div className="lg:col-span-3 flex flex-col gap-6">
-                    <Card className="shadow-sm border-2 border-primary/20 bg-orange-50/10 flex-1 overflow-hidden">
-                        <CardHeader className="py-2.5 px-4 bg-primary/5 border-b border-primary/10">
-                            <CardTitle className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                <ListTodo className="h-3.5 w-3.5" />
-                                Bemerkung
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-4">
-                            <div className="text-[11px] text-muted-foreground leading-relaxed italic whitespace-pre-wrap">
-                                {item.bemerkung || 'Keine Bemerkung vorhanden.'}
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                {/* Column 2: Right Side Content (7 Cols) */}
+                <div className="lg:col-span-7 flex flex-col gap-6 h-full">
 
-                {/* Column 3: ACTIONS & MODEL VIEWER (Right Area) */}
-                <div className="lg:col-span-4 flex flex-col gap-6">
-                    {/* Action Buttons Section */}
-                    <Card className="shadow-lg border-2 border-orange-600 rounded-[2rem] overflow-hidden bg-white/70 backdrop-blur-xl">
-                        <CardContent className="p-6 flex flex-col gap-4 items-center">
-                            {/* Row 1: Kosten Erfassen */}
-                            {canViewKosten && (
-                                <Link href={`/${projektId}/kosten?ts=${id}`} className="w-full">
-                                    <Button className="w-full h-12 border-2 border-green-400 bg-green-50/50 hover:bg-green-100/70 text-green-700 font-black uppercase text-[11px] tracking-widest rounded-2xl flex items-center justify-center gap-3 transition-all shadow-md border-b-4 active:border-b-2 active:translate-y-[2px]">
-                                        <div className="p-1.5 bg-white rounded-full shadow-sm">
-                                            <Briefcase className="h-4 w-4 text-green-600" />
-                                        </div>
-                                        <span>Kosten erfassen</span>
-                                    </Button>
-                                </Link>
-                            )}
+                    {/* Top Row: Bemerkung and Actions Section */}
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
 
-                            {/* Row 2: Einlagern & Auslagern */}
-                            <div className="flex items-center gap-4 w-full">
-                                <Link href={`/${projektId}/lager-scan?type=teilsystem&id=${id}&action=einlagerung&qr=TEILSYSTEM:${id}`} className="flex-1">
-                                    <Button variant="outline" className="w-full h-12 border-2 border-blue-400 bg-white hover:bg-blue-50 text-blue-700 font-black uppercase text-[10px] tracking-widest rounded-2xl flex items-center justify-center gap-2 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[2px]">
-                                        <div className="p-1 bg-blue-100 rounded-full">
-                                            <ArrowLeft className="h-3.5 w-3.5 text-blue-600 rotate-[-90deg]" />
-                                        </div>
-                                        <span>Einlagern</span>
-                                    </Button>
-                                </Link>
-                                <Link href={`/${projektId}/lager-scan?type=teilsystem&id=${id}&action=auslagerung&qr=TEILSYSTEM:${id}`} className="flex-1">
-                                    <Button variant="outline" className="w-full h-12 border-2 border-red-400 bg-white hover:bg-red-50 text-red-700 font-black uppercase text-[10px] tracking-widest rounded-2xl flex items-center justify-center gap-2 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[2px]">
-                                        <div className="p-1 bg-red-100 rounded-full">
-                                            <ArrowLeft className="h-3.5 w-3.5 text-red-600 rotate-[90deg]" />
-                                        </div>
-                                        <span>Auslagern</span>
-                                    </Button>
-                                </Link>
-                            </div>
-                        </CardContent>
-                    </Card>
+                        {/* Bemerkung (approx 5 cols) */}
+                        <Card className="md:col-span-5 shadow-sm border-2 border-primary/20 bg-orange-50/10 overflow-hidden flex flex-col">
+                            <CardHeader className="py-2 px-4 bg-primary/5 border-b border-primary/10">
+                                <CardTitle className="text-[9px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                                    <ListTodo className="h-3 w-3" />
+                                    Bemerkung
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-3 flex-1">
+                                <div className="text-[10px] text-muted-foreground leading-relaxed italic whitespace-pre-wrap">
+                                    {item.bemerkung || 'Keine Bemerkung vorhanden.'}
+                                </div>
+                            </CardContent>
+                        </Card>
 
-                    {/* BIM Viewer Section (Occupies full space of Col 3) */}
-                    <div className="h-full min-h-[500px] relative group shadow-xl border-4 border-red-500 rounded-[2rem] overflow-hidden bg-slate-900/5 ring-8 ring-red-500/5">
+                        {/* Action Buttons (approx 7 cols) */}
+                        <Card className="md:col-span-7 shadow-lg border-2 border-orange-600/30 rounded-3xl overflow-hidden bg-white/70 backdrop-blur-xl">
+                            <CardContent className="p-4 flex flex-col gap-3 items-center justify-center h-full">
+                                {canViewKosten && (
+                                    <Link href={`/${projektId}/kosten?ts=${id}`} className="w-full max-w-[240px]">
+                                        <Button className="w-full h-10 border-2 border-green-400 bg-green-50/50 hover:bg-green-100/70 text-green-700 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center justify-center gap-2.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
+                                            <div className="p-1 bg-white rounded-full shadow-sm">
+                                                <Briefcase className="h-3.5 w-3.5 text-green-600" />
+                                            </div>
+                                            <span>Kosten erfassen</span>
+                                        </Button>
+                                    </Link>
+                                )}
+
+                                <div className="flex items-center gap-3 w-full max-w-[240px]">
+                                    <Link href={`/${projektId}/lager-scan?type=teilsystem&id=${id}&action=einlagerung&qr=TEILSYSTEM:${id}`} className="flex-1">
+                                        <Button variant="outline" className="w-full h-10 border-2 border-blue-400 bg-white hover:bg-blue-50 text-blue-700 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
+                                            <div className="p-0.5 bg-blue-100 rounded-full">
+                                                <ArrowLeft className="h-3 w-3 text-blue-600 rotate-[-90deg]" />
+                                            </div>
+                                            <span>Einlagern</span>
+                                        </Button>
+                                    </Link>
+                                    <Link href={`/${projektId}/lager-scan?type=teilsystem&id=${id}&action=auslagerung&qr=TEILSYSTEM:${id}`} className="flex-1">
+                                        <Button variant="outline" className="w-full h-10 border-2 border-red-400 bg-white hover:bg-red-50 text-red-700 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
+                                            <div className="p-0.5 bg-red-100 rounded-full">
+                                                <ArrowLeft className="h-3 w-3 text-red-600 rotate-[90deg]" />
+                                            </div>
+                                            <span>Auslagern</span>
+                                        </Button>
+                                    </Link>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Bottom Row: Expanded IFC Viewer */}
+                    <div className="flex-1 min-h-[450px] relative group shadow-xl border-4 border-orange-600/10 rounded-[2rem] overflow-hidden bg-slate-900/5 ring-4 ring-orange-600/5">
                         {/* Custom Viewer Overlay */}
                         <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
-                            <div className="bg-orange-600 text-white p-2.5 rounded-2xl shadow-lg ring-4 ring-orange-600/20">
-                                <Video className="h-5 w-5" />
+                            <div className="bg-orange-600 text-white p-2 rounded-xl shadow-lg ring-4 ring-orange-600/20">
+                                <Video className="h-4 w-4" />
                             </div>
-                            <Badge className="bg-white/95 backdrop-blur-md text-slate-800 border-none px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md">
+                            <Badge className="bg-white/95 backdrop-blur-md text-slate-800 border-none px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider shadow-md">
                                 Model Viewer
                             </Badge>
                         </div>
 
                         <div className="absolute top-4 right-4 z-10 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button variant="secondary" size="icon" className="h-10 w-10 rounded-2xl bg-white/90 backdrop-blur-md shadow-sm border-none hover:bg-white text-slate-600">
-                                <Maximize2 className="h-4 w-4" />
+                            <Button variant="secondary" size="icon" className="h-9 w-9 rounded-xl bg-white/90 backdrop-blur-md shadow-sm border-none hover:bg-white text-slate-600">
+                                <Maximize2 className="h-3.5 w-3.5" />
                             </Button>
-                            <Button variant="secondary" size="icon" className="h-10 w-10 rounded-2xl bg-white/90 backdrop-blur-md shadow-sm border-none hover:bg-white text-slate-600">
-                                <ExternalLink className="h-4 w-4" />
+                            <Button variant="secondary" size="icon" className="h-9 w-9 rounded-xl bg-white/90 backdrop-blur-md shadow-sm border-none hover:bg-white text-slate-600">
+                                <ExternalLink className="h-3.5 w-3.5" />
                             </Button>
                         </div>
 
