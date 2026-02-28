@@ -95,8 +95,8 @@ export async function POST(req: NextRequest) {
 
         const FIELD_OK = "Höhenkote OK";
         const FIELD_UK = "Höhenkote UK";
-        const FIELD_AREA = "superficies";
-        const FIELD_COLOR = "color";
+        const FIELD_AREA = "Fläche";
+        const FIELD_COLOR = "Farbe";
         const FIELD_REMARK = "Bemerkung";
 
         const SCAN_TYPES = [
@@ -169,7 +169,7 @@ export async function POST(req: NextRequest) {
         if (elementsMap.size === 0) {
             log("Targeted scan empty, check ifcTypes/file.");
         }
-        if (elementsMap.size === 0) throw new Error("REGLA 0: elements == 0. Aborting.");
+        if (elementsMap.size === 0) throw new Error("REGEL 0: Keine Elemente gefunden. Abbrechen.");
 
         // ── PHASE 2: HIERARCHY DETECTION (PRO rules) ──────────────────────────
         log("Phase 2: Hierarchy Detection");

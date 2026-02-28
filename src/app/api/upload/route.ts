@@ -101,7 +101,7 @@ export async function POST(req: Request) {
 
         // Return the usable link (e.g. webContentLink or thumbnailLink for images)
         // For images we might want webContentLink or thumbnailLink
-        // user requested "almacenamiento de imagenes", so likely for display
+        // Benutzer hat "Bildspeicherung" angefordert, wahrscheinlich für Anzeige
 
         // Note: Google Drive images might not display directly in <img> tags without public access or proxy
         // But let's return the link provided by API

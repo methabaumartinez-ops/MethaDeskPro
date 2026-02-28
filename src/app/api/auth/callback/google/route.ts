@@ -45,7 +45,7 @@ export async function GET(req: Request) {
 
         return new NextResponse(
             `<html>
-            <head><title>Google Drive - Token obtenido</title></head>
+            <head><title>Google Drive - Token erhalten</title></head>
             <body style="font-family:sans-serif;padding:40px;max-width:800px;margin:0 auto;">
                 <h1 style="color:green;">✅ Autorisierung erfolgreich</h1>
                 <h2>Refresh Token:</h2>
@@ -75,7 +75,7 @@ export async function GET(req: Request) {
                 <h1 style="color:red;">❌ Fehler beim Abrufen der Tokens</h1>
                 <pre>${err instanceof Error ? err.message : String(err)}</pre>
                 <br/>
-                <a href="/api/auth/google">Intentar de nuevo</a>
+                <a href="/api/auth/google">Erneut versuchen</a>
             </body></html>`,
             { headers: { 'Content-Type': 'text/html' } }
         );

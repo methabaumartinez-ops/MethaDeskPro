@@ -38,7 +38,20 @@
 :root {
   --background: #ffffff;
   --foreground: #334155;
-  /* Slate 700 - Suavizado desde negro puro */
+  /* Slate 700 - Abgemildert von reinem Schwarz */
+  --slate-700: 51 65 85;
+  /* Slate 600 - Standard Textfarbe */
+  --slate-600: 71 85 105;
+  /* Slate 500 - Secondary text */
+  --slate-500: 100 116 139;
+  /* Slate 400 - Muted text */
+  --slate-400: 148 163 184;
+  /* Slate 300 - Decorative elements */
+  --slate-300: 203 213 225;
+  /* Slate 200 - Borders */
+  --slate-200: 226 232 240;
+  /* Slate 100 - Card backgrounds */
+  --slate-100: 241 245 249;
   --card: #ffffff;
   --card-foreground: #334155;
   --popover: #ffffff;
@@ -48,7 +61,7 @@
   --secondary: #ffffff;
   --secondary-foreground: #18181b;
   --muted: #f8fafc;
-  /* Slate 50 - Muy sutil para diferenciación */
+  /* Slate 50 - Sehr dezent für Differenzierung */
   --muted-foreground: #64748b;
   /* Slate 500 */
   --accent: #fff7ed;

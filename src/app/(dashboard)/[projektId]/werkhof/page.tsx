@@ -118,20 +118,19 @@ export default function WerkhofPage() {
     }, {} as Record<string, MaterialBestellung[]>);
 
     return (
-        <div className="space-y-10 h-full flex flex-col pt-2 max-w-7xl mx-auto pb-20 overflow-y-auto scrollbar-hide">
-            {/* Sticky Header Section */}
-            <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-md -mx-4 px-4 py-6 border-b shadow-sm mb-4 flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all">
+        <div className="space-y-10 h-full flex flex-col pt-2 max-w-7xl mx-auto pb-20">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <h1 className="text-4xl font-black text-slate-900 tracking-tight">Logistik & Werkhof</h1>
-                    <p className="text-muted-foreground font-black text-[10px] uppercase tracking-[0.1em] mt-1">Überwachung Materialfluss Projekte</p>
+                    <p className="text-muted-foreground font-medium mt-1">Überwache und verwalte alle Materialflüsse der Projekte.</p>
                 </div>
-                <div className="p-4 bg-primary/5 rounded-2xl border-2 border-primary/20 shadow-inner">
+                <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/20 rounded-xl shadow-sm">
+                        <div className="p-2 bg-primary/20 rounded-xl">
                             <Warehouse className="w-5 h-5 text-primary" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black uppercase text-primary/60 tracking-widest">Status Lager</p>
+                            <p className="text-[10px] font-black uppercase text-primary/60 tracking-widest">Lagerkapazität</p>
                             <p className="text-sm font-black text-primary">Normalbetrieb</p>
                         </div>
                     </div>

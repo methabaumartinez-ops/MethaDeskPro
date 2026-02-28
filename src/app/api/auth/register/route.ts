@@ -23,7 +23,7 @@ export async function POST(req: Request) {
         return NextResponse.json({
             success: true,
             message: 'Registrierung erfolgreich. Bitte bestätigen Sie Ihre E-Mail-Adresse.',
-            // En desarrollo, retornar token para facilitar pruebas
+            // In der Entwicklung Token zurückgeben, um Tests zu erleichtern
             ...(process.env.NODE_ENV !== 'production' ? { confirmationToken: result.confirmationToken } : {}),
         });
     } catch (error) {

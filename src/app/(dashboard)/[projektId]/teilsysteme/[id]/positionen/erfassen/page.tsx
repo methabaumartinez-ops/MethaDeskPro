@@ -18,7 +18,7 @@ import { PositionService } from '@/lib/services/positionService';
 import { Teilsystem } from '@/types';
 
 const positionSchema = z.object({
-    posNummer: z.string().min(1, 'Número de posición es requerido'),
+    posNummer: z.string().min(1, 'Positionsnummer ist erforderlich'),
     name: z.string().min(3, 'Bezeichnung muss mindestens 3 Zeichen lang sein'),
     menge: z.coerce.number().min(1, 'Menge muss mindestens 1 sein'),
     einheit: z.string().min(1, 'Einheit ist erforderlich'),

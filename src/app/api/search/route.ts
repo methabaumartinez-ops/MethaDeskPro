@@ -1,9 +1,8 @@
 // src/app/api/search/route.ts
-// Búsqueda semántica: mezcla filtros Qdrant + búsqueda por vector
+// Semantische Suche: Kombiniert Qdrant-Filter + Vektorsuche
 import { NextRequest, NextResponse } from 'next/server';
 import { searchSemantic } from '@/lib/qdrant/semanticSearch';
 import { DatabaseService } from '@/lib/services/db';
-import { Position, Teilsystem, Unterposition } from '@/types';
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
@@ -17,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     try {
         if (query.trim()) {
-            // Búsqueda semántica en Qdrant vector collection
+            // Semantische Suche in Qdrant-Vektorkollektion
             const results = await searchSemantic({
                 query,
                 limit,
@@ -25,7 +24,7 @@ export async function GET(request: NextRequest) {
             });
             return NextResponse.json({ results, mode: 'semantic' });
         } else {
-            // Sin query: búsqueda por filtros simples en colecciones normales
+            // Ohne Query: Suche nach einfachen Filtern in normalen Kollektionen
             const must: any[] = [];
             if (projektId) must.push({ key: 'projektId', match: { value: projektId } });
             if (status) must.push({ key: 'status', match: { value: status } });

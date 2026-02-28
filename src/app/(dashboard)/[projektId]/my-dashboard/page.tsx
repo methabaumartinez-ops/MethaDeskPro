@@ -47,14 +47,14 @@ export default function MyDashboardPage() {
             text: "Ich möchte ein Widget, das alle Teilsysteme (TS) anzeigt, deren Montagetermin in den nächsten 2 Wochen liegt. Ich möchte die Projektnummer, den TS-Namen und das Datum sehen und die Termine direkt im Dashboard bearbeiten können."
         },
         {
-            title: "Beispiel 2: Dokumenten-Wächter",
-            text: "Ich möchte einen Container, in dem ich Dokumente hochladen kann und das System erkennt automatisch, ob es sich um Sicherheitslisten oder Lieferscheine handelt."
+            title: "Beispiel 2: Lager-Logistik Monitor",
+            text: "Erstelle ein Widget, das alle Teilsysteme auflistet, die aktuell dem Lagerort 'Baustelle' zugeordnet sind. Zeige den Status, die Positionsnummer und das Material an, damit ich den Bestand vor Ort direkt verwalten kann."
         }
     ];
 
     const features = [
         { icon: Layout, title: "Personalisierbarer Bereich", desc: "Jeder in unserem Team erhält sein eigenes, massgeschneidertes Dashboard." },
-        { icon: Cpu, title: "KI-gestützter Builder", desc: "Erstell komplexe Widgets einfach im Gespräch mit nuestro asistente." },
+        { icon: Cpu, title: "KI-gestützter Builder", desc: "Erstellen Sie komplexe Widgets einfach im Gespräch mit Ihrem Assistenten." },
         { icon: Zap, title: "Dynamische Generierung", desc: "Die Benutzeroberfläche passt sich in Echtzeit deinen Bedürfnissen an." },
         { icon: Workflow, title: "Vollständige Integration", desc: "Verbindet Dokumente und Prozesse direkt in Methadesk." }
     ];

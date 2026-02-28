@@ -59,7 +59,7 @@ export function Sidebar({ projektId, className, forceProjectSelection = false }:
             ]
         },
         { title: 'Fuhrpark', href: `/fuhrpark`, icon: Car, permission: 'viewKosten' },
-        // Pestañas técnicas que solo se muestran con proyecto seleccionado
+        // Technische Tabs, die nur bei ausgewähltem Projekt angezeigt werden
         ...(!forceProjectSelection ? [
             { title: 'Kostenerfassung', href: `/${projektId}/kosten`, icon: DollarSign, permission: 'viewKosten' as keyof RolePermissions },
             { title: 'Tabellen', href: `/${projektId}/tabellen`, icon: ListTodo, permission: 'read' as keyof RolePermissions },

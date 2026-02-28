@@ -21,7 +21,6 @@ import { SubsystemService } from '@/lib/services/subsystemService';
 import { KostenService } from '@/lib/services/kostenService';
 import { EmployeeService } from '@/lib/services/employeeService';
 import { Teilsystem, TsStunden, TsMaterialkosten, Mitarbeiter, ABTEILUNGEN_CONFIG } from '@/types';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 
 // Helper to format currency in CHF
 const formatCHF = (value: number) => {
@@ -44,8 +43,7 @@ export default function AnalysePage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                setLoading(true);
-                const [subs, hrs, mats, emps] = await Promise.all([
+                const [subs, hrs, mat, emps] = await Promise.all([
                     SubsystemService.getTeilsysteme(projektId),
                     KostenService.getStunden(undefined, projektId),
                     KostenService.getMaterialkosten(undefined, projektId),
@@ -53,7 +51,7 @@ export default function AnalysePage() {
                 ]);
                 setSubsystems(subs);
                 setStunden(hrs);
-                setMaterialkosten(mats);
+                setMaterialkosten(mat);
                 setMitarbeiter(emps);
             } catch (error) {
                 console.error("Error fetching analysis data", error);
@@ -172,17 +170,16 @@ export default function AnalysePage() {
     if (loading) return <div className="p-12 text-center font-black animate-pulse text-slate-400">ANALYSESYSTEM WIRD AKTUALISIERT...</div>
 
     return (
-        <div className="flex flex-col gap-8 p-1 h-full overflow-y-auto scrollbar-hide">
-            {/* Sticky Header Section */}
-            <div className="sticky top-0 z-40 bg-slate-50/95 backdrop-blur-md -mx-1 px-5 py-4 border-b shadow-sm mb-2 flex justify-between items-center">
+        <div className="flex flex-col gap-6 p-1 h-full overflow-y-auto scrollbar-hide">
+            <div className="flex justify-between items-center px-4">
                 <div>
                     <h2 className="text-2xl font-black text-slate-800 tracking-tight dark:text-orange-400">Projekt-Analyse</h2>
-                    <p className="text-slate-500 font-bold text-[10px] uppercase tracking-wider">Strategische Übersicht (Echtzeit-Daten).</p>
+                    <p className="text-slate-500 font-medium text-xs">Strategische Übersicht (Echtzeit-Daten aus Datenbank / CHF).</p>
                 </div>
                 <div className="flex gap-2">
-                    <span className="bg-white px-3 py-1.5 rounded-full text-[10px] font-black border-2 border-slate-100 text-slate-500 flex items-center gap-1 shadow-sm">
-                        <DollarSign className="w-3 h-3" />
-                        PROJEKTWÄHRUNG: CHF
+                    <span className="bg-white px-3 py-1 rounded-full text-[10px] font-bold border border-slate-200 text-slate-500 flex items-center gap-1 shadow-sm">
+                        <Clock size={12} />
+                        Stand: {new Date().toLocaleDateString('de-CH')}
                     </span>
                 </div>
             </div>
@@ -279,31 +276,31 @@ export default function AnalysePage() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
-                    <Table className="[&_th]:top-[82px]">
-                        <TableHeader className="bg-slate-50/50">
-                            <TableRow>
-                                <TableHead className="px-8 py-4">TS-Nummer</TableHead>
-                                <TableHead className="px-4 py-4">Bezeichnung</TableHead>
-                                <TableHead className="px-4 py-4 text-right">Stunden</TableHead>
-                                <TableHead className="px-8 py-4 text-right">Ist-Kosten</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
+                    <table className="w-full text-left font-sans">
+                        <thead>
+                            <tr className="border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                <th className="px-8 py-4">TS-Nummer</th>
+                                <th className="px-4 py-4">Bezeichnung</th>
+                                <th className="px-4 py-4 text-right">Stunden</th>
+                                <th className="px-8 py-4 text-right">Ist-Kosten</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50">
                             {tsData.map((ts, i) => (
-                                <TableRow key={i} className="hover:bg-slate-50/50 transition-colors group">
-                                    <TableCell className="px-8 py-4 font-black text-primary text-xs">{ts.nr || '—'}</TableCell>
-                                    <TableCell className="px-4 py-4 font-bold text-slate-700 text-xs">{ts.name}</TableCell>
-                                    <TableCell className="px-4 py-4 font-bold text-slate-600 text-xs text-right">{ts.hours.toFixed(2)} h</TableCell>
-                                    <TableCell className="px-8 py-4 font-black text-slate-800 text-xs text-right">{formatCHF(ts.cost)}</TableCell>
-                                </TableRow>
+                                <tr key={i} className="hover:bg-slate-50/50 transition-colors group">
+                                    <td className="px-8 py-4 font-black text-primary text-xs">{ts.nr || '—'}</td>
+                                    <td className="px-4 py-4 font-bold text-slate-700 text-xs">{ts.name}</td>
+                                    <td className="px-4 py-4 font-bold text-slate-600 text-xs text-right">{ts.hours.toFixed(2)} h</td>
+                                    <td className="px-8 py-4 font-black text-slate-800 text-xs text-right">{formatCHF(ts.cost)}</td>
+                                </tr>
                             ))}
                             {tsData.length === 0 && (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="px-8 py-12 text-center text-slate-400 font-bold italic">Keine Daten für Teilsysteme vorhanden.</TableCell>
-                                </TableRow>
+                                <tr>
+                                    <td colSpan={4} className="px-8 py-12 text-center text-slate-400 font-bold italic">Keine Daten für Teilsysteme vorhanden.</td>
+                                </tr>
                             )}
-                        </TableBody>
-                    </Table>
+                        </tbody>
+                    </table>
                 </CardContent>
             </Card>
 

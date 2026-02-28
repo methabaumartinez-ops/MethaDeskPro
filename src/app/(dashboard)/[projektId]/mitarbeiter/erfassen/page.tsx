@@ -110,7 +110,7 @@ export default function MitarbeiterErfassenPage() {
                                 </div>
                                 <div>
                                     <p className="text-sm font-bold text-slate-700">Bild hochladen</p>
-                                    <p className="text-xs text-slate-400 font-medium mt-0.5">JPG o PNG, max. 2MB</p>
+                                    <p className="text-xs text-slate-400 font-medium mt-0.5">JPG oder PNG, max. 2MB</p>
                                 </div>
                             </div>
                         </div>
