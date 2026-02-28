@@ -329,7 +329,7 @@ export default function TabellenPage() {
             {/* Content Area */}
             <div className="flex-1 overflow-y-auto bg-slate-50/50 rounded-xl border p-6">
                 <div className="space-y-6">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between sticky top-[-1.5rem] z-30 bg-white pb-4 -mx-6 px-6 pt-6 mb-4 shadow-sm">
                         <div>
                             <h1 className="text-2xl font-bold flex items-center gap-2">
                                 {tables.find(t => t.id === activeTable)?.icon &&
@@ -347,10 +347,6 @@ export default function TabellenPage() {
                             </p>
                         </div>
                         <div className="flex gap-2">
-                            <Button variant="outline" size="sm">
-                                <Settings className="h-4 w-4 mr-2" />
-                                Spalten
-                            </Button>
                             <Button className="bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] h-9 px-6 rounded-full shadow-md flex items-center gap-2 transition-all hover:scale-105 active:scale-95" onClick={handleExport}>
                                 <HardDrive className="h-4 w-4 mr-2" />
                                 Exportieren
