@@ -39,7 +39,7 @@ export function Sidebar({ projektId, className, forceProjectSelection = false }:
         { title: 'My_Dashboard', href: forceProjectSelection ? '/projekte' : `/${projektId}/my-dashboard`, icon: Sparkles },
         {
             title: 'Produktion',
-            href: forceProjectSelection ? '/projekte' : `/${projektId}/planer`,
+            href: forceProjectSelection ? '/projekte' : `/${projektId}/teilsysteme`,
             icon: Layers,
             subItems: [
                 { title: 'AVOR', href: forceProjectSelection ? '/projekte' : `/${projektId}/teilsysteme` },
