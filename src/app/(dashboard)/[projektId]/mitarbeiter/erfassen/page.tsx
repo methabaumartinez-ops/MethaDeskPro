@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { EmployeeService } from '@/lib/services/employeeService';
-import { Mitarbeiter } from '@/types';
+import { Mitarbeiter, ABTEILUNGEN_CONFIG } from '@/types';
 import { ArrowLeft, Plus } from 'lucide-react';
 import Link from 'next/link';
 
@@ -65,18 +65,7 @@ export default function MitarbeiterErfassenPage() {
 
     const departmentOptions = [
         { label: 'Bitte wählen...', value: '' },
-        { label: 'Projektleitung', value: 'Projektleitung' },
-        { label: 'Planung', value: 'Planung' },
-        { label: 'Produktion', value: 'Produktion' },
-        { label: 'Montage', value: 'Montage' },
-        { label: 'Administration', value: 'Administration' },
-        { label: 'Werkhof', value: 'Werkhof' },
-        { label: 'Fuhrpark', value: 'Fuhrpark' },
-        { label: 'Einkauf', value: 'Einkauf' },
-        { label: 'AVOR', value: 'AVOR' },
-        { label: 'Schlosserei', value: 'Schlosserei' },
-        { label: 'Blechabteilung', value: 'Blechabteilung' },
-        { label: 'Zimmerei', value: 'Zimmerei' },
+        ...ABTEILUNGEN_CONFIG.map(a => ({ label: a.name, value: a.name }))
     ];
 
     return (

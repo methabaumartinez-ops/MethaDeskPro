@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { UserPlus, MailCheck } from 'lucide-react';
 import { Signature } from '@/components/shared/Signature';
+import { ABTEILUNGEN_CONFIG } from '@/types';
 
 const registerSchema = z.object({
     vorname: z.string().min(2, 'Vorname ist erforderlich'),
@@ -65,17 +66,7 @@ export default function RegisterPage() {
 
     const departments = [
         { label: 'Bitte wählen...', value: '' },
-        { label: 'Projektleitung', value: 'Projektleitung' },
-        { label: 'Planer', value: 'Planer' },
-        { label: 'Produktion', value: 'Produktion' },
-        { label: 'Ausführung', value: 'Ausführung' },
-        { label: 'Werkhof', value: 'Werkhof' },
-        { label: 'Fuhrpark', value: 'Fuhrpark' },
-        { label: 'Einkauf', value: 'Einkauf' },
-        { label: 'AVOR', value: 'AVOR' },
-        { label: 'Schlosserei', value: 'Schlosserei' },
-        { label: 'Blechabteilung', value: 'Blechabteilung' },
-        { label: 'Zimmerei', value: 'Zimmerei' },
+        ...ABTEILUNGEN_CONFIG.map(a => ({ label: a.name, value: a.name }))
     ];
 
     // ─── Confirmation pending view ──────────────────────

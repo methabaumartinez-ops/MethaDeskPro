@@ -7,10 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { StatusBadge } from '@/components/shared/StatusBadge';
-// import { mockStore } from '@/lib/mock/store'; // Removed
+import { Select } from '@/components/ui/select';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { ProjectService } from '@/lib/services/projectService';
-import { Teilsystem, Projekt } from '@/types';
+import { Teilsystem, Projekt, ABTEILUNGEN_CONFIG } from '@/types';
 import {
     Plus, Search, Eye, Edit, Filter, Layers, Trash2,
     Building, MapPin, Hash, User as UserIcon, Link as LinkIcon
@@ -50,10 +50,14 @@ export default function TeilsystemeListPage() {
         loadData();
     }, [projektId]);
 
-    const filteredItems = items.filter(item =>
-        (item.teilsystemNummer?.toLowerCase() || '').includes(search.toLowerCase()) ||
-        (item.name?.toLowerCase() || '').includes(search.toLowerCase())
-    );
+    const [selectedAbteilung, setSelectedAbteilung] = useState<string>('Alle');
+
+    const filteredItems = items.filter(item => {
+        const matchesSearch = (item.teilsystemNummer?.toLowerCase() || '').includes(search.toLowerCase()) ||
+            (item.name?.toLowerCase() || '').includes(search.toLowerCase());
+        const matchesAbteilung = selectedAbteilung === 'Alle' || item.abteilung === selectedAbteilung;
+        return matchesSearch && matchesAbteilung;
+    });
 
     const handleDelete = (item: Teilsystem) => {
         setItemToDelete(item);
@@ -108,10 +112,17 @@ export default function TeilsystemeListPage() {
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
-                <Button variant="outline" className="h-11 px-5 border-2 rounded-xl font-black text-xs uppercase text-muted-foreground hover:bg-muted gap-2 w-full md:w-auto">
-                    <Filter className="h-4 w-4" />
-                    <span>Filter</span>
-                </Button>
+                <div className="w-full md:w-64">
+                    <Select
+                        value={selectedAbteilung}
+                        onChange={(e) => setSelectedAbteilung(e.target.value)}
+                        options={[
+                            { label: 'Alle Abteilungen', value: 'Alle' },
+                            ...ABTEILUNGEN_CONFIG.map(a => ({ label: a.name, value: a.name }))
+                        ]}
+                        className="h-11 border-2"
+                    />
+                </div>
             </div>
 
             {/* MAIN CONTENT TABLE */}

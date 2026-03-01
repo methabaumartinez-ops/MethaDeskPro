@@ -22,6 +22,7 @@ import { ChatAssistant } from '@/components/shared/ChatAssistant';
 import { Signature } from '@/components/shared/Signature';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { RolePermissions } from '@/lib/permissions';
+import { ABTEILUNGEN_CONFIG } from '@/types';
 
 type MenuItem = {
     title: string;
@@ -42,13 +43,19 @@ export function Sidebar({ projektId, className, forceProjectSelection = false }:
             href: forceProjectSelection ? '/projekte' : `/${projektId}/teilsysteme`,
             icon: Layers,
             subItems: [
-                { title: 'Blechabteilung', href: forceProjectSelection ? '/projekte' : `/${projektId}/produktion/blech` },
-                { title: 'Schlosserei', href: forceProjectSelection ? '/projekte' : `/${projektId}/produktion/schlosserei` },
-                { title: 'AVOR', href: forceProjectSelection ? '/projekte' : `/${projektId}/produktion/avor` },
-                { title: 'Einkauf', href: forceProjectSelection ? '/projekte' : `/${projektId}/produktion/einkauf` },
-                { title: 'Zimmerei', href: forceProjectSelection ? '/projekte' : `/${projektId}/produktion/zimmerei` },
-                { title: 'Montage', href: forceProjectSelection ? '/projekte' : `/${projektId}/produktion/montage` },
-                { title: 'Planung', href: forceProjectSelection ? '/projekte' : `/${projektId}/produktion/planung` },
+                ...[
+                    'planung', 'einkauf', 'avor', 'schlosserei', 'blech', 'werkhof', 'montage'
+                ].map(id => {
+                    const dept = ABTEILUNGEN_CONFIG.find(a => a.id === id);
+                    return {
+                        title: dept?.name || id,
+                        href: forceProjectSelection ? '/projekte' : `/${projektId}/produktion/${id}`
+                    };
+                }),
+                {
+                    title: 'Lieferanten',
+                    href: forceProjectSelection ? '/projekte' : `/${projektId}/produktion/lieferanten`
+                }
             ]
         },
         { title: 'Ausführung', href: forceProjectSelection ? '/projekte' : `/${projektId}/ausfuehrung`, icon: Hammer },
@@ -69,7 +76,6 @@ export function Sidebar({ projektId, className, forceProjectSelection = false }:
             { title: 'Tabellen', href: `/${projektId}/tabellen`, icon: ListTodo, permission: 'read' as keyof RolePermissions },
             { title: 'Analyse', href: `/${projektId}/analyse`, icon: BarChart3 },
         ] : []),
-        { title: 'Mitarbeiter', href: forceProjectSelection ? '/projekte' : `/${projektId}/mitarbeiter`, icon: Users, permission: 'manageUsers' as keyof RolePermissions },
     ];
 
     // Filtrar items permitidos

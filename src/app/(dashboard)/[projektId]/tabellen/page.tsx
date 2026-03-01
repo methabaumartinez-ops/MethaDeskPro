@@ -13,7 +13,10 @@ import {
     Settings,
     HardDrive,
     Box,
-    Car
+    Car,
+    Edit2,
+    Trash2,
+    Plus
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Select } from '@/components/ui/select';
@@ -25,7 +28,10 @@ import { MaterialService } from '@/lib/services/materialService';
 import { SupplierService } from '@/lib/services/supplierService';
 import { EmployeeService } from '@/lib/services/employeeService';
 import { FleetService } from '@/lib/services/fleetService';
-import { useParams } from 'next/navigation';
+import { SubunternehmerService } from '@/lib/services/subunternehmerService';
+import { useParams, useRouter } from 'next/navigation';
+import { ABTEILUNGEN_CONFIG } from '@/types';
+import { Badge } from '@/components/ui/badge';
 
 export default function TabellenPage() {
     const { projektId } = useParams() as { projektId: string };
@@ -39,9 +45,8 @@ export default function TabellenPage() {
     const tables = [
         { id: 'projekte', label: 'Projekte', icon: LayoutList, description: 'Alle Projekte und deren Status' },
         { id: 'teilsysteme', label: 'Teilsysteme', icon: Database, description: 'Produktionsdaten und Systeme' },
-        { id: 'positionen', label: 'Positionen', icon: TableIcon, description: 'Detaillierte Positionen' },
-        { id: 'material', label: 'Material', icon: Box, description: 'Materialkatalog und Inventar' },
         { id: 'lieferanten', label: 'Lieferanten', icon: Truck, description: 'Lieferantenverzeichnis' },
+        { id: 'subunternehmer', label: 'Subunternehmer', icon: Users, description: 'Subunternehmer-Verwaltung' },
         { id: 'mitarbeiter', label: 'Mitarbeiter', icon: Users, description: 'Personaldaten' },
         { id: 'fahrzeuge', label: 'Fahrzeuge', icon: Car, description: 'Fuhrpark und Maschinen' },
     ];
@@ -91,6 +96,10 @@ export default function TabellenPage() {
                                 ...sys,
                                 Projekt: p ? `${p.projektnummer} - ${p.projektname}` : sys.projektId // Add explicit Projekt column
                             };
+                        }).sort((a, b) => {
+                            const numA = parseInt(a.teilsystemNummer?.replace(/\D/g, '') || '0', 10);
+                            const numB = parseInt(b.teilsystemNummer?.replace(/\D/g, '') || '0', 10);
+                            return numA - numB;
                         });
                         break;
                     case 'positionen':
@@ -146,6 +155,9 @@ export default function TabellenPage() {
                     case 'lieferanten':
                         result = await SupplierService.getLieferanten();
                         break;
+                    case 'subunternehmer':
+                        result = await SubunternehmerService.getSubunternehmer();
+                        break;
                     case 'mitarbeiter':
                         result = await EmployeeService.getMitarbeiter();
                         break;
@@ -190,6 +202,10 @@ export default function TabellenPage() {
                         return prioA - prioB;
                     });
 
+                    if (activeTable === 'mitarbeiter' || activeTable === 'subunternehmer') {
+                        cols.push('Aktionen');
+                    }
+
                     if (activeTable === 'teilsysteme') {
                         const specificOrder = [
                             'Projekt',
@@ -231,9 +247,63 @@ export default function TabellenPage() {
         loadData();
     }, [activeTable, selectedProject]);
 
-    const renderCellContent = (value: any) => {
+    const router = useRouter();
+
+    const renderCellContent = (value: any, colName?: string, row?: any) => {
         if (value === null || value === undefined) return <span className="text-slate-300">-</span>;
         if (typeof value === 'boolean') return value ? 'Ja' : 'Nein';
+
+        // Handle Abteilung badges
+        if (colName?.toLowerCase() === 'abteilung' || colName?.toLowerCase() === 'abteilungname') {
+            const dept = ABTEILUNGEN_CONFIG.find(a => a.name === value);
+            if (dept) {
+                return (
+                    <Badge variant={(dept.color as any) || 'info'} className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md">
+                        {value}
+                    </Badge>
+                );
+            }
+        }
+
+        if (colName?.toLowerCase() === 'aktionen') {
+            return (
+                <div className="flex items-center gap-1">
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (activeTable === 'mitarbeiter') {
+                                router.push(`/${projektId}/mitarbeiter/${row.id}/edit`);
+                            } else if (activeTable === 'subunternehmer') {
+                                // Simple prompt for now as requested minimal diff
+                                const name = prompt('Name (ss):', row.name);
+                                if (name) SubunternehmerService.updateSubunternehmer(row.id, { name }).then(() => window.location.reload());
+                            }
+                        }}
+                    >
+                        <Edit2 className="h-3 w-3" />
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm('Löschen?')) {
+                                if (activeTable === 'subunternehmer') {
+                                    SubunternehmerService.deleteSubunternehmer(row.id).then(() => window.location.reload());
+                                }
+                            }
+                        }}
+                    >
+                        <Trash2 className="h-3 w-3" />
+                    </Button>
+                </div>
+            )
+        }
+
         return String(value);
     };
 
@@ -347,6 +417,22 @@ export default function TabellenPage() {
                             </p>
                         </div>
                         <div className="flex gap-2">
+                            {(activeTable === 'mitarbeiter' || activeTable === 'subunternehmer') && (
+                                <Button
+                                    className="bg-primary hover:bg-primary/90 text-white font-black uppercase text-[10px] h-9 px-6 rounded-full shadow-md flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+                                    onClick={() => {
+                                        if (activeTable === 'mitarbeiter') {
+                                            router.push(`/${projektId}/mitarbeiter/erfassen`);
+                                        } else {
+                                            const name = prompt('Name des Subunternehmers (ss):');
+                                            if (name) SubunternehmerService.createSubunternehmer({ name }).then(() => window.location.reload());
+                                        }
+                                    }}
+                                >
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Hinzufügen (ss)
+                                </Button>
+                            )}
                             <Button className="bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] h-9 px-6 rounded-full shadow-md flex items-center gap-2 transition-all hover:scale-105 active:scale-95" onClick={handleExport}>
                                 <HardDrive className="h-4 w-4 mr-2" />
                                 Exportieren
@@ -387,9 +473,9 @@ export default function TabellenPage() {
                                                     {columns.map(col => (
                                                         <TableCell key={`${i}-${col}`} className={cn(
                                                             "text-xs font-medium whitespace-nowrap max-w-[200px] truncate",
-                                                            col.toLowerCase() === 'id' ? "text-right" : "text-left"
+                                                            col.toLowerCase() === 'id' || col.toLowerCase() === 'aktionen' ? "text-right" : "text-left"
                                                         )}>
-                                                            {renderCellContent(row[col])}
+                                                            {renderCellContent(row[col], col, row)}
                                                         </TableCell>
                                                     ))}
                                                 </TableRow>

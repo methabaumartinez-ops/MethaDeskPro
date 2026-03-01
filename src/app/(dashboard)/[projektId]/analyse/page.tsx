@@ -21,6 +21,7 @@ import { SubsystemService } from '@/lib/services/subsystemService';
 import { KostenService } from '@/lib/services/kostenService';
 import { EmployeeService } from '@/lib/services/employeeService';
 import { Teilsystem, TsStunden, TsMaterialkosten, Mitarbeiter, ABTEILUNGEN_CONFIG } from '@/types';
+import { Badge } from '@/components/ui/badge';
 
 // Helper to format currency in CHF
 const formatCHF = (value: number) => {
@@ -107,9 +108,14 @@ export default function AnalysePage() {
             nr: ts.teilsystemNummer,
             hours: hrs,
             cost: laborCost + matCost,
-            status: ts.status
+            status: ts.status,
+            abteilung: ts.abteilung
         };
-    }).sort((a, b) => b.cost - a.cost);
+    }).sort((a, b) => {
+        const numA = parseInt(a.nr?.replace(/\D/g, '') || '0', 10);
+        const numB = parseInt(b.nr?.replace(/\D/g, '') || '0', 10);
+        return numA - numB;
+    });
 
     // Group costs by month for chart
     const monthlyData: Record<string, number> = {};
@@ -281,6 +287,7 @@ export default function AnalysePage() {
                             <tr className="border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                                 <th className="px-8 py-4">TS-Nummer</th>
                                 <th className="px-4 py-4">Bezeichnung</th>
+                                <th className="px-4 py-4">Abteilung</th>
                                 <th className="px-4 py-4 text-right">Stunden</th>
                                 <th className="px-8 py-4 text-right">Ist-Kosten</th>
                             </tr>
@@ -290,13 +297,22 @@ export default function AnalysePage() {
                                 <tr key={i} className="hover:bg-slate-50/50 transition-colors group">
                                     <td className="px-8 py-4 font-black text-primary text-xs">{ts.nr || '—'}</td>
                                     <td className="px-4 py-4 font-bold text-slate-700 text-xs">{ts.name}</td>
+                                    <td className="px-4 py-4">
+                                        {ts.abteilung ? (
+                                            <Badge variant={(ABTEILUNGEN_CONFIG.find(a => a.name === ts.abteilung)?.color as any) || 'info'} className="text-[9px] font-black uppercase px-2 py-0.5 rounded-md">
+                                                {ts.abteilung}
+                                            </Badge>
+                                        ) : (
+                                            <span className="text-[9px] text-slate-300 italic font-medium">n/a</span>
+                                        )}
+                                    </td>
                                     <td className="px-4 py-4 font-bold text-slate-600 text-xs text-right">{ts.hours.toFixed(2)} h</td>
                                     <td className="px-8 py-4 font-black text-slate-800 text-xs text-right">{formatCHF(ts.cost)}</td>
                                 </tr>
                             ))}
                             {tsData.length === 0 && (
                                 <tr>
-                                    <td colSpan={4} className="px-8 py-12 text-center text-slate-400 font-bold italic">Keine Daten für Teilsysteme vorhanden.</td>
+                                    <td colSpan={5} className="px-8 py-12 text-center text-slate-400 font-bold italic">Keine Daten für Teilsysteme vorhanden.</td>
                                 </tr>
                             )}
                         </tbody>

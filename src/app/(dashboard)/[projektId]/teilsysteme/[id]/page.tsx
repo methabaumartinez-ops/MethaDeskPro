@@ -10,9 +10,10 @@ import { SubsystemService } from '@/lib/services/subsystemService';
 import { ProjectService } from '@/lib/services/projectService';
 import { PositionService } from '@/lib/services/positionService';
 import { LagerortService } from '@/lib/services/lagerortService';
-import { Teilsystem, Position, Projekt, Lagerort } from '@/types';
+import { SupplierService } from '@/lib/services/supplierService';
+import { Teilsystem, Position, Projekt, Lagerort, Lieferant, ABTEILUNGEN_CONFIG } from '@/types';
 import {
-    ArrowLeft, Edit, ListTodo, Plus, FileText,
+    ArrowLeft, Edit, ListTodo, Plus, FileText, Truck,
     Calendar, User as UserIcon, Clock, Link as LinkIcon,
     MapPin, Eye, Trash2, ShieldCheck, Hash, Briefcase, LayoutDashboard, Copy, ExternalLink,
     Video, Maximize2, Printer, Share2, UploadCloud, Download, X
@@ -47,6 +48,7 @@ export default function TeilsystemDetailPage() {
     const [posToDelete, setPosToDelete] = useState<Position | null>(null);
     const [showQrModal, setShowQrModal] = useState(false);
     const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
+    const [assignedLieferanten, setAssignedLieferanten] = useState<Lieferant[]>([]);
 
     useEffect(() => {
         const loadData = async () => {
@@ -58,7 +60,13 @@ export default function TeilsystemDetailPage() {
                     LagerortService.getLagerorte(projektId)
                 ]);
 
-                if (ts) setItem(ts);
+                if (ts) {
+                    setItem(ts);
+                    if (ts.lieferantenIds?.length) {
+                        const allL = await SupplierService.getLieferanten();
+                        setAssignedLieferanten(allL.filter(l => ts.lieferantenIds!.includes(l.id)));
+                    }
+                }
                 if (ks) setProject(ks);
                 if (pos) setPositionen(pos);
                 if (lo) setLagerorte(lo);
@@ -182,8 +190,27 @@ export default function TeilsystemDetailPage() {
                     </div>
                 </div>
 
-                <div className="text-center md:text-right flex flex-col items-center md:items-end gap-3 w-full">
+                <div className="text-center md:text-right flex flex-col md:flex-row items-center md:items-center justify-center md:justify-end gap-3 w-full">
+                    {/* Abteilung Badge */}
+                    {(() => {
+                        const dept = ABTEILUNGEN_CONFIG.find(a => a.name === item.abteilung);
+                        return (
+                            <Badge
+                                variant={dept?.color as any || 'outline'}
+                                className={cn(
+                                    "px-5 py-1.5 text-sm rounded-xl shadow-md border-b-4 font-bold tracking-tight transition-all",
+                                    dept
+                                        ? "border-primary/10 ring-4 ring-primary/5"
+                                        : "border-slate-200 ring-4 ring-slate-50 text-muted-foreground/60"
+                                )}
+                            >
+                                {item.abteilung || 'Nicht zugewiesen'}
+                            </Badge>
+                        );
+                    })()}
+
                     <StatusBadge status={item.status} className="px-5 py-1.5 text-sm rounded-xl shadow-md border-b-4 border-green-600/20 ring-4 ring-green-50/50" />
+
                     {isReadOnly && (
                         <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase bg-muted px-2 py-1 rounded-md">
                             <ShieldCheck className="h-3.5 w-3.5 text-blue-500" />
@@ -324,8 +351,11 @@ export default function TeilsystemDetailPage() {
                     </Card>
                 </div>
 
+                {/* System Details (Right, but previously Model was here, now Column spans) */}
+                {/* I will add Lieferanten section below System Details or in a new row */}
+
                 {/* Model Viewer (Right) */}
-                <div className="lg:col-span-7 flex flex-col">
+                <div className="lg:col-span-7 flex flex-col gap-6">
                     <div className="flex-1 min-h-[500px] relative group shadow-xl border-4 border-orange-600/10 rounded-[2rem] overflow-hidden bg-slate-900/5 ring-4 ring-orange-600/5">
                         {/* Custom Viewer Overlay */}
                         <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
@@ -348,6 +378,35 @@ export default function TeilsystemDetailPage() {
 
                         <BimViewer modelName={`${item.name}${!item.ifcUrl ? '.ifc' : ''}`} modelUrl={item.ifcUrl} />
                     </div>
+
+                    {/* Lieferanten List Card */}
+                    <Card className="shadow-sm border-2 border-border overflow-hidden rounded-3xl bg-white">
+                        <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border">
+                            <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                                <Truck className="h-4 w-4" />
+                                Zugeordnete Lieferanten (ss)
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-4">
+                            {assignedLieferanten.length > 0 ? (
+                                <div className="flex flex-wrap gap-2">
+                                    {assignedLieferanten.map(l => (
+                                        <Link key={l.id} href={`/${projektId}/lieferanten/${l.id}`}>
+                                            <Badge variant="info" className="px-4 py-2 rounded-xl border-2 border-border bg-muted/20 text-xs font-black flex items-center gap-2 hover:bg-muted transition-all cursor-pointer">
+                                                <Truck className="h-3 w-3 text-primary" />
+                                                {l.name}
+                                                <ExternalLink className="h-3 w-3 opacity-40" />
+                                            </Badge>
+                                        </Link>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-[10px] font-bold text-muted-foreground/50 italic text-center py-4">
+                                    Keine Lieferanten zugewiesen.
+                                </p>
+                            )}
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
 

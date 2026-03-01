@@ -30,14 +30,16 @@ export interface User {
 // ============================================================
 
 export const ABTEILUNGEN_CONFIG = [
-  { id: 'blech', name: 'Blechabteilung' },
-  { id: 'schlosserei', name: 'Schlosserei' },
-  { id: 'avor', name: 'AVOR' },
-  { id: 'einkauf', name: 'Einkauf' },
-  { id: 'zimmerei', name: 'Zimmerei' },
-  { id: 'montage', name: 'Montage' },
-  { id: 'planung', name: 'Planung' },
-  { id: 'bau', name: 'Bau' },
+  { id: 'planung', name: 'Planung', color: 'info' },
+  { id: 'einkauf', name: 'Einkauf', color: 'secondary' },
+  { id: 'avor', name: 'AVOR', color: 'violet' },
+  { id: 'schlosserei', name: 'Schlosserei', color: 'gray' },
+  { id: 'blech', name: 'Blechabteilung', color: 'orange' },
+  { id: 'werkhof', name: 'Werkhof', color: 'teal' },
+  { id: 'montage', name: 'Montage', color: 'success' },
+  { id: 'bau', name: 'Bau', color: 'error' },
+  { id: 'zimmerei', name: 'Zimmerei', color: 'gray' },
+  { id: 'subunternehmer', name: 'Subunternehmer', color: 'violet' },
 ] as const;
 
 export type Abteilung = typeof ABTEILUNGEN_CONFIG[number]['name'];
@@ -136,6 +138,10 @@ export interface Teilsystem {
   lagerortId?: string;
   abteilung?: Abteilung;
   status: ItemStatus;
+  lieferantenIds?: string[];
+  lieferantenNames?: string[];
+  subunternehmerId?: string;
+  subunternehmerName?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -298,6 +304,16 @@ export interface Mitarbeiter {
   abteilung?: Abteilung | string;
   image?: string;
   stundensatz?: number;  // CHF/h für Kostenerfassung
+}
+
+export interface Subunternehmer {
+  id: string;
+  name: string;
+  kontakt?: string;
+  tel?: string;
+  email?: string;
+  firma?: string;
+  createdAt: string;
 }
 
 // ============================================================

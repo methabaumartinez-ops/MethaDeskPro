@@ -20,7 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { BestellService } from '@/lib/services/bestellService';
-import { MaterialBestellung, BestellungItem, FahrzeugReservierung } from '@/types';
+import { MaterialBestellung, BestellungItem, FahrzeugReservierung, ABTEILUNGEN_CONFIG } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { ReservierungModal } from '@/components/shared/ReservierungModal';
 
@@ -115,10 +115,19 @@ export default function AusfuehrungPage() {
     }, [projektId, searchParams]);
 
     // Filters
-    const filteredSubsystems = subsystems.filter(item =>
-        (item.teilsystemNummer?.toLowerCase() || '').includes(search.toLowerCase()) ||
-        (item.name?.toLowerCase() || '').includes(search.toLowerCase())
-    );
+    const filteredSubsystems = subsystems.filter(item => {
+        const matchesSearch = (item.teilsystemNummer?.toLowerCase() || '').includes(search.toLowerCase()) ||
+            (item.name?.toLowerCase() || '').includes(search.toLowerCase());
+
+        if (activeTab === 'bau_teilsysteme') {
+            return matchesSearch && item.abteilung === 'Bau';
+        }
+        return matchesSearch;
+    }).sort((a, b) => {
+        const numA = parseInt(a.teilsystemNummer?.replace(/\D/g, '') || '0', 10);
+        const numB = parseInt(b.teilsystemNummer?.replace(/\D/g, '') || '0', 10);
+        return numA - numB;
+    });
 
     const filteredBestellungen = bestellungen.filter(b =>
         (b.containerBez?.toLowerCase() || '').includes(search.toLowerCase()) ||
@@ -321,19 +330,42 @@ export default function AusfuehrungPage() {
 
             <Tabs className="flex-1 flex flex-col overflow-hidden">
                 <div className="flex justify-between items-center mb-2">
-                    <TabsList>
+                    <TabsList className="bg-transparent p-0 gap-2 h-auto flex-wrap">
                         <TabsTrigger
                             active={activeTab === 'teilsysteme'}
                             onClick={() => setActiveTab('teilsysteme')}
-                            className="flex items-center gap-2"
+                            className={cn(
+                                "flex items-center gap-2 font-black text-xs uppercase px-6 h-11 rounded-full border-2 transition-all",
+                                activeTab === 'teilsysteme'
+                                    ? "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-200"
+                                    : "bg-white border-slate-100 text-slate-500 hover:border-orange-200 hover:text-orange-600"
+                            )}
                         >
                             <Layers className="h-4 w-4" />
                             Teilsysteme
                         </TabsTrigger>
                         <TabsTrigger
+                            active={activeTab === 'bau_teilsysteme'}
+                            onClick={() => setActiveTab('bau_teilsysteme')}
+                            className={cn(
+                                "flex items-center gap-2 font-black text-xs uppercase px-6 h-11 rounded-full border-2 transition-all",
+                                activeTab === 'bau_teilsysteme'
+                                    ? "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-200"
+                                    : "bg-white border-slate-100 text-slate-500 hover:border-orange-200 hover:text-orange-600"
+                            )}
+                        >
+                            <HardHat className="h-4 w-4" />
+                            Bau Teilsysteme
+                        </TabsTrigger>
+                        <TabsTrigger
                             active={activeTab === 'logistik'}
                             onClick={() => setActiveTab('logistik')}
-                            className="flex items-center gap-2"
+                            className={cn(
+                                "flex items-center gap-2 font-black text-xs uppercase px-6 h-11 rounded-full border-2 transition-all",
+                                activeTab === 'logistik'
+                                    ? "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-200"
+                                    : "bg-white border-slate-100 text-slate-500 hover:border-orange-200 hover:text-orange-600"
+                            )}
                         >
                             <Truck className="h-4 w-4" />
                             Bestellung ({bestellungen.length})
@@ -341,7 +373,12 @@ export default function AusfuehrungPage() {
                         <TabsTrigger
                             active={activeTab === 'fahrzeuge'}
                             onClick={() => setActiveTab('fahrzeuge')}
-                            className="flex items-center gap-2"
+                            className={cn(
+                                "flex items-center gap-2 font-black text-xs uppercase px-6 h-11 rounded-full border-2 transition-all",
+                                activeTab === 'fahrzeuge'
+                                    ? "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-200"
+                                    : "bg-white border-slate-100 text-slate-500 hover:border-orange-200 hover:text-orange-600"
+                            )}
                         >
                             <Car className="h-4 w-4" />
                             Fahrzeuge ({vehicles.length})
@@ -380,7 +417,7 @@ export default function AusfuehrungPage() {
                             </div>
                         ) : (
                             <>
-                                <TabsContent active={activeTab === 'teilsysteme'} className="mt-0 h-full">
+                                <TabsContent active={activeTab === 'teilsysteme' || activeTab === 'bau_teilsysteme'} className="mt-0 h-full">
                                     {filteredSubsystems.length > 0 ? (
                                         <div className="overflow-x-auto max-w-full">
                                             <Table>
@@ -389,6 +426,7 @@ export default function AusfuehrungPage() {
                                                         <TableHead className="w-20 px-4 py-4 font-black text-foreground text-center text-[10px] uppercase tracking-wider">System-Nr.</TableHead>
                                                         <TableHead className="w-12 px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">KS</TableHead>
                                                         <TableHead className="min-w-[200px] px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Bezeichnung</TableHead>
+                                                        <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Abteilung</TableHead>
                                                         <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Termine</TableHead>
                                                         <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Status</TableHead>
                                                         <TableHead className="px-4 py-4 text-right font-black text-foreground text-[10px] uppercase tracking-wider">Aktionen</TableHead>
@@ -414,6 +452,11 @@ export default function AusfuehrungPage() {
                                                                         {item.bemerkung || 'Keine Bemerkung'}
                                                                     </span>
                                                                 </div>
+                                                            </TableCell>
+                                                            <TableCell className="p-4">
+                                                                <Badge variant={(ABTEILUNGEN_CONFIG.find(a => a.name === item.abteilung)?.color as any) || 'info'} className="font-bold text-[10px] uppercase">
+                                                                    {item.abteilung || '—'}
+                                                                </Badge>
                                                             </TableCell>
                                                             <TableCell className="p-4">
                                                                 <div className="flex flex-col gap-1">

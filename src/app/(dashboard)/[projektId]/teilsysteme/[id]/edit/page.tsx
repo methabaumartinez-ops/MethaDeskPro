@@ -11,8 +11,12 @@ import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { EmployeeService } from '@/lib/services/employeeService';
-import { Teilsystem, ABTEILUNGEN_CONFIG } from '@/types';
-import { ArrowLeft, Save, Calendar as CalendarIcon, UploadCloud, FileType } from 'lucide-react';
+import { SupplierService } from '@/lib/services/supplierService';
+import { SubunternehmerService } from '@/lib/services/subunternehmerService';
+import { SearchableSelect } from '@/components/ui/searchable-select';
+import { Teilsystem, ABTEILUNGEN_CONFIG, Lieferant } from '@/types';
+import { ArrowLeft, Save, Calendar as CalendarIcon, UploadCloud, FileType, Truck, X, Search, Plus } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { ProjectService } from '@/lib/services/projectService';
 import { cn } from '@/lib/utils';
@@ -34,6 +38,8 @@ const teilsystemSchema = z.object({
     ifcUrl: z.string().optional(),
     abteilung: z.string().min(1, 'Abteilung ist erforderlich'),
     status: z.string().min(1, 'Status ist erforderlich'),
+    lieferantenIds: z.array(z.string()).optional(),
+    subunternehmerId: z.string().optional(),
 });
 
 type TeilsystemValues = z.infer<typeof teilsystemSchema>;
@@ -112,6 +118,11 @@ export default function TeilsystemEditPage() {
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [ifcExtractData, setIfcExtractData] = useState<IfcExtractResult | null>(null);
     const [extracting, setExtracting] = useState(false);
+    const [allLieferanten, setAllLieferanten] = useState<Lieferant[]>([]);
+    const [subunternehmerList, setSubunternehmerList] = useState<any[]>([]);
+    const [lieferantenSearch, setLieferantenSearch] = useState('');
+    const [isLieferantenOpen, setIsLieferantenOpen] = useState(false);
+    const [loadingSubunternehmer, setLoadingSubunternehmer] = useState(true);
 
     const {
         register,
@@ -129,17 +140,32 @@ export default function TeilsystemEditPage() {
 
     // Load mitarbeiter for dropdown
     useEffect(() => {
-        const loadMitarbeiter = async () => {
+        const loadData = async () => {
             try {
-                const data = await EmployeeService.getMitarbeiter();
-                setMitarbeiter(data);
+                const [empData, subData] = await Promise.all([
+                    EmployeeService.getMitarbeiter(),
+                    SubunternehmerService.getSubunternehmer()
+                ]);
+                setMitarbeiter(empData);
+                setSubunternehmerList(subData);
             } catch (error) {
-                console.error('Failed to load mitarbeiter', error);
+                console.error("Failed to load data", error);
             } finally {
                 setLoadingMitarbeiter(false);
+                setLoadingSubunternehmer(false);
             }
         };
-        loadMitarbeiter();
+        loadData();
+
+        const loadLieferanten = async () => {
+            try {
+                const data = await SupplierService.getLieferanten();
+                setAllLieferanten(data);
+            } catch (error) {
+                console.error('Failed to load lieferanten', error);
+            }
+        };
+        loadLieferanten();
     }, []);
 
     useEffect(() => {
@@ -148,7 +174,7 @@ export default function TeilsystemEditPage() {
                 const item = await SubsystemService.getTeilsystemById(id);
                 if (item) {
                     setValue('teilsystemNummer', item.teilsystemNummer || '');
-                    setValue('ks', item.ks || '');
+                    setValue('ks', String(item.ks || ''));
                     setValue('name', item.name);
                     setValue('beschreibung', item.beschreibung || '');
                     setValue('bemerkung', item.bemerkung || '');
@@ -162,6 +188,8 @@ export default function TeilsystemEditPage() {
                     setValue('ifcUrl', item.ifcUrl || '');
                     setValue('abteilung', item.abteilung || '');
                     setValue('status', item.status);
+                    setValue('lieferantenIds', item.lieferantenIds || []);
+                    setValue('subunternehmerId', item.subunternehmerId || '');
 
                     if (item.ifcUrl) {
                         try {
@@ -234,17 +262,23 @@ export default function TeilsystemEditPage() {
                 }
             }
 
-            // Convert ISO dates back to German format for storage
-            const toSave = {
+            const sub = subunternehmerList.find(s => s.id === data.subunternehmerId);
+
+            const updates: Partial<Teilsystem> = {
                 ...data,
                 projektId, // Add project id to avoid disappearing from lists
                 eroeffnetAm: isoToGermanDate(data.eroeffnetAm),
                 montagetermin: isoToGermanDate(data.montagetermin),
                 abgabePlaner: isoToGermanDate(data.abgabePlaner),
+                abteilung: data.abteilung as any,
+                planStatus: data.planStatus as any,
+                status: data.status as any,
+                subunternehmerId: data.subunternehmerId,
+                subunternehmerName: sub ? sub.name : undefined,
                 ifcUrl: uploadedIfcUrl
             };
 
-            await SubsystemService.updateTeilsystem(id, toSave as unknown as Partial<Teilsystem>);
+            await SubsystemService.updateTeilsystem(id, updates as unknown as Partial<Teilsystem>);
 
             // If IFC was newly uploaded, trigger extraction
             if (fileInputRef.current?.files?.[0] && uploadedIfcUrl) {
@@ -353,6 +387,25 @@ export default function TeilsystemEditPage() {
                                 />
                             </div>
 
+                            {watch('abteilung') === 'Subunternehmer' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="space-y-1.5">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Subunternehmer wählen</label>
+                                        <SearchableSelect
+                                            label=""
+                                            placeholder="Subunternehmer suchen..."
+                                            options={subunternehmerList.map(s => ({ label: s.name, value: s.id }))}
+                                            value={watch('subunternehmerId')}
+                                            onChange={(val) => setValue('subunternehmerId', val)}
+                                            error={errors.subunternehmerId?.message}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col justify-end pb-1 text-[10px] font-bold text-muted-foreground opacity-60">
+                                        <p>Bitte wählen Sie den zuständigen Subunternehmer aus der Liste der hinterlegten Partner.</p>
+                                    </div>
+                                </div>
+                            )}
+
                             <Input
                                 label="Bezeichnung *"
                                 placeholder="z.B. Baukran"
@@ -429,6 +482,107 @@ export default function TeilsystemEditPage() {
                                     {...register('status')}
                                     error={errors.status?.message}
                                 />
+                            </div>
+
+                            {/* Lieferanten Section */}
+                            <div className="space-y-4 pt-4 border-t border-border">
+                                <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                                    <Truck className="h-4 w-4" />
+                                    Zugeordnete Lieferanten (ss)
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-3">
+                                        <div className="relative">
+                                            <div className="relative">
+                                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Lieferant suchen..."
+                                                    className="w-full h-11 pl-10 pr-4 rounded-xl border-2 border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold placeholder:font-normal"
+                                                    value={lieferantenSearch}
+                                                    onChange={(e) => {
+                                                        setLieferantenSearch(e.target.value);
+                                                        setIsLieferantenOpen(true);
+                                                    }}
+                                                    onFocus={() => setIsLieferantenOpen(true)}
+                                                />
+                                            </div>
+
+                                            {isLieferantenOpen && (
+                                                <>
+                                                    <div className="fixed inset-0 z-40" onClick={() => setIsLieferantenOpen(false)} />
+                                                    <div className="absolute z-50 mt-2 w-full max-h-60 overflow-y-auto bg-card border-2 border-border rounded-2xl shadow-2xl p-2 space-y-1 animate-in fade-in zoom-in-95 duration-200">
+                                                        {allLieferanten
+                                                            .filter(l => !watch('lieferantenIds')?.includes(l.id))
+                                                            .filter(l => l.name.toLowerCase().includes(lieferantenSearch.toLowerCase()))
+                                                            .length === 0 ? (
+                                                            <div className="px-4 py-3 text-xs font-bold text-muted-foreground italic text-center">
+                                                                Keine weiteren Lieferanten gefunden
+                                                            </div>
+                                                        ) : (
+                                                            allLieferanten
+                                                                .filter(l => !watch('lieferantenIds')?.includes(l.id))
+                                                                .filter(l => l.name.toLowerCase().includes(lieferantenSearch.toLowerCase()))
+                                                                .map(l => (
+                                                                    <button
+                                                                        key={l.id}
+                                                                        type="button"
+                                                                        className="w-full text-left px-4 py-2.5 rounded-xl hover:bg-muted text-sm font-bold flex items-center justify-between transition-colors group"
+                                                                        onClick={() => {
+                                                                            const current = watch('lieferantenIds') || [];
+                                                                            setValue('lieferantenIds', [...current, l.id]);
+                                                                            setLieferantenSearch('');
+                                                                            setIsLieferantenOpen(false);
+                                                                        }}
+                                                                    >
+                                                                        <span>{l.name}</span>
+                                                                        <Plus className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                                                    </button>
+                                                                ))
+                                                        )
+                                                        }
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+
+                                        <div className="flex flex-wrap gap-2">
+                                            {(watch('lieferantenIds') || []).map(id => {
+                                                const supplier = allLieferanten.find(l => l.id === id);
+                                                return (
+                                                    <Badge
+                                                        key={id}
+                                                        variant="info"
+                                                        className="px-3 py-1.5 rounded-full border-2 border-border bg-muted/30 text-xs font-black flex items-center gap-2 hover:bg-muted transition-all"
+                                                    >
+                                                        <Truck className="h-3 w-3 text-primary" />
+                                                        {supplier?.name || id}
+                                                        <button
+                                                            type="button"
+                                                            className="hover:text-red-600 transition-colors"
+                                                            onClick={() => {
+                                                                const current = watch('lieferantenIds') || [];
+                                                                setValue('lieferantenIds', current.filter(cid => cid !== id));
+                                                            }}
+                                                        >
+                                                            <X className="h-3.5 w-3.5" />
+                                                        </button>
+                                                    </Badge>
+                                                );
+                                            })}
+                                            {(watch('lieferantenIds') || []).length === 0 && (
+                                                <p className="text-xs font-bold text-muted-foreground/40 italic py-2 pl-2">
+                                                    Keine Lieferanten zugewiesen
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col justify-center bg-muted/20 rounded-2xl p-4 border border-dashed border-border">
+                                        <p className="text-[10px] font-bold text-muted-foreground leading-relaxed">
+                                            Hier können Sie einen oder mehrere Lieferanten diesem Teilsystem zuordnen. Die Zuordnung hilft bei der Übersicht im Moduleinkauf und bei der Materialbestellung.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </CardContent>
                         <CardFooter className="bg-muted/30 border-t border-border p-6 flex justify-end gap-4">

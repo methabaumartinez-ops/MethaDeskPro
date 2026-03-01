@@ -15,7 +15,8 @@ import { Clock, Package2, Plus, Trash2, Download, ChevronDown, ChevronUp, Dollar
 import { cn } from '@/lib/utils';
 import { useProjekt } from '@/lib/context/ProjektContext';
 
-const ABTEILUNGEN: Abteilung[] = ['Blechabteilung', 'Schlosserei', 'AVOR', 'Einkauf', 'Zimmerei', 'Montage', 'Planung', 'Bau'];
+// Remove hardcoded ABTEILUNGEN array
+
 
 export default function KostenPage() {
     const { projektId } = useParams<{ projektId: string }>();
@@ -85,7 +86,6 @@ export default function KostenPage() {
         setSaving(true);
         try {
             const ma = mitarbeiter.find(m => m.id === stundenForm.mitarbeiterId);
-            const deptConfig = ABTEILUNGEN.find(a => a === stundenForm.abteilung);
             const abteilungId = ABTEILUNGEN_CONFIG.find(c => c.name === stundenForm.abteilung)?.id;
 
             await fetch('/api/kosten/stunden', {
@@ -285,7 +285,7 @@ export default function KostenPage() {
                                         />
                                         <Input label="Datum *" type="date" value={stundenForm.datum} onChange={e => setStundenForm(s => ({ ...s, datum: e.target.value }))} required />
                                         <Input label="Stunden *" type="number" step="0.5" min="0.5" value={stundenForm.stunden} onChange={e => setStundenForm(s => ({ ...s, stunden: e.target.value }))} placeholder="z.B. 8" required />
-                                        <Select label="Abteilung" value={stundenForm.abteilung} onChange={e => setStundenForm(s => ({ ...s, abteilung: e.target.value }))} options={[{ label: '— Abteilung —', value: '' }, ...ABTEILUNGEN.map(a => ({ label: a, value: a }))]} />
+                                        <Select label="Abteilung" value={stundenForm.abteilung} onChange={e => setStundenForm(s => ({ ...s, abteilung: e.target.value }))} options={[{ label: '— Abteilung —', value: '' }, ...ABTEILUNGEN_CONFIG.map(a => ({ label: a.name, value: a.name }))]} />
                                         <Input label="Tätigkeit" value={stundenForm.taetigkeit} onChange={e => setStundenForm(s => ({ ...s, taetigkeit: e.target.value }))} placeholder="z.B. Schweissen, Montage..." />
                                         <Input label="Bemerkung" value={stundenForm.bemerkung} onChange={e => setStundenForm(s => ({ ...s, bemerkung: e.target.value }))} />
                                         <div className="md:col-span-3 flex justify-end gap-3">

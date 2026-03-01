@@ -11,6 +11,8 @@ import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { EmployeeService } from '@/lib/services/employeeService';
+import { SubunternehmerService } from '@/lib/services/subunternehmerService';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { ArrowLeft, Save, Calendar, UploadCloud, FileType } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -34,6 +36,7 @@ const teilsystemSchema = z.object({
     planStatus: z.string().optional(),
     wemaLink: z.string().optional(),
     status: z.string().min(1, 'Status ist erforderlich'),
+    subunternehmerId: z.string().optional(),
 });
 
 type TeilsystemValues = z.infer<typeof teilsystemSchema>;
@@ -48,24 +51,31 @@ export default function TeilsystemErfassenPage() {
     const [dragActive, setDragActive] = React.useState(false);
     const [selectedFile, setSelectedFile] = React.useState<string | null>(null);
     const [mitarbeiter, setMitarbeiter] = React.useState<any[]>([]);
+    const [subunternehmerList, setSubunternehmerList] = React.useState<any[]>([]);
     const [ifcExtractData, setIfcExtractData] = React.useState<IfcExtractResult | null>(null);
     const [newTeilsystemId, setNewTeilsystemId] = React.useState<string | null>(null);
     const [extracting, setExtracting] = React.useState(false);
     const [analyzing, setAnalyzing] = React.useState(false);
     const [importingAuto, setImportingAuto] = React.useState(false);
     const [loadingMitarbeiter, setLoadingMitarbeiter] = React.useState(true);
+    const [loadingSubunternehmer, setLoadingSubunternehmer] = React.useState(true);
     const [selectedFileObj, setSelectedFileObj] = React.useState<File | null>(null);
     const [uploadedIfcUrl, setUploadedIfcUrl] = React.useState<string | null>(null);
 
     React.useEffect(() => {
         const load = async () => {
             try {
-                const data = await EmployeeService.getMitarbeiter();
-                setMitarbeiter(data);
+                const [empData, subData] = await Promise.all([
+                    EmployeeService.getMitarbeiter(),
+                    SubunternehmerService.getSubunternehmer()
+                ]);
+                setMitarbeiter(empData);
+                setSubunternehmerList(subData);
             } catch (error) {
-                console.error("Failed to load mitarbeiter", error);
+                console.error("Failed to load data", error);
             } finally {
                 setLoadingMitarbeiter(false);
+                setLoadingSubunternehmer(false);
             }
         };
         load();
@@ -137,10 +147,14 @@ export default function TeilsystemErfassenPage() {
                 }
             }
 
+            const sub = subunternehmerList.find(s => s.id === data.subunternehmerId);
+
             const created = await SubsystemService.createTeilsystem({
                 ...data,
                 projektId,
                 eroeffnetDurch: resolveName(data.eroeffnetDurch),
+                subunternehmerId: data.subunternehmerId,
+                subunternehmerName: sub ? sub.name : undefined,
                 status: data.status as any,
                 ifcUrl: uploadedIfcUrl
             } as any);
@@ -412,6 +426,25 @@ export default function TeilsystemErfassenPage() {
                                     error={errors.abteilung?.message}
                                 />
                             </div>
+
+                            {watch('abteilung') === 'Subunternehmer' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="space-y-1.5">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Subunternehmer wählen</label>
+                                        <SearchableSelect
+                                            label=""
+                                            placeholder="Subunternehmer suchen..."
+                                            options={subunternehmerList.map(s => ({ label: s.name, value: s.id }))}
+                                            value={watch('subunternehmerId')}
+                                            onChange={(val) => setValue('subunternehmerId', val)}
+                                            error={errors.subunternehmerId?.message}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col justify-end pb-1 text-[10px] font-bold text-muted-foreground opacity-60">
+                                        <p>Bitte wählen Sie den zuständigen Subunternehmer aus der Liste der hinterlegten Partner.</p>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Second Row: Beschreibung */}
                             <div className="space-y-1.5">
