@@ -13,6 +13,7 @@ import { PositionService } from '@/lib/services/positionService';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { ProjectService } from '@/lib/services/projectService';
 import { LagerortService } from '@/lib/services/lagerortService';
+import { LagerortSelect } from '@/components/shared/LagerortSelect';
 import { Position, Teilsystem, Projekt, Lagerort, Beschichtung, PlanStatus } from '@/types';
 import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
@@ -195,12 +196,10 @@ export default function PositionErfassenPage() {
                                     ]}
                                     {...register('beschichtung')}
                                 />
-                                <Select
-                                    label="Lagerort"
-                                    options={[
-                                        { value: '', label: '— Kein Lagerort —' },
-                                        ...lagerorte.map(l => ({ value: l.id, label: `${l.bezeichnung}${l.bereich ? ` (${l.bereich})` : ''}` }))
-                                    ]}
+                                <LagerortSelect
+                                    projektId={projektId}
+                                    lagerorte={lagerorte}
+                                    onLagerortAdded={(newLagerort) => setLagerorte(prev => [...prev, newLagerort])}
                                     {...register('lagerortId')}
                                 />
                             </div>

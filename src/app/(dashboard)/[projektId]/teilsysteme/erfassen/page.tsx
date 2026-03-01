@@ -12,7 +12,9 @@ import { Button } from '@/components/ui/button';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { EmployeeService } from '@/lib/services/employeeService';
 import { SubunternehmerService } from '@/lib/services/subunternehmerService';
+import { LagerortService } from '@/lib/services/lagerortService';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import { LagerortSelect } from '@/components/shared/LagerortSelect';
 import { ArrowLeft, Save, Calendar, UploadCloud, FileType } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -36,6 +38,7 @@ const teilsystemSchema = z.object({
     planStatus: z.string().optional(),
     wemaLink: z.string().optional(),
     status: z.string().min(1, 'Status ist erforderlich'),
+    lagerortId: z.string().optional(),
     subunternehmerId: z.string().optional(),
 });
 
@@ -61,16 +64,19 @@ export default function TeilsystemErfassenPage() {
     const [loadingSubunternehmer, setLoadingSubunternehmer] = React.useState(true);
     const [selectedFileObj, setSelectedFileObj] = React.useState<File | null>(null);
     const [uploadedIfcUrl, setUploadedIfcUrl] = React.useState<string | null>(null);
+    const [lagerorte, setLagerorte] = React.useState<any[]>([]);
 
     React.useEffect(() => {
         const load = async () => {
             try {
-                const [empData, subData] = await Promise.all([
+                const [empData, subData, loData] = await Promise.all([
                     EmployeeService.getMitarbeiter(),
-                    SubunternehmerService.getSubunternehmer()
+                    SubunternehmerService.getSubunternehmer(),
+                    LagerortService.getLagerorte(projektId)
                 ]);
                 setMitarbeiter(empData);
                 setSubunternehmerList(subData);
+                setLagerorte(loData || []);
             } catch (error) {
                 console.error("Failed to load data", error);
             } finally {
@@ -565,6 +571,13 @@ export default function TeilsystemErfassenPage() {
                                     options={statusOptions}
                                     {...register('status')}
                                     error={errors.status?.message}
+                                />
+                                <LagerortSelect
+                                    projektId={projektId}
+                                    lagerorte={lagerorte}
+                                    onLagerortAdded={(newLagerort) => setLagerorte(prev => [...prev, newLagerort])}
+                                    {...register('lagerortId')}
+                                    error={errors.lagerortId?.message}
                                 />
                             </div>
                         </CardContent>

@@ -78,13 +78,14 @@ export const ProjectService = {
         return DatabaseService.upsert('projekte', updatedProject);
     },
 
-    async uploadImage(file: File, projektId: string, type: 'image' | 'plan' | 'ifc' | 'document' = 'image'): Promise<string> {
+    async uploadImage(file: File, projektId: string, type: 'image' | 'plan' | 'ifc' | 'document' | 'lagerort' = 'image', newName?: string): Promise<string> {
         // Client-side: upload via API
         if (typeof window !== 'undefined') {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('projektId', projektId);
             formData.append('type', type);
+            if (newName) formData.append('newName', newName);
 
             const res = await fetch('/api/upload', {
                 method: 'POST',

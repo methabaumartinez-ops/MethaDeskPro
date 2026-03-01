@@ -11,11 +11,13 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { FleetService } from '@/lib/services/fleetService';
-import { Teilsystem, Fahrzeug } from '@/types';
+import { TeamService } from '@/lib/services/teamService';
+import { TaskService } from '@/lib/services/taskService';
+import { Teilsystem, Fahrzeug, Team, TeamMember, Task, Subtask, Mitarbeiter } from '@/types';
 import {
     Search, Filter, Layers, Link as LinkIcon,
     Car, HardHat, Package, Truck, Plus, CheckCircle2, Clock, Inbox, Trash2, Send, Edit2, MessageSquare,
-    Eye, CalendarPlus, Wrench, Camera, ArrowLeft
+    Eye, CalendarPlus, Wrench, Camera, ArrowLeft, Users, CheckSquare, UserPlus
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -55,6 +57,10 @@ export default function AusfuehrungPage() {
     const [subsystems, setSubsystems] = useState<Teilsystem[]>([]);
     const [vehicles, setVehicles] = useState<Fahrzeug[]>([]);
     const [bestellungen, setBestellungen] = useState<MaterialBestellung[]>([]);
+    const [teams, setTeams] = useState<Team[]>([]);
+    const [tasks, setTasks] = useState<Task[]>([]);
+    const [mitarbeiter, setMitarbeiter] = useState<Mitarbeiter[]>([]);
+    const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
 
     // Form State for creating new Material Orders
     const [isCreatingOrder, setIsCreatingOrder] = useState(false);
@@ -87,14 +93,33 @@ export default function AusfuehrungPage() {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [subs, vehs, best] = await Promise.all([
+                // Sync Bau Teilsysteme to Tasks
+                await TaskService.syncBauTeilsysteme(projektId);
+
+                const [subs, vehs, best, tms, tks, mitsRes] = await Promise.all([
                     SubsystemService.getTeilsysteme(projektId),
                     FleetService.getFahrzeuge(),
-                    BestellService.getBestellungen(projektId)
+                    BestellService.getBestellungen(projektId),
+                    TeamService.getTeams(projektId),
+                    TaskService.getTasks(projektId),
+                    fetch(`/api/data/mitarbeiter`)
                 ]);
+
+                let mits = [];
+                if (mitsRes.ok) mits = await mitsRes.json();
+
                 setSubsystems(subs);
                 setVehicles(vehs);
                 setBestellungen(best);
+                setTeams(tms);
+                setTasks(tks);
+                setMitarbeiter(mits);
+
+                // Handle tab parameter
+                const tab = searchParams.get('tab');
+                if (tab) {
+                    setActiveTab(tab);
+                }
 
                 // Check for edit parameter in URL
                 const editId = searchParams.get('edit');
@@ -383,6 +408,19 @@ export default function AusfuehrungPage() {
                             <Car className="h-4 w-4" />
                             Fahrzeuge ({vehicles.length})
                         </TabsTrigger>
+                        <TabsTrigger
+                            active={activeTab === 'teams_aufgaben'}
+                            onClick={() => setActiveTab('teams_aufgaben')}
+                            className={cn(
+                                "flex items-center gap-2 font-black text-xs uppercase px-6 h-11 rounded-full border-2 transition-all",
+                                activeTab === 'teams_aufgaben'
+                                    ? "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-200"
+                                    : "bg-white border-slate-100 text-slate-500 hover:border-orange-200 hover:text-orange-600"
+                            )}
+                        >
+                            <Users className="h-4 w-4" />
+                            Teams & Aufgaben ({tasks.length})
+                        </TabsTrigger>
                     </TabsList>
                 </div>
 
@@ -395,7 +433,8 @@ export default function AusfuehrungPage() {
                                     placeholder={
                                         activeTab === 'teilsysteme' ? "Suche nach Nummer o. Name..." :
                                             activeTab === 'logistik' ? "Suche nach Container o. Besteller..." :
-                                                "Suche nach Bezeichnung o. Inventarnummer..."
+                                                activeTab === 'teams_aufgaben' ? "Suche nach Team o. Aufgabe..." :
+                                                    "Suche nach Bezeichnung o. Inventarnummer..."
                                     }
                                     className="pl-10 h-9 text-sm bg-background border-slate-200 dark:border-slate-800"
                                     value={search}
@@ -895,6 +934,141 @@ export default function AusfuehrungPage() {
                                             )}
                                         </>
                                     )}
+                                </TabsContent>
+
+                                <TabsContent active={activeTab === 'teams_aufgaben'} className="mt-0 h-full overflow-y-auto bg-slate-50/50 p-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
+                                        {/* Teams Spalte */}
+                                        <div className="md:col-span-1 border-r border-slate-200 pr-4">
+                                            <div className="flex justify-between items-center mb-4">
+                                                <h3 className="font-black text-slate-800 flex items-center gap-2">
+                                                    <Users className="h-5 w-5 text-orange-500" />
+                                                    Teams ({teams.length})
+                                                </h3>
+                                                <Link href={`/${projektId}/teams/neu`}>
+                                                    <Button size="sm" variant="outline" className="h-8 text-[10px] uppercase font-bold text-orange-600 border-orange-200 bg-white shadow-sm hover:bg-orange-50 hover:text-orange-700">
+                                                        <Plus className="h-3 w-3 mr-1" /> Neues Team
+                                                    </Button>
+                                                </Link>
+                                            </div>
+                                            {teams.length === 0 ? (
+                                                <div className="text-sm text-center text-slate-400 font-medium bg-white p-6 rounded-xl border border-dashed border-slate-200">
+                                                    Keine Teams erstellt.
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-3">
+                                                    {teams.map(team => (
+                                                        <Card
+                                                            key={team.id}
+                                                            className={cn("cursor-pointer border-2 transition-all group hover:border-orange-300", selectedTeamId === team.id ? "border-orange-500 shadow-md bg-orange-50/50" : "border-slate-100 bg-white")}
+                                                            onClick={() => setSelectedTeamId(team.id)}
+                                                        >
+                                                            <div className="p-4">
+                                                                <div className="flex justify-between items-start mb-2">
+                                                                    <h4 className="font-bold text-sm text-slate-800 tracking-tight">{team.name}</h4>
+                                                                    <div className="bg-slate-100 text-slate-500 rounded-full h-6 w-6 flex items-center justify-center text-[10px] font-bold">
+                                                                        {tasks.filter(t => t.teamId === team.id).length}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </Card>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Aufgaben Spalte */}
+                                        <div className="md:col-span-2 pl-2">
+                                            <div className="flex justify-between items-center mb-4">
+                                                <h3 className="font-black text-slate-800 flex items-center gap-2">
+                                                    <CheckSquare className="h-5 w-5 text-orange-500" />
+                                                    {selectedTeamId ? `Zugeordnete Aufgaben` : `Alle Aufgaben (${tasks.length})`}
+                                                </h3>
+                                                <div className="flex gap-2">
+                                                    {selectedTeamId && (
+                                                        <Button size="sm" variant="ghost" onClick={() => setSelectedTeamId(null)} className="h-8 text-xs font-bold text-slate-500 hover:text-slate-700">Filter aufheben</Button>
+                                                    )}
+                                                    <Link href={`/${projektId}/aufgaben/neu`}>
+                                                        <Button size="sm" variant="outline" className="h-8 text-[10px] uppercase font-bold text-orange-600 border-orange-200 bg-white shadow-sm hover:bg-orange-50 hover:text-orange-700">
+                                                            <Plus className="h-3 w-3 mr-1" /> Neue Aufgabe
+                                                        </Button>
+                                                    </Link>
+                                                </div>
+                                            </div>
+
+                                            {tasks.filter(t => selectedTeamId ? t.teamId === selectedTeamId : true).length === 0 ? (
+                                                <EmptyState label={selectedTeamId ? "Dem Team sind keine Aufgaben zugeordnet." : "Keine Aufgaben gefunden"} icon={CheckSquare} />
+                                            ) : (
+                                                <div className="space-y-3 pb-8">
+                                                    {tasks
+                                                        .filter(t => selectedTeamId ? t.teamId === selectedTeamId : true)
+                                                        .map(task => (
+                                                            <Card key={task.id} className="border border-slate-200 shadow-sm hover:border-orange-300 transition-colors bg-white">
+                                                                <div className="p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                                                                    <div>
+                                                                        <div className="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-widest flex items-center gap-1.5">
+                                                                            {task.sourceType === 'ts' ? (
+                                                                                <span className="text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 flex items-center gap-1"><Layers className="h-3 w-3" /> Aus TS generiert</span>
+                                                                            ) : (
+                                                                                <span className="text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">Manuell</span>
+                                                                            )}
+                                                                            {task.teamId && teams.find(t => t.id === task.teamId) && (
+                                                                                <span className="text-orange-600 font-bold bg-orange-50 px-1.5 py-0.5 rounded border border-orange-100">
+                                                                                    {teams.find(t => t.id === task.teamId)?.name}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                        <Link href={`/${projektId}/aufgaben/${task.id}`}>
+                                                                            <h4 className="font-black text-slate-800 text-sm md:text-base leading-tight hover:text-orange-600 transition-colors cursor-pointer">
+                                                                                {task.title}
+                                                                            </h4>
+                                                                        </Link>
+                                                                        {task.description && (
+                                                                            <p className="text-xs text-slate-500 mt-1 line-clamp-2 md:line-clamp-1 font-medium">{task.description}</p>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="flex sm:flex-col items-center sm:items-end gap-2 shrink-0">
+                                                                        <select
+                                                                            className={cn(
+                                                                                "bg-white border rounded-md px-2 py-1 text-[10px] font-black uppercase tracking-tight focus:ring-1 focus:ring-orange-500 cursor-pointer hover:border-orange-500 transition-all outline-none",
+                                                                                task.status === 'Offen' ? "border-amber-200 text-amber-700" :
+                                                                                    task.status === 'In Arbeit' ? "border-blue-200 text-blue-700" :
+                                                                                        task.status === 'Erledigt' ? "border-emerald-200 text-emerald-700" :
+                                                                                            "border-red-200 text-red-700"
+                                                                            )}
+                                                                            value={task.status}
+                                                                            onChange={async (e) => {
+                                                                                const newStatus = e.target.value as any;
+                                                                                try {
+                                                                                    await TaskService.updateTask(task.id, { projektId, status: newStatus });
+                                                                                    setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: newStatus, projektId } : t));
+                                                                                } catch (err) {
+                                                                                    console.error("Failed to update status", err);
+                                                                                    alert("Fehler beim Aktualisieren");
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            <option value="Offen">Offen</option>
+                                                                            <option value="In Arbeit">In Arbeit</option>
+                                                                            <option value="Erledigt">Erledigt</option>
+                                                                            <option value="Blockiert">Blockiert</option>
+                                                                        </select>
+                                                                        <div className="flex items-center gap-1.5">
+                                                                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-right whitespace-nowrap">Priorität:</span>
+                                                                            <span className={cn(
+                                                                                "text-[10px] font-black uppercase",
+                                                                                task.priority === 'Hoch' ? "text-red-500" :
+                                                                                    task.priority === 'Mittel' ? "text-amber-500" : "text-emerald-500"
+                                                                            )}>{task.priority}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </Card>
+                                                        ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </TabsContent>
                             </>
                         )}

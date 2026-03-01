@@ -15,7 +15,9 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { PositionService } from '@/lib/services/positionService';
-import { Teilsystem } from '@/types';
+import { LagerortService } from '@/lib/services/lagerortService';
+import { LagerortSelect } from '@/components/shared/LagerortSelect';
+import { Position, Teilsystem, Lagerort } from '@/types';
 
 const positionSchema = z.object({
     posNummer: z.string().min(1, 'Positionsnummer ist erforderlich'),
@@ -24,6 +26,7 @@ const positionSchema = z.object({
     einheit: z.string().min(1, 'Einheit ist erforderlich'),
     teilsystemId: z.string().min(1, 'Teilsystem ist erforderlich'),
     status: z.string().min(1, 'Status ist erforderlich'),
+    lagerortId: z.string().optional(),
 });
 
 type PositionValues = z.infer<typeof positionSchema>;
@@ -34,16 +37,21 @@ export default function PositionErfassenPage() {
     const [dragActive, setDragActive] = useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [teilsystem, setTeilsystem] = useState<Teilsystem | null>(null);
+    const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
 
     useEffect(() => {
-        const loadTeilsystem = async () => {
+        const loadData = async () => {
             if (teilsystemId) {
-                const ts = await SubsystemService.getTeilsystemById(teilsystemId);
+                const [ts, lo] = await Promise.all([
+                    SubsystemService.getTeilsystemById(teilsystemId),
+                    LagerortService.getLagerorte(projektId)
+                ]);
                 if (ts) setTeilsystem(ts);
+                setLagerorte(lo);
             }
         };
-        loadTeilsystem();
-    }, [teilsystemId]);
+        loadData();
+    }, [teilsystemId, projektId]);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -153,7 +161,16 @@ export default function PositionErfassenPage() {
                                         <Input label="Menge" type="number" {...register('menge')} error={errors.menge?.message} />
                                         <Input label="Einheit" placeholder="Stk, m, m2" {...register('einheit')} error={errors.einheit?.message} />
                                     </div>
-                                    <Select label="Status" options={[{ label: 'Offen', value: 'offen' }, { label: 'Bestellt', value: 'bestellt' }]} {...register('status')} error={errors.status?.message} />
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <Select label="Status" options={[{ label: 'Offen', value: 'offen' }, { label: 'Bestellt', value: 'bestellt' }]} {...register('status')} error={errors.status?.message} />
+                                        <LagerortSelect
+                                            projektId={projektId}
+                                            lagerorte={lagerorte}
+                                            onLagerortAdded={(newLagerort) => setLagerorte(prev => [...prev, newLagerort])}
+                                            {...register('lagerortId')}
+                                            error={errors.lagerortId?.message}
+                                        />
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>

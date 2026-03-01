@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { QRCodeSVG } from 'qrcode.react';
 import { QRCodeSection } from '@/components/shared/QRCodeSection';
 import { ItemQrModal } from '@/components/shared/ItemQrModal';
+import { LagerortBadge } from '@/components/shared/LagerortBadge';
 import DokumentePanel from '@/components/shared/DokumentePanel';
 import { TrackingTimeline } from '@/components/shared/TrackingTimeline';
 import { useSearchParams, useParams, useRouter } from 'next/navigation';
@@ -99,7 +100,7 @@ export default function PositionDetailPage() {
             </div>
 
             {/* Banner Section (Matching Teilsystem Style) */}
-            <div className="flex flex-col md:grid md:grid-cols-[1fr_auto_auto_1fr] items-center bg-card p-6 rounded-2xl shadow-sm border-2 border-border gap-6">
+            <div className="flex flex-col md:grid md:grid-cols-[1fr_auto_auto_1fr] items-center bg-card py-4 px-6 rounded-2xl shadow-sm border-2 border-border gap-6">
                 <div className="space-y-1 w-full text-center md:text-left">
                     <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
                         <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">TEILSYSTEM</span>
@@ -116,7 +117,7 @@ export default function PositionDetailPage() {
                     </div>
                 </div>
 
-                <div className="flex flex-col items-center gap-2 md:border-l border-border/50 md:pl-8 md:pr-4 h-20 justify-center">
+                <div className="flex flex-col items-center gap-2 md:border-l border-border/50 md:pl-8 md:pr-4 h-16 justify-center">
                     <div
                         className="bg-white p-1.5 rounded-lg border border-border cursor-pointer hover:shadow-md transition-all active:scale-95"
                         onClick={() => setShowQrModal(true)}
@@ -128,30 +129,23 @@ export default function PositionDetailPage() {
                     </div>
                 </div>
 
-                <div className="flex flex-col items-center md:items-start gap-1 md:border-r border-border/50 md:pl-4 md:pr-8 h-20 justify-center">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">Labelort</span>
+                <div className="flex flex-col items-center md:items-start md:border-r border-border/50 md:pl-4 md:pr-8 h-16 justify-center">
                     <div className="flex items-center gap-2">
                         {loPlanUrl ? (
                             <a
                                 href={loPlanUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-2 group hover:text-orange-600 transition-colors"
+                                className="group transition-all"
                             >
-                                <MapPin className="h-4 w-4 text-orange-600 group-hover:scale-110 transition-transform" />
-                                <span className="text-sm font-black text-foreground group-hover:text-orange-600 underline decoration-muted-foreground/30 underline-offset-4 decoration-dotted">
-                                    {loBezeichnung}
-                                </span>
+                                <LagerortBadge lagerort={lagerortObj} fallbackName={loBezeichnung} />
                             </a>
                         ) : (
                             <div
-                                className="flex items-center gap-2"
                                 title={position.lagerortId ? "Kein Plan hinterlegt" : undefined}
+                                className="transition-all"
                             >
-                                <MapPin className={cn("h-4 w-4", position.lagerortId ? "text-orange-600/50" : "text-slate-300")} />
-                                <span className={cn("text-sm font-black", position.lagerortId ? "text-foreground" : "text-muted-foreground/40")}>
-                                    {loBezeichnung}
-                                </span>
+                                <LagerortBadge lagerort={lagerortObj} fallbackName={loBezeichnung} />
                             </div>
                         )}
                     </div>
@@ -218,7 +212,7 @@ export default function PositionDetailPage() {
                 {/* 3) Actions Card */}
                 <Card className="shadow-lg border-2 border-orange-600/30 rounded-3xl overflow-hidden bg-white/70 backdrop-blur-xl">
                     <CardContent className="p-4 flex flex-col gap-3 items-center justify-center h-full">
-                        {can('view_kosten') && (
+                        {can('viewKosten') && (
                             <Link href={`/${projektId}/kosten?pos=${id}`} className="w-full max-w-[240px]">
                                 <Button className="w-full h-10 border-2 border-green-400 bg-green-50/50 hover:bg-green-100/70 text-green-700 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center justify-center gap-2.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
                                     <div className="p-1 bg-white rounded-full shadow-sm">

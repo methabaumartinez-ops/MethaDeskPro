@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { QRCodeSVG } from 'qrcode.react';
 import { ItemQrModal } from '@/components/shared/ItemQrModal';
+import { LagerortBadge } from '@/components/shared/LagerortBadge';
 import { Badge } from '@/components/ui/badge';
 import { DocumentViewer } from '@/components/shared/DocumentViewer';
 import { TrackingTimeline } from '@/components/shared/TrackingTimeline';
@@ -90,7 +91,7 @@ export default function UnterpositionDetailPage() {
             </div>
 
             {/* Banner Section (Matching Position Style) */}
-            <div className="flex flex-col md:grid md:grid-cols-[1fr_auto_auto_1fr] items-center bg-card p-6 rounded-2xl shadow-sm border-2 border-border gap-6">
+            <div className="flex flex-col md:grid md:grid-cols-[1fr_auto_auto_1fr] items-center bg-card py-4 px-6 rounded-2xl shadow-sm border-2 border-border gap-6">
                 <div className="space-y-1 w-full text-center md:text-left">
                     <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-1">
                         <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">TEILSYSTEM</span>
@@ -113,7 +114,7 @@ export default function UnterpositionDetailPage() {
                     </div>
                 </div>
 
-                <div className="flex flex-col items-center gap-2 md:border-l border-border/50 md:pl-8 md:pr-4 h-20 justify-center">
+                <div className="flex flex-col items-center gap-2 md:border-l border-border/50 md:pl-8 md:pr-4 h-16 justify-center">
                     <div
                         className="bg-white p-1.5 rounded-lg border border-border cursor-pointer hover:shadow-md transition-all active:scale-95"
                         onClick={() => setShowQrModal(true)}
@@ -125,30 +126,23 @@ export default function UnterpositionDetailPage() {
                     </div>
                 </div>
 
-                <div className="flex flex-col items-center md:items-start gap-1 md:border-r border-border/50 md:pl-4 md:pr-8 h-20 justify-center">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">Labelort</span>
+                <div className="flex flex-col items-center md:items-start md:border-r border-border/50 md:pl-4 md:pr-8 h-16 justify-center">
                     <div className="flex items-center gap-2">
                         {loPlanUrl ? (
                             <a
                                 href={loPlanUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-2 group hover:text-orange-600 transition-colors"
+                                className="group transition-all"
                             >
-                                <MapPin className="h-4 w-4 text-orange-600 group-hover:scale-110 transition-transform" />
-                                <span className="text-sm font-black text-foreground group-hover:text-orange-600 underline decoration-muted-foreground/30 underline-offset-4 decoration-dotted">
-                                    {loBezeichnung}
-                                </span>
+                                <LagerortBadge lagerort={lagerortObj} fallbackName={loBezeichnung} />
                             </a>
                         ) : (
                             <div
-                                className="flex items-center gap-2"
                                 title={unterposition.lagerortId ? "Kein Plan hinterlegt" : undefined}
+                                className="transition-all"
                             >
-                                <MapPin className={cn("h-4 w-4", unterposition.lagerortId ? "text-orange-600/50" : "text-slate-300")} />
-                                <span className={cn("text-sm font-black", unterposition.lagerortId ? "text-foreground" : "text-muted-foreground/40")}>
-                                    {loBezeichnung}
-                                </span>
+                                <LagerortBadge lagerort={lagerortObj} fallbackName={loBezeichnung} />
                             </div>
                         )}
                     </div>

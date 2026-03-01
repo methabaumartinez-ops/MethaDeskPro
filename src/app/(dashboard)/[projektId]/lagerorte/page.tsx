@@ -13,6 +13,7 @@ import QrCodeGenerator from '@/components/shared/QrCodeGenerator';
 import { Plus, QrCode, MapPin, Package, Pencil, Trash2, X, ScanLine, Construction, Warehouse, Globe, Factory, Truck, Map, ExternalLink, Download, Printer, Share2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { ProjectService } from '@/lib/services/projectService';
 
 const BEREICHE = [
     { name: 'Werkhof', icon: Truck, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' },
@@ -30,6 +31,8 @@ export default function LagerorteSeite() {
     const [selectedQr, setSelectedQr] = useState<Lagerort | null>(null);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [uploading, setUploading] = useState(false);
 
     const [form, setForm] = useState({ bezeichnung: '', beschreibung: '', bereich: '', planUrl: '' });
 
@@ -49,12 +52,33 @@ export default function LagerorteSeite() {
         e.preventDefault();
         setSaving(true);
         try {
+            let finalPlanUrl = form.planUrl;
+
+            if (selectedFile) {
+                setUploading(true);
+                try {
+                    finalPlanUrl = await ProjectService.uploadImage(
+                        selectedFile,
+                        projektId,
+                        'lagerort',
+                        form.bezeichnung
+                    );
+                } catch (err) {
+                    console.error('File upload failed:', err);
+                    alert('Fehler beim Hochladen der Datei.');
+                    return;
+                } finally {
+                    setUploading(false);
+                }
+            }
+
             if (editingId) {
-                await LagerortService.updateLagerort(editingId, { ...form, projektId });
+                await LagerortService.updateLagerort(editingId, { ...form, planUrl: finalPlanUrl, projektId });
             } else {
-                await LagerortService.createLagerort({ ...form, projektId });
+                await LagerortService.createLagerort({ ...form, planUrl: finalPlanUrl, projektId });
             }
             setForm({ bezeichnung: '', beschreibung: '', bereich: '', planUrl: '' });
+            setSelectedFile(null);
             setShowForm(false);
             setEditingId(null);
             await loadLagerorte();
@@ -77,6 +101,7 @@ export default function LagerorteSeite() {
             bereich: l.bereich || '',
             planUrl: l.planUrl || ''
         });
+        setSelectedFile(null);
         setShowForm(true);
         setSelectedQr(null);
     }
@@ -84,6 +109,7 @@ export default function LagerorteSeite() {
     function openCreate() {
         setEditingId(null);
         setForm({ bezeichnung: '', beschreibung: '', bereich: '', planUrl: '' });
+        setSelectedFile(null);
         setShowForm(true);
         setSelectedQr(null);
     }
@@ -161,13 +187,25 @@ export default function LagerorteSeite() {
                                     ...BEREICHE.map(b => ({ label: b.name, value: b.name }))
                                 ]}
                             />
-                            <Input
-                                label="Plan URL (Google Drive / Link)"
-                                value={form.planUrl}
-                                onChange={e => setForm(s => ({ ...s, planUrl: e.target.value }))}
-                                placeholder="https://..."
-                                className="md:col-span-2"
-                            />
+                            <div className="md:col-span-2 space-y-1.5">
+                                <label className="text-sm font-semibold text-foreground ml-1 font-mono uppercase tracking-wider text-[10px]">Plan Hochladen</label>
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                                    <Input
+                                        type="file"
+                                        accept=".pdf,.jpg,.jpeg,.png,.ifc,.zip,.docx,.xlsx"
+                                        onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                                        className="file:bg-orange-50 file:text-orange-700 file:border-0 file:rounded-xl file:px-4 file:py-2 file:mr-4 file:font-semibold file:text-xs cursor-pointer bg-white"
+                                    />
+                                    {form.planUrl && !selectedFile && (
+                                        <a href={form.planUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 underline shrink-0 font-semibold truncate max-w-[200px]" title={form.planUrl}>
+                                            Aktueller Plan
+                                        </a>
+                                    )}
+                                </div>
+                                <p className="text-[10px] text-muted-foreground ml-1">
+                                    Die Datei wird in Google Drive (Ordner "lagerorts") gespeichert und unter dem Lagerort-Namen abgelegt.
+                                </p>
+                            </div>
                             <div className="md:col-span-2 space-y-1.5">
                                 <label className="text-sm font-semibold text-foreground ml-1 font-mono uppercase tracking-wider text-[10px]">Beschreibung</label>
                                 <textarea
@@ -179,8 +217,8 @@ export default function LagerorteSeite() {
                             </div>
                             <div className="md:col-span-2 flex justify-end gap-3 pt-4 border-t mt-2">
                                 <Button type="button" variant="ghost" onClick={() => setShowForm(false)} className="font-bold">Abbrechen</Button>
-                                <Button type="submit" disabled={saving} className="font-black px-8 rounded-xl shadow-lg shadow-primary/20">
-                                    {saving ? 'Speichert...' : editingId ? 'AKTUALISIEREN' : 'ERSTELLEN'}
+                                <Button type="submit" disabled={saving || uploading} className="font-black px-8 rounded-xl shadow-lg shadow-primary/20">
+                                    {uploading ? 'Lädt hoch...' : saving ? 'Speichert...' : editingId ? 'AKTUALISIEREN' : 'ERSTELLEN'}
                                 </Button>
                             </div>
                         </form>
@@ -402,12 +440,7 @@ export default function LagerorteSeite() {
                                             <p className="text-xs text-muted-foreground/40 italic mb-4">Keine Beschreibung vorhanden...</p>
                                         )}
 
-                                        <div className="flex flex-col gap-2 mb-5">
-                                            <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground bg-muted/50 px-3 py-2 rounded-xl border border-border/50">
-                                                <ScanLine className="h-3 w-3 shrink-0" />
-                                                <span className="truncate uppercase tracking-tighter">{l.qrCode || `LAGERORT:${l.id}`}</span>
-                                            </div>
-                                        </div>
+
                                     </div>
 
                                     <div className="flex flex-col gap-2">

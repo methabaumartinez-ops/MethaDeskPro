@@ -11,7 +11,8 @@ import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { PositionService } from '@/lib/services/positionService';
 import { LagerortService } from '@/lib/services/lagerortService';
-import { Position, Lagerort, Beschichtung, PlanStatus } from '@/types';
+import { LagerortSelect } from '@/components/shared/LagerortSelect';
+import { Position, Teilsystem, Lagerort, Beschichtung, PlanStatus } from '@/types';
 import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
 
@@ -168,12 +169,10 @@ export default function PositionEditPage() {
                                 ]}
                                 {...register('beschichtung')}
                             />
-                            <Select
-                                label="Lagerort"
-                                options={[
-                                    { value: '', label: '— Kein Lagerort —' },
-                                    ...lagerorte.map(l => ({ value: l.id, label: `${l.bezeichnung}${l.bereich ? ` (${l.bereich})` : ''}` }))
-                                ]}
+                            <LagerortSelect
+                                projektId={projektId}
+                                lagerorte={lagerorte}
+                                onLagerortAdded={(newLagerort) => setLagerorte(prev => [...prev, newLagerort])}
                                 {...register('lagerortId')}
                             />
                         </div>

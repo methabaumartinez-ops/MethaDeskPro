@@ -6,7 +6,8 @@ import { getUserFromToken } from '@/lib/services/authService';
 
 const ALLOWED_COLLECTIONS = [
     'projekte', 'teilsysteme', 'positionen', 'unterpositionen',
-    'material', 'mitarbeiter', 'fahrzeuge', 'fahrzeug_reservierungen', 'reservierungen', 'lieferanten', 'subunternehmer'
+    'material', 'mitarbeiter', 'fahrzeuge', 'fahrzeug_reservierungen', 'reservierungen', 'lieferanten', 'subunternehmer',
+    'teams', 'team_members', 'tasks', 'subtasks'
 ];
 
 export async function GET(req: Request, { params }: { params: Promise<{ collection: string }> }) {
@@ -76,6 +77,42 @@ export async function POST(req: Request, { params }: { params: Promise<{ collect
         console.error(`API Error creating item in ${collection}:`, error);
         return NextResponse.json(
             { error: `Failed to create item in ${collection}` },
+            { status: 500 }
+        );
+    }
+}
+
+export async function DELETE(req: Request, { params }: { params: Promise<{ collection: string }> }) {
+    try {
+        const { collection } = await params;
+        if (!ALLOWED_COLLECTIONS.includes(collection)) {
+            return NextResponse.json({ error: 'Collection not accessible' }, { status: 403 });
+        }
+
+        const cookieStore = await cookies();
+        const token = cookieStore.get('methabau_token')?.value;
+        if (!token) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 });
+
+        const user = await getUserFromToken(token);
+        if (!user || (user.role !== 'admin' && user.role !== 'projektleiter')) {
+            return NextResponse.json({ error: 'Keine Berechtigung zum Löschen von Daten.' }, { status: 403 });
+        }
+
+        const { searchParams } = new URL(req.url);
+        const id = searchParams.get('id');
+
+        if (!id) {
+            return NextResponse.json({ error: 'ID is required for deletion' }, { status: 400 });
+        }
+
+        console.log(`API: Deleting item ${id} from '${collection}'...`);
+        await DatabaseService.delete(collection, id);
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        const { collection } = await params;
+        console.error(`API Error deleting item from ${collection}:`, error);
+        return NextResponse.json(
+            { error: `Failed to delete item from ${collection}` },
             { status: 500 }
         );
     }

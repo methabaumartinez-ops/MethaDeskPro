@@ -13,8 +13,10 @@ import { SubsystemService } from '@/lib/services/subsystemService';
 import { EmployeeService } from '@/lib/services/employeeService';
 import { SupplierService } from '@/lib/services/supplierService';
 import { SubunternehmerService } from '@/lib/services/subunternehmerService';
+import { LagerortService } from '@/lib/services/lagerortService';
 import { SearchableSelect } from '@/components/ui/searchable-select';
-import { Teilsystem, ABTEILUNGEN_CONFIG, Lieferant } from '@/types';
+import { LagerortSelect } from '@/components/shared/LagerortSelect';
+import { Teilsystem, ABTEILUNGEN_CONFIG, Lieferant, Lagerort } from '@/types';
 import { ArrowLeft, Save, Calendar as CalendarIcon, UploadCloud, FileType, Truck, X, Search, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -38,6 +40,7 @@ const teilsystemSchema = z.object({
     ifcUrl: z.string().optional(),
     abteilung: z.string().min(1, 'Abteilung ist erforderlich'),
     status: z.string().min(1, 'Status ist erforderlich'),
+    lagerortId: z.string().optional(),
     lieferantenIds: z.array(z.string()).optional(),
     subunternehmerId: z.string().optional(),
 });
@@ -63,27 +66,6 @@ const DateInput = React.forwardRef<HTMLInputElement, { label: string; error?: st
     )
 );
 DateInput.displayName = "DateInput";
-
-// Simple select for use in form
-const FormSelect = React.forwardRef<
-    HTMLSelectElement,
-    { label: string; error?: string; options: { label: string; value: string }[] } & React.SelectHTMLAttributes<HTMLSelectElement>
->(({ label, error, options, ...props }, ref) => (
-    <div className="space-y-1.5">
-        <label className="text-sm font-semibold text-foreground ml-1">{label}</label>
-        <select
-            ref={ref}
-            className="flex h-10 w-full items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:border-accent"
-            {...props}
-        >
-            {options.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-        </select>
-        {error && <p className="text-xs font-medium text-red-500 ml-1">{error}</p>}
-    </div>
-));
-FormSelect.displayName = "FormSelect";
 
 // Helper to parse German date "Do 04.12.2025" or "17.07.2025" to ISO "2025-12-04"
 function germanDateToISO(dateStr?: string): string {
@@ -123,6 +105,7 @@ export default function TeilsystemEditPage() {
     const [lieferantenSearch, setLieferantenSearch] = useState('');
     const [isLieferantenOpen, setIsLieferantenOpen] = useState(false);
     const [loadingSubunternehmer, setLoadingSubunternehmer] = useState(true);
+    const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
 
     const {
         register,
@@ -142,12 +125,14 @@ export default function TeilsystemEditPage() {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [empData, subData] = await Promise.all([
+                const [empData, subData, loData] = await Promise.all([
                     EmployeeService.getMitarbeiter(),
-                    SubunternehmerService.getSubunternehmer()
+                    SubunternehmerService.getSubunternehmer(),
+                    LagerortService.getLagerorte(projektId)
                 ]);
                 setMitarbeiter(empData);
                 setSubunternehmerList(subData);
+                setLagerorte(loData);
             } catch (error) {
                 console.error("Failed to load data", error);
             } finally {
@@ -188,6 +173,7 @@ export default function TeilsystemEditPage() {
                     setValue('ifcUrl', item.ifcUrl || '');
                     setValue('abteilung', item.abteilung || '');
                     setValue('status', item.status);
+                    setValue('lagerortId', item.lagerortId || '');
                     setValue('lieferantenIds', item.lieferantenIds || []);
                     setValue('subunternehmerId', item.subunternehmerId || '');
 
@@ -368,7 +354,7 @@ export default function TeilsystemEditPage() {
                                     {...register('teilsystemNummer')}
                                     error={errors.teilsystemNummer?.message}
                                 />
-                                <FormSelect
+                                <Select
                                     label="Abteilung"
                                     options={abteilungOptions}
                                     {...register('abteilung')}
@@ -439,7 +425,7 @@ export default function TeilsystemEditPage() {
                                     label="Eröffnet am"
                                     {...register('eroeffnetAm')}
                                 />
-                                <FormSelect
+                                <Select
                                     label="Eröffnet durch"
                                     options={mitarbeiterOptions}
                                     {...register('eroeffnetDurch')}
@@ -466,7 +452,7 @@ export default function TeilsystemEditPage() {
 
                             {/* Status fields */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <FormSelect
+                                <Select
                                     label="Plan-Status"
                                     options={planStatusOptions}
                                     {...register('planStatus')}
@@ -476,11 +462,18 @@ export default function TeilsystemEditPage() {
                                     placeholder="Pfad oder URL"
                                     {...register('wemaLink')}
                                 />
-                                <FormSelect
+                                <Select
                                     label="Status *"
                                     options={statusOptions}
                                     {...register('status')}
                                     error={errors.status?.message}
+                                />
+                                <LagerortSelect
+                                    projektId={projektId}
+                                    lagerorte={lagerorte}
+                                    onLagerortAdded={(newLagerort) => setLagerorte(prev => [...prev, newLagerort])}
+                                    {...register('lagerortId')}
+                                    error={errors.lagerortId?.message}
                                 />
                             </div>
 

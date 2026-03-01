@@ -62,6 +62,8 @@ export async function POST(req: Request) {
             }
         }
 
+        const newName = formData.get('newName') as string | null;
+
         // Determine subfolder based on type
         // 'image' -> '03_Fotos'
         // 'ifc' -> '04_IFC'
@@ -70,6 +72,7 @@ export async function POST(req: Request) {
         if (type === 'image') subfolder = '03_Fotos';
         if (type === 'ifc') subfolder = '04_IFC';
         if (type === 'plan') subfolder = '02_Pläne';
+        if (type === 'lagerort') subfolder = 'lagerorts';
 
         // Convert File to Buffer
         const arrayBuffer = await file.arrayBuffer();
@@ -83,13 +86,20 @@ export async function POST(req: Request) {
             }
         }
 
+        let finalFileName = file.name;
+        if (newName) {
+            // Keep the original extension
+            const ext = file.name.substring(file.name.lastIndexOf('.'));
+            finalFileName = `${newName}${ext}`;
+        }
+
         const { uploadFileToDrive } = await import('@/lib/services/googleDriveService');
 
-        console.log(`[Upload] Starting: ${file.name} (${buffer.length} bytes), Type: ${mimeType}, Project: ${projektId}`);
+        console.log(`[Upload] Starting: ${finalFileName} (${buffer.length} bytes), Type: ${mimeType}, Project: ${projektId}`);
 
         const result = await uploadFileToDrive(
             buffer,
-            file.name,
+            finalFileName,
             mimeType,
             project.driveFolderId!,
             subfolder

@@ -35,7 +35,7 @@ export const ABTEILUNGEN_CONFIG = [
   { id: 'avor', name: 'AVOR', color: 'violet' },
   { id: 'schlosserei', name: 'Schlosserei', color: 'gray' },
   { id: 'blech', name: 'Blechabteilung', color: 'orange' },
-  { id: 'werkhof', name: 'Werkhof', color: 'teal' },
+  { id: 'werkhof', name: 'Werkhof', color: 'info' },
   { id: 'montage', name: 'Montage', color: 'success' },
   { id: 'bau', name: 'Bau', color: 'error' },
   { id: 'zimmerei', name: 'Zimmerei', color: 'gray' },
@@ -509,6 +509,60 @@ export interface IFCImportLog {
     ifcRaw?: string;
     dbSeed?: string;
   };
+}
+
+// ============================================================
+// TEAMS & TASKS (AUSFÜHRUNG)
+// ============================================================
+
+export interface Team {
+  id: string;
+  projektId: string;
+  name: string;
+  abteilung?: Abteilung | string;
+  color?: string;
+  description?: string;
+  createdAt?: string;
+}
+
+export interface TeamMember {
+  id: string;
+  teamId: string;
+  mitarbeiterId: string;
+  role?: string;
+  createdAt?: string;
+}
+
+export type TaskStatus = 'Offen' | 'In Arbeit' | 'Blockiert' | 'Erledigt' | 'Abgerechnet';
+export type TaskPriority = 'Niedrig' | 'Mittel' | 'Hoch';
+export type TaskSourceType = 'ts' | 'manual';
+
+export interface Task {
+  id: string;
+  projektId: string;
+  teamId?: string | null;
+  assignedToMitarbeiterId?: string | null;
+  title: string;
+  description?: string | null;
+  status: TaskStatus;
+  priority?: TaskPriority | null;
+  dueDate?: string | null;
+  sourceType?: TaskSourceType | null;
+  sourceTsId?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  costLogged?: boolean; // Indicates if hours/materials were logged to project costs
+}
+
+export interface Subtask {
+  id: string;
+  taskId: string;
+  title: string;
+  status: 'Offen' | 'Erledigt';
+  sortOrder: number;
+  notes?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // ============================================================
