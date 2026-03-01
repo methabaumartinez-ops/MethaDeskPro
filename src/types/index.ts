@@ -134,6 +134,7 @@ export interface Teilsystem {
   importWarnings?: string[];
   documentUrl?: string;
   lagerortId?: string;
+  abteilung?: Abteilung;
   status: ItemStatus;
   createdAt?: string;
   updatedAt?: string;

@@ -20,7 +20,7 @@ import {
 import Link from 'next/link';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { cn, cleanBemerkung } from '@/lib/utils';
 import { QRCodeSVG } from 'qrcode.react';
 
 import { QRCodeSection } from '@/components/shared/QRCodeSection';
@@ -229,7 +229,7 @@ export default function TeilsystemDetailPage() {
                     </CardHeader>
                     <CardContent className="p-4 flex-1">
                         <div className="text-[10px] text-muted-foreground leading-relaxed italic whitespace-pre-wrap">
-                            {item.bemerkung || 'Keine Bemerkung vorhanden.'}
+                            {cleanBemerkung(item.bemerkung) || 'Keine Bemerkung vorhanden.'}
                         </div>
                     </CardContent>
                 </Card>

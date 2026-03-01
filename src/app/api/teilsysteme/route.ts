@@ -8,13 +8,18 @@ export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
         const projektId = searchParams.get('projektId');
+        const abteilungId = searchParams.get('abteilungId');
 
-        console.log(`API: Fetching teilsysteme (projektId=${projektId || 'all'})...`);
+        console.log(`API: Fetching teilsysteme (projektId=${projektId || 'all'}, abteilung=${abteilungId || 'all'})...`);
 
         let data = await DatabaseService.list('teilsysteme');
 
         if (projektId) {
             data = (data as any[]).filter(t => t.projektId === projektId);
+        }
+
+        if (abteilungId) {
+            data = (data as any[]).filter(t => t.abteilung?.toLowerCase() === abteilungId.toLowerCase());
         }
 
         return NextResponse.json(data);

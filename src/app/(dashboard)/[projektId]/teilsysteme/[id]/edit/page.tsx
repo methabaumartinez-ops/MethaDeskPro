@@ -11,7 +11,7 @@ import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { EmployeeService } from '@/lib/services/employeeService';
-import { Teilsystem } from '@/types';
+import { Teilsystem, ABTEILUNGEN_CONFIG } from '@/types';
 import { ArrowLeft, Save, Calendar as CalendarIcon, UploadCloud, FileType } from 'lucide-react';
 import Link from 'next/link';
 import { ProjectService } from '@/lib/services/projectService';
@@ -32,6 +32,7 @@ const teilsystemSchema = z.object({
     planStatus: z.string().optional(),
     wemaLink: z.string().optional(),
     ifcUrl: z.string().optional(),
+    abteilung: z.string().min(1, 'Abteilung ist erforderlich'),
     status: z.string().min(1, 'Status ist erforderlich'),
 });
 
@@ -159,6 +160,7 @@ export default function TeilsystemEditPage() {
                     setValue('planStatus', item.planStatus || 'offen');
                     setValue('wemaLink', item.wemaLink || '');
                     setValue('ifcUrl', item.ifcUrl || '');
+                    setValue('abteilung', item.abteilung || '');
                     setValue('status', item.status);
 
                     if (item.ifcUrl) {
@@ -298,6 +300,13 @@ export default function TeilsystemEditPage() {
         ...mitarbeiter.map(m => ({ label: `${m.vorname} ${m.nachname}`, value: `${m.vorname} ${m.nachname}` })),
     ];
 
+    const abteilungOptions = [
+        { label: 'Abteilung wählen...', value: '' },
+        ...ABTEILUNGEN_CONFIG.map(a => ({ label: a.name, value: a.name }))
+    ];
+
+    const currentAbteilung = watch('abteilung');
+
     return (
         <div className="w-full space-y-6 pb-8">
             <Link href={`/${projektId}/teilsysteme/${id}`} className="inline-flex items-center text-sm font-bold text-muted-foreground hover:text-primary transition-colors">
@@ -325,6 +334,17 @@ export default function TeilsystemEditPage() {
                                     {...register('teilsystemNummer')}
                                     error={errors.teilsystemNummer?.message}
                                 />
+                                <FormSelect
+                                    label="Abteilung"
+                                    options={abteilungOptions}
+                                    {...register('abteilung')}
+                                    error={errors.abteilung?.message}
+                                />
+                                {!currentAbteilung && (
+                                    <div className="flex items-center gap-1.5 mt-7 bg-amber-50 border border-amber-200 text-amber-700 px-3 py-1 rounded-full h-8 w-fit shrink-0">
+                                        <span className="text-[10px] font-black uppercase tracking-wider">Abteilung fehlt</span>
+                                    </div>
+                                )}
                                 <Input
                                     label="KS"
                                     placeholder="1 oder BKP"

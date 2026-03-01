@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -16,12 +16,16 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { IfcImportModal, IfcExtractResult } from '@/components/shared/IfcImportModal';
 
+import { useProjekt } from '@/lib/context/ProjektContext';
+import { ABTEILUNGEN_CONFIG } from '@/types';
+
 const teilsystemSchema = z.object({
     teilsystemNummer: z.string().min(1, 'System-Nummer ist erforderlich'),
     ks: z.string().optional(),
     name: z.string().min(3, 'Name muss mindestens 3 Zeichen lang sein'),
     beschreibung: z.string().optional(),
     bemerkung: z.string().optional(),
+    abteilung: z.string().min(1, 'Abteilung ist erforderlich'),
     eroeffnetAm: z.string().min(1, 'Eröffnungsdatum ist erforderlich'),
     eroeffnetDurch: z.string().min(1, 'Eröffnet durch ist erforderlich'),
     montagetermin: z.string().optional(),
@@ -34,12 +38,12 @@ const teilsystemSchema = z.object({
 
 type TeilsystemValues = z.infer<typeof teilsystemSchema>;
 
-import { useProjekt } from '@/lib/context/ProjektContext';
-
 export default function TeilsystemErfassenPage() {
     const { projektId } = useParams() as { projektId: string };
     const { currentUser } = useProjekt();
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const abteilungParam = searchParams.get('abteilung');
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [dragActive, setDragActive] = React.useState(false);
     const [selectedFile, setSelectedFile] = React.useState<string | null>(null);
@@ -79,6 +83,7 @@ export default function TeilsystemErfassenPage() {
         defaultValues: {
             status: 'offen',
             ks: '1',
+            abteilung: '',
             planStatus: 'offen',
             eroeffnetDurch: currentUser ? `${currentUser.vorname} ${currentUser.nachname}` : 'Moritz',
             eroeffnetAm: new Date().toLocaleDateString('de-DE'),
@@ -92,6 +97,17 @@ export default function TeilsystemErfassenPage() {
             setValue('eroeffnetDurch', `${currentUser.vorname} ${currentUser.nachname}`);
         }
     }, [currentUser, setValue]);
+
+    // Handle abteilung from URL
+    React.useEffect(() => {
+        if (abteilungParam) {
+            // Verify if it's a valid abteilung name
+            const isValid = ABTEILUNGEN_CONFIG.some(a => a.name === abteilungParam);
+            if (isValid) {
+                setValue('abteilung', abteilungParam);
+            }
+        }
+    }, [abteilungParam, setValue]);
 
     const onSubmit = async (data: TeilsystemValues) => {
         const resolveName = (id: string) => {
@@ -254,6 +270,11 @@ export default function TeilsystemErfassenPage() {
         { label: 'Fertig', value: 'fertig' },
     ];
 
+    const abteilungOptions = [
+        { label: 'Bitte wählen...', value: '' },
+        ...ABTEILUNGEN_CONFIG.map(a => ({ label: a.name, value: a.name }))
+    ];
+
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
@@ -377,12 +398,20 @@ export default function TeilsystemErfassenPage() {
                                 />
                             </div>
 
-                            <Input
-                                label="Bezeichnung *"
-                                placeholder="z.B. Baukran"
-                                {...register('name')}
-                                error={errors.name?.message}
-                            />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <Input
+                                    label="Bezeichnung *"
+                                    placeholder="z.B. Baukran"
+                                    {...register('name')}
+                                    error={errors.name?.message}
+                                />
+                                <Select
+                                    label="Abteilung *"
+                                    options={abteilungOptions}
+                                    {...register('abteilung')}
+                                    error={errors.abteilung?.message}
+                                />
+                            </div>
 
                             {/* Second Row: Beschreibung */}
                             <div className="space-y-1.5">

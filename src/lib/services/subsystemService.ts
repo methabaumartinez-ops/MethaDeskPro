@@ -6,10 +6,17 @@ import { MaterialService } from './materialService';
 
 export const SubsystemService = {
     // CRUD
-    async getTeilsysteme(projektId?: string): Promise<Teilsystem[]> {
+    async getTeilsysteme(projektId?: string, abteilungId?: string): Promise<Teilsystem[]> {
         if (typeof window !== 'undefined') {
             try {
-                const url = projektId ? `/api/teilsysteme?projektId=${projektId}` : '/api/teilsysteme';
+                let url = '/api/teilsysteme';
+                const params = new URLSearchParams();
+                if (projektId) params.append('projektId', projektId);
+                if (abteilungId) params.append('abteilungId', abteilungId);
+
+                const queryString = params.toString();
+                if (queryString) url += `?${queryString}`;
+
                 const res = await fetch(url);
                 if (!res.ok) throw new Error('Failed to fetch teilsysteme');
                 return await res.json();
@@ -19,9 +26,14 @@ export const SubsystemService = {
             }
         }
         // Filter by projektId if provided
-        const all = await DatabaseService.list<Teilsystem>('teilsysteme');
+        let all = await DatabaseService.list<Teilsystem>('teilsysteme');
         if (projektId) {
-            return all.filter(t => t.projektId === projektId);
+            all = all.filter(t => t.projektId === projektId);
+        }
+        if (abteilungId) {
+            // Mapping ID to Name because the interface uses 'Abteilung' (the name/display string)
+            // or we might store both. Assuming we store the type 'Abteilung'
+            all = all.filter(t => t.abteilung?.toLowerCase() === abteilungId.toLowerCase());
         }
         return all;
     },

@@ -42,9 +42,13 @@ export function Sidebar({ projektId, className, forceProjectSelection = false }:
             href: forceProjectSelection ? '/projekte' : `/${projektId}/teilsysteme`,
             icon: Layers,
             subItems: [
-                { title: 'AVOR', href: forceProjectSelection ? '/projekte' : `/${projektId}/teilsysteme` },
-                { title: 'Einkauf', href: forceProjectSelection ? '/projekte' : `/${projektId}/material` },
-                { title: 'Planer', href: forceProjectSelection ? '/projekte' : `/${projektId}/planer` },
+                { title: 'Blechabteilung', href: forceProjectSelection ? '/projekte' : `/${projektId}/produktion/blech` },
+                { title: 'Schlosserei', href: forceProjectSelection ? '/projekte' : `/${projektId}/produktion/schlosserei` },
+                { title: 'AVOR', href: forceProjectSelection ? '/projekte' : `/${projektId}/produktion/avor` },
+                { title: 'Einkauf', href: forceProjectSelection ? '/projekte' : `/${projektId}/produktion/einkauf` },
+                { title: 'Zimmerei', href: forceProjectSelection ? '/projekte' : `/${projektId}/produktion/zimmerei` },
+                { title: 'Montage', href: forceProjectSelection ? '/projekte' : `/${projektId}/produktion/montage` },
+                { title: 'Planung', href: forceProjectSelection ? '/projekte' : `/${projektId}/produktion/planung` },
             ]
         },
         { title: 'Ausführung', href: forceProjectSelection ? '/projekte' : `/${projektId}/ausfuehrung`, icon: Hammer },
