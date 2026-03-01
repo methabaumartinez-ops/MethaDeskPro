@@ -37,7 +37,7 @@ export function Sidebar({ projektId, className, forceProjectSelection = false }:
     const { can, role } = usePermissions();
 
     const menuItems: MenuItem[] = [
-        { title: 'My_Dashboard', href: forceProjectSelection ? '/projekte' : `/${projektId}/my-dashboard`, icon: Sparkles },
+        { title: 'Dashboard Builder', href: `/${projektId}/my-dashboard`, icon: Sparkles },
         {
             title: 'Produktion',
             href: forceProjectSelection ? '/projekte' : `/${projektId}/teilsysteme`,

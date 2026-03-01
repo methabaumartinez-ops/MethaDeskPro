@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { Maximize2, Minimize2, Layers, Video, ExternalLink } from 'lucide-react';
+import { Maximize2, Minimize2, Layers, Video, ExternalLink, Focus, Ruler, Trash2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -21,6 +21,49 @@ export function BimViewer({ modelName = 'IFC Modell', modelUrl }: { modelName?: 
     const [loadingStatus, setLoadingStatus] = useState<string | null>(modelUrl ? 'Initialisierung...' : null);
     const [error, setError] = useState<string | null>(null);
     const [isRotating, setIsRotating] = useState(true);
+
+    // Measurement & Controls state
+    const [isMeasuring, setIsMeasuring] = useState(false);
+    const [measurementDistance, setMeasurementDistance] = useState<number | null>(null);
+
+    // Refs for scene interaction
+    const sceneRef = useRef<THREE.Scene | null>(null);
+    const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+    const controlsRef = useRef<OrbitControls | null>(null);
+    const measurePointsRef = useRef<THREE.Vector3[]>([]);
+    const measureMarkersRef = useRef<THREE.Object3D[]>([]);
+    const measureLineRef = useRef<THREE.Line | null>(null);
+
+    // Define center function for the button
+    const centerModel = () => {
+        if (!sceneRef.current || !cameraRef.current || !controlsRef.current) return;
+
+        const box = new THREE.Box3().setFromObject(sceneRef.current);
+        if (!box.isEmpty()) {
+            const center = box.getCenter(new THREE.Vector3());
+            const sz = box.getSize(new THREE.Vector3()).length();
+
+            // Adjust to orthogonal-like fit view
+            controlsRef.current.target.copy(center);
+            cameraRef.current.position.set(center.x + sz * 0.5, center.y + sz * 0.3, center.z + sz * 0.5);
+            cameraRef.current.near = Math.max(0.001, sz / 2000);
+            cameraRef.current.far = sz * 20;
+            cameraRef.current.updateProjectionMatrix();
+            controlsRef.current.update();
+
+            setIsRotating(false); // Stop rotation when manually centering
+        }
+    };
+
+    const clearMeasurement = () => {
+        if (!sceneRef.current) return;
+        measureMarkersRef.current.forEach(m => sceneRef.current?.remove(m));
+        if (measureLineRef.current) sceneRef.current.remove(measureLineRef.current);
+        measureMarkersRef.current = [];
+        measurePointsRef.current = [];
+        measureLineRef.current = null;
+        setMeasurementDistance(null);
+    };
 
     useEffect(() => {
         if (!modelUrl || !mountRef.current) return;
@@ -51,6 +94,11 @@ export function BimViewer({ modelName = 'IFC Modell', modelUrl }: { modelName?: 
         controls.enableDamping = true;
         controls.dampingFactor = 0.08;
 
+        // Save refs for external functions
+        sceneRef.current = scene;
+        cameraRef.current = camera;
+        controlsRef.current = controls;
+
         scene.add(new THREE.GridHelper(100, 50, 0xcccccc, 0xe2e8f0));
 
         const onResize = () => {
@@ -61,6 +109,60 @@ export function BimViewer({ modelName = 'IFC Modell', modelUrl }: { modelName?: 
             camera.updateProjectionMatrix();
         };
 
+        // ── Raycaster for Measurement ──────────────────────────────────────────
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        const onPointerDown = (event: PointerEvent) => {
+            if (!isMeasuring || !container) return;
+            // Only left clicks
+            if (event.button !== 0) return;
+
+            const rect = container.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+
+            // Intersect all meshes in scene (filtering out GridHelper/Lines)
+            const meshes = scene.children.filter(c => c instanceof THREE.Mesh);
+            const intersects = raycaster.intersectObjects(meshes, false);
+
+            if (intersects.length > 0) {
+                const point = intersects[0].point;
+
+                // Add Marker
+                const markerGeo = new THREE.SphereGeometry(0.1, 16, 16);
+                const markerMat = new THREE.MeshBasicMaterial({ color: 0xff3300, depthTest: false });
+                const marker = new THREE.Mesh(markerGeo, markerMat);
+                marker.position.copy(point);
+                marker.renderOrder = 999;
+                scene.add(marker);
+
+                measureMarkersRef.current.push(marker);
+                measurePointsRef.current.push(point.clone());
+
+                if (measurePointsRef.current.length === 2) {
+                    const p1 = measurePointsRef.current[0];
+                    const p2 = measurePointsRef.current[1];
+                    const distance = p1.distanceTo(p2);
+                    setMeasurementDistance(distance);
+
+                    // Draw Line
+                    const lineGeo = new THREE.BufferGeometry().setFromPoints([p1, p2]);
+                    const lineMat = new THREE.LineBasicMaterial({ color: 0xff3300, depthTest: false, linewidth: 2 });
+                    const line = new THREE.Line(lineGeo, lineMat);
+                    line.renderOrder = 998;
+                    scene.add(line);
+                    measureLineRef.current = line;
+
+                    // Auto-disable measuring mode after a complete measurement
+                    setIsMeasuring(false);
+                }
+            }
+        };
+
+        container.addEventListener('pointerdown', onPointerDown);
         window.addEventListener('resize', onResize);
         renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
 
@@ -112,6 +214,14 @@ export function BimViewer({ modelName = 'IFC Modell', modelUrl }: { modelName?: 
                     camera.far = sz * 20;
                     camera.updateProjectionMatrix();
                     controls.update();
+
+                    // Adjust grid size to fit model roughly
+                    scene.children.forEach(c => {
+                        if (c instanceof THREE.GridHelper) {
+                            scene.remove(c);
+                        }
+                    });
+                    scene.add(new THREE.GridHelper(Math.max(100, sz * 2), 50, 0xcccccc, 0xe2e8f0));
                 }
 
                 if (!destroyed) setLoadingStatus(null);
@@ -126,12 +236,17 @@ export function BimViewer({ modelName = 'IFC Modell', modelUrl }: { modelName?: 
             destroyed = true;
             clearTimeout(resizeTimeout);
             window.removeEventListener('resize', onResize);
+            container.removeEventListener('pointerdown', onPointerDown);
+            // Cleanup refs
+            sceneRef.current = null;
+            cameraRef.current = null;
+            controlsRef.current = null;
             renderer.setAnimationLoop(null);
             renderer.dispose();
             if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [modelUrl]);
+    }, [modelUrl, isMeasuring]); // Rebind pointerdown if isMeasuring changes
 
     // Force resize calculation when expansion state toggles
     useEffect(() => {
@@ -150,11 +265,44 @@ export function BimViewer({ modelName = 'IFC Modell', modelUrl }: { modelName?: 
                 {/* Toolbar */}
                 <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
                     <Button variant="secondary" size="icon"
-                        className={`h-8 w-8 ${isRotating ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600'}`}
+                        className={`h-8 w-8 ${isRotating ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                         onClick={() => setIsRotating(r => !r)}
                         title="Auto-Rotation">
                         <Video className="h-4 w-4" />
                     </Button>
+                    <Button variant="secondary" size="icon"
+                        className="h-8 w-8 bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        onClick={centerModel}
+                        title="Modell zentrieren">
+                        <Focus className="h-4 w-4" />
+                    </Button>
+
+                    <div className="w-8 h-[1px] bg-slate-200 my-0.5" />
+
+                    <Button variant="secondary" size="icon"
+                        className={`h-8 w-8 ${isMeasuring ? 'bg-orange-500 text-white shadow-md shadow-orange-500/30' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                        onClick={() => {
+                            if (!isMeasuring && measurePointsRef.current.length === 2) {
+                                clearMeasurement(); // Clear old measurement if starting new
+                            }
+                            setIsMeasuring(m => !m);
+                            setIsRotating(false); // Stop rotation while measuring
+                        }}
+                        title="Distanz messen">
+                        <Ruler className="h-4 w-4" />
+                    </Button>
+
+                    {measurementDistance !== null && (
+                        <div className="bg-white px-3 py-2 rounded-lg shadow-lg border-2 border-orange-500 flex flex-col items-center gap-1 animate-in slide-in-from-left-4 fade-in">
+                            <span className="text-[10px] uppercase font-bold text-slate-400">Distanz</span>
+                            <span className="font-mono font-black text-orange-600">
+                                {measurementDistance < 1 ? (measurementDistance * 1000).toFixed(0) + ' mm' : measurementDistance.toFixed(3) + ' m'}
+                            </span>
+                            <Button variant="ghost" size="sm" className="h-5 text-[10px] w-full mt-1 text-slate-500 hover:text-red-600 p-0" onClick={clearMeasurement}>
+                                Löschen
+                            </Button>
+                        </div>
+                    )}
                 </div>
 
                 <div className="absolute top-4 right-4 z-10 flex gap-1">
