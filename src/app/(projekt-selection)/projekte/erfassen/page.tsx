@@ -13,7 +13,7 @@ import { ProjectService } from '@/lib/services/projectService';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { EmployeeService } from '@/lib/services/employeeService';
 import { useProjekt } from '@/lib/context/ProjektContext';
-import { ArrowLeft, Save, Building2, MapPin, User, Hash, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Building2, MapPin, User, Hash, Loader2, FileText } from 'lucide-react';
 import Link from 'next/link';
 
 // Custom Select Component Wrapper for React Hook Form integration
@@ -71,6 +71,7 @@ export default function ProjektErfassenPage() {
     const router = useRouter();
     const { currentUser } = useProjekt();
     const [imageFile, setImageFile] = React.useState<File | null>(null);
+    const [infoBlattFile, setInfoBlattFile] = React.useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
     const [mitarbeiter, setMitarbeiter] = React.useState<any[]>([]);
     const [loadingMitarbeiter, setLoadingMitarbeiter] = React.useState(true);
@@ -112,6 +113,13 @@ export default function ProjektErfassenPage() {
         }
     };
 
+    const handleInfoBlattChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setInfoBlattFile(file);
+        }
+    };
+
     const onSubmit = async (data: ProjektValues) => {
         try {
             const projectId = uuidv4();
@@ -137,12 +145,23 @@ export default function ProjektErfassenPage() {
             // 2. Upload image AFTER project exists
             if (imageFile) {
                 try {
-                    const uploadedImageUrl = await ProjectService.uploadImage(imageFile, projectId);
-                    // Update project with the image URL
+                    const uploadedImageUrl = await ProjectService.uploadImage(imageFile, projectId, 'image');
                     await ProjectService.updateProjekt(projectId, { imageUrl: uploadedImageUrl });
                 } catch (uploadError) {
                     console.error('Image upload failed:', uploadError);
-                    window.alert('Bild-Upload fehlgeschlagen. Projekt wurde ohne Bild erstellt.');
+                }
+            }
+
+            // 3. Upload InfoBlatt AFTER project exists
+            if (infoBlattFile) {
+                try {
+                    const uploadedUrl = await ProjectService.uploadImage(infoBlattFile, projectId, 'document');
+                    await ProjectService.updateProjekt(projectId, {
+                        infoBlattUrl: uploadedUrl,
+                        infoBlattName: infoBlattFile.name
+                    });
+                } catch (uploadError) {
+                    console.error('InfoBlatt upload failed:', uploadError);
                 }
             }
 
@@ -211,23 +230,45 @@ export default function ProjektErfassenPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-8 space-y-8">
-                        {/* Image Upload */}
-                        <div className="flex flex-col gap-4">
-                            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Projektbild</label>
-                            <div className="flex items-center gap-4">
-                                {previewUrl && (
-                                    <div className="relative h-20 w-32 rounded-md overflow-hidden border border-slate-200">
-                                        <img src={previewUrl} alt="Vorschau" className="h-full w-full object-cover" />
-                                    </div>
-                                )}
+                        <div className="flex flex-col md:flex-row gap-8">
+                            {/* Image Upload */}
+                            <div className="flex-1 space-y-4">
+                                <label className="text-sm font-medium leading-none flex items-center gap-2">
+                                    Projektbild
+                                </label>
+                                <div className="flex items-center gap-4">
+                                    {previewUrl && (
+                                        <div className="relative h-20 w-32 rounded-md overflow-hidden border border-slate-200">
+                                            <img src={previewUrl} alt="Vorschau" className="h-full w-full object-cover" />
+                                        </div>
+                                    )}
+                                    <Input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageChange}
+                                        className="cursor-pointer file:cursor-pointer file:text-primary file:font-semibold"
+                                    />
+                                </div>
+                                <p className="text-[10px] text-muted-foreground">Optional. JPG, PNG bis 5MB.</p>
+                            </div>
+
+                            {/* InfoBlatt Upload */}
+                            <div className="flex-1 space-y-4">
+                                <label className="text-sm font-medium leading-none flex items-center gap-2">
+                                    <FileText className="h-4 w-4 text-primary" />
+                                    InfoBlatt (Dokument)
+                                </label>
                                 <Input
                                     type="file"
-                                    accept="image/*"
-                                    onChange={handleImageChange}
+                                    accept=".pdf,.doc,.docx,.xls,.xlsx"
+                                    onChange={handleInfoBlattChange}
                                     className="cursor-pointer file:cursor-pointer file:text-primary file:font-semibold"
                                 />
+                                <p className="text-[10px] text-muted-foreground">PDF, Word oder Excel Dokument.</p>
+                                {infoBlattFile && (
+                                    <p className="text-[10px] font-bold text-green-600">Ausgewählt: {infoBlattFile.name}</p>
+                                )}
                             </div>
-                            <p className="text-xs text-muted-foreground">Optional. JPG, PNG bis 5MB.</p>
                         </div>
 
                         {/* Basic Info */}

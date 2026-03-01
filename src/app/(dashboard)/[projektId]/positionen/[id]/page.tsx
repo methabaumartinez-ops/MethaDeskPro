@@ -1,24 +1,26 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { PositionService } from '@/lib/services/positionService';
-import { SubPositionService } from '@/lib/services/subPositionService';
-import { SubsystemService } from '@/lib/services/subsystemService';
-import { Position, Unterposition, Teilsystem } from '@/types';
+import { Position, Unterposition, Teilsystem, Lagerort } from '@/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Edit, Plus, FileSpreadsheet, ListTodo, Printer, Share2, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Edit, Plus, FileSpreadsheet, ListTodo, Printer, Share2, ShieldCheck, X, Download, MapPin } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/StatusBadge';
+import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { QRCodeSVG } from 'qrcode.react';
 import { QRCodeSection } from '@/components/shared/QRCodeSection';
+import { ItemQrModal } from '@/components/shared/ItemQrModal';
 import DokumentePanel from '@/components/shared/DokumentePanel';
 import { TrackingTimeline } from '@/components/shared/TrackingTimeline';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useParams, useRouter } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { usePermissions } from '@/lib/hooks/usePermissions';
+import { PositionService } from '@/lib/services/positionService';
+import { SubsystemService } from '@/lib/services/subsystemService';
+import { SubPositionService } from '@/lib/services/subPositionService';
+import { LagerortService } from '@/lib/services/lagerortService';
 
 export default function PositionDetailPage() {
     const { id, projektId } = useParams() as { id: string, projektId: string };
@@ -29,6 +31,8 @@ export default function PositionDetailPage() {
     const [teilsystem, setTeilsystem] = useState<Teilsystem | null>(null);
     const [unterpositionen, setUnterpositionen] = useState<Unterposition[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showQrModal, setShowQrModal] = useState(false);
+    const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
     const router = useRouter();
 
     useEffect(() => {
@@ -36,13 +40,15 @@ export default function PositionDetailPage() {
             try {
                 const posData = await PositionService.getPositionById(id);
                 if (posData) {
-                    const [subPosData, tsData] = await Promise.all([
+                    const [subPosData, tsData, loData] = await Promise.all([
                         SubPositionService.getUnterpositionen(id),
-                        SubsystemService.getTeilsystemById(posData.teilsystemId)
+                        SubsystemService.getTeilsystemById(posData.teilsystemId),
+                        LagerortService.getLagerorte(projektId)
                     ]);
                     setPosition(posData);
                     setUnterpositionen(subPosData);
                     setTeilsystem(tsData);
+                    if (loData) setLagerorte(loData);
                 }
             } catch (error) {
                 console.error("Failed to load position data", error);
@@ -65,17 +71,26 @@ export default function PositionDetailPage() {
         </div>
     );
 
+    const lagerortObj = position.lagerortId ? lagerorte.find(lo => lo.id === position.lagerortId) : null;
+    const loBezeichnung = lagerortObj?.bezeichnung || (position as any).lagerortName || position.lagerortId || 'Nicht zugewiesen';
+    const loPlanUrl = lagerortObj?.planUrl;
+
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-10">
-            {/* Header / Navigation */}
-            <div className="flex justify-end gap-3 shrink-0">
-                <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest shadow-lg shadow-orange-200 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95" onClick={() => router.back()}>
-                    <ArrowLeft className="h-4 w-4" />
-                    Zurück
-                </Button>
-                {(!isReadOnly && can('update')) && (
+            {/* Header / Navigation Section */}
+            <div className="flex justify-between items-center mb-6 px-2">
+                <div className="flex items-center gap-4">
+                    <Link href={`/${projektId}/teilsysteme/${position.teilsystemId}`}>
+                        <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                            <ArrowLeft className="h-4 w-4" />
+                            Zurück
+                        </Button>
+                    </Link>
+                </div>
+
+                {!isReadOnly && (
                     <Link href={`/${projektId}/positionen/${position.id}/edit`}>
-                        <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest shadow-lg shadow-orange-200 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                        <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
                             <Edit className="h-4 w-4" />
                             <span>Bearbeiten</span>
                         </Button>
@@ -83,224 +98,231 @@ export default function PositionDetailPage() {
                 )}
             </div>
 
-            {/* STICKY HEADER - MATCHING TS STYLE */}
-            <div className="sticky top-16 z-40 bg-background/80 backdrop-blur-md pt-2 pb-4 -mx-2 px-2">
-                <div className="bg-card p-6 rounded-2xl shadow-sm border-2 border-border flex items-center justify-between transition-all">
-                    <div className="flex items-center gap-6 flex-1">
-                        <div className="space-y-1">
-                            {teilsystem && (
-                                <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">TEILSYSTEM</span>
-                                    <Badge variant="outline" className="h-5 text-[10px] font-black border-primary/30 bg-primary/5 text-primary">
-                                        TS {(teilsystem.teilsystemNummer || '').replace(/^ts\s?/i, '')}
-                                    </Badge>
-                                    <span className="text-xs font-bold text-muted-foreground">{teilsystem.name}</span>
-                                </div>
-                            )}
-                            <span className="text-[10px] font-black text-orange-600 uppercase tracking-[0.2em]">POSITION</span>
-                            <div className="flex items-baseline gap-3">
-                                <span className="text-3xl font-black text-foreground tracking-tight select-none">POS {position.posNummer || '—'}</span>
-                                <h1 className="text-3xl font-black text-foreground tracking-tight">{position.name}</h1>
-                            </div>
-                        </div>
-
-                        {/* Integrated QR Code */}
-                        <div className="hidden md:flex items-center gap-4 border-x border-border/50 px-8 h-16">
-                            <div className="bg-white p-1.5 rounded-lg border border-border">
-                                <QRCodeSVG
-                                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/position/${position.id}`}
-                                    size={56}
-                                />
-                            </div>
-                            <div className="flex flex-col gap-1">
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7 text-muted-foreground hover:text-primary"
-                                    onClick={() => {
-                                        const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/share/position/${position.id}`;
-                                        const printWindow = window.open('', '', 'width=600,height=600');
-                                        if (printWindow) {
-                                            printWindow.document.write(`<html><body style="display:flex;flex-direction:column;align-items:center;justify-center;height:100vh;margin:0;text-align:center;font-family:sans-serif;">
-                                                <div style="padding:40px;border:2px solid #000;border-radius:20px;">
-                                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}" />
-                                                    <h1>${position.name}</h1>
-                                                    <p>POS ${position.posNummer || ''}</p>
-                                                </div>
-                                                <script>window.onload=()=>{window.print();window.close();};</script>
-                                            </body></html>`);
-                                            printWindow.document.close();
-                                        }
-                                    }}
-                                >
-                                    <Printer className="h-3.5 w-3.5" />
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7 text-muted-foreground hover:text-primary"
-                                    onClick={() => {
-                                        const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/share/position/${position.id}`;
-                                        if (navigator.share) {
-                                            navigator.share({ title: position.name, url });
-                                        } else {
-                                            navigator.clipboard.writeText(url);
-                                            alert('Link kopiert!');
-                                        }
-                                    }}
-                                >
-                                    <Share2 className="h-3.5 w-3.5" />
-                                </Button>
-                            </div>
-                        </div>
+            {/* Banner Section (Matching Teilsystem Style) */}
+            <div className="flex flex-col md:grid md:grid-cols-[1fr_auto_auto_1fr] items-center bg-card p-6 rounded-2xl shadow-sm border-2 border-border gap-6">
+                <div className="space-y-1 w-full text-center md:text-left">
+                    <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
+                        <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">TEILSYSTEM</span>
+                        {teilsystem && (
+                            <Badge variant="outline" className="h-5 text-[10px] font-black border-primary/30 bg-primary/5 text-primary">
+                                TS {teilsystem.teilsystemNummer || ''}
+                            </Badge>
+                        )}
                     </div>
-
-                    <div className="flex items-center gap-6">
-                        <div className="text-right flex flex-col items-end gap-3">
-                            <StatusBadge status={position.status} />
-                            {isReadOnly && (
-                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase bg-muted px-2 py-1 rounded-md">
-                                    <ShieldCheck className="h-3.5 w-3.5 text-blue-500" />
-                                    Nur Lesezugriff
-                                </div>
-                            )}
-                        </div>
+                    <span className="text-[10px] font-black text-orange-600 uppercase tracking-[0.2em]">POSITION</span>
+                    <div className="flex flex-col md:flex-row items-center md:items-baseline gap-1 md:gap-3">
+                        <span className="text-3xl font-black text-foreground tracking-tight select-none">POS {position.posNummer || '—'}</span>
+                        <h1 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">{position.name}</h1>
                     </div>
+                </div>
+
+                <div className="flex flex-col items-center gap-2 md:border-l border-border/50 md:pl-8 md:pr-4 h-20 justify-center">
+                    <div
+                        className="bg-white p-1.5 rounded-lg border border-border cursor-pointer hover:shadow-md transition-all active:scale-95"
+                        onClick={() => setShowQrModal(true)}
+                    >
+                        <QRCodeSVG
+                            value={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/position/${position.id}`}
+                            size={56}
+                        />
+                    </div>
+                </div>
+
+                <div className="flex flex-col items-center md:items-start gap-1 md:border-r border-border/50 md:pl-4 md:pr-8 h-20 justify-center">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">Labelort</span>
+                    <div className="flex items-center gap-2">
+                        {loPlanUrl ? (
+                            <a
+                                href={loPlanUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 group hover:text-orange-600 transition-colors"
+                            >
+                                <MapPin className="h-4 w-4 text-orange-600 group-hover:scale-110 transition-transform" />
+                                <span className="text-sm font-black text-foreground group-hover:text-orange-600 underline decoration-muted-foreground/30 underline-offset-4 decoration-dotted">
+                                    {loBezeichnung}
+                                </span>
+                            </a>
+                        ) : (
+                            <div
+                                className="flex items-center gap-2"
+                                title={position.lagerortId ? "Kein Plan hinterlegt" : undefined}
+                            >
+                                <MapPin className={cn("h-4 w-4", position.lagerortId ? "text-orange-600/50" : "text-slate-300")} />
+                                <span className={cn("text-sm font-black", position.lagerortId ? "text-foreground" : "text-muted-foreground/40")}>
+                                    {loBezeichnung}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="text-center md:text-right flex flex-col items-center md:items-end gap-3 w-full">
+                    <StatusBadge status={position.status} className="px-5 py-1.5 text-sm rounded-xl shadow-md border-b-4 border-green-600/20 ring-4 ring-green-50/50" />
+                    {isReadOnly && (
+                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase bg-muted px-2 py-1 rounded-md">
+                            <ShieldCheck className="h-3.5 w-3.5 text-blue-500" />
+                            Nur Lesezugriff
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* Top Section: Split 50/50 */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Left: Details */}
-                <div className="flex flex-col gap-6">
-                    <Card className="shadow-sm border-2 border-border overflow-hidden h-full">
-                        <CardHeader className="py-3 px-4 bg-muted/30 border-b border-border">
-                            <CardTitle className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                                <FileSpreadsheet className="h-3.5 w-3.5" />
-                                Details & Info
+            {/* TOP ROW: Details, Bemerkung, Actions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+                {/* 1) Details & Info */}
+                <Card className="shadow-sm border-2 border-border overflow-hidden bg-white">
+                    <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                            <FileSpreadsheet className="h-3.5 w-3.5" />
+                            Details & Info
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <div className="divide-y divide-border">
+                            <div className="px-4 py-2 flex items-center justify-between hover:bg-muted/5 transition-colors">
+                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight">Menge & Einheit</span>
+                                <span className="text-xs font-black text-foreground">{position.menge} {position.einheit}</span>
+                            </div>
+                            {position.gewicht && (
+                                <div className="px-4 py-2 flex items-center justify-between hover:bg-muted/5 transition-colors">
+                                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight">Gewicht</span>
+                                    <span className="text-xs font-black text-foreground">{position.gewicht} kg</span>
+                                </div>
+                            )}
+                            {position.beschichtung && (
+                                <div className="px-4 py-2 flex items-center justify-between hover:bg-muted/5 transition-colors">
+                                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight">Beschichtung</span>
+                                    <Badge variant="outline" className="font-bold text-[9px] h-4 bg-orange-50 text-orange-700 border-orange-200">{position.beschichtung}</Badge>
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* 2) Bemerkung */}
+                <Card className="shadow-sm border-2 border-primary/20 bg-orange-50/10 overflow-hidden flex flex-col">
+                    <CardHeader className="py-2.5 px-4 bg-primary/5 border-b border-primary/10">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                            <ListTodo className="h-3 w-3" />
+                            Bemerkung
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 flex-1">
+                        <div className="text-[10px] text-muted-foreground leading-relaxed italic whitespace-pre-wrap">
+                            {position.beschreibung || 'Keine Bemerkung vorhanden.'}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* 3) Actions Card */}
+                <Card className="shadow-lg border-2 border-orange-600/30 rounded-3xl overflow-hidden bg-white/70 backdrop-blur-xl">
+                    <CardContent className="p-4 flex flex-col gap-3 items-center justify-center h-full">
+                        {can('view_kosten') && (
+                            <Link href={`/${projektId}/kosten?pos=${id}`} className="w-full max-w-[240px]">
+                                <Button className="w-full h-10 border-2 border-green-400 bg-green-50/50 hover:bg-green-100/70 text-green-700 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center justify-center gap-2.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
+                                    <div className="p-1 bg-white rounded-full shadow-sm">
+                                        <FileSpreadsheet className="h-3.5 w-3.5 text-green-600" />
+                                    </div>
+                                    <span>Kosten erfassen</span>
+                                </Button>
+                            </Link>
+                        )}
+
+                        <div className="flex items-center gap-3 w-full max-w-[240px]">
+                            <Link href={`/${projektId}/lager-scan?type=position&id=${id}&action=einlagerung&qr=POSITION:${id}`} className="flex-1">
+                                <Button variant="outline" className="w-full h-10 border-2 border-blue-400 bg-white hover:bg-blue-50 text-blue-700 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
+                                    <div className="p-0.5 bg-blue-100 rounded-full">
+                                        <ArrowLeft className="h-3 w-3 text-blue-600 rotate-[-90deg]" />
+                                    </div>
+                                    <span>Einlagern</span>
+                                </Button>
+                            </Link>
+                            <Link href={`/${projektId}/lager-scan?type=position&id=${id}&action=auslagerung&qr=POSITION:${id}`} className="flex-1">
+                                <Button variant="outline" className="w-full h-10 border-2 border-red-400 bg-white hover:bg-red-50 text-red-700 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
+                                    <div className="p-0.5 bg-red-100 rounded-full">
+                                        <ArrowLeft className="h-3 w-3 text-red-600 rotate-[90deg]" />
+                                    </div>
+                                    <span>Auslagern</span>
+                                </Button>
+                            </Link>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* MAIN CONTENT AREA: Details on the Left, Timeline/Docs on the Right */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                {/* Left Side: Advanced IFC Metadata & IFC Details (5 cols) */}
+                <div className="lg:col-span-5 flex flex-col gap-6">
+                    <Card className="shadow-sm border-2 border-border overflow-hidden bg-white h-full flex flex-col">
+                        <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
+                            <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                                <Badge variant="outline" className="text-[9px] h-4 border-orange-200 bg-orange-50 text-orange-700">IFC Extrakt</Badge>
+                                Technische Details
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-0">
-                            <div className="divide-y divide-border">
-                                <div className="px-4 py-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
-                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Menge & Einheit</span>
-                                    <p className="text-sm font-black text-foreground">{position.menge} {position.einheit}</p>
-                                </div>
-                                <div className="px-4 py-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
-                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Status</span>
-                                    <StatusBadge status={position.status} />
-                                </div>
-                                {position.planStatus && (
-                                    <div className="px-4 py-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
-                                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Plan-Status</span>
-                                        <Badge variant="outline" className="font-black text-xs">{position.planStatus}</Badge>
-                                    </div>
-                                )}
-                                {position.beschichtung && (
-                                    <div className="px-4 py-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
-                                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Beschichtung</span>
-                                        <Badge variant="outline" className="font-bold text-xs">{position.beschichtung}</Badge>
-                                    </div>
-                                )}
-                                {position.gewicht && (
-                                    <div className="px-4 py-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
-                                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Gewicht</span>
-                                        <span className="text-sm font-bold">{position.gewicht} kg</span>
-                                    </div>
-                                )}
-                                <div className="px-4 py-4 bg-slate-50/50 dark:bg-slate-900/20">
-                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-1">Bezeichnung</span>
-                                    <p className="text-sm font-bold text-foreground">
-                                        {position.name}
-                                    </p>
-                                </div>
-                                <div className="px-4 py-4 bg-orange-50/30 dark:bg-orange-900/10 border-l-2 border-orange-400">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Metadaten / Details</span>
-                                        <Badge variant="outline" className="text-[9px] h-4 border-orange-200 bg-orange-50 text-orange-700">IFC Extrakt</Badge>
-                                    </div>
-                                    <div className="text-xs text-foreground leading-relaxed font-medium space-y-2">
-                                        {position.beschichtung && (
-                                            <div className="flex justify-between items-center text-[10px] font-bold pb-1 border-b border-orange-100">
-                                                <span className="text-orange-600 uppercase">Beschichtung:</span>
-                                                <span className="bg-orange-100 px-1.5 rounded">{position.beschichtung}</span>
-                                            </div>
-                                        )}
-
-                                        {(position.ifcMeta as any)?.ok || (position.ifcMeta as any)?.uk ? (
-                                            <div className="flex gap-4 pb-1 border-b border-orange-100">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[9px] font-black text-orange-600 uppercase">Höhenkote OK</span>
-                                                    <span className="text-sm font-black">{(position.ifcMeta as any).ok || '—'}</span>
-                                                </div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-[9px] font-black text-orange-600 uppercase">Höhenkote UK</span>
-                                                    <span className="text-sm font-black">{(position.ifcMeta as any).uk || '—'}</span>
-                                                </div>
-                                            </div>
-                                        ) : null}
-
-                                        {(position.ifcMeta as any)?.dimensions ? (
-                                            <div className="grid grid-cols-3 gap-2 pb-1 border-b border-orange-100">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[9px] font-black text-orange-600 uppercase">Länge</span>
-                                                    <span className="text-xs font-bold">{(position.ifcMeta as any).dimensions.length || (position as any).length || '—'}</span>
-                                                </div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-[9px] font-black text-orange-600 uppercase">Breite</span>
-                                                    <span className="text-xs font-bold">{(position.ifcMeta as any).dimensions.width || (position as any).width || '—'}</span>
-                                                </div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-[9px] font-black text-orange-600 uppercase">Höhe/Dicke</span>
-                                                    <span className="text-xs font-bold">{(position.ifcMeta as any).dimensions.height || (position as any).height || '—'}</span>
-                                                </div>
-                                            </div>
-                                        ) : null}
-
-                                        {(position.ifcMeta as any)?.area || (position.ifcMeta as any)?.color ? (
-                                            <div className="flex gap-4 pb-1 border-b border-orange-100">
-                                                {(position.ifcMeta as any).area && (
-                                                    <div className="flex flex-col">
-                                                        <span className="text-[9px] font-black text-orange-600 uppercase">Oberfläche</span>
-                                                        <span className="text-xs font-bold">{(position.ifcMeta as any).area} m²</span>
-                                                    </div>
-                                                )}
-                                                {(position.ifcMeta as any).color && (
-                                                    <div className="flex flex-col">
-                                                        <span className="text-[9px] font-black text-orange-600 uppercase">Farbe</span>
-                                                        <div className="flex items-center gap-1.5">
-                                                            <div className="h-2 w-2 rounded-full border border-orange-200" style={{ backgroundColor: (position.ifcMeta as any).color }} />
-                                                            <span className="text-xs font-bold">{(position.ifcMeta as any).color}</span>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ) : null}
-
-                                        <div className="pt-1">
-                                            <span className="text-[9px] font-black text-orange-600 uppercase block mb-1">METHABAU Info</span>
-                                            <div className="space-y-1">
-                                                {position.beschreibung?.split(' | ').map((line, idx) => (
-                                                    <div key={idx} className="flex gap-2">
-                                                        <span className="text-orange-400">•</span>
-                                                        <span>{line}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
+                        <CardContent className="p-4 flex-1">
+                            <div className="space-y-4">
+                                {(position.ifcMeta as any)?.ok || (position.ifcMeta as any)?.uk ? (
+                                    <div className="flex gap-4 pb-2 border-b border-border">
+                                        <div className="flex flex-col flex-1">
+                                            <span className="text-[9px] font-black text-orange-600 uppercase">Höhenkote OK</span>
+                                            <span className="text-sm font-black text-foreground">{(position.ifcMeta as any).ok || '—'}</span>
                                         </div>
+                                        <div className="flex flex-col flex-1 text-right">
+                                            <span className="text-[9px] font-black text-orange-600 uppercase">Höhenkote UK</span>
+                                            <span className="text-sm font-black text-foreground">{(position.ifcMeta as any).uk || '—'}</span>
+                                        </div>
+                                    </div>
+                                ) : null}
 
-                                        {position.groupingMethod && (
-                                            <div className="pt-2 mt-2 border-t border-orange-200 space-y-1">
-                                                <div className="flex justify-between items-center text-[10px] font-bold">
-                                                    <span className="text-orange-600 uppercase">Gruppe-Method:</span>
-                                                    <span className="bg-orange-100 px-1.5 rounded">{position.groupingMethod}</span>
-                                                </div>
-                                                <div className="flex justify-between items-center text-[10px] font-bold">
-                                                    <span className="text-orange-600 uppercase">Gruppe-Key:</span>
-                                                    <span className="bg-orange-100 px-1.5 rounded truncate max-w-[150px]">{position.groupingKey}</span>
+                                {(position.ifcMeta as any)?.dimensions ? (
+                                    <div className="grid grid-cols-3 gap-2 pb-2 border-b border-border">
+                                        <div className="flex flex-col">
+                                            <span className="text-[9px] font-black text-orange-600 uppercase">Länge</span>
+                                            <span className="text-xs font-bold text-foreground">{(position.ifcMeta as any).dimensions.length || '—'}</span>
+                                        </div>
+                                        <div className="flex flex-col text-center">
+                                            <span className="text-[9px] font-black text-orange-600 uppercase">Breite</span>
+                                            <span className="text-xs font-bold text-foreground">{(position.ifcMeta as any).dimensions.width || '—'}</span>
+                                        </div>
+                                        <div className="flex flex-col text-right">
+                                            <span className="text-[9px] font-black text-orange-600 uppercase">Höhe/Dicke</span>
+                                            <span className="text-xs font-bold text-foreground">{(position.ifcMeta as any).dimensions.height || '—'}</span>
+                                        </div>
+                                    </div>
+                                ) : null}
+
+                                {(position.ifcMeta as any)?.area || (position.ifcMeta as any)?.color ? (
+                                    <div className="flex gap-4 pb-2 border-b border-border">
+                                        {(position.ifcMeta as any).area && (
+                                            <div className="flex flex-col flex-1">
+                                                <span className="text-[9px] font-black text-orange-600 uppercase">Oberfläche</span>
+                                                <span className="text-xs font-bold text-foreground">{(position.ifcMeta as any).area} m²</span>
+                                            </div>
+                                        )}
+                                        {(position.ifcMeta as any).color && (
+                                            <div className="flex flex-col flex-1 text-right">
+                                                <span className="text-[9px] font-black text-orange-600 uppercase">Farbe</span>
+                                                <div className="flex items-center gap-1.5 justify-end">
+                                                    <div className="h-2.5 w-2.5 rounded-full border border-border" style={{ backgroundColor: (position.ifcMeta as any).color }} />
+                                                    <span className="text-xs font-bold text-foreground">{(position.ifcMeta as any).color}</span>
                                                 </div>
                                             </div>
                                         )}
+                                    </div>
+                                ) : null}
+
+                                <div>
+                                    <span className="text-[9px] font-black text-muted-foreground uppercase block mb-1">METHABAU Info</span>
+                                    <div className="space-y-1.5">
+                                        {position.beschreibung?.split(' | ').map((line, idx) => (
+                                            <div key={idx} className="flex gap-2 items-baseline">
+                                                <div className="h-1 w-1 rounded-full bg-orange-400 shrink-0 mt-1.5" />
+                                                <span className="text-[10px] font-medium text-foreground leading-tight">{line}</span>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
@@ -308,12 +330,19 @@ export default function PositionDetailPage() {
                     </Card>
                 </div>
 
-                {/* Right: Dokumente & Tracking */}
-                <div className="flex flex-col gap-6">
+                {/* Right Side: Timeline and Documents (7 cols) */}
+                <div className="lg:col-span-7 flex flex-col gap-6">
+                    <TrackingTimeline
+                        entityId={id}
+                        projektId={projektId}
+                        entityType="position"
+                    />
+
                     <Card className="shadow-sm border-2 border-border overflow-hidden">
-                        <CardHeader className="py-3 px-4 bg-muted/30 border-b border-border">
-                            <CardTitle className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                                📎 Dokumente
+                        <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border">
+                            <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                                <FileSpreadsheet className="h-3.5 w-3.5" />
+                                Dokumente
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
@@ -325,12 +354,6 @@ export default function PositionDetailPage() {
                             />
                         </CardContent>
                     </Card>
-
-                    <TrackingTimeline
-                        entityId={id}
-                        projektId={projektId}
-                        entityType="position"
-                    />
                 </div>
             </div>
 
@@ -390,6 +413,19 @@ export default function PositionDetailPage() {
             </Card>
 
             <div className="h-10" />
+
+            {/* Position QR Modal */}
+            <ItemQrModal
+                isOpen={showQrModal}
+                onClose={() => setShowQrModal(false)}
+                title={position.name}
+                subtitle={`POS ${position.posNummer || ''}${teilsystem ? ` | TS ${(teilsystem.teilsystemNummer || '').replace(/^ts\s?/i, '')}` : ''}`}
+                qrValue={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/position/${position.id}`}
+                countLabel="Anzahl Unterpositionen"
+                count={unterpositionen.length}
+                filePrefix="POS"
+                id={position.id}
+            />
         </div>
     );
 }

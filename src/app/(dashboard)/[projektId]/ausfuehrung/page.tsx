@@ -15,7 +15,7 @@ import { Teilsystem, Fahrzeug } from '@/types';
 import {
     Search, Filter, Layers, Link as LinkIcon,
     Car, HardHat, Package, Truck, Plus, CheckCircle2, Clock, Inbox, Trash2, Send, Edit2, MessageSquare,
-    Eye, CalendarPlus, Wrench, Camera
+    Eye, CalendarPlus, Wrench, Camera, ArrowLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -384,34 +384,89 @@ export default function AusfuehrungPage() {
                                     {filteredSubsystems.length > 0 ? (
                                         <div className="overflow-x-auto max-w-full">
                                             <Table>
-                                                <TableHeader>
-                                                    <TableRow className="bg-muted/50 hover:bg-muted/50">
-                                                        <TableHead className="w-14 h-8 px-2 font-bold text-foreground text-center text-[10px]">System-Nr.</TableHead>
-                                                        <TableHead className="w-10 h-8 px-2 font-bold text-foreground text-[10px]">KS</TableHead>
-                                                        <TableHead className="min-w-[140px] h-8 px-2 font-bold text-foreground text-[10px]">Bezeichnung</TableHead>
-                                                        <TableHead className="max-w-[100px] h-8 px-2 font-bold text-foreground text-[10px]">Bemerkung</TableHead>
-                                                        <TableHead className="h-8 px-2 font-bold text-foreground whitespace-nowrap text-[10px]">Eröffnet am</TableHead>
-                                                        <TableHead className="h-8 px-2 font-bold text-foreground whitespace-nowrap text-[10px]">Von</TableHead>
-                                                        <TableHead className="h-8 px-2 font-bold text-foreground text-[10px]">Frist</TableHead>
-                                                        <TableHead className="h-8 px-2 font-bold text-foreground text-[10px]">Status</TableHead>
+                                                <TableHeader className="bg-muted/50 sticky top-0 z-10">
+                                                    <TableRow className="border-b-2 border-border hover:bg-transparent">
+                                                        <TableHead className="w-20 px-4 py-4 font-black text-foreground text-center text-[10px] uppercase tracking-wider">System-Nr.</TableHead>
+                                                        <TableHead className="w-12 px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">KS</TableHead>
+                                                        <TableHead className="min-w-[200px] px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Bezeichnung</TableHead>
+                                                        <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Termine</TableHead>
+                                                        <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Status</TableHead>
+                                                        <TableHead className="px-4 py-4 text-right font-black text-foreground text-[10px] uppercase tracking-wider">Aktionen</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
                                                     {filteredSubsystems.map((item) => (
                                                         <TableRow
                                                             key={item.id}
-                                                            className="group hover:bg-muted/50 transition-colors cursor-pointer"
+                                                            className="group hover:bg-orange-50/30 transition-colors cursor-pointer border-b border-border/50"
                                                             onClick={() => router.push(`/${projektId}/teilsysteme/${item.id}?mode=readOnly`)}
                                                         >
-                                                            <TableCell className="p-2 font-medium text-foreground text-center text-xs">{item.teilsystemNummer || '—'}</TableCell>
-                                                            <TableCell className="p-2 font-bold text-muted-foreground text-xs">{item.ks || '1'}</TableCell>
-                                                            <TableCell className="p-2 font-medium text-foreground text-xs min-w-[140px]">{item.name}</TableCell>
-                                                            <TableCell className="p-2 text-muted-foreground text-[10px] italic max-w-[100px] truncate" title={item.bemerkung || ''}>{item.bemerkung || '—'}</TableCell>
-                                                            <TableCell className="p-2 text-[10px] font-bold text-muted-foreground whitespace-nowrap">{item.eroeffnetAm || '—'}</TableCell>
-                                                            <TableCell className="p-2 text-[10px] font-black text-foreground whitespace-nowrap">{item.eroeffnetDurch || '—'}</TableCell>
-                                                            <TableCell className="p-2 text-[10px] font-bold text-muted-foreground whitespace-nowrap">{item.lieferfrist || '—'}</TableCell>
-                                                            <TableCell className="p-2">
-                                                                <StatusBadge status={item.status} className="scale-90 origin-left" />
+                                                            <TableCell className="p-4 text-center">
+                                                                <Badge variant="outline" className="font-black text-orange-700 border-orange-200 bg-orange-50 text-xs py-1 px-3">
+                                                                    {item.teilsystemNummer || '—'}
+                                                                </Badge>
+                                                            </TableCell>
+                                                            <TableCell className="p-4 font-black text-muted-foreground text-xs">{item.ks || '1'}</TableCell>
+                                                            <TableCell className="p-4">
+                                                                <div className="flex flex-col">
+                                                                    <span className="font-black text-foreground text-sm tracking-tight">{item.name}</span>
+                                                                    <span className="text-[10px] text-muted-foreground font-medium truncate max-w-[250px] italic">
+                                                                        {item.bemerkung || 'Keine Bemerkung'}
+                                                                    </span>
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell className="p-4">
+                                                                <div className="flex flex-col gap-1">
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span className="text-[9px] font-black uppercase text-muted-foreground/60 w-12">Montage:</span>
+                                                                        <span className="text-[10px] font-black text-orange-600">{item.montagetermin || '—'}</span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span className="text-[9px] font-black uppercase text-muted-foreground/60 w-12">Von:</span>
+                                                                        <span className="text-[10px] font-bold text-foreground">{item.eroeffnetDurch || 'Moritz'}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell className="p-4" onClick={(e) => e.stopPropagation()}>
+                                                                <div className="flex flex-col gap-1">
+                                                                    <select
+                                                                        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-2 py-1 text-[10px] font-black uppercase tracking-tight focus:ring-1 focus:ring-orange-500 cursor-pointer hover:border-orange-500 transition-all outline-none"
+                                                                        value={item.status}
+                                                                        onChange={async (e) => {
+                                                                            const newStatus = e.target.value as any;
+                                                                            try {
+                                                                                await SubsystemService.updateTeilsystem(item.id, { status: newStatus });
+                                                                                setSubsystems(prev => prev.map(s => s.id === item.id ? { ...s, status: newStatus } : s));
+                                                                            } catch (err) {
+                                                                                console.error("Failed to update status", err);
+                                                                                alert("Fehler beim Aktualisieren des Status");
+                                                                            }
+                                                                        }}
+                                                                    >
+                                                                        <option value="offen">Offen</option>
+                                                                        <option value="verbaut">Verbaut</option>
+                                                                        <option value="geaendert">Nachbearbeitung</option>
+                                                                    </select>
+                                                                    <div>
+                                                                        <StatusBadge status={item.status} className="scale-75 origin-left" />
+                                                                    </div>
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell className="p-4 text-right">
+                                                                <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                                                                    <Link href={`/${projektId}/lager-scan?type=teilsystem&id=${item.id}&action=einlagerung&qr=TEILSYSTEM:${item.id}`}>
+                                                                        <Button variant="outline" size="sm" className="h-8 border-blue-400 bg-white hover:bg-blue-50 text-blue-700 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-2 active:border-b-0 active:translate-y-[1px]">
+                                                                            <ArrowLeft className="h-3 w-3 rotate-[-90deg]" />
+                                                                            <span>Einlagern</span>
+                                                                        </Button>
+                                                                    </Link>
+                                                                    <Link href={`/${projektId}/lager-scan?type=teilsystem&id=${item.id}&action=auslagerung&qr=TEILSYSTEM:${item.id}`}>
+                                                                        <Button variant="outline" size="sm" className="h-8 border-red-400 bg-white hover:bg-red-50 text-red-700 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-2 active:border-b-0 active:translate-y-[1px]">
+                                                                            <ArrowLeft className="h-3 w-3 rotate-[90deg]" />
+                                                                            <span>Auslagern</span>
+                                                                        </Button>
+                                                                    </Link>
+                                                                </div>
                                                             </TableCell>
                                                         </TableRow>
                                                     ))}

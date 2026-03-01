@@ -12,7 +12,7 @@ import { ProjectService } from '@/lib/services/projectService';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { EmployeeService } from '@/lib/services/employeeService';
 import { useProjekt } from '@/lib/context/ProjektContext';
-import { ArrowLeft, Save, Building2, MapPin, User, Hash, Loader2, Plus } from 'lucide-react';
+import { ArrowLeft, Save, Building2, MapPin, User, Hash, Loader2, Plus, FileText } from 'lucide-react';
 import Link from 'next/link';
 
 const FormSelect = React.forwardRef<
@@ -101,6 +101,7 @@ export default function ProjektBearbeitenPage() {
     const [notFound, setNotFound] = React.useState(false);
     const [mitarbeiter, setMitarbeiter] = React.useState<any[]>([]);
     const [imageFile, setImageFile] = React.useState<File | null>(null);
+    const [infoBlattFile, setInfoBlattFile] = React.useState<File | null>(null);
     const [imagePreview, setImagePreview] = React.useState<string | null>(null);
 
     const {
@@ -173,6 +174,13 @@ export default function ProjektBearbeitenPage() {
         }
     };
 
+    const handleInfoBlattChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setInfoBlattFile(file);
+        }
+    };
+
 
     React.useEffect(() => {
         const loadMitarbeiter = async () => {
@@ -190,14 +198,22 @@ export default function ProjektBearbeitenPage() {
         try {
             let imageUrl = data.imageUrl;
             if (imageFile) {
-                // In a real app, this would be an upload call to a storage service
-                imageUrl = await ProjectService.uploadImage(imageFile, id);
+                imageUrl = await ProjectService.uploadImage(imageFile, id, 'image');
+            }
+
+            let infoBlattUrl = undefined;
+            let infoBlattName = undefined;
+            if (infoBlattFile) {
+                infoBlattUrl = await ProjectService.uploadImage(infoBlattFile, id, 'document');
+                infoBlattName = infoBlattFile.name;
             }
 
             await ProjectService.updateProjekt(id, {
                 ...data,
                 status: data.status as any,
                 imageUrl: imageUrl,
+                infoBlattUrl: infoBlattUrl,
+                infoBlattName: infoBlattName,
             });
             window.alert('Projekt erfolgreich aktualisiert');
             router.push('/projekte');
@@ -249,7 +265,7 @@ export default function ProjektBearbeitenPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-8 space-y-8">
-                        {/* Image Upload */}
+                        {/* Image & InfoBlatt Upload */}
                         <div className="flex flex-col md:flex-row gap-8 items-start border-b border-slate-100 pb-8">
                             <div className="w-full md:w-1/3">
                                 <label className="text-sm font-black uppercase tracking-widest text-slate-400 block mb-4">
@@ -294,16 +310,24 @@ export default function ProjektBearbeitenPage() {
                                     )}
                                 </div>
                             </div>
-                            <div className="flex-1 space-y-4">
-                                <p className="text-sm text-slate-500 font-medium">
-                                    Laden Sie ein Repräsentatives Bild für Ihr Projekt hoch.
-                                    Dies hilft Teammitgliedern, das Projekt in der Übersicht schneller zu identifizieren.
-                                </p>
-                                <ul className="text-xs text-slate-400 space-y-1 list-disc pl-4">
-                                    <li>Empfohlen: 16:9 Format</li>
-                                    <li>Maximal 5MB DATEIGRÖSSE</li>
-                                    <li>Formate: JPG, PNG, WEBP</li>
-                                </ul>
+
+                            <div className="w-full md:w-1/3">
+                                <label className="text-sm font-black uppercase tracking-widest text-slate-400 block mb-4">
+                                    <FileText className="h-3.5 w-3.5 inline mr-2 text-primary" />
+                                    InfoBlatt
+                                </label>
+                                <div className="p-4 rounded-xl border-2 border-slate-100 bg-slate-50/50">
+                                    <Input
+                                        type="file"
+                                        accept=".pdf,.doc,.docx,.xls,.xlsx"
+                                        onChange={handleInfoBlattChange}
+                                        className="cursor-pointer file:cursor-pointer file:text-primary file:font-semibold text-xs"
+                                    />
+                                    <p className="text-[10px] text-slate-400 mt-2">PDF, Word oder Excel Dokument.</p>
+                                    {infoBlattFile && (
+                                        <p className="text-[10px] font-bold text-green-600 mt-1 truncate">Neu: {infoBlattFile.name}</p>
+                                    )}
+                                </div>
                             </div>
                         </div>
 

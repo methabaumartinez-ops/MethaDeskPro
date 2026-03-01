@@ -78,7 +78,7 @@ export default function TeilsystemeListPage() {
                         <div className="flex items-center gap-2 mb-1">
                             <span className="text-[10px] font-black text-orange-600 uppercase tracking-[0.2em]">PROJEKT MODUL</span>
                         </div>
-                        <h2 className="text-2xl font-black text-primary tracking-tight flex items-center gap-3">
+                        <h2 className="text-2xl font-black text-black tracking-tight flex items-center gap-3">
                             <Layers className="h-6 w-6 text-orange-600" />
                             Teilsysteme u. BKP
                         </h2>

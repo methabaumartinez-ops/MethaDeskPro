@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/layout/Header';
 import { useRouter } from 'next/navigation';
-import { Plus, MapPin, Calendar, ArrowRight, Trash2, Pencil } from 'lucide-react';
+import { Plus, MapPin, Calendar, ArrowRight, Trash2, Pencil, FileText } from 'lucide-react';
 import { Signature } from '@/components/shared/Signature';
 
 export default function ProjektePage() {
@@ -161,6 +161,23 @@ export default function ProjektePage() {
                                                 <Trash2 className="h-3.5 w-3.5 text-white" />
                                             )}
                                         </Button>
+                                        {p.infoBlattUrl && (
+                                            <a
+                                                href={p.infoBlattUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                <Button
+                                                    variant="secondary"
+                                                    size="icon"
+                                                    className="h-7 w-7 rounded-lg bg-blue-600/80 hover:bg-blue-600 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    title="InfoBlatt anzeigen"
+                                                >
+                                                    <FileText className="h-3.5 w-3.5 text-white" />
+                                                </Button>
+                                            </a>
+                                        )}
                                     </div>
 
                                     <div className="absolute top-3 right-3">
@@ -192,7 +209,7 @@ export default function ProjektePage() {
                                 <CardFooter className="pt-0 pb-4">
                                     <Button
                                         onClick={() => handleSelect(p)}
-                                        className="w-full h-9 text-sm font-bold group-hover:bg-primary group-hover:shadow-primary/20"
+                                        className="w-full h-9 text-sm font-bold transition-all hover:bg-orange-600 hover:text-white"
                                         variant="secondary"
                                     >
                                         Projekt öffnen
@@ -205,7 +222,7 @@ export default function ProjektePage() {
                 )}
             </main>
 
-            <footer className="py-12 mt-12 flex flex-row items-end justify-between px-8">
+            <footer className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-slate-100 py-3 flex flex-row items-center justify-between px-8 z-[60]">
                 <Signature />
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider opacity-60">
                     © {new Date().getFullYear()} METHABAU AG. v1.3

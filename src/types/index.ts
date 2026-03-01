@@ -82,6 +82,8 @@ export interface Projekt {
   einkauf?: string;
   status: ProjektStatus;
   imageUrl?: string;
+  infoBlattUrl?: string;
+  infoBlattName?: string;
   driveFolderId?: string;
   createdBy?: string;
   createdAt: string;
@@ -97,6 +99,7 @@ export type ItemStatus =
   | 'bestellt'
   | 'geliefert'
   | 'verbaut'
+  | 'geaendert'
   | 'abgeschlossen';
 
 // ============================================================

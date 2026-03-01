@@ -9,7 +9,8 @@ import { BimViewer } from '@/components/shared/BimViewer';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { ProjectService } from '@/lib/services/projectService';
 import { PositionService } from '@/lib/services/positionService';
-import { Teilsystem, Position, Projekt } from '@/types';
+import { LagerortService } from '@/lib/services/lagerortService';
+import { Teilsystem, Position, Projekt, Lagerort } from '@/types';
 import {
     ArrowLeft, Edit, ListTodo, Plus, FileText,
     Calendar, User as UserIcon, Clock, Link as LinkIcon,
@@ -23,6 +24,7 @@ import { cn } from '@/lib/utils';
 import { QRCodeSVG } from 'qrcode.react';
 
 import { QRCodeSection } from '@/components/shared/QRCodeSection';
+import { ItemQrModal } from '@/components/shared/ItemQrModal';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import DokumentePanel from '@/components/shared/DokumentePanel';
 import { usePermissions } from '@/lib/hooks/usePermissions';
@@ -44,19 +46,22 @@ export default function TeilsystemDetailPage() {
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [posToDelete, setPosToDelete] = useState<Position | null>(null);
     const [showQrModal, setShowQrModal] = useState(false);
+    const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
 
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [ts, ks, pos] = await Promise.all([
+                const [ts, ks, pos, lo] = await Promise.all([
                     SubsystemService.getTeilsystemById(id),
                     ProjectService.getProjektById(projektId),
-                    PositionService.getPositionenByTeilsystem(id)
+                    PositionService.getPositionenByTeilsystem(id),
+                    LagerortService.getLagerorte(projektId)
                 ]);
 
                 if (ts) setItem(ts);
                 if (ks) setProject(ks);
                 if (pos) setPositionen(pos);
+                if (lo) setLagerorte(lo);
             } catch (error) {
                 console.error("Failed to load details:", error);
             } finally {
@@ -87,6 +92,10 @@ export default function TeilsystemDetailPage() {
         </div>
     );
 
+    const lagerortObj = item.lagerortId ? lagerorte.find(lo => lo.id === item.lagerortId) : null;
+    const loBezeichnung = lagerortObj?.bezeichnung || (item as any).lagerortName || item.lagerortId || 'Nicht zugewiesen';
+    const loPlanUrl = lagerortObj?.planUrl;
+
     const detailFields = [
         { label: 'System-Nr.', value: item.teilsystemNummer, icon: Hash },
         { label: 'KS / Kostenstelle', value: item.ks, icon: Briefcase },
@@ -94,11 +103,7 @@ export default function TeilsystemDetailPage() {
         { label: 'Gebäude', value: (item as any).gebäude || (item.beschreibung?.match(/Gebäude: (.*?)(?: \||$)/)?.[1]), icon: MapPin },
         { label: 'Abschnitt', value: (item as any).abschnitt || (item.beschreibung?.match(/Abschnitt: (.*?)(?: \||$)/)?.[1]), icon: MapPin },
         { label: 'Geschoss', value: (item as any).geschoss || (item.beschreibung?.match(/Geschoss: (.*?)(?: \||$)/)?.[1]), icon: MapPin },
-        { label: 'Eröffnet am', value: item.eroeffnetAm, icon: Calendar },
         { label: 'Von', value: item.eroeffnetDurch, icon: UserIcon },
-        { label: 'Montage', value: item.montagetermin, icon: Clock, color: 'text-orange-600' },
-        { label: 'Frist (Wochen)', value: item.lieferfrist, icon: Clock },
-        { label: 'Plan-Abgabe', value: item.abgabePlaner, icon: Calendar },
         { label: 'P-Status', value: item.planStatus, icon: ListTodo, color: item.planStatus === 'fertig' ? 'text-green-600' : 'text-muted-foreground' },
         { label: 'WEMA', value: item.wemaLink, icon: LinkIcon, isLink: true },
     ];
@@ -107,17 +112,7 @@ export default function TeilsystemDetailPage() {
         <div className="space-y-6 animate-in fade-in duration-500 pb-10">
             {/* Header / Navigation Section */}
             <div className="flex justify-between items-center mb-6 px-2">
-                <div className="flex items-center gap-6">
-                    {/* Brand Logo */}
-                    <div className="flex items-center gap-1 select-none">
-                        <span className="text-2xl font-black tracking-tighter text-slate-800 dark:text-slate-200">
-                            METHA<span className="text-orange-500">Desk</span>
-                            <span className="ml-1 text-slate-400 font-light text-xs align-top mt-1">pro</span>
-                        </span>
-                    </div>
-
-                    <div className="h-6 w-[1px] bg-border/60" />
-
+                <div className="flex items-center gap-4">
                     <Link href={`/${projektId}/teilsysteme`}>
                         <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
                             <ArrowLeft className="h-4 w-4" />
@@ -137,16 +132,16 @@ export default function TeilsystemDetailPage() {
             </div>
 
             {/* Banner Section */}
-            <div className="flex justify-between items-center bg-card p-6 rounded-2xl shadow-sm border-2 border-border gap-6">
-                <div className="space-y-1">
+            <div className="flex flex-col md:grid md:grid-cols-[1fr_auto_auto_1fr] items-center bg-card p-6 rounded-2xl shadow-sm border-2 border-border gap-6">
+                <div className="space-y-1 w-full text-center md:text-left">
                     <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">TEILSYSTEM</span>
-                    <div className="flex items-baseline gap-3">
+                    <div className="flex flex-col md:flex-row items-center md:items-baseline gap-1 md:gap-3">
                         <span className="text-3xl font-black text-foreground tracking-tight select-none">TS {(item.teilsystemNummer || '').replace(/^ts\s?/i, '')}</span>
-                        <h1 className="text-3xl font-black text-foreground tracking-tight">{item.name}</h1>
+                        <h1 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">{item.name}</h1>
                     </div>
                 </div>
 
-                <div className="hidden md:flex items-center gap-4 border-x border-border/50 px-8 h-16">
+                <div className="flex flex-col items-center gap-2 md:border-l border-border/50 md:pl-8 md:pr-4 h-20 justify-center">
                     <div
                         className="bg-white p-1.5 rounded-lg border border-border cursor-pointer hover:shadow-md transition-all active:scale-95"
                         onClick={() => setShowQrModal(true)}
@@ -158,7 +153,36 @@ export default function TeilsystemDetailPage() {
                     </div>
                 </div>
 
-                <div className="text-right flex flex-col items-end gap-3">
+                <div className="flex flex-col items-center md:items-start gap-1 md:border-r border-border/50 md:pl-4 md:pr-8 h-20 justify-center">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">Lagerort</span>
+                    <div className="flex items-center gap-2">
+                        {loPlanUrl ? (
+                            <a
+                                href={loPlanUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 group hover:text-orange-600 transition-colors"
+                            >
+                                <MapPin className="h-4 w-4 text-orange-600 group-hover:scale-110 transition-transform" />
+                                <span className="text-sm font-black text-foreground group-hover:text-orange-600 underline decoration-muted-foreground/30 underline-offset-4 decoration-dotted">
+                                    {loBezeichnung}
+                                </span>
+                            </a>
+                        ) : (
+                            <div
+                                className="flex items-center gap-2"
+                                title={item.lagerortId ? "Kein Plan hinterlegt" : undefined}
+                            >
+                                <MapPin className={cn("h-4 w-4", item.lagerortId ? "text-orange-600/50" : "text-slate-300")} />
+                                <span className={cn("text-sm font-black", item.lagerortId ? "text-foreground" : "text-muted-foreground/40")}>
+                                    {loBezeichnung}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="text-center md:text-right flex flex-col items-center md:items-end gap-3 w-full">
                     <StatusBadge status={item.status} className="px-5 py-1.5 text-sm rounded-xl shadow-md border-b-4 border-green-600/20 ring-4 ring-green-50/50" />
                     {isReadOnly && (
                         <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase bg-muted px-2 py-1 rounded-md">
@@ -169,19 +193,95 @@ export default function TeilsystemDetailPage() {
                 </div>
             </div>
 
-            {/* Main Layout Container */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            {/* NEW ROW: Termine, Bemerkung, Actions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+                {/* 1) Termine u. Fristen */}
+                <Card className="shadow-sm border-2 border-border overflow-hidden bg-white">
+                    <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Termine u. Fristen</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-5">
+                        <div className="grid grid-cols-2 gap-y-4 gap-x-4">
+                            {[
+                                { label: 'Eroeffnet am', value: item.eroeffnetAm, color: 'text-slate-900 dark:text-orange-400' },
+                                { label: 'Planabgabe', value: item.abgabePlaner, color: 'text-blue-600' },
+                                { label: 'Lieferdatum', value: item.lieferfrist, color: 'text-amber-600' },
+                                { label: 'Montage', value: item.montagetermin, color: 'text-green-600' },
+                            ].map((d, i) => (
+                                <div key={i} className="flex flex-col">
+                                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight mb-1">{d.label}</span>
+                                    <span className={cn("text-xl font-black tracking-tight leading-none", d.value ? d.color : "text-muted-foreground/40")}>
+                                        {d.value || '—'}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
 
-                {/* Column 1: SYSTEM DETAILS (Left) */}
-                <div className="lg:col-span-5">
-                    <Card className="shadow-sm border-2 border-border overflow-hidden h-full flex flex-col">
+                {/* 2) Bemerkung */}
+                <Card className="shadow-sm border-2 border-primary/20 bg-orange-50/10 overflow-hidden flex flex-col">
+                    <CardHeader className="py-2.5 px-4 bg-primary/5 border-b border-primary/10">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                            <ListTodo className="h-3 w-3" />
+                            Bemerkung
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 flex-1">
+                        <div className="text-[10px] text-muted-foreground leading-relaxed italic whitespace-pre-wrap">
+                            {item.bemerkung || 'Keine Bemerkung vorhanden.'}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* 3) Actions card */}
+                <Card className="shadow-lg border-2 border-orange-600/30 rounded-3xl overflow-hidden bg-white/70 backdrop-blur-xl">
+                    <CardContent className="p-4 flex flex-col gap-3 items-center justify-center h-full">
+                        {canViewKosten && (
+                            <Link href={`/${projektId}/kosten?ts=${id}`} className="w-full max-w-[240px]">
+                                <Button className="w-full h-10 border-2 border-green-400 bg-green-50/50 hover:bg-green-100/70 text-green-700 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center justify-center gap-2.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
+                                    <div className="p-1 bg-white rounded-full shadow-sm">
+                                        <Briefcase className="h-3.5 w-3.5 text-green-600" />
+                                    </div>
+                                    <span>Kosten erfassen</span>
+                                </Button>
+                            </Link>
+                        )}
+
+                        <div className="flex items-center gap-3 w-full max-w-[240px]">
+                            <Link href={`/${projektId}/lager-scan?type=teilsystem&id=${id}&action=einlagerung&qr=TEILSYSTEM:${id}`} className="flex-1">
+                                <Button variant="outline" className="w-full h-10 border-2 border-blue-400 bg-white hover:bg-blue-50 text-blue-700 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
+                                    <div className="p-0.5 bg-blue-100 rounded-full">
+                                        <ArrowLeft className="h-3 w-3 text-blue-600 rotate-[-90deg]" />
+                                    </div>
+                                    <span>Einlagern</span>
+                                </Button>
+                            </Link>
+                            <Link href={`/${projektId}/lager-scan?type=teilsystem&id=${id}&action=auslagerung&qr=TEILSYSTEM:${id}`} className="flex-1">
+                                <Button variant="outline" className="w-full h-10 border-2 border-red-400 bg-white hover:bg-red-50 text-red-700 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
+                                    <div className="p-0.5 bg-red-100 rounded-full">
+                                        <ArrowLeft className="h-3 w-3 text-red-600 rotate-[90deg]" />
+                                    </div>
+                                    <span>Auslagern</span>
+                                </Button>
+                            </Link>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* LOWER ROW: System Details + Viewer */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                {/* System Details (Left) */}
+                <div className="lg:col-span-5 flex flex-col">
+                    <Card className="shadow-sm border-2 border-border overflow-hidden flex flex-col h-full">
                         <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
                             <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">System Details</CardTitle>
                         </CardHeader>
                         <CardContent className="p-0 flex-1 bg-white">
-                            <div className="grid grid-cols-1 divide-y divide-border">
+                            <div className="flex flex-col h-full divide-y divide-border">
                                 {detailFields.map((field, i) => (
-                                    <div key={i} className="px-4 py-1.5 flex items-center justify-between hover:bg-muted/5 transition-colors">
+                                    <div key={i} className="px-4 flex-1 flex items-center justify-between hover:bg-muted/5 transition-colors min-h-[40px]">
                                         <div className="flex items-center gap-2">
                                             <div className="p-1 bg-muted rounded-md shrink-0">
                                                 <field.icon className={cn("h-3 w-3 text-muted-foreground", field.color)} />
@@ -224,65 +324,9 @@ export default function TeilsystemDetailPage() {
                     </Card>
                 </div>
 
-                {/* Column 2: Right Side Content (7 Cols) */}
-                <div className="lg:col-span-7 flex flex-col gap-6 h-full">
-
-                    {/* Top Row: Bemerkung and Actions Section */}
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-
-                        {/* Bemerkung (approx 5 cols) */}
-                        <Card className="md:col-span-5 shadow-sm border-2 border-primary/20 bg-orange-50/10 overflow-hidden flex flex-col">
-                            <CardHeader className="py-2 px-4 bg-primary/5 border-b border-primary/10">
-                                <CardTitle className="text-[9px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                    <ListTodo className="h-3 w-3" />
-                                    Bemerkung
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-3 flex-1">
-                                <div className="text-[10px] text-muted-foreground leading-relaxed italic whitespace-pre-wrap">
-                                    {item.bemerkung || 'Keine Bemerkung vorhanden.'}
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Action Buttons (approx 7 cols) */}
-                        <Card className="md:col-span-7 shadow-lg border-2 border-orange-600/30 rounded-3xl overflow-hidden bg-white/70 backdrop-blur-xl">
-                            <CardContent className="p-4 flex flex-col gap-3 items-center justify-center h-full">
-                                {canViewKosten && (
-                                    <Link href={`/${projektId}/kosten?ts=${id}`} className="w-full max-w-[240px]">
-                                        <Button className="w-full h-10 border-2 border-green-400 bg-green-50/50 hover:bg-green-100/70 text-green-700 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center justify-center gap-2.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
-                                            <div className="p-1 bg-white rounded-full shadow-sm">
-                                                <Briefcase className="h-3.5 w-3.5 text-green-600" />
-                                            </div>
-                                            <span>Kosten erfassen</span>
-                                        </Button>
-                                    </Link>
-                                )}
-
-                                <div className="flex items-center gap-3 w-full max-w-[240px]">
-                                    <Link href={`/${projektId}/lager-scan?type=teilsystem&id=${id}&action=einlagerung&qr=TEILSYSTEM:${id}`} className="flex-1">
-                                        <Button variant="outline" className="w-full h-10 border-2 border-blue-400 bg-white hover:bg-blue-50 text-blue-700 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
-                                            <div className="p-0.5 bg-blue-100 rounded-full">
-                                                <ArrowLeft className="h-3 w-3 text-blue-600 rotate-[-90deg]" />
-                                            </div>
-                                            <span>Einlagern</span>
-                                        </Button>
-                                    </Link>
-                                    <Link href={`/${projektId}/lager-scan?type=teilsystem&id=${id}&action=auslagerung&qr=TEILSYSTEM:${id}`} className="flex-1">
-                                        <Button variant="outline" className="w-full h-10 border-2 border-red-400 bg-white hover:bg-red-50 text-red-700 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
-                                            <div className="p-0.5 bg-red-100 rounded-full">
-                                                <ArrowLeft className="h-3 w-3 text-red-600 rotate-[90deg]" />
-                                            </div>
-                                            <span>Auslagern</span>
-                                        </Button>
-                                    </Link>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* Bottom Row: Expanded IFC Viewer */}
-                    <div className="flex-1 min-h-[450px] relative group shadow-xl border-4 border-orange-600/10 rounded-[2rem] overflow-hidden bg-slate-900/5 ring-4 ring-orange-600/5">
+                {/* Model Viewer (Right) */}
+                <div className="lg:col-span-7 flex flex-col">
+                    <div className="flex-1 min-h-[500px] relative group shadow-xl border-4 border-orange-600/10 rounded-[2rem] overflow-hidden bg-slate-900/5 ring-4 ring-orange-600/5">
                         {/* Custom Viewer Overlay */}
                         <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
                             <div className="bg-orange-600 text-white p-2 rounded-xl shadow-lg ring-4 ring-orange-600/20">
@@ -415,138 +459,17 @@ export default function TeilsystemDetailPage() {
             </Card>
 
             {/* Teilsystem QR Modal */}
-            {showQrModal && item && (
-                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setShowQrModal(false)} />
-                    <div className="relative bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl border-2 border-primary/20 p-8 flex flex-col items-center gap-6 animate-in zoom-in slide-in-from-bottom-4 duration-300">
-                        <button
-                            onClick={() => setShowQrModal(false)}
-                            className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600"
-                        >
-                            <X className="h-5 w-5" />
-                        </button>
-
-                        <div className="text-center space-y-1">
-                            <h2 className="text-2xl font-black text-slate-900 leading-tight px-4">{item.name}</h2>
-                            <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">
-                                TS {(item.teilsystemNummer || '').replace(/^ts\s?/i, '')}
-                            </p>
-                        </div>
-
-                        <div className="bg-white p-6 rounded-[2rem] border-4 border-primary/10 shadow-inner group flex flex-col items-center gap-4">
-                            <div id="ts-qr-container">
-                                <QRCodeSVG
-                                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/teilsystem/${item.id}`}
-                                    size={220}
-                                    level="H"
-                                    className="drop-shadow-sm group-hover:scale-105 transition-transform duration-500"
-                                />
-                            </div>
-                            {/* Logo Preview */}
-                            <div className="flex items-center gap-1 select-none">
-                                <span className="text-2xl font-black tracking-tighter text-slate-800">
-                                    METHA<span className="text-orange-500">Desk</span>
-                                    <span className="ml-1 text-slate-400 font-light text-xs align-top mt-1">pro</span>
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="text-center">
-                            <p className="text-sm font-bold text-slate-700">
-                                Anzahl Positionen: <span className="text-primary font-black">{positionen.length}</span>
-                            </p>
-                        </div>
-
-                        <div className="flex gap-4 w-full justify-center">
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-12 w-12 rounded-2xl border-2 hover:bg-primary hover:text-white transition-all hover:scale-110 active:scale-90 shadow-sm"
-                                title="Download"
-                                onClick={() => {
-                                    const svg = document.querySelector('#ts-qr-container svg') as SVGElement;
-                                    if (!svg) return;
-                                    const svgClone = svg.cloneNode(true) as SVGElement;
-                                    svgClone.setAttribute('width', '1000');
-                                    svgClone.setAttribute('height', '1150');
-                                    svgClone.setAttribute('viewBox', '0 0 220 250');
-
-                                    const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-                                    group.setAttribute('transform', 'translate(0, 225)');
-                                    group.innerHTML = `
-                                        <text x="50%" y="15" font-family="Arial, sans-serif" font-weight="900" font-size="16" text-anchor="middle">
-                                            <tspan fill="#1e293b">METHA</tspan><tspan fill="#f97316">Desk</tspan><tspan fill="#94a3b8" font-size="10" font-weight="100" dy="-4">pro</tspan>
-                                        </text>
-                                    `;
-                                    svgClone.appendChild(group);
-
-                                    const serializer = new XMLSerializer();
-                                    const source = serializer.serializeToString(svgClone);
-                                    const url = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(source)}`;
-                                    const link = document.createElement('a');
-                                    link.href = url;
-                                    link.download = `TS_${item.teilsystemNummer || item.id}.svg`;
-                                    link.click();
-                                }}
-                            >
-                                <Download className="h-5 w-5" />
-                            </Button>
-
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-12 w-12 rounded-2xl border-2 hover:bg-primary hover:text-white transition-all hover:scale-110 active:scale-90 shadow-sm"
-                                title="Print"
-                                onClick={() => {
-                                    const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/share/teilsystem/${item.id}`;
-                                    const printWindow = window.open('', '', 'width=600,height=800');
-                                    if (printWindow) {
-                                        printWindow.document.write(`
-                                            <html>
-                                                <body style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;font-family:sans-serif;background:#fff;">
-                                                    <div style="padding:40px;border:4px solid #f1f5f9;border-radius:40px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.05);">
-                                                        <h1 style="margin:0 0 5px 0;font-size:24px;color:#0f172a;font-weight:900;">${item.name}</h1>
-                                                        <p style="margin:0 0 30px 0;font-size:14px;color:#64748b;font-weight:bold;letter-spacing:0.1em;text-transform:uppercase;">TS ${item.teilsystemNummer || ''}</p>
-                                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}" style="width:300px;height:300px;margin-bottom:30px;" />
-                                                        <p style="margin:0 0 30px 0;font-size:16px;color:#334155;font-weight:bold;">Anzahl Positionen: ${positionen.length}</p>
-                                                        <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
-                                                            <span style="color:#1e293b;font-weight:900;font-size:24px;letter-spacing:-1px;">METHA</span>
-                                                            <span style="color:#f97316;font-weight:900;font-size:24px;letter-spacing:-1px;">Desk</span>
-                                                            <span style="color:#94a3b8;font-weight:300;font-size:12px;margin-bottom:8px;">pro</span>
-                                                        </div>
-                                                    </div>
-                                                    <script>window.onload=()=>{window.print();window.close();};</script>
-                                                </body>
-                                            </html>
-                                        `);
-                                        printWindow.document.close();
-                                    }
-                                }}
-                            >
-                                <Printer className="h-5 w-5" />
-                            </Button>
-
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-12 w-12 rounded-2xl border-2 hover:bg-primary hover:text-white transition-all hover:scale-110 active:scale-90 shadow-sm"
-                                title="Share"
-                                onClick={() => {
-                                    const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/share/teilsystem/${item.id}`;
-                                    if (navigator.share) {
-                                        navigator.share({ title: item.name, url });
-                                    } else {
-                                        navigator.clipboard.writeText(url);
-                                        alert('Link kopiert!');
-                                    }
-                                }}
-                            >
-                                <Share2 className="h-5 w-5" />
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <ItemQrModal
+                isOpen={showQrModal}
+                onClose={() => setShowQrModal(false)}
+                title={item.name}
+                subtitle={`TS ${(item.teilsystemNummer || '').replace(/^ts\s?/i, '')}`}
+                qrValue={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/teilsystem/${item.id}`}
+                countLabel="Anzahl Positionen"
+                count={positionen.length}
+                filePrefix="TS"
+                id={item.id}
+            />
 
             <ConfirmDialog
                 isOpen={confirmOpen}

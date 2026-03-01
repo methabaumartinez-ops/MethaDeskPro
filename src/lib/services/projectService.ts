@@ -20,11 +20,22 @@ export const ProjectService = {
     },
 
     async getProjektById(id: string): Promise<Projekt | null> {
+        if (!id || id === 'undefined' || id === 'null') return null;
+
         if (typeof window !== 'undefined') {
-            const res = await fetch(`/api/data/projekte/${id}`);
-            if (res.status === 404) return null;
-            if (!res.ok) throw new Error('Failed to fetch project');
-            return await res.json();
+            try {
+                const res = await fetch(`/api/data/projekte/${id}`);
+                if (res.status === 404) return null;
+                if (!res.ok) {
+                    const errorData = await res.json().catch(() => ({ error: 'Unknown API error' }));
+                    console.error(`[ProjectService] Failed to fetch project ${id}:`, res.status, errorData);
+                    throw new Error(`Failed to fetch project: ${res.status} ${errorData.error || ''}`);
+                }
+                return await res.json();
+            } catch (error) {
+                console.error(`[ProjectService] Network or Parse error fetching project ${id}:`, error);
+                throw error;
+            }
         }
         return DatabaseService.get<Projekt>('projekte', id);
     },

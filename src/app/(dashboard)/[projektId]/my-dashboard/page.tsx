@@ -51,10 +51,10 @@ export default function MyDashboardPage() {
     ];
 
     const features = [
-        { icon: Layout, title: "Personalisierbar", desc: "Zuschnitt auf jedes Teammitglied." },
-        { icon: Cpu, title: "KI-gestützter Builder", desc: "Widgets per Sprache erstellen." },
-        { icon: Zap, title: "Echtzeit-Anpassung", desc: "Interface reagiert sofort." },
-        { icon: Workflow, title: "Volle Integration", desc: "Vernetzt mit Bauprozessen." }
+        { icon: Layout, title: "Personalisierbar", desc: "Passen Sie Ihre Arbeitsumgebung exakt an Ihre Bedürfnisse an. Ein massgeschneidertes Dashboard hilft Ihnen, genau die Kennzahlen im Blick zu behalten, die für Ihre spezifische Rolle und täglichen Entscheidungen im Projekt entscheidend sind." },
+        { icon: Cpu, title: "KI-gestützter Builder", desc: "Nutzen Sie modernste Sprachmodelle, um komplexe Datenvisualisierungen zu beauftragen. Beschreiben Sie einfach Ihr Ziel, und unser System entwirft die passende Lösung, ohne dass Sie komplizierte Filter selbst konfigurieren müssen." },
+        { icon: Zap, title: "Echtzeit-Anpassung", desc: "Sobald ein Widget validiert und freigegeben ist, steht es Ihnen sofort zur Verfügung. Sie profitieren von einer dynamischen Plattform, die mit Ihren Anforderungen mitwächst und stets aktuelle Informationen liefert." },
+        { icon: Workflow, title: "Volle Integration", desc: "Gewährleisten Sie einen lückenlosen Informationsfluss. Der Dashboard-Builder ist mit allen Modulen wie Teilsystemen, Lagerorten und Maschinen vernetzt, um Ihnen eine ganzheitliche Projektsicht zu ermöglichen." }
     ];
 
     return (
@@ -81,7 +81,7 @@ export default function MyDashboardPage() {
                         </h1>
 
                         <p className="text-slate-400 text-xs font-medium leading-relaxed max-w-sm opacity-80">
-                            Revolutionäres Interface zur Erstellung eigener Arbeitsbereiche mittels natürlicher Sprache.
+                            Beschreiben Sie Ihr gewünschtes Dashboard oder spezifische Widgets einfach in natürlicher Sprache. Um höchste Qualität zu gewährleisten, wird jede Anfrage zunächst von unserer KI-Abteilung auf technische Machbarkeit geprüft, bevor die Implementierung erfolgt.
                         </p>
                     </div>
 
@@ -160,7 +160,7 @@ export default function MyDashboardPage() {
                             {[
                                 { step: "1", text: "Task definieren" },
                                 { step: "2", text: "Chat-Bedarf" },
-                                { step: "3", text: "IA Modellierung" },
+                                { step: "3", text: "KI-Validierung und Modellierung" },
                                 { step: "4", text: "Integration" }
                             ].map((s, i) => (
                                 <div key={i} className="flex flex-col items-center text-center gap-2">

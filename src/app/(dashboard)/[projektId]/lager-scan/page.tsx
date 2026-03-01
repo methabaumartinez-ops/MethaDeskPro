@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -51,6 +51,20 @@ export default function LagerScanSeite() {
     const [loading, setLoading] = useState(false);
     const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
     const [selectionMode, setSelectionMode] = useState<'none' | 'camera' | 'manual'>('none');
+    const router = useRouter();
+
+    // Auto-redirect on success
+    React.useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (step === 'done') {
+            timer = setTimeout(() => {
+                router.push(`/${projektId}/teilsysteme`);
+            }, 5000);
+        }
+        return () => {
+            if (timer) clearTimeout(timer);
+        };
+    }, [step, projektId, router]);
 
     // Fetch lagerorte for manual selection
     React.useEffect(() => {
@@ -187,26 +201,12 @@ export default function LagerScanSeite() {
             {/* Header / Navigation Section */}
             <div className="flex justify-between items-center mb-6 px-2">
                 <div className="flex items-center gap-6">
-                    {/* Brand Logo */}
-                    <div className="flex items-center gap-1 select-none">
-                        <span className="text-2xl font-black tracking-tighter text-slate-800 dark:text-slate-200">
-                            METHA<span className="text-orange-500">Desk</span>
-                            <span className="ml-1 text-slate-400 font-light text-xs align-top mt-1">pro</span>
-                        </span>
-                    </div>
-
-                    <div className="h-6 w-[1px] bg-border/60" />
-
                     <Link href={`/${projektId}/lagerorte`}>
                         <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
                             <ArrowLeft className="h-4 w-4" />
                             Zurück
                         </Button>
                     </Link>
-                </div>
-
-                <div className="flex items-center gap-4">
-                    <h1 className="text-xl font-black text-slate-400 uppercase tracking-[0.2em] hidden md:block">QR Lager-Scan</h1>
                 </div>
             </div>
 
@@ -488,6 +488,7 @@ export default function LagerScanSeite() {
                         <div>
                             <h3 className="font-black text-xl text-foreground">Bewegung erfasst!</h3>
                             <p className="text-sm text-muted-foreground mt-1">Die Lagerbewegung wurde erfolgreich gespeichert.</p>
+                            <p className="text-[10px] text-slate-400 mt-4 uppercase tracking-widest font-bold">Automatische Weiterleitung in 5 Sekunden...</p>
                         </div>
                         <div className="flex gap-3 mt-2">
                             <Button onClick={reset} className="font-bold gap-2">
