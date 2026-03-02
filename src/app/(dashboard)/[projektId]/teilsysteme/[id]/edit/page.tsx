@@ -434,8 +434,7 @@ export default function TeilsystemEditPage() {
                 <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Teilsystem bearbeiten</h1>
                 {teilsystem && (
                     <div className="flex items-baseline gap-2 bg-primary/5 px-4 py-2 rounded-xl border border-primary/20 shadow-sm">
-                        <span className="text-xl font-black text-primary drop-shadow-sm">TS{teilsystem.teilsystemNummer}</span>
-                        <span className="text-lg font-bold text-muted-foreground truncate max-w-[400px]">{teilsystem.name}</span>
+                        <span className="text-xl font-extrabold text-primary tracking-tight">TS {teilsystem.teilsystemNummer} {teilsystem.name}</span>
                     </div>
                 )}
             </div>

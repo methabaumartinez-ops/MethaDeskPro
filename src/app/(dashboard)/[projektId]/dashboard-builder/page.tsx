@@ -13,6 +13,7 @@ import { useProjekt } from '@/lib/context/ProjektContext';
 import { DashboardService } from '@/lib/services/dashboardService';
 import { DashboardRequest } from '@/types';
 import { cn } from '@/lib/utils';
+import { AnimatedRobot } from '@/components/shared/AnimatedRobot';
 
 export default function MyDashboardPage() {
     const { projektId } = useParams() as { projektId: string };
@@ -76,7 +77,7 @@ export default function MyDashboardPage() {
                         <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight leading-tight">
                             My Dashboard <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400">
-                                KI-Constructor
+                                KI Constructor
                             </span>
                         </h1>
 
@@ -120,10 +121,12 @@ export default function MyDashboardPage() {
                 ) : (
                     <Button
                         onClick={() => setIsChatOpen(true)}
-                        className="w-14 h-14 rounded-2xl shadow-xl bg-primary text-white hover:scale-105 active:scale-95 transition-all p-0 flex items-center justify-center relative group"
+                        className="w-14 h-14 rounded-2xl shadow-xl bg-orange-500 text-white hover:scale-105 active:scale-95 transition-all p-0 flex items-center justify-center relative group"
                     >
-                        <Sparkles className="w-6 h-6" />
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full border-2 border-white flex items-center justify-center">
+                        <div className="bg-white/10 p-2 rounded-xl flex items-center justify-center">
+                            <AnimatedRobot className="h-10 w-10" isWaving={!isChatOpen} />
+                        </div>
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full border-2 border-white flex items-center justify-center">
                             <span className="text-[8px] font-black">!</span>
                         </div>
                     </Button>
@@ -176,7 +179,6 @@ export default function MyDashboardPage() {
                 <div className="space-y-6">
                     <Card className="bg-slate-50 dark:bg-slate-900/50 border-none rounded-xl p-5 shadow-inner">
                         <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                            <Sparkles size={12} className="text-primary" />
                             Anwendung
                         </h3>
                         <div className="space-y-3">

@@ -42,7 +42,20 @@ export function Sidebar({ projektId, className, forceProjectSelection = false }:
         ? [
             { title: 'Dashboard Builder', href: `/${projektId}/dashboard-builder`, icon: Sparkles },
             { title: 'My Dashboard', href: `/${projektId}/my-dashboard`, icon: LayoutDashboard },
-            { title: 'Methabau Infrastruktur', href: forceProjectSelection ? '/projekte' : `/${projektId}/teilsysteme`, icon: Layers },
+            {
+                title: 'Methabau Infrastruktur',
+                href: forceProjectSelection ? '/projekte' : `/${projektId}/teilsysteme`,
+                icon: Layers,
+                subItems: [
+                    { title: 'Produktion', href: `/${projektId}/teilsysteme` },
+                    { title: 'Ausführung', href: `/${projektId}/ausfuehrung` },
+                    { title: 'Werkhof', href: `/${projektId}/werkhof` },
+                    { title: 'Fuhrpark', href: `/fuhrpark` },
+                    { title: 'Kostenerfassung', href: `/${projektId}/kosten` },
+                    { title: 'Tabellen', href: `/${projektId}/tabellen` },
+                    { title: 'Analyse', href: `/${projektId}/analyse` },
+                ]
+            },
         ]
         : [
             { title: 'Projektübersicht', href: '/projekte', icon: LayoutDashboard },
@@ -122,8 +135,8 @@ export function Sidebar({ projektId, className, forceProjectSelection = false }:
                             </Link>
 
                             {/* Sub-items */}
-                            {item.subItems && isActive && (
-                                <div className="ml-12 mt-1 flex flex-col gap-1 border-l pl-2">
+                            {item.subItems && (isActive || (isDashboardMode && item.title === 'Methabau Infrastruktur')) && (
+                                <div className="ml-12 mt-1 flex flex-col gap-1 border-l pl-2 animate-in slide-in-from-left-2 duration-300">
                                     {item.subItems.map((sub) => {
                                         const isSubActive = pathname === sub.href;
                                         return (

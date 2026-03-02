@@ -267,18 +267,10 @@ export default function PositionEditPage() {
             <div className="flex justify-start items-center gap-4">
                 <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Position bearbeiten</h1>
                 {position && (
-                    <div className="flex items-center gap-3">
-                        {teilsystem && (
-                            <div className="flex items-baseline gap-2 bg-primary/5 px-4 py-2 rounded-xl border border-primary/20 shadow-sm">
-                                <span className="text-xl font-black text-primary drop-shadow-sm">TS{teilsystem.teilsystemNummer}</span>
-                                <span className="text-lg font-bold text-muted-foreground truncate max-w-[200px]">{teilsystem.name}</span>
-                            </div>
-                        )}
-                        <div className="w-px h-8 bg-border" />
-                        <div className="flex items-baseline gap-2 bg-muted/30 px-4 py-2 rounded-xl border border-border shadow-sm">
-                            <span className="text-xl font-black text-foreground/70 tracking-tight">POS</span>
-                            <span className="text-lg font-bold text-muted-foreground truncate max-w-[300px]">{position.name}</span>
-                        </div>
+                    <div className="flex items-baseline gap-2 bg-muted/30 px-4 py-2 rounded-xl border border-border shadow-sm">
+                        <span className="text-xl font-extrabold text-foreground/70 tracking-tight">
+                            {position.posNummer ? `POS ${position.posNummer} ${position.name}` : `Position: ${position.name}`}
+                        </span>
                     </div>
                 )}
             </div>

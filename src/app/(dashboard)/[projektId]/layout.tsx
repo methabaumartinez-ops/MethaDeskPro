@@ -52,9 +52,10 @@ export default function DashboardLayout({
         );
     }
 
-    const isMyDashboard = pathname?.includes('/my-dashboard');
+    const isMyDashboard = pathname?.includes('/my-dashboard') || pathname?.includes('/dashboard-builder');
     const isGlobalPage = pathname?.includes('/chat') ||
         pathname?.includes('/my-dashboard') ||
+        pathname?.includes('/dashboard-builder') ||
         pathname?.includes('/werkhof') ||
         pathname?.includes('/mitarbeiter') ||
         pathname?.includes('/lieferanten') ||
