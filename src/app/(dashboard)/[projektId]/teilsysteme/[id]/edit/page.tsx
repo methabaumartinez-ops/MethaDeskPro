@@ -130,8 +130,9 @@ export default function TeilsystemEditPage() {
     });
 
     const currentIfcUrl = watch('ifcUrl');
+    const currentAbteilung = watch('abteilung');
 
-    // Load mitarbeiter for dropdown
+    // All useEffects
     useEffect(() => {
         const loadData = async () => {
             try {
@@ -163,7 +164,7 @@ export default function TeilsystemEditPage() {
         };
         loadLieferanten();
         loadDokumente();
-    }, [id]);
+    }, [id, projektId]); // Added projektId to deps
 
     useEffect(() => {
         const loadItem = async () => {
@@ -209,6 +210,12 @@ export default function TeilsystemEditPage() {
         };
         loadItem();
     }, [id, projektId, setValue, router]);
+
+    useEffect(() => {
+        if (currentAbteilung) {
+            setValue('ks', currentAbteilung === 'Bau' ? '1' : '2', { shouldValidate: true, shouldDirty: true });
+        }
+    }, [currentAbteilung, setValue]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -394,13 +401,6 @@ export default function TeilsystemEditPage() {
         ...ABTEILUNGEN_CONFIG.map(a => ({ label: a.name, value: a.name }))
     ];
 
-    const currentAbteilung = watch('abteilung');
-
-    useEffect(() => {
-        if (currentAbteilung) {
-            setValue('ks', currentAbteilung === 'Bau' ? '1' : '2', { shouldValidate: true, shouldDirty: true });
-        }
-    }, [currentAbteilung, setValue]);
 
     return (
         <div className="w-full space-y-6 pb-8">
