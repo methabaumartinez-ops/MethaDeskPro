@@ -9,14 +9,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/layout/Header';
 import { useRouter } from 'next/navigation';
-import { Plus, MapPin, Calendar, ArrowRight, Trash2, Pencil, FileText } from 'lucide-react';
+import { Plus, MapPin, Calendar, ArrowRight, Pencil, FileText, X } from 'lucide-react';
 import { Signature } from '@/components/shared/Signature';
 
 export default function ProjektePage() {
     const { setActiveProjekt, currentUser, loading: authLoading } = useProjekt();
     const [projekte, setProjekte] = useState<Projekt[]>([]);
     const [loadingData, setLoadingData] = useState(true);
-    const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -42,41 +42,6 @@ export default function ProjektePage() {
         router.push(`/${p.id}`);
     };
 
-    const handleExportAndDelete = async (e: React.MouseEvent, p: Projekt) => {
-        e.stopPropagation();
-        if (!confirm(`Möchten Sie das Projekt "${p.projektname}" wirklich exportieren und löschen?\n\nAlle Projektdaten (Teilsysteme, Positionen etc.) werden als JSON exportiert und anschliessend aus der Datenbank entfernt.`)) return;
-
-        setDeletingId(p.id);
-        try {
-            const res = await fetch(`/api/projekte/${p.id}/export-delete`, { method: 'POST' });
-
-            if (!res.ok) {
-                const err = await res.json();
-                throw new Error(err.error || 'Export fehlgeschlagen');
-            }
-
-            // Download the exported JSON
-            const blob = await res.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `projekt_${p.projektnummer || p.id}_export.json`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
-
-            // Remove from local state
-            setProjekte(prev => prev.filter(x => x.id !== p.id));
-        } catch (error) {
-            console.error("Failed to export/delete project:", error);
-            // Show detailed error to user for debugging
-            alert(`Fehler beim Exportieren und Löschen: ${error instanceof Error ? error.message : String(error)}`);
-        } finally {
-            setDeletingId(null);
-        }
-    };
-
     const handleEdit = (e: React.MouseEvent, p: Projekt) => {
         e.stopPropagation();
         router.push(`/projekte/bearbeiten/${p.id}`);
@@ -92,6 +57,17 @@ export default function ProjektePage() {
         }
         // Default to Methabau building photo
         return '/images/Foto.png';
+    };
+
+    const getPreviewUrl = (url: string) => {
+        if (!url) return '';
+        if (url.includes('drive.google.com')) {
+            const fileId = url.match(/id=([^&]+)/)?.[1] || url.match(/\/d\/([^/]+)/)?.[1];
+            if (fileId) {
+                return `https://drive.google.com/file/d/${fileId}/preview`;
+            }
+        }
+        return url;
     };
 
     if (authLoading) return null;
@@ -127,7 +103,7 @@ export default function ProjektePage() {
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {projekte.map((p) => (
-                            <Card key={p.id} className="group border-2 border-orange-500 transition-all hover:shadow-xl hover:-translate-y-1 duration-300 overflow-hidden relative bg-white">
+                            <Card key={p.id} className="group border-2 border-orange-500 transition-all hover:shadow-xl hover:-translate-y-1 duration-300 overflow-hidden relative bg-white dark:bg-card">
                                 <div className="h-28 w-full overflow-hidden relative">
                                     <img
                                         src={getProjectImage(p)}
@@ -141,43 +117,12 @@ export default function ProjektePage() {
                                         <Button
                                             variant="secondary"
                                             size="icon"
-                                            className="h-7 w-7 rounded-lg bg-white/90 hover:bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                            className="h-7 w-7 rounded-lg bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-800 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
                                             onClick={(e) => handleEdit(e, p)}
                                             title="Projekt bearbeiten"
                                         >
                                             <Pencil className="h-3.5 w-3.5 text-slate-700" />
                                         </Button>
-                                        <Button
-                                            variant="danger"
-                                            size="icon"
-                                            className="h-7 w-7 rounded-lg bg-red-600/80 hover:bg-red-600 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                                            onClick={(e) => handleExportAndDelete(e, p)}
-                                            title="Exportieren und Löschen"
-                                            disabled={deletingId === p.id}
-                                        >
-                                            {deletingId === p.id ? (
-                                                <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                            ) : (
-                                                <Trash2 className="h-3.5 w-3.5 text-white" />
-                                            )}
-                                        </Button>
-                                        {p.infoBlattUrl && (
-                                            <a
-                                                href={p.infoBlattUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                onClick={(e) => e.stopPropagation()}
-                                            >
-                                                <Button
-                                                    variant="secondary"
-                                                    size="icon"
-                                                    className="h-7 w-7 rounded-lg bg-blue-600/80 hover:bg-blue-600 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    title="InfoBlatt anzeigen"
-                                                >
-                                                    <FileText className="h-3.5 w-3.5 text-white" />
-                                                </Button>
-                                            </a>
-                                        )}
                                     </div>
 
                                     <div className="absolute top-3 right-3">
@@ -206,7 +151,7 @@ export default function ProjektePage() {
                                         <span>{new Date(p.createdAt).toLocaleDateString('de-CH')}</span>
                                     </div>
                                 </CardContent>
-                                <CardFooter className="pt-0 pb-4">
+                                <CardFooter className="pt-0 pb-4 flex flex-col gap-2">
                                     <Button
                                         onClick={() => handleSelect(p)}
                                         className="w-full h-9 text-sm font-bold transition-all hover:bg-orange-600 hover:text-white"
@@ -215,6 +160,20 @@ export default function ProjektePage() {
                                         Projekt öffnen
                                         <ArrowRight className="ml-2 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                                     </Button>
+
+                                    {p.infoBlattUrl && (
+                                        <Button
+                                            variant="secondary"
+                                            className="w-full h-9 text-sm font-bold transition-all hover:bg-orange-600 hover:text-white group"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setPreviewUrl(p.infoBlattUrl!);
+                                            }}
+                                        >
+                                            Infoblatt
+                                            <FileText className="ml-2 h-3.5 w-3.5 transition-transform group-hover:scale-110" />
+                                        </Button>
+                                    )}
                                 </CardFooter>
                             </Card>
                         ))}
@@ -222,12 +181,46 @@ export default function ProjektePage() {
                 )}
             </main>
 
-            <footer className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-slate-100 py-3 flex flex-row items-center justify-between px-8 z-[60]">
+            <footer className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-t border-slate-100 dark:border-slate-800 py-3 flex flex-row items-center justify-between px-8 z-[60]">
                 <Signature />
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider opacity-60">
                     © {new Date().getFullYear()} METHABAU AG. v1.3
                 </p>
             </footer>
+
+            {/* Infoblatt Preview Modal */}
+            {previewUrl && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-10">
+                    <div
+                        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300"
+                        onClick={() => setPreviewUrl(null)}
+                    />
+                    <div className="relative bg-white dark:bg-card w-full h-full max-w-5xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col animate-in zoom-in slide-in-from-bottom-4 duration-300">
+                        <div className="p-4 border-b dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                <FileText className="h-5 w-5 text-blue-600" />
+                                Infoblatt Vorschau
+                            </h3>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setPreviewUrl(null)}
+                                className="rounded-full hover:bg-slate-200"
+                            >
+                                <X className="h-5 w-5" />
+                            </Button>
+                        </div>
+                        <div className="flex-1 bg-slate-100 dark:bg-slate-950 relative">
+                            <iframe
+                                src={getPreviewUrl(previewUrl)}
+                                className="w-full h-full border-none"
+                                title="Infoblatt Preview"
+                                allow="autoplay"
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 
-export default function OverviewPage({ params }: { params: { projektId: string } }) {
+export default async function OverviewPage({ params }: { params: Promise<{ projektId: string }> }) {
+    const p = await params;
     // Permanent redirect to Teilsysteme tab
-    redirect(`/${params.projektId}/teilsysteme`);
+    redirect(`/${p.projektId}/teilsysteme`);
 }

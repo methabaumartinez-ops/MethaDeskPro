@@ -38,14 +38,20 @@ export default function WelcomePage() {
         fetchFirstProject();
     }, []);
 
-    if (loading) return (
-        <div className="h-screen w-full flex items-center justify-center bg-white">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        </div>
-    );
+    if (loading) {
+        return (
+            <div className="h-screen w-full flex items-center justify-center bg-white dark:bg-background">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            </div>
+        );
+    }
+
+    const handleNavigate = (path: string) => {
+        router.push(path);
+    };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col relative overflow-hidden">
+        <div className="min-h-screen bg-slate-50 dark:bg-background flex flex-col relative overflow-hidden">
             <Header
                 onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 hideProjectInfo={true}
@@ -67,7 +73,7 @@ export default function WelcomePage() {
                         {/* Welcome Text */}
                         <div className="text-center space-y-2">
                             <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-primary">Willkommen zurück</h2>
-                            <h1 className="text-2xl md:text-4xl font-black text-slate-900 tracking-tight leading-none">
+                            <h1 className="text-2xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
                                 Was machen wir <br />
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400">
                                     heute als Nächstes?
@@ -82,8 +88,8 @@ export default function WelcomePage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-4">
                             {/* ACTION 1: PROJECTS */}
                             <Card
-                                className="group relative overflow-hidden bg-white border border-slate-100 shadow-xl hover:border-primary/30 transition-all duration-500 cursor-pointer rounded-2xl"
-                                onClick={() => router.push('/projekte')}
+                                className="group relative overflow-hidden bg-white dark:bg-card border border-slate-100 dark:border-slate-800 shadow-xl hover:border-primary/30 transition-all duration-500 cursor-pointer rounded-2xl"
+                                onClick={() => handleNavigate('/projekte')}
                             >
                                 <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-700" />
                                 <CardContent className="p-5 flex flex-col items-center text-center space-y-3 relative z-10">
@@ -91,7 +97,7 @@ export default function WelcomePage() {
                                         <Briefcase size={28} className="stroke-[2.5]" />
                                     </div>
                                     <div className="space-y-1">
-                                        <h3 className="text-lg font-black text-slate-900 tracking-tight">Arbeiten am Projekt</h3>
+                                        <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">Arbeiten am Projekt</h3>
                                         <p className="text-[12px] text-slate-500 font-medium leading-tight opacity-70">
                                             Wähle ein Projekt aus, verwalte Teilsysteme, Positionen und steuere deine Baustellen.
                                         </p>
@@ -105,7 +111,7 @@ export default function WelcomePage() {
                             {/* ACTION 2: DASHBOARD */}
                             <Card
                                 className="group relative overflow-hidden bg-slate-900 border-none shadow-xl transition-all duration-500 cursor-pointer rounded-2xl"
-                                onClick={() => router.push(`/${firstProjectId}/my-dashboard`)}
+                                onClick={() => handleNavigate(`/${firstProjectId}/my-dashboard`)}
                             >
                                 <div className="absolute bottom-0 right-0 w-28 h-28 bg-primary/10 blur-2xl rounded-full -mb-14 -mr-14" />
                                 <CardContent className="p-5 flex flex-col items-center text-center space-y-3 relative z-10">
@@ -168,7 +174,7 @@ export default function WelcomePage() {
                 </div>
             </div>
 
-            <footer className="py-6 bg-white/30 backdrop-blur-sm self-stretch flex flex-row items-end justify-between px-8 lg:ml-64 relative z-20">
+            <footer className="py-6 bg-white/30 dark:bg-slate-950/30 backdrop-blur-sm self-stretch flex flex-row items-end justify-between px-8 lg:ml-64 relative z-20">
                 <Signature />
                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest opacity-60">
                     © {new Date().getFullYear()} METHABAU AG. v1.3

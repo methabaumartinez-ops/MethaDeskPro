@@ -249,7 +249,7 @@ export default function LagerScanSeite() {
                                 className={cn(
                                     'w-full flex items-center gap-3 p-4 rounded-xl border-2 font-bold transition-all text-left',
                                     state.typ === t.value
-                                        ? 'border-primary bg-primary/5 text-foreground shadow-sm'
+                                        ? 'border-primary bg-primary/5 dark:bg-primary/20 text-foreground shadow-sm'
                                         : 'border-border bg-card hover:border-primary/40 text-muted-foreground hover:text-foreground'
                                 )}
                             >
@@ -337,7 +337,7 @@ export default function LagerScanSeite() {
                                         "h-56 flex flex-col items-center justify-center gap-4 border-2 transition-all rounded-[2.5rem] relative overflow-hidden group shadow-lg",
                                         selectionMode === 'camera'
                                             ? "border-blue-500 bg-blue-50/50 shadow-blue-500/20 scale-105"
-                                            : "border-slate-100 hover:border-blue-400/30 hover:shadow-xl bg-white"
+                                            : "border-slate-100 dark:border-slate-800 hover:border-blue-400/30 hover:shadow-xl bg-white dark:bg-card"
                                     )}
                                 >
                                     <div className={cn(
@@ -372,7 +372,7 @@ export default function LagerScanSeite() {
                                         "h-56 flex flex-col items-center justify-center gap-4 border-2 transition-all rounded-[2.5rem] relative overflow-hidden group shadow-lg",
                                         selectionMode === 'manual'
                                             ? "border-orange-500 bg-orange-50/50 shadow-orange-500/20 scale-105"
-                                            : "border-slate-100 hover:border-orange-400/30 hover:shadow-xl bg-white"
+                                            : "border-slate-100 dark:border-slate-800 hover:border-orange-400/30 hover:shadow-xl bg-white dark:bg-card"
                                     )}
                                 >
                                     <div className={cn(

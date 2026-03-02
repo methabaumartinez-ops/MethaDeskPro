@@ -78,8 +78,8 @@ export function ItemQrModal({
 
     return (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose} />
-            <div className="relative bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl border-2 border-primary/20 p-8 flex flex-col items-center gap-6 animate-in zoom-in slide-in-from-bottom-4 duration-300">
+            <div className="absolute inset-0 bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose} />
+            <div className="relative bg-white dark:bg-card w-full max-w-sm rounded-[2.5rem] shadow-2xl border-2 border-primary/20 p-8 flex flex-col items-center gap-6 animate-in zoom-in slide-in-from-bottom-4 duration-300">
                 <button
                     onClick={onClose}
                     className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600"
@@ -93,8 +93,8 @@ export function ItemQrModal({
                         {subtitle}
                     </p>
                 </div>
-
-                <div className="bg-white p-6 rounded-[2rem] border-4 border-primary/10 shadow-inner group flex flex-col items-center gap-4">
+                {/* Main QR Area */}
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border-4 border-primary/10 shadow-inner group flex flex-col items-center gap-4">
                     <div id="item-qr-container">
                         <QRCodeSVG
                             value={qrValue}

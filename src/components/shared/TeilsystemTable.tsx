@@ -33,7 +33,7 @@ export function TeilsystemTable({ items, projektId, onDelete }: TeilsystemTableP
                 <TableHeader className="bg-muted/50">
                     <TableRow className="border-b-2 border-border hover:bg-transparent">
                         <TableHead className="w-20 px-4 py-4 font-black text-foreground text-center text-[10px] uppercase tracking-wider">System-Nr.</TableHead>
-                        <TableHead className="w-12 px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">KS</TableHead>
+                        <TableHead className="w-24 px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">KS</TableHead>
                         <TableHead className="min-w-[200px] px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Bezeichnung</TableHead>
                         <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Abteilung</TableHead>
                         <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Termine</TableHead>
@@ -55,7 +55,9 @@ export function TeilsystemTable({ items, projektId, onDelete }: TeilsystemTableP
                                         {item.teilsystemNummer || '—'}
                                     </Badge>
                                 </TableCell>
-                                <TableCell className="p-4 font-black text-muted-foreground text-xs">{item.ks || '1'}</TableCell>
+                                <TableCell className="p-4 font-black text-muted-foreground text-xs whitespace-nowrap">
+                                    {item.ks === '1' ? '1 Baumeister' : item.ks === '2' ? '2 Produktion' : (item.ks || '1')}
+                                </TableCell>
                                 <TableCell className="p-4">
                                     <div className="flex flex-col">
                                         <span className="font-black text-foreground text-sm tracking-tight">{item.name}</span>

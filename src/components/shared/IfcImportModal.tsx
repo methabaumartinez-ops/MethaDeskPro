@@ -233,7 +233,7 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
         const errors = importLog.filter(l => l.startsWith('❌'));
         return (
             <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className="bg-white rounded-2xl shadow-2xl border-2 border-border w-full max-w-lg p-8 flex flex-col items-center gap-4">
+                <div className="bg-white dark:bg-card rounded-2xl shadow-2xl border-2 border-border w-full max-w-lg p-8 flex flex-col items-center gap-4">
                     <div className={`text-5xl ${errors.length === 0 ? 'text-green-500' : 'text-orange-500'}`}>
                         {errors.length === 0 ? '✅' : '⚠️'}
                     </div>
@@ -263,7 +263,7 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
 
     return (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl border-2 border-border w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="bg-white dark:bg-card rounded-2xl shadow-2xl border-2 border-border w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
 
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
@@ -527,7 +527,7 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
                 {/* Raw JSON Viewer Overlay */}
                 {showRawJson && (
                     <div className="absolute inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center p-8 animate-in fade-in duration-200" onClick={() => setShowRawJson(null)}>
-                        <div className="bg-white rounded-xl shadow-2xl border-2 border-border w-full max-w-2xl max-h-full flex flex-col" onClick={e => e.stopPropagation()}>
+                        <div className="bg-white dark:bg-card rounded-xl shadow-2xl border-2 border-border w-full max-w-2xl max-h-full flex flex-col" onClick={e => e.stopPropagation()}>
                             <div className="px-6 py-4 border-b border-border bg-muted/30 flex items-center justify-between">
                                 <h3 className="font-black text-foreground">IFC Raw Psets (JSON)</h3>
                                 <Button variant="ghost" size="icon" onClick={() => setShowRawJson(null)}>

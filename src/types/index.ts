@@ -273,6 +273,13 @@ export interface MaterialBestellung {
 // WERTLISTEN (WL)
 // ============================================================
 
+export interface KontaktPerson {
+  name: string;
+  funktion?: string;
+  telefon?: string;
+  email?: string;
+}
+
 export interface Lieferant {
   id: string;
   name: string;
@@ -281,6 +288,8 @@ export interface Lieferant {
   telefon: string;
   adresse?: string;
   notizen?: string;
+  kategorie?: 'Bauherr' | 'Ämter' | 'Unternehmer' | 'Mieter';
+  ansprechpartner?: KontaktPerson[];
 }
 
 export interface WlBeschichter {

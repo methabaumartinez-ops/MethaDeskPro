@@ -169,9 +169,9 @@ export default function AnalysePage() {
     });
 
     const kpis = [
-        { title: 'Ist-Kosten (Tot.)', value: formatCHF(actualCost), icon: DollarSign, color: 'text-violet-600' },
-        { title: 'Total Stunden', value: `${totalHours.toFixed(2)} h`, icon: Clock, color: 'text-blue-600' },
-        { title: 'TS Anzahl', value: subsystems.length, icon: LayoutDashboard, color: 'text-indigo-600' }
+        { title: 'Kosten total', value: formatCHF(actualCost), icon: DollarSign, color: 'text-violet-600', span: 'lg:col-span-4' },
+        { title: 'Kosten Material', value: formatCHF(totalMaterial), icon: Package, color: 'text-amber-600', span: 'lg:col-span-3' },
+        { title: 'Kosten Stunden', value: formatCHF(totalLabor), icon: Clock, color: 'text-blue-600', span: 'lg:col-span-3', subValue: `${totalHours.toFixed(2)} h total` }
     ];
 
     const chartMonths = ['Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug'];
@@ -216,17 +216,29 @@ export default function AnalysePage() {
                 </div>
 
                 {/* KPI Section */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 items-stretch">
                     {kpis.map((kpi, i) => (
-                        <Card key={i} className="border-none shadow-sm bg-white overflow-hidden group hover:shadow-md transition-all rounded-[2rem]">
-                            <CardContent className="p-6">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className={cn("p-3 rounded-2xl bg-slate-50 group-hover:bg-white transition-colors group-hover:shadow-inner", kpi.color)}>
-                                        <kpi.icon size={24} strokeWidth={2.5} />
+                        <Card key={i} className={cn(
+                            "border-none shadow-sm bg-white overflow-hidden group hover:shadow-md transition-all rounded-[2rem] flex flex-col h-full",
+                            kpi.span
+                        )}>
+                            <CardContent className="p-6 flex flex-col justify-between h-full">
+                                <div>
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className={cn("p-3 rounded-2xl bg-slate-50 group-hover:bg-white transition-colors group-hover:shadow-inner", kpi.color)}>
+                                            <kpi.icon size={24} strokeWidth={2.5} />
+                                        </div>
                                     </div>
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{kpi.title}</p>
                                 </div>
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{kpi.title}</p>
-                                <h3 className="text-3xl font-black text-slate-800 tracking-tighter">{kpi.value}</h3>
+                                <div className="mt-auto">
+                                    <h3 className="text-3xl font-black text-slate-800 tracking-tighter">{kpi.value}</h3>
+                                    {kpi.subValue && (
+                                        <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mt-1">
+                                            {kpi.subValue}
+                                        </p>
+                                    )}
+                                </div>
                             </CardContent>
                         </Card>
                     ))}
@@ -256,89 +268,85 @@ export default function AnalysePage() {
                                             <td className="px-8 py-4 font-black text-slate-800 text-sm text-right">{formatCHF(data.actual)}</td>
                                         </tr>
                                     ))}
-                                    <tr className="bg-slate-900 text-white">
-                                        <td className="px-8 py-5 font-black text-sm uppercase tracking-widest">Gesamt Ist-Kosten</td>
-                                        <td className="px-8 py-5 font-black text-lg tracking-tighter text-right">{formatCHF(actualCost)}</td>
-                                    </tr>
                                 </tbody>
                             </table>
                         </CardContent>
                     </Card>
 
-                    {/* Chart Months for flow */}
-                    <Card className="border-none shadow-sm bg-white rounded-[2rem]">
-                        <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-slate-50 bg-slate-50/30 px-8 py-6">
+                    {/* Teilsystem Details */}
+                    <Card className="border-none shadow-sm bg-white rounded-[2rem] overflow-hidden">
+                        <CardHeader className="border-b border-slate-50 bg-slate-50/30 px-8 py-6">
                             <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                                <TrendingUp size={16} className="text-violet-500" />
-                                Monatlicher Kostenverlauf
+                                <LayoutDashboard size={16} className="text-orange-500" />
+                                Analyse pro Teilsystem
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="pt-8">
-                            <div className="flex items-end justify-between h-48 gap-2 px-4">
-                                {chartMonths.map((m, i) => {
-                                    const val = monthlyData[m] || 0;
-                                    const maxVal = Math.max(...Object.values(monthlyData), actualCost / 6, 1);
-                                    const h = (val / maxVal) * 100;
-                                    return (
-                                        <div key={i} className="flex flex-col items-center gap-2 flex-1 group/bar">
-                                            <div className="w-full relative flex flex-col justify-end h-full">
-                                                <div
-                                                    className="w-full bg-violet-600 rounded-t-lg transition-all duration-1000 group-hover/bar:bg-violet-500 cursor-help"
-                                                    style={{ height: `${Math.max(h, 5)}%` }}
-                                                >
-                                                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[9px] font-black text-slate-700 opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap">
-                                                        {formatCHF(val)}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <span className="text-[10px] font-bold text-slate-400">{m}</span>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                        <CardContent className="p-0 overflow-x-auto">
+                            <table className="w-full text-left font-sans">
+                                <thead>
+                                    <tr className="border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                        <th className="px-8 py-4">TS-Nummer</th>
+                                        <th className="px-4 py-4">Bezeichnung</th>
+                                        <th className="px-4 py-4">Abteilung</th>
+                                        <th className="px-4 py-4 text-right">Stunden</th>
+                                        <th className="px-8 py-4 text-right">Ist-Kosten</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-50">
+                                    {tsData.map((ts, i) => (
+                                        <tr key={i} className="hover:bg-slate-50/50 transition-colors group text-[10px]">
+                                            <td className="px-8 py-4 font-black text-primary">{ts.nr || '—'}</td>
+                                            <td className="px-4 py-4 font-bold text-slate-700">{ts.name}</td>
+                                            <td className="px-4 py-4">
+                                                {ts.abteilung ? (
+                                                    <Badge variant={(ABTEILUNGEN_CONFIG.find(a => a.name === ts.abteilung)?.color as any) || 'info'} className="text-[8px] font-black uppercase px-2 py-0.5 rounded-md">
+                                                        {ts.abteilung}
+                                                    </Badge>
+                                                ) : (
+                                                    <span className="text-[8px] text-slate-300 italic font-medium">n/a</span>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-4 font-bold text-slate-600 text-right">{ts.hours.toFixed(2)} h</td>
+                                            <td className="px-8 py-4 font-black text-slate-800 text-right">{formatCHF(ts.cost)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* Teilsystem Details */}
-                <Card className="border-none shadow-sm bg-white rounded-[2rem] overflow-hidden">
-                    <CardHeader className="border-b border-slate-50 bg-slate-50/30 px-8 py-6">
+                {/* Chart Months for flow */}
+                <Card className="border-none shadow-sm bg-white rounded-[2rem]">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-slate-50 bg-slate-50/30 px-8 py-6">
                         <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                            <LayoutDashboard size={16} className="text-orange-500" />
-                            Analyse pro Teilsystem
+                            <TrendingUp size={16} className="text-violet-500" />
+                            Monatlicher Kostenverlauf
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-0">
-                        <table className="w-full text-left font-sans">
-                            <thead>
-                                <tr className="border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                    <th className="px-8 py-4">TS-Nummer</th>
-                                    <th className="px-4 py-4">Bezeichnung</th>
-                                    <th className="px-4 py-4">Abteilung</th>
-                                    <th className="px-4 py-4 text-right">Stunden</th>
-                                    <th className="px-8 py-4 text-right">Ist-Kosten</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-50">
-                                {tsData.map((ts, i) => (
-                                    <tr key={i} className="hover:bg-slate-50/50 transition-colors group">
-                                        <td className="px-8 py-4 font-black text-primary text-xs">{ts.nr || '—'}</td>
-                                        <td className="px-4 py-4 font-bold text-slate-700 text-xs">{ts.name}</td>
-                                        <td className="px-4 py-4">
-                                            {ts.abteilung ? (
-                                                <Badge variant={(ABTEILUNGEN_CONFIG.find(a => a.name === ts.abteilung)?.color as any) || 'info'} className="text-[9px] font-black uppercase px-2 py-0.5 rounded-md">
-                                                    {ts.abteilung}
-                                                </Badge>
-                                            ) : (
-                                                <span className="text-[9px] text-slate-300 italic font-medium">n/a</span>
-                                            )}
-                                        </td>
-                                        <td className="px-4 py-4 font-bold text-slate-600 text-xs text-right">{ts.hours.toFixed(2)} h</td>
-                                        <td className="px-8 py-4 font-black text-slate-800 text-xs text-right">{formatCHF(ts.cost)}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                    <CardContent className="pt-8">
+                        <div className="flex items-end justify-between h-48 gap-2 px-4">
+                            {chartMonths.map((m, i) => {
+                                const val = monthlyData[m] || 0;
+                                const maxVal = Math.max(...Object.values(monthlyData), actualCost / 6, 1);
+                                const h = (val / maxVal) * 100;
+                                return (
+                                    <div key={i} className="flex flex-col items-center gap-2 flex-1 group/bar">
+                                        <div className="w-full relative flex flex-col justify-end h-full">
+                                            <div
+                                                className="w-full bg-violet-600 rounded-t-lg transition-all duration-1000 group-hover/bar:bg-violet-500 cursor-help"
+                                                style={{ height: `${Math.max(h, 5)}%` }}
+                                            >
+                                                <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[9px] font-black text-slate-700 opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap">
+                                                    {formatCHF(val)}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <span className="text-[10px] font-bold text-slate-400">{m}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </CardContent>
                 </Card>
             </div>

@@ -220,6 +220,31 @@ export async function ensureUsersCollection(): Promise<void> {
             });
             console.log('Created users collection in Qdrant');
         }
+
+        // Seed default admin user if missing
+        try {
+            const adminUsers = await DatabaseService.list(COLLECTION, {
+                must: [{ key: 'email', match: { value: 'admin@methabau.ch' } }]
+            });
+
+            if (adminUsers.length === 0) {
+                const adminPasswordHash = await hashPassword('admin123');
+                const adminUser: StoredUser = {
+                    id: uuidv4(),
+                    vorname: 'Admin',
+                    nachname: 'Methabau',
+                    email: 'admin@methabau.ch',
+                    passwordHash: adminPasswordHash,
+                    role: 'admin',
+                    createdAt: new Date().toISOString(),
+                    confirmed: true,
+                };
+                await DatabaseService.upsert(COLLECTION, adminUser);
+                console.log('Created default admin user: admin@methabau.ch / admin123');
+            }
+        } catch (seedErr) {
+            console.error('Error seeding admin user:', seedErr);
+        }
     } catch (error) {
         console.error('Error ensuring users collection:', error);
     }
@@ -229,11 +254,12 @@ export async function login(emailStr: string, passwordStr: string): Promise<{ to
     const email = emailStr.trim();
     const password = passwordStr.trim();
     try {
+        await ensureUsersCollection();
         const users = await DatabaseService.list<StoredUser>(COLLECTION, {
             must: [{ key: 'email', match: { value: email } }]
         });
 
-        if (users.length === 0) return { error: 'Ungültige Anmeldedaten.' };
+        if (users.length === 0) return { error: 'Ungültige Anmeldedaten. (Hinweis: admin@methabau.ch / admin123)' };
         const user = users[0];
 
         const valid = await verifyPassword(password, user.passwordHash);

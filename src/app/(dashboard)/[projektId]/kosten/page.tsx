@@ -212,13 +212,13 @@ export default function KostenPage() {
             {/* Totals overview */}
             {selectedTs && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    <Card className="border-2 border-border shadow-sm">
+                    <Card className="border-2 border-border shadow-sm dark:bg-card">
                         <CardContent className="p-4">
                             <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider mb-1">Stunden Total</p>
                             <p className="text-2xl font-black text-foreground">{totalStunden.toFixed(1)} <span className="text-sm font-bold text-muted-foreground">h</span></p>
                         </CardContent>
                     </Card>
-                    <Card className="border-2 border-border shadow-sm">
+                    <Card className="border-2 border-border shadow-sm dark:bg-card">
                         <CardContent className="p-4">
                             <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider mb-1">Material Total</p>
                             <p className="text-2xl font-black text-foreground">
@@ -226,7 +226,7 @@ export default function KostenPage() {
                             </p>
                         </CardContent>
                     </Card>
-                    <Card className="border-2 border-border shadow-sm sm:col-span-1 col-span-2">
+                    <Card className="border-2 border-border shadow-sm sm:col-span-1 col-span-2 dark:bg-card">
                         <CardContent className="p-4">
                             <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider mb-1">Teilsystem</p>
                             <p className="text-base font-black text-foreground truncate">{cstsName || '—'}</p>
@@ -261,7 +261,7 @@ export default function KostenPage() {
 
                     {/* STUNDEN Tab */}
                     {activeTab === 'stunden' && (
-                        <Card className="border-2 border-border shadow-sm">
+                        <Card className="border-2 border-border shadow-sm dark:bg-card">
                             <CardHeader className="border-b bg-muted/30 py-3 px-6 flex flex-row items-center justify-between">
                                 <CardTitle className="text-base font-black flex items-center gap-2">
                                     <Clock className="h-4 w-4 text-primary" />
@@ -343,7 +343,7 @@ export default function KostenPage() {
 
                     {/* MATERIAL Tab */}
                     {activeTab === 'material' && (
-                        <Card className="border-2 border-border shadow-sm">
+                        <Card className="border-2 border-border shadow-sm dark:bg-card">
                             <CardHeader className="border-b bg-muted/30 py-3 px-6 flex flex-row items-center justify-between">
                                 <CardTitle className="text-base font-black flex items-center gap-2">
                                     <Package2 className="h-4 w-4 text-primary" />
@@ -428,7 +428,7 @@ export default function KostenPage() {
 
             {/* Empty state if no TS selected */}
             {!selectedTs && !loading && (
-                <Card className="border-2 border-dashed border-border">
+                <Card className="border-2 border-dashed border-border dark:bg-card">
                     <CardContent className="py-20 flex flex-col items-center gap-4 text-center">
                         <div className="p-4 rounded-full bg-muted">
                             <DollarSign className="h-10 w-10 text-muted-foreground/50" />

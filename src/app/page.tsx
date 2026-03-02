@@ -9,7 +9,7 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <header className="px-6 py-6 flex justify-between items-center border-b border-slate-100">
+      <header className="px-6 py-6 flex justify-between items-center border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white font-black text-xl">
             M
@@ -42,27 +42,27 @@ export default function LandingPage() {
         {/* Features Matrix - Very Compact */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
           {[
-            { title: 'Projektmanagement', desc: 'Zentrale Steuerung aller Bauvorhaben und Datenexport.', icon: CheckCircle2, color: 'text-blue-600', bg: 'bg-blue-50' },
-            { title: 'Systeme & Teile', desc: 'Detaillierte Übersicht der Teilsysteme und des Baustatus.', icon: Zap, color: 'text-orange-600', bg: 'bg-orange-50' },
-            { title: 'Flottensteuerung', desc: 'Reservierung und Verwaltung von Maschinen und Fahrzeugen.', icon: Zap, color: 'text-green-600', bg: 'bg-green-50' },
-            { title: 'Planung', desc: 'Überwachung von Terminen, Plänen und Lieferfristen.', icon: ShieldCheck, color: 'text-purple-600', bg: 'bg-purple-50' },
-            { title: 'Baustellenpersonal', desc: 'Kontaktverzeichnis und Rollenverwaltung des Teams.', icon: CheckCircle2, color: 'text-cyan-600', bg: 'bg-cyan-50' },
-            { title: 'KI-Assistent', desc: 'Intelligente Abfragen Ihrer Projektdaten in Echtzeit.', icon: Zap, color: 'text-yellow-600', bg: 'bg-yellow-50' },
-            { title: 'BIM 3D Viewer', desc: 'Visualisierung von IFC-Modellen direkt im Browser.', icon: ShieldCheck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-            { title: 'Sicherheit & Rollen', desc: 'Rollenbasierter Zugriff und höchster Datenschutz.', icon: ShieldCheck, color: 'text-red-600', bg: 'bg-red-50' },
+            { title: 'Projektmanagement', desc: 'Zentrale Steuerung aller Bauvorhaben und Datenexport.', icon: CheckCircle2 },
+            { title: 'Systeme & Teile', desc: 'Detaillierte Übersicht der Teilsysteme und des Baustatus.', icon: Zap },
+            { title: 'Flottensteuerung', desc: 'Reservierung und Verwaltung von Maschinen und Fahrzeugen.', icon: Zap },
+            { title: 'Planung', desc: 'Überwachung von Terminen, Plänen und Lieferfristen.', icon: ShieldCheck },
+            { title: 'Baustellenpersonal', desc: 'Kontaktverzeichnis und Rollenverwaltung des Teams.', icon: CheckCircle2 },
+            { title: 'KI-Assistent', desc: 'Intelligente Abfragen Ihrer Projektdaten in Echtzeit.', icon: Zap },
+            { title: 'BIM 3D Viewer', desc: 'Visualisierung von IFC-Modellen direkt im Browser.', icon: ShieldCheck },
+            { title: 'Sicherheit & Rollen', desc: 'Rollenbasierter Zugriff und höchster Datenschutz.', icon: ShieldCheck },
           ].map((feature, i) => (
-            <div key={i} className={cn("p-3 rounded-xl border border-slate-100 flex flex-col items-center text-center transition-all hover:shadow-md", feature.bg)}>
-              <div className="h-8 w-8 rounded-lg bg-white shadow-sm flex items-center justify-center mb-2">
-                <feature.icon className={cn("h-4 w-4", feature.color)} />
+            <div key={i} className="p-3 bg-white dark:bg-card rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col items-center text-center transition-all hover:border-primary hover:shadow-md group">
+              <div className="h-8 w-8 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex items-center justify-center mb-2 group-hover:bg-primary/10 transition-colors">
+                <feature.icon className="h-4 w-4 text-slate-500 group-hover:text-primary transition-colors" />
               </div>
-              <h3 className="text-sm font-bold text-slate-800 leading-tight">{feature.title}</h3>
-              <p className="text-[10px] text-slate-500 mt-1 leading-tight font-medium">{feature.desc}</p>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 leading-tight group-hover:text-primary transition-colors">{feature.title}</h3>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 leading-tight font-medium">{feature.desc}</p>
             </div>
           ))}
         </div>
       </main>
 
-      <footer className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-slate-100 py-3 flex flex-row items-center justify-between px-8 z-[60]">
+      <footer className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-t border-slate-100 dark:border-slate-800 py-3 flex flex-row items-center justify-between px-8 z-[60]">
         <Signature />
         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider opacity-60">
           © {new Date().getFullYear()} METHABAU AG. v1.3

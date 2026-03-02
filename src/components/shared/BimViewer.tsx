@@ -271,13 +271,13 @@ export function BimViewer({ modelName = 'IFC Modell', modelUrl }: { modelName?: 
                         <Video className="h-4 w-4" />
                     </Button>
                     <Button variant="secondary" size="icon"
-                        className="h-8 w-8 bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        className="h-8 w-8 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                         onClick={centerModel}
                         title="Modell zentrieren">
                         <Focus className="h-4 w-4" />
                     </Button>
 
-                    <div className="w-8 h-[1px] bg-slate-200 my-0.5" />
+                    <div className="w-8 h-[1px] bg-slate-200 dark:bg-slate-800 my-0.5" />
 
                     <Button variant="secondary" size="icon"
                         className={`h-8 w-8 ${isMeasuring ? 'bg-orange-500 text-white shadow-md shadow-orange-500/30' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
@@ -293,8 +293,8 @@ export function BimViewer({ modelName = 'IFC Modell', modelUrl }: { modelName?: 
                     </Button>
 
                     {measurementDistance !== null && (
-                        <div className="bg-white px-3 py-2 rounded-lg shadow-lg border-2 border-orange-500 flex flex-col items-center gap-1 animate-in slide-in-from-left-4 fade-in">
-                            <span className="text-[10px] uppercase font-bold text-slate-400">Distanz</span>
+                        <div className="bg-white dark:bg-card px-3 py-2 rounded-lg shadow-lg border-2 border-orange-500 flex flex-col items-center gap-1 animate-in slide-in-from-left-4 fade-in">
+                            <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-400">Distanz</span>
                             <span className="font-mono font-black text-orange-600">
                                 {measurementDistance < 1 ? (measurementDistance * 1000).toFixed(0) + ' mm' : measurementDistance.toFixed(3) + ' m'}
                             </span>
@@ -314,7 +314,7 @@ export function BimViewer({ modelName = 'IFC Modell', modelUrl }: { modelName?: 
                     </Button>
                     {modelUrl && (
                         <Button variant="secondary" size="icon"
-                            className="h-8 w-8 bg-slate-100 text-blue-600 hover:bg-blue-50 border border-blue-200"
+                            className="h-8 w-8 bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700 border border-blue-200 dark:border-slate-700"
                             onClick={() => window.open(modelUrl, '_blank')}
                             title="In Google Drive öffnen">
                             <ExternalLink className="h-4 w-4" />
@@ -322,14 +322,14 @@ export function BimViewer({ modelName = 'IFC Modell', modelUrl }: { modelName?: 
                     )}
                 </div>
 
-                <CardContent className="h-full p-0 relative bg-slate-50/50">
+                <CardContent className="h-full p-0 relative bg-slate-50/50 dark:bg-card">
                     {modelUrl ? (
                         <>
                             <div ref={mountRef} className="w-full h-full" />
 
                             {/* Loading overlay */}
                             {loadingStatus && !error && (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/95 z-10">
+                                <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/95 dark:bg-slate-950/95 z-10">
                                     <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
                                     <h3 className="text-sm font-black text-slate-800 mb-1">IFC Modell wird geladen</h3>
                                     <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{loadingStatus}</p>
@@ -338,7 +338,7 @@ export function BimViewer({ modelName = 'IFC Modell', modelUrl }: { modelName?: 
 
                             {/* Error overlay */}
                             {error && (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/95 z-10 px-8">
+                                <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/95 dark:bg-slate-950/95 z-10 px-8">
                                     <div className="bg-red-50 border border-red-200 rounded-xl p-4 max-w-sm text-center">
                                         <p className="text-sm font-bold text-red-700 mb-2">Fehler beim Laden</p>
                                         <p className="text-xs text-red-600">{error}</p>
@@ -369,7 +369,7 @@ export function BimViewer({ modelName = 'IFC Modell', modelUrl }: { modelName?: 
                 </CardContent>
 
                 {/* Footer */}
-                <div className="absolute bottom-0 inset-x-0 p-3 bg-slate-50/90 backdrop-blur-sm border-t border-border flex justify-between items-center text-[10px] text-slate-500 z-10">
+                <div className="absolute bottom-0 inset-x-0 p-3 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm border-t border-border flex justify-between items-center text-[10px] text-slate-500 dark:text-slate-400 z-10">
                     <div className="flex items-center gap-4">
                         <span>Vers. 2.4.1</span>
                         <span>LOD 300</span>

@@ -88,22 +88,27 @@ export default function LoginPage() {
                             {...register('email')}
                             error={errors.email?.message}
                         />
-                        <div className="relative">
-                            <Input
-                                label="Passwort"
-                                type={showPassword ? 'text' : 'password'}
-                                placeholder="••••••••"
-                                {...register('password')}
-                                error={errors.password?.message}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-[34px] text-slate-400 hover:text-primary transition-colors focus:outline-none"
-                            >
-                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                            </button>
-                        </div>
+                        <Input
+                            label="Passwort"
+                            type={showPassword ? 'text' : 'password'}
+                            placeholder="••••••••"
+                            {...register('password')}
+                            error={errors.password?.message}
+                            endAdornment={
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setShowPassword(!showPassword);
+                                    }}
+                                    className="text-slate-400 hover:text-primary transition-colors focus:outline-none flex items-center justify-center w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"
+                                    aria-label={showPassword ? "Passwort verbergen" : "Passwort anzeigen"}
+                                >
+                                    {showPassword ? <EyeOff className="h-4 w-4 md:h-5 md:w-5" /> : <Eye className="h-4 w-4 md:h-5 md:w-5" />}
+                                </button>
+                            }
+                        />
                         <Button type="submit" className="w-full h-12 text-base font-bold" disabled={isSubmitting}>
                             {isSubmitting ? 'Wird angemeldet...' : (
                                 <span className="flex items-center gap-2">

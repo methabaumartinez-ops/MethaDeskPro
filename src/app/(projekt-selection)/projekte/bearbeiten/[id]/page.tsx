@@ -12,7 +12,7 @@ import { ProjectService } from '@/lib/services/projectService';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { EmployeeService } from '@/lib/services/employeeService';
 import { useProjekt } from '@/lib/context/ProjektContext';
-import { ArrowLeft, Save, Building2, MapPin, User, Hash, Loader2, Plus, FileText } from 'lucide-react';
+import { ArrowLeft, Save, Building2, MapPin, User, Hash, Loader2, Plus, FileText, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
 const FormSelect = React.forwardRef<
@@ -103,6 +103,9 @@ export default function ProjektBearbeitenPage() {
     const [imageFile, setImageFile] = React.useState<File | null>(null);
     const [infoBlattFile, setInfoBlattFile] = React.useState<File | null>(null);
     const [imagePreview, setImagePreview] = React.useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = React.useState(false);
+    const [projektName, setProjektName] = React.useState<string>('');
+    const [projektNummer, setProjektNummer] = React.useState<string>('');
 
     const {
         register,
@@ -146,6 +149,8 @@ export default function ProjektBearbeitenPage() {
                     status: projekt.status,
                     imageUrl: projekt.imageUrl || '',
                 });
+                setProjektName(projekt.projektname);
+                setProjektNummer(projekt.projektnummer);
                 if (projekt.imageUrl) {
                     const previewSrc = projekt.imageUrl.includes('drive.google.com')
                         ? `/api/image-proxy?url=${encodeURIComponent(projekt.imageUrl)}`
@@ -220,6 +225,39 @@ export default function ProjektBearbeitenPage() {
         } catch (error: any) {
             console.error('Failed to update project:', error);
             window.alert(`Fehler: ${error.message}`);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!confirm(`Möchten Sie das Projekt "${projektName}" wirklich exportieren und löschen?\n\nAlle Projektdaten (Teilsysteme, Positionen etc.) werden als JSON exportiert und anschliessend aus der Datenbank entfernt.`)) return;
+
+        setIsDeleting(true);
+        try {
+            const res = await fetch(`/api/projekte/${id}/export-delete`, { method: 'POST' });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Export fehlgeschlagen');
+            }
+
+            // Download the exported JSON
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `projekt_${projektNummer || id}_export.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+
+            window.alert('Projekt erfolgreich exportiert und gelöscht');
+            router.push('/projekte');
+        } catch (error: any) {
+            console.error("Failed to export/delete project:", error);
+            alert(`Fehler beim Exportieren und Löschen: ${error instanceof Error ? error.message : String(error)}`);
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -423,23 +461,40 @@ export default function ProjektBearbeitenPage() {
                             />
                         </div>
                     </CardContent>
-                    <CardFooter className="bg-slate-50 border-t border-slate-100 p-8 flex justify-end gap-4">
-                        <Link href="/projekte">
-                            <Button type="button" variant="outline" className="font-bold h-12 px-8">Abbrechen</Button>
-                        </Link>
-                        <Button type="submit" className="font-bold h-12 px-10 shadow-lg shadow-primary/20" disabled={isSubmitting}>
-                            {isSubmitting ? (
-                                <span className="flex items-center gap-2">
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                    Wird gespeichert...
-                                </span>
+                    <CardFooter className="bg-slate-50 border-t border-slate-100 p-8 flex justify-between items-center gap-4">
+                        <Button
+                            type="button"
+                            variant="danger"
+                            className="font-bold h-12 px-8 flex items-center gap-2"
+                            onClick={handleDelete}
+                            disabled={isDeleting || isSubmitting}
+                        >
+                            {isDeleting ? (
+                                <Loader2 className="h-5 w-5 animate-spin" />
                             ) : (
-                                <span className="flex items-center gap-2">
-                                    <Save className="h-5 w-5" />
-                                    Änderungen speichern
-                                </span>
+                                <Trash2 className="h-5 w-5" />
                             )}
+                            <span>Projekt löschen</span>
                         </Button>
+
+                        <div className="flex gap-4">
+                            <Link href="/projekte">
+                                <Button type="button" variant="outline" className="font-bold h-12 px-8">Abbrechen</Button>
+                            </Link>
+                            <Button type="submit" className="font-bold h-12 px-10 shadow-lg shadow-primary/20" disabled={isSubmitting || isDeleting}>
+                                {isSubmitting ? (
+                                    <span className="flex items-center gap-2">
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        Wird gespeichert...
+                                    </span>
+                                ) : (
+                                    <span className="flex items-center gap-2">
+                                        <Save className="h-5 w-5" />
+                                        Änderungen speichern
+                                    </span>
+                                )}
+                            </Button>
+                        </div>
                     </CardFooter>
                 </Card>
             </form>

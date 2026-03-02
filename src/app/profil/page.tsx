@@ -134,10 +134,10 @@ export default function ProfilPage() {
 
                     {/* Info Cards */}
                     <div className="grid gap-4 sm:grid-cols-2 mb-6">
-                        <Card className="shadow-sm">
+                        <Card className="shadow-sm dark:bg-card">
                             <CardContent className="p-5">
                                 <div className="flex items-center gap-3">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 dark:bg-orange-950/50">
                                         <Mail className="h-5 w-5 text-primary" />
                                     </div>
                                     <div>
@@ -148,10 +148,10 @@ export default function ProfilPage() {
                             </CardContent>
                         </Card>
 
-                        <Card className="shadow-sm">
+                        <Card className="shadow-sm dark:bg-card">
                             <CardContent className="p-5">
                                 <div className="flex items-center gap-3">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/50">
                                         <Building2 className="h-5 w-5 text-blue-500" />
                                     </div>
                                     <div>
@@ -162,10 +162,10 @@ export default function ProfilPage() {
                             </CardContent>
                         </Card>
 
-                        <Card className="shadow-sm">
+                        <Card className="shadow-sm dark:bg-card">
                             <CardContent className="p-5">
                                 <div className="flex items-center gap-3">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 dark:bg-purple-950/50">
                                         <Shield className="h-5 w-5 text-purple-500" />
                                     </div>
                                     <div>
@@ -176,10 +176,10 @@ export default function ProfilPage() {
                             </CardContent>
                         </Card>
 
-                        <Card className="shadow-sm">
+                        <Card className="shadow-sm dark:bg-card">
                             <CardContent className="p-5">
                                 <div className="flex items-center gap-3">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-50">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 dark:bg-green-950/50">
                                         <User className="h-5 w-5 text-green-500" />
                                     </div>
                                     <div>
@@ -203,9 +203,9 @@ export default function ProfilPage() {
                     )}
 
                     {/* Password Change Section */}
-                    <Card className="shadow-sm">
+                    <Card className="shadow-sm dark:bg-card">
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-base flex items-center gap-2">
+                            <CardTitle className="text-base flex items-center gap-2 text-foreground">
                                 <KeyRound className="h-5 w-5 text-slate-400" />
                                 Passwort ändern
                             </CardTitle>

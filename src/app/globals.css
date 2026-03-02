@@ -75,26 +75,39 @@
 }
 
 .dark {
-  --background: #09090b;
+  --background: #020617;
+  /* slate-950 */
   --foreground: #fafafa;
-  --card: #0f172a; /* Slate 900 for better contrast */
+  --card: #0f172a;
+  /* slate-900 */
   --card-foreground: #f8fafc;
-  --popover: #09090b;
+  /* slate-100 */
+  --popover: #020617;
+  /* slate-950 */
   --popover-foreground: #fafafa;
   --primary: #ff6b35;
+  /* Primary brand orange */
   --primary-foreground: #ffffff;
-  --secondary: #27272a;
+  --secondary: #1e293b;
+  /* slate-800 */
   --secondary-foreground: #fafafa;
-  --muted: #18181b;
-  --muted-foreground: #a1a1aa;
-  --accent: #18181b;
+  --muted: #0f172a;
+  /* slate-900 */
+  --muted-foreground: #94a3b8;
+  /* slate-400 */
+  --accent: #1e293b;
+  /* slate-800 */
   --accent-foreground: #fafafa;
   --destructive: #7f1d1d;
+  /* red-900 */
   --destructive-foreground: #fafafa;
-  --border: #27272a;
-  --input: #27272a;
+  --border: #ff6b3533;
+  /* 20% opacity orange */
+  --input: #1e293b;
+  /* slate-800 */
   --ring: #ff6b35;
-  --sidebar: #09090b;
+  --sidebar: #020617;
+  /* slate-950 */
 }
 
 @layer base {
@@ -137,4 +150,19 @@ html:not(.dark) {
 
 html.dark {
   color-scheme: dark;
+}
+
+/* Hide native calendar icon in date inputs to avoid duplicates with Lucide icons */
+/* And make the indicator fill the entire input so clicking anywhere opens the picker */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  background: transparent;
+  bottom: 0;
+  color: transparent;
+  cursor: pointer;
+  height: auto;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: auto;
 }

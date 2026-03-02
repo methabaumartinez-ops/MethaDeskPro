@@ -161,7 +161,7 @@ export default function UnterpositionDetailPage() {
 
             {/* TOP ROW: Details & Info, Bemerkung */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 items-stretch">
-                <Card className="shadow-sm border-2 border-border overflow-hidden bg-white">
+                <Card className="shadow-sm border-2 border-border overflow-hidden bg-white dark:bg-card">
                     <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
                         <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                             <FileSpreadsheet className="h-3.5 w-3.5" />
@@ -188,8 +188,8 @@ export default function UnterpositionDetailPage() {
                     </CardContent>
                 </Card>
 
-                <Card className="shadow-sm border-2 border-primary/20 bg-orange-50/10 overflow-hidden flex flex-col">
-                    <CardHeader className="py-2.5 px-4 bg-primary/5 border-b border-primary/10">
+                <Card className="shadow-sm border-2 border-primary/20 bg-orange-50/10 dark:bg-slate-900/50 overflow-hidden flex flex-col">
+                    <CardHeader className="py-2.5 px-4 bg-primary/5 dark:bg-primary/10 border-b border-primary/10">
                         <CardTitle className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
                             <ListTodo className="h-3 w-3" />
                             Beschreibung
@@ -206,7 +206,7 @@ export default function UnterpositionDetailPage() {
             {/* MAIN CONTENT AREA */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                 <div className="lg:col-span-5 flex flex-col gap-6">
-                    <Card className="shadow-sm border-2 border-border overflow-hidden bg-white h-full flex flex-col">
+                    <Card className="shadow-sm border-2 border-border overflow-hidden bg-white dark:bg-card h-full flex flex-col">
                         <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
                             <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                                 <Badge variant="outline" className="text-[9px] h-4 border-orange-200 bg-orange-50 text-orange-700">IFC Extrakt</Badge>

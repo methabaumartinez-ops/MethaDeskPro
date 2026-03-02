@@ -288,7 +288,7 @@ export default function FahrzeugDetailPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-auto lg:h-[700px]">
                 {/* Left: Detail / Edit Card */}
                 <Card className="flex flex-col h-full overflow-hidden shadow-xl border-none">
-                    <CardHeader className="py-4 border-b bg-muted/30">
+                    <CardHeader className="py-4 border-b dark:border-slate-800 bg-muted/30">
                         <CardTitle className="flex items-center gap-2 text-lg">
                             <Car className="h-5 w-5 text-primary" />
                             {editing ? 'Maschine bearbeiten' : 'Stammdaten komplett'}
@@ -387,7 +387,7 @@ export default function FahrzeugDetailPage() {
                                         ['Bemerkung', fahrzeug.bemerkung],
                                         ['Status', STATUS_CONFIG[fahrzeug.status]?.label || fahrzeug.status]
                                     ].map(([label, value], i) => (
-                                        <TableRow key={i} className={i % 2 === 0 ? 'bg-muted/20' : ''}>
+                                        <TableRow key={i} className={i % 2 === 0 ? 'bg-muted/20 dark:bg-muted/10' : ''}>
                                             <TableCell className="font-medium text-muted-foreground w-1/3 py-3 pl-6">{label}</TableCell>
                                             <TableCell className="font-bold text-foreground py-3 pr-6">{value || '–'}</TableCell>
                                         </TableRow>

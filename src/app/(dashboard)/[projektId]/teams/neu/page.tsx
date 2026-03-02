@@ -157,8 +157,8 @@ export default function TeamCreatePage() {
                     </CardContent>
                 </Card>
 
-                <Card className="md:col-span-2 shadow-sm border-2 border-border overflow-hidden flex flex-col bg-white">
-                    <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0 flex flex-row justify-between items-center">
+                <Card className="md:col-span-2 shadow-sm border-2 border-border overflow-hidden flex flex-col bg-white dark:bg-card">
+                    <CardHeader className="bg-muted/30 border-b pb-4 border-border shrink-0 flex flex-row justify-between items-center">
                         <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Mitglieder & Stundensatz ({selectedMembers.length})</h3>
                     </CardHeader>
                     <CardContent className="p-0 flex-1 overflow-y-auto">
@@ -223,7 +223,7 @@ export default function TeamCreatePage() {
                             })}
                         </div>
                     </CardContent>
-                    <div className="p-4 border-t border-slate-100 bg-white flex justify-end">
+                    <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-card flex justify-end">
                         <Button
                             className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-200 rounded-full px-8 h-11 font-black uppercase text-xs tracking-widest gap-2 flex items-center transition-all hover:scale-105 active:scale-95"
                             onClick={handleSave}

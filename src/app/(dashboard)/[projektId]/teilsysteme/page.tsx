@@ -94,7 +94,7 @@ export default function TeilsystemeListPage() {
                         <Link href={`/${projektId}/teilsysteme/erfassen`}>
                             <Button className="font-black text-xs uppercase bg-orange-600 hover:bg-orange-700 text-white h-11 shadow-lg shadow-orange-200 rounded-full px-8 flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
                                 <Plus className="h-5 w-5" />
-                                <span>Neu Erfassen</span>
+                                <span>Neu TS erfassen</span>
                             </Button>
                         </Link>
                     </div>

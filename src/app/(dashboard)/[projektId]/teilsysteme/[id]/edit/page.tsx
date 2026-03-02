@@ -17,7 +17,7 @@ import { LagerortService } from '@/lib/services/lagerortService';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { LagerortSelect } from '@/components/shared/LagerortSelect';
 import { Teilsystem, ABTEILUNGEN_CONFIG, Lieferant, Lagerort } from '@/types';
-import { ArrowLeft, Save, Calendar as CalendarIcon, UploadCloud, FileType, Truck, X, Search, Plus } from 'lucide-react';
+import { ArrowLeft, Save, Calendar as CalendarIcon, UploadCloud, FileType, Truck, X, Search, Plus, Paperclip, FileText, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { ProjectService } from '@/lib/services/projectService';
@@ -47,22 +47,16 @@ const teilsystemSchema = z.object({
 
 type TeilsystemValues = z.infer<typeof teilsystemSchema>;
 
-// Date input component with calendar icon
 const DateInput = React.forwardRef<HTMLInputElement, { label: string; error?: string; value?: string; onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void } & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'>>(
     ({ label, error, className, ...props }, ref) => (
-        <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-foreground ml-1">{label}</label>
-            <div className="relative">
-                <input
-                    ref={ref}
-                    type="date"
-                    className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 pr-10 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-accent"
-                    {...props}
-                />
-                <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60 pointer-events-none" />
-            </div>
-            {error && <p className="text-xs font-medium text-red-500 ml-1">{error}</p>}
-        </div>
+        <Input
+            ref={ref}
+            type="date"
+            label={label}
+            error={error}
+            className={className}
+            {...props}
+        />
     )
 );
 DateInput.displayName = "DateInput";
@@ -106,6 +100,20 @@ export default function TeilsystemEditPage() {
     const [isLieferantenOpen, setIsLieferantenOpen] = useState(false);
     const [loadingSubunternehmer, setLoadingSubunternehmer] = useState(true);
     const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
+
+    const [docDragActive, setDocDragActive] = useState(false);
+    const [dokumenteFiles, setDokumenteFiles] = useState<any[]>([]);
+    const [uploadingDocs, setUploadingDocs] = useState(false);
+    const docInputRef = React.useRef<HTMLInputElement>(null);
+
+    const loadDokumente = async () => {
+        try {
+            const res = await fetch(`/api/dokumente?entityId=${id}&entityType=teilsystem`);
+            if (res.ok) setDokumenteFiles(await res.json());
+        } catch (e) {
+            console.error('Failed to load docs:', e);
+        }
+    };
 
     const {
         register,
@@ -151,7 +159,8 @@ export default function TeilsystemEditPage() {
             }
         };
         loadLieferanten();
-    }, []);
+        loadDokumente();
+    }, [id]);
 
     useEffect(() => {
         const loadItem = async () => {
@@ -166,7 +175,7 @@ export default function TeilsystemEditPage() {
                     setValue('eroeffnetAm', germanDateToISO(item.eroeffnetAm));
                     setValue('eroeffnetDurch', item.eroeffnetDurch || '');
                     setValue('montagetermin', germanDateToISO(item.montagetermin));
-                    setValue('lieferfrist', item.lieferfrist || '');
+                    setValue('lieferfrist', germanDateToISO(item.lieferfrist));
                     setValue('abgabePlaner', germanDateToISO(item.abgabePlaner));
                     setValue('planStatus', item.planStatus || 'offen');
                     setValue('wemaLink', item.wemaLink || '');
@@ -226,6 +235,62 @@ export default function TeilsystemEditPage() {
         }
     };
 
+    const uploadDocs = async (files: File[]) => {
+        setUploadingDocs(true);
+        try {
+            for (const file of files) {
+                const url = await ProjectService.uploadImage(file, projektId, 'document');
+                let typ = 'Andere';
+                const ext = file.name.split('.').pop()?.toLowerCase();
+                if (ext === 'pdf') typ = 'PDF';
+                else if (['jpg', 'jpeg', 'png', 'heic'].includes(ext || '')) typ = 'Zeichnung';
+
+                await fetch('/api/dokumente', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: file.name,
+                        typ,
+                        url,
+                        entityId: id,
+                        entityType: 'teilsystem',
+                        projektId
+                    })
+                });
+            }
+            await loadDokumente();
+        } catch (e) {
+            console.error('Doc upload error:', e);
+        } finally {
+            setUploadingDocs(false);
+        }
+    };
+
+    const handleDocDrag = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === "dragenter" || e.type === "dragover") {
+            setDocDragActive(true);
+        } else if (e.type === "dragleave") {
+            setDocDragActive(false);
+        }
+    };
+
+    const handleDocDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDocDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            uploadDocs(Array.from(e.dataTransfer.files));
+        }
+    };
+
+    const handleDocFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            uploadDocs(Array.from(e.target.files));
+        }
+    };
+
     const onSubmit = async (data: TeilsystemValues) => {
         try {
             // Check for unique system number (excluding current id)
@@ -255,6 +320,7 @@ export default function TeilsystemEditPage() {
                 projektId, // Add project id to avoid disappearing from lists
                 eroeffnetAm: isoToGermanDate(data.eroeffnetAm),
                 montagetermin: isoToGermanDate(data.montagetermin),
+                lieferfrist: isoToGermanDate(data.lieferfrist),
                 abgabePlaner: isoToGermanDate(data.abgabePlaner),
                 abteilung: data.abteilung as any,
                 planStatus: data.planStatus as any,
@@ -327,6 +393,12 @@ export default function TeilsystemEditPage() {
 
     const currentAbteilung = watch('abteilung');
 
+    useEffect(() => {
+        if (currentAbteilung) {
+            setValue('ks', currentAbteilung === 'Bau' ? '1' : '2', { shouldValidate: true, shouldDirty: true });
+        }
+    }, [currentAbteilung, setValue]);
+
     return (
         <div className="w-full space-y-6 pb-8">
             <Link href={`/${projektId}/teilsysteme/${id}`} className="inline-flex items-center text-sm font-bold text-muted-foreground hover:text-primary transition-colors">
@@ -342,41 +414,57 @@ export default function TeilsystemEditPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
                     {/* Left Column: Form Data */}
                     <Card className="lg:col-span-3 shadow-xl border-none">
-                        <CardHeader className="bg-muted/30 border-b">
-                            <CardTitle className="text-lg">Teilsystem-Informationen</CardTitle>
+                        <CardHeader className="bg-muted/30 border-b py-3">
+                            <CardTitle className="text-base">Teilsystem-Informationen</CardTitle>
                         </CardHeader>
-                        <CardContent className="p-6 space-y-6">
-                            {/* First Row: System-Nr, KS */}
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <CardContent className="p-4 space-y-4">
+                            {/* Row 1 */}
+                            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
                                 <Input
-                                    label="System-Nummer"
+                                    label="System-Nummer *"
                                     placeholder="z.B. 1050"
+                                    className="h-9 md:col-span-1"
                                     {...register('teilsystemNummer')}
                                     error={errors.teilsystemNummer?.message}
                                 />
+                                <div className="md:col-span-1">
+                                    <Input
+                                        label="KS"
+                                        placeholder="1"
+                                        className="h-9"
+                                        {...register('ks')}
+                                        error={errors.ks?.message}
+                                    />
+                                    <p className="text-[9px] font-black text-orange-600 mt-0.5 ml-1 uppercase">
+                                        {watch('ks') === '1' ? 'Baumeister' : watch('ks') === '2' ? 'Produktion' : ''}
+                                    </p>
+                                </div>
+                                <Input
+                                    label="Bezeichnung *"
+                                    placeholder="z.B. Baukran"
+                                    className="h-9 md:col-span-2"
+                                    {...register('name')}
+                                    error={errors.name?.message}
+                                />
                                 <Select
-                                    label="Abteilung"
+                                    label="Abteilung *"
                                     options={abteilungOptions}
+                                    className="h-9 md:col-span-1"
                                     {...register('abteilung')}
                                     error={errors.abteilung?.message}
                                 />
-                                {!currentAbteilung && (
-                                    <div className="flex items-center gap-1.5 mt-7 bg-amber-50 border border-amber-200 text-amber-700 px-3 py-1 rounded-full h-8 w-fit shrink-0">
-                                        <span className="text-[10px] font-black uppercase tracking-wider">Abteilung fehlt</span>
-                                    </div>
-                                )}
-                                <Input
-                                    label="KS"
-                                    placeholder="1 oder BKP"
-                                    {...register('ks')}
-                                    error={errors.ks?.message}
-                                />
                             </div>
 
+                            {!currentAbteilung && (
+                                <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 px-3 py-1 rounded-full h-8 w-fit shrink-0">
+                                    <span className="text-[10px] font-black uppercase tracking-wider">Abteilung fehlt</span>
+                                </div>
+                            )}
+
                             {watch('abteilung') === 'Subunternehmer' && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
-                                    <div className="space-y-1.5">
-                                        <label className="text-sm font-semibold text-foreground ml-1">Subunternehmer wählen</label>
+                                <div className="grid grid-cols-1 gap-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-semibold text-foreground ml-1">Subunternehmer wählen</label>
                                         <SearchableSelect
                                             label=""
                                             placeholder="Subunternehmer suchen..."
@@ -386,85 +474,53 @@ export default function TeilsystemEditPage() {
                                             error={errors.subunternehmerId?.message}
                                         />
                                     </div>
-                                    <div className="flex flex-col justify-end pb-1 text-[10px] font-bold text-muted-foreground opacity-60">
-                                        <p>Bitte wählen Sie den zuständigen Subunternehmer aus der Liste der hinterlegten Partner.</p>
-                                    </div>
                                 </div>
                             )}
 
-                            <Input
-                                label="Bezeichnung *"
-                                placeholder="z.B. Baukran"
-                                {...register('name')}
-                                error={errors.name?.message}
-                            />
 
-                            {/* Beschreibung */}
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-semibold text-foreground ml-1">Beschreibung</label>
-                                <textarea
-                                    className="flex min-h-[80px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-accent"
-                                    placeholder="Kurze Beschreibung des Systems..."
-                                    {...register('beschreibung')}
-                                />
-                            </div>
 
-                            {/* Bemerkung */}
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-semibold text-foreground ml-1">Bemerkung</label>
-                                <textarea
-                                    className="flex min-h-[60px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-accent"
-                                    placeholder="Zusätzliche Notizen..."
-                                    {...register('bemerkung')}
-                                />
-                            </div>
-
-                            {/* Opening info */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Row 3: Dates */}
+                            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
                                 <DateInput
                                     label="Eröffnet am"
+                                    className="h-9"
                                     {...register('eroeffnetAm')}
+                                />
+                                <DateInput
+                                    label="Plan-Abgabe"
+                                    className="h-9"
+                                    {...register('abgabePlaner')}
+                                />
+                                <DateInput
+                                    label="Lieferfrist"
+                                    className="h-9"
+                                    {...register('lieferfrist')}
                                 />
                                 <Select
                                     label="Eröffnet durch"
                                     options={mitarbeiterOptions}
+                                    className="h-9"
                                     {...register('eroeffnetDurch')}
                                 />
-                            </div>
-
-                            {/* Dates row */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <DateInput
                                     label="Montagetermin"
+                                    className="h-9"
                                     {...register('montagetermin')}
-                                />
-                                <Input
-                                    label="Lieferfrist"
-                                    type="text"
-                                    placeholder="Tage oder Datum"
-                                    {...register('lieferfrist')}
-                                />
-                                <DateInput
-                                    label="Plan-Abgabe"
-                                    {...register('abgabePlaner')}
                                 />
                             </div>
 
-                            {/* Status fields */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {/* Row 3: Status */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 <Select
                                     label="Plan-Status"
                                     options={planStatusOptions}
+                                    className="h-9"
                                     {...register('planStatus')}
-                                />
-                                <Input
-                                    label="WEMA Link"
-                                    placeholder="Pfad oder URL"
-                                    {...register('wemaLink')}
                                 />
                                 <Select
                                     label="Status *"
                                     options={statusOptions}
+                                    className="h-9"
                                     {...register('status')}
                                     error={errors.status?.message}
                                 />
@@ -472,9 +528,32 @@ export default function TeilsystemEditPage() {
                                     projektId={projektId}
                                     lagerorte={lagerorte}
                                     onLagerortAdded={(newLagerort) => setLagerorte(prev => [...prev, newLagerort])}
+                                    className="h-9"
                                     {...register('lagerortId')}
                                     error={errors.lagerortId?.message}
                                 />
+                            </div>
+
+                            {/* Row 4: Beschreibung & WEMA Link */}
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+                                <div className="md:col-span-8 space-y-1">
+                                    <label className="text-xs font-semibold text-foreground ml-1">Beschreibung</label>
+                                    <textarea
+                                        className="flex min-h-[36px] w-full rounded-lg border border-input bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-accent"
+                                        placeholder="Kurze Beschreibung..."
+                                        {...register('beschreibung')}
+                                    />
+                                </div>
+                                <div className="md:col-span-4 flex items-end">
+                                    <div className="w-full">
+                                        <Input
+                                            label="WEMA Link"
+                                            placeholder="Pfad / URL"
+                                            className="h-9"
+                                            {...register('wemaLink')}
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Lieferanten Section */}
@@ -578,33 +657,21 @@ export default function TeilsystemEditPage() {
                                 </div>
                             </div>
                         </CardContent>
-                        <CardFooter className="bg-muted/30 border-t border-border p-6 flex justify-end gap-4">
-                            <Link href={`/${projektId}/teilsysteme/${id}`}>
-                                <Button type="button" variant="outline" className="font-bold">Abbrechen</Button>
-                            </Link>
-                            <Button type="submit" className="font-bold min-w-[140px]" disabled={isSubmitting}>
-                                {isSubmitting ? 'Wird gespeichert...' : (
-                                    <span className="flex items-center gap-2">
-                                        <Save className="h-4 w-4" />
-                                        Speichern
-                                    </span>
-                                )}
-                            </Button>
-                        </CardFooter>
                     </Card>
 
-                    {/* Right Column: IFC Upload Container */}
-                    <div className="space-y-6 sticky top-6 mt-1 lg:mt-[4.5rem]">
+                    {/* Right Column: Uploads */}
+                    <div className="space-y-4 sticky top-6 mt-1 lg:mt-[4.5rem]">
+                        {/* IFC */}
                         <Card className="shadow-none border-2 border-dashed border-border bg-muted/30 flex flex-col">
-                            <CardHeader className="bg-transparent border-b-0 pb-0 pt-4 px-4">
-                                <CardTitle className="text-sm font-black text-foreground flex items-center gap-2">
-                                    <UploadCloud className="h-4 w-4 text-primary" />
+                            <CardHeader className="bg-transparent border-b-0 pb-0 pt-3 px-4">
+                                <CardTitle className="text-xs font-black text-foreground flex items-center gap-2">
+                                    <UploadCloud className="h-3.5 w-3.5 text-primary" />
                                     IFC Modell
                                 </CardTitle>
                             </CardHeader>
                             <CardContent
                                 className={cn(
-                                    "flex flex-col items-center justify-center p-4 transition-colors cursor-pointer m-2 rounded-lg border-2 border-transparent hover:bg-muted/50",
+                                    "flex flex-col items-center justify-center p-3 transition-colors cursor-pointer m-2 mt-1 rounded-lg border-2 border-transparent hover:bg-muted/50",
                                     dragActive ? "bg-primary/5 border-primary border-dashed" : ""
                                 )}
                                 onDragEnter={handleDrag}
@@ -613,16 +680,16 @@ export default function TeilsystemEditPage() {
                                 onDrop={handleDrop}
                                 onClick={() => fileInputRef.current?.click()}
                             >
-                                <div className="bg-background p-3 rounded-full shadow-sm mb-3">
-                                    <FileType className="h-6 w-6 text-primary" />
+                                <div className="bg-background p-2 rounded-full shadow-sm mb-2">
+                                    <FileType className="h-5 w-5 text-primary" />
                                 </div>
-                                <h3 className="text-xs font-bold text-foreground mb-1">
+                                <h3 className="text-[11px] font-bold text-foreground mb-1">
                                     {currentIfcUrl ? 'IFC ersetzen' : 'IFC hierher ziehen'}
                                 </h3>
-                                <p className="text-[10px] font-medium text-muted-foreground mb-4 text-center">
+                                <p className="text-[9px] font-medium text-muted-foreground mb-3 text-center">
                                     Nur .ifc (Max. 200MB)
                                 </p>
-                                <Button type="button" size="sm" variant="outline" className="text-xs font-bold border-border h-8 px-4" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}>
+                                <Button type="button" size="sm" variant="outline" className="text-[10px] font-bold border-border h-7 px-3" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}>
                                     Wählen
                                 </Button>
                                 <input
@@ -633,44 +700,123 @@ export default function TeilsystemEditPage() {
                                     onChange={handleFileChange}
                                 />
                                 {selectedFileName && (
-                                    <div className="mt-3 p-2 bg-green-50 text-green-700 rounded text-xs font-bold flex items-center gap-2 w-full truncate">
+                                    <div className="mt-3 p-1.5 bg-green-50 text-green-700 rounded text-[10px] font-bold flex items-center gap-1.5 w-full truncate border border-green-200">
                                         <FileType className="h-3 w-3 flex-shrink-0" />
                                         <span className="truncate">{selectedFileName}</span>
                                     </div>
                                 )}
                             </CardContent>
                         </Card>
+
+                        {/* Dokumente */}
+                        <Card className="shadow-none border-2 border-dashed border-border bg-muted/30 flex flex-col">
+                            <CardHeader className="bg-transparent border-b-0 pb-0 pt-3 px-4">
+                                <CardTitle className="text-xs font-black text-foreground flex items-center gap-2">
+                                    <Paperclip className="h-3.5 w-3.5 text-primary" />
+                                    Dokumente / Skizzen
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent
+                                className={cn(
+                                    "flex flex-col items-center justify-center p-3 transition-colors cursor-pointer m-2 mt-1 rounded-lg border-2 border-transparent hover:bg-muted/50",
+                                    docDragActive ? "bg-primary/5 border-primary border-dashed" : ""
+                                )}
+                                onDragEnter={handleDocDrag}
+                                onDragLeave={handleDocDrag}
+                                onDragOver={handleDocDrag}
+                                onDrop={handleDocDrop}
+                                onClick={() => docInputRef.current?.click()}
+                            >
+                                <div className="bg-background p-2 rounded-full shadow-sm mb-2">
+                                    <FileText className="h-5 w-5 text-primary" />
+                                </div>
+                                <h3 className="text-[11px] font-bold text-foreground mb-1">Dateien hierher ziehen</h3>
+                                <p className="text-[9px] font-medium text-muted-foreground mb-3 text-center">
+                                    pdf, jpg, png, heic
+                                </p>
+                                <Button type="button" size="sm" variant="outline" className="text-[10px] font-bold border-border h-7 px-3" onClick={(e) => { e.stopPropagation(); docInputRef.current?.click(); }}>
+                                    Wählen
+                                </Button>
+                                <input
+                                    type="file"
+                                    className="hidden"
+                                    ref={docInputRef}
+                                    accept=".pdf,.jpg,.jpeg,.png,.heic,.doc,.docx,.xls,.xlsx"
+                                    multiple
+                                    onChange={handleDocFileChange}
+                                />
+                            </CardContent>
+
+                            {/* Document List */}
+                            {(dokumenteFiles.length > 0 || uploadingDocs) && (
+                                <div className="px-3 pb-3 space-y-1.5">
+                                    {dokumenteFiles.map((doc, i) => (
+                                        <div key={doc.id || i} className="flex items-center justify-between p-1.5 bg-background rounded-md border border-border text-[10px] group">
+                                            <div className="flex items-center gap-1.5 overflow-hidden">
+                                                <FileText className="h-3 w-3 text-muted-foreground shrink-0 border border-primary/20 rounded p-0.5" />
+                                                <a href={doc.url} target="_blank" rel="noreferrer" className="truncate font-medium hover:underline hover:text-primary transition-colors" onClick={e => e.stopPropagation()}>
+                                                    {doc.name}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {uploadingDocs && (
+                                        <div className="flex items-center justify-center gap-2 p-1.5 text-[10px] text-muted-foreground italic bg-muted/20 rounded-md">
+                                            <Loader2 className="h-3 w-3 animate-spin" /> Hochladen...
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </Card>
                     </div>
                 </div>
-            </form>
+
+                {/* Bottom Action Row aligned perfectly right */}
+                <div className="flex justify-end gap-4 mt-8 sticky bottom-0 bg-background/80 backdrop-blur-sm py-4 border-t border-border/50 -mx-4 px-4 sm:mx-0 sm:px-0">
+                    <Link href={`/${projektId}/teilsysteme/${id}`}>
+                        <Button type="button" variant="outline" className="font-bold border-2">Abbrechen</Button>
+                    </Link>
+                    <Button type="submit" className="font-bold min-w-[140px]" disabled={isSubmitting}>
+                        {isSubmitting ? 'Wird gespeichert...' : (
+                            <span className="flex items-center gap-2">
+                                <Save className="h-4 w-4" />
+                                Speichern
+                            </span>
+                        )}
+                    </Button>
+                </div>
+            </form >
 
             {/* IFC Extracting overlay */}
-            {extracting && (
-                <div className="fixed inset-0 z-50 bg-white/80 backdrop-blur-md flex items-center justify-center">
-                    <div className="bg-white rounded-2xl shadow-2xl border-2 border-border p-10 flex flex-col items-center gap-4">
-                        <div className="w-14 h-14 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                        <h3 className="text-lg font-black text-foreground">Analysiere IFC...</h3>
-                        <p className="text-sm text-muted-foreground">Positionen, Unterpositionen und Material werden extrahiert</p>
+            {
+                extracting && (
+                    <div className="fixed inset-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md flex items-center justify-center">
+                        <div className="bg-white dark:bg-card rounded-2xl shadow-2xl border-2 border-border p-10 flex flex-col items-center gap-4">
+                            <div className="w-14 h-14 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                            <h3 className="text-lg font-black text-foreground">Analysiere IFC...</h3>
+                            <p className="text-sm text-muted-foreground">Positionen, Unterpositionen und Material werden extrahiert</p>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* IFC Import Modal */}
-            {ifcExtractData && (
-                <IfcImportModal
-                    data={ifcExtractData}
-                    teilsystemId={id}
-                    projektId={projektId}
-                    onClose={() => {
-                        setIfcExtractData(null);
-                        router.push(`/${projektId}/teilsysteme/${id}`);
-                    }}
-                    onImported={() => {
-                        router.push(`/${projektId}/teilsysteme/${id}`);
-                    }}
-                />
-            )}
-        </div>
+            {
+                ifcExtractData && (
+                    <IfcImportModal
+                        data={ifcExtractData}
+                        teilsystemId={id}
+                        projektId={projektId}
+                        onClose={() => {
+                            setIfcExtractData(null);
+                            router.push(`/${projektId}/teilsysteme/${id}`);
+                        }}
+                        onImported={() => {
+                            router.push(`/${projektId}/teilsysteme/${id}`);
+                        }}
+                    />
+                )
+            }
+        </div >
     );
 }
-

@@ -137,7 +137,7 @@ export default function MyDashboardPage() {
                 <div className="lg:col-span-2 space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {features.map((f, i) => (
-                            <Card key={i} className="bg-white/40 border-slate-100/50 shadow-sm rounded-xl hover:bg-white/60 transition-all">
+                            <Card key={i} className="bg-white/40 dark:bg-slate-900/40 border-slate-100/50 dark:border-slate-800/50 shadow-sm rounded-xl hover:bg-white/60 dark:hover:bg-slate-900/60 transition-all">
                                 <CardContent className="p-4 flex gap-3">
                                     <div className="p-2 bg-primary/5 rounded-lg shrink-0">
                                         <f.icon className="w-4 h-4 text-primary" />
@@ -174,14 +174,14 @@ export default function MyDashboardPage() {
 
                 {/* SIDEBAR: EXAMPLES & HISTORY */}
                 <div className="space-y-6">
-                    <Card className="bg-slate-50 border-none rounded-xl p-5 shadow-inner">
+                    <Card className="bg-slate-50 dark:bg-slate-900/50 border-none rounded-xl p-5 shadow-inner">
                         <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                             <Sparkles size={12} className="text-primary" />
                             Anwendung
                         </h3>
                         <div className="space-y-3">
                             {examples.map((ex, i) => (
-                                <div key={i} className="p-3 bg-white border border-slate-100 rounded-lg shadow-sm hover:border-primary/20 transition-all cursor-pointer">
+                                <div key={i} className="p-3 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg shadow-sm hover:border-primary/20 transition-all cursor-pointer">
                                     <h5 className="text-[9px] font-black text-primary uppercase mb-1">{ex.title}</h5>
                                     <p className="text-[10px] text-slate-500 italic font-medium leading-tight">"{ex.text}"</p>
                                 </div>
@@ -189,8 +189,8 @@ export default function MyDashboardPage() {
                         </div>
                     </Card>
 
-                    <Card className="bg-white border-slate-100 rounded-xl shadow-md overflow-hidden flex flex-col max-h-[300px]">
-                        <CardHeader className="p-4 bg-slate-50 border-b border-slate-50 flex flex-row items-center justify-between shrink-0">
+                    <Card className="bg-white dark:bg-card border-slate-100 dark:border-slate-800 rounded-xl shadow-md overflow-hidden flex flex-col max-h-[300px]">
+                        <CardHeader className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-50 dark:border-slate-800 flex flex-row items-center justify-between shrink-0">
                             <div className="flex items-center gap-2">
                                 <History size={14} className="text-slate-400" />
                                 <span className="text-[10px] font-black uppercase text-slate-500">History</span>
@@ -203,9 +203,9 @@ export default function MyDashboardPage() {
                                     <div className="w-4 h-4 border-2 border-primary border-t-transparent animate-spin rounded-full" />
                                 </div>
                             ) : requests.length > 0 ? (
-                                <div className="divide-y divide-slate-50">
+                                <div className="divide-y divide-slate-50 dark:divide-slate-800">
                                     {requests.map(req => (
-                                        <div key={req.id} className="p-3 hover:bg-slate-50 transition-colors">
+                                        <div key={req.id} className="p-3 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
                                             <div className="flex justify-between items-start mb-1">
                                                 <span className="text-[9px] font-bold text-slate-700 truncate pr-2">{req.title}</span>
                                                 <Badge className={cn(
