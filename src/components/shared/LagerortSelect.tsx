@@ -36,7 +36,7 @@ export const LagerortSelect = forwardRef<HTMLSelectElement, LagerortSelectProps>
 
         const options = [
             { value: '', label: '— Kein Lagerort —' },
-            ...lagerorte.map(l => ({
+            ...(Array.isArray(lagerorte) ? lagerorte : []).map(l => ({
                 value: l.id,
                 label: `${l.bezeichnung}${l.bereich ? ` (${l.bereich})` : ''} `
             })),

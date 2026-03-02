@@ -28,11 +28,12 @@ export const SearchableSelect = ({ label, options, value, onChange, error, place
 
     // Filter and sort options
     const filteredOptions = React.useMemo(() => {
+        const safeOptions = Array.isArray(options) ? options : [];
         const filtered = search
-            ? options.filter(o => o.value !== '' && o.label.toLowerCase().includes(search.toLowerCase()))
-            : options.filter(o => o.value !== '');
+            ? safeOptions.filter(o => o.value !== '' && o.label?.toLowerCase().includes(search.toLowerCase()))
+            : safeOptions.filter(o => o.value !== '');
 
-        return filtered.sort((a, b) => a.label.localeCompare(b.label, 'de'));
+        return filtered.sort((a, b) => (a.label || '').localeCompare(b.label || '', 'de'));
     }, [options, search]);
 
     // Close dropdown on outside click

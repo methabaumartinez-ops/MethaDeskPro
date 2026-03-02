@@ -84,7 +84,9 @@ function isoToGermanDate(isoStr?: string): string {
 }
 
 export default function TeilsystemEditPage() {
-    const { projektId, id } = useParams() as { projektId: string; id: string };
+    const params = useParams();
+    const projektId = params?.projektId as string;
+    const id = params?.id as string;
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [mitarbeiter, setMitarbeiter] = useState<any[]>([]);
@@ -138,9 +140,9 @@ export default function TeilsystemEditPage() {
                     SubunternehmerService.getSubunternehmer(),
                     LagerortService.getLagerorte(projektId)
                 ]);
-                setMitarbeiter(empData);
-                setSubunternehmerList(subData);
-                setLagerorte(loData);
+                setMitarbeiter(Array.isArray(empData) ? empData : []);
+                setSubunternehmerList(Array.isArray(subData) ? subData : []);
+                setLagerorte(Array.isArray(loData) ? loData : []);
             } catch (error) {
                 console.error("Failed to load data", error);
             } finally {
@@ -153,9 +155,10 @@ export default function TeilsystemEditPage() {
         const loadLieferanten = async () => {
             try {
                 const data = await SupplierService.getLieferanten();
-                setAllLieferanten(data);
+                setAllLieferanten(Array.isArray(data) ? data : []);
             } catch (error) {
                 console.error('Failed to load lieferanten', error);
+                setAllLieferanten([]);
             }
         };
         loadLieferanten();
@@ -313,7 +316,7 @@ export default function TeilsystemEditPage() {
                 }
             }
 
-            const sub = subunternehmerList.find(s => s.id === data.subunternehmerId);
+            const sub = Array.isArray(subunternehmerList) ? subunternehmerList.find(s => s.id === data.subunternehmerId) : null;
 
             const updates: Partial<Teilsystem> = {
                 ...data,
@@ -584,17 +587,17 @@ export default function TeilsystemEditPage() {
                                                 <>
                                                     <div className="fixed inset-0 z-40" onClick={() => setIsLieferantenOpen(false)} />
                                                     <div className="absolute z-50 mt-2 w-full max-h-60 overflow-y-auto bg-card border-2 border-border rounded-2xl shadow-2xl p-2 space-y-1 animate-in fade-in zoom-in-95 duration-200">
-                                                        {allLieferanten
+                                                        {(Array.isArray(allLieferanten) ? allLieferanten : [])
                                                             .filter(l => !watch('lieferantenIds')?.includes(l.id))
-                                                            .filter(l => l.name.toLowerCase().includes(lieferantenSearch.toLowerCase()))
+                                                            .filter(l => l.name?.toLowerCase().includes(lieferantenSearch.toLowerCase()))
                                                             .length === 0 ? (
                                                             <div className="px-4 py-3 text-xs font-bold text-muted-foreground italic text-center">
                                                                 Keine weiteren Lieferanten gefunden
                                                             </div>
                                                         ) : (
-                                                            allLieferanten
+                                                            (Array.isArray(allLieferanten) ? allLieferanten : [])
                                                                 .filter(l => !watch('lieferantenIds')?.includes(l.id))
-                                                                .filter(l => l.name.toLowerCase().includes(lieferantenSearch.toLowerCase()))
+                                                                .filter(l => l.name?.toLowerCase().includes(lieferantenSearch.toLowerCase()))
                                                                 .map(l => (
                                                                     <button
                                                                         key={l.id}

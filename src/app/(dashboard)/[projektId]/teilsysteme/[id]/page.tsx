@@ -32,7 +32,9 @@ import DokumentePanel from '@/components/shared/DokumentePanel';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 
 export default function TeilsystemDetailPage() {
-    const { projektId, id } = useParams() as { projektId: string; id: string };
+    const params = useParams();
+    const projektId = params?.projektId as string;
+    const id = params?.id as string;
     const searchParams = useSearchParams();
     const router = useRouter();
     const { can, role } = usePermissions();
