@@ -152,6 +152,7 @@ export default function AbteilungPage() {
                 isOpen={confirmOpen}
                 onClose={() => setConfirmOpen(false)}
                 onConfirm={confirmDelete}
+                variant="danger"
                 title="Teilsystem löschen"
                 description={`Sind Sie sicher, dass Sie "${itemToDelete?.name}" permanent löschen möchten?`}
             />

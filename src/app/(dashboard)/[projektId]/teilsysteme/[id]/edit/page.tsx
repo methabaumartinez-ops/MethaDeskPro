@@ -876,6 +876,15 @@ export default function TeilsystemEditPage() {
                 url={previewDoc?.url || ''}
                 title={previewDoc?.title || ''}
             />
+
+            <ConfirmDialog
+                isOpen={isDeleteDialogOpen}
+                onClose={() => setIsDeleteDialogOpen(false)}
+                onConfirm={confirmDelete}
+                variant="danger"
+                title="Teilsystem löschen"
+                description={`Sind Sie sicher, dass Sie dieses Teilsystem permanent löschen möchten? Alle zugehörigen Positionen und Daten werden ebenfalls gelöscht.`}
+            />
         </div >
     );
 }
