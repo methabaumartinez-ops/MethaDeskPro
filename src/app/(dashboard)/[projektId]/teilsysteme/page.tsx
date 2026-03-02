@@ -2,22 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { StatusBadge } from '@/components/shared/StatusBadge';
-import { Select } from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { ProjectService } from '@/lib/services/projectService';
-import { Teilsystem, Projekt, ABTEILUNGEN_CONFIG } from '@/types';
-import {
-    Plus, Search, Eye, Edit, Filter, Layers, Trash2,
-    Building, MapPin, Hash, User as UserIcon, Link as LinkIcon
-} from 'lucide-react';
+import { Teilsystem, Projekt } from '@/types';
+import { Plus, Search, Layers } from 'lucide-react';
 import Link from 'next/link';
-import { Badge } from '@/components/ui/badge';
-import { cn, cleanBemerkung } from '@/lib/utils';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 import { TeilsystemTable } from '@/components/shared/TeilsystemTable';
@@ -50,13 +42,10 @@ export default function TeilsystemeListPage() {
         loadData();
     }, [projektId]);
 
-    const [selectedAbteilung, setSelectedAbteilung] = useState<string>('Alle');
-
     const filteredItems = items.filter(item => {
         const matchesSearch = (item.teilsystemNummer?.toLowerCase() || '').includes(search.toLowerCase()) ||
             (item.name?.toLowerCase() || '').includes(search.toLowerCase());
-        const matchesAbteilung = selectedAbteilung === 'Alle' || item.abteilung === selectedAbteilung;
-        return matchesSearch && matchesAbteilung;
+        return matchesSearch;
     });
 
     const handleDelete = (item: Teilsystem) => {
@@ -110,17 +99,6 @@ export default function TeilsystemeListPage() {
                         className="pl-10 h-11 bg-background border-2 border-border focus-visible:border-orange-500/50 rounded-xl font-bold"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
-                <div className="w-full md:w-64">
-                    <Select
-                        value={selectedAbteilung}
-                        onChange={(e) => setSelectedAbteilung(e.target.value)}
-                        options={[
-                            { label: 'Alle Abteilungen', value: 'Alle' },
-                            ...ABTEILUNGEN_CONFIG.map(a => ({ label: a.name, value: a.name }))
-                        ]}
-                        className="h-11 border-2"
                     />
                 </div>
             </div>
