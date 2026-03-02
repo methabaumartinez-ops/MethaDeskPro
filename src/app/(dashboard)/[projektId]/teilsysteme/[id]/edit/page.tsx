@@ -23,6 +23,7 @@ import Link from 'next/link';
 import { ProjectService } from '@/lib/services/projectService';
 import { cn } from '@/lib/utils';
 import { IfcImportModal, IfcExtractResult } from '@/components/shared/IfcImportModal';
+import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
 
 const teilsystemSchema = z.object({
     teilsystemNummer: z.string().optional(),
@@ -107,6 +108,7 @@ export default function TeilsystemEditPage() {
     const [dokumenteFiles, setDokumenteFiles] = useState<any[]>([]);
     const [uploadingDocs, setUploadingDocs] = useState(false);
     const docInputRef = React.useRef<HTMLInputElement>(null);
+    const [previewDoc, setPreviewDoc] = useState<{ url: string, title: string } | null>(null);
 
     const loadDokumente = async () => {
         try {
@@ -757,9 +759,16 @@ export default function TeilsystemEditPage() {
                                         <div key={doc.id || i} className="flex items-center justify-between p-1.5 bg-background rounded-md border border-border text-[10px] group">
                                             <div className="flex items-center gap-1.5 overflow-hidden">
                                                 <FileText className="h-3 w-3 text-muted-foreground shrink-0 border border-primary/20 rounded p-0.5" />
-                                                <a href={doc.url} target="_blank" rel="noreferrer" className="truncate font-medium hover:underline hover:text-primary transition-colors" onClick={e => e.stopPropagation()}>
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setPreviewDoc({ url: doc.url, title: doc.name });
+                                                    }}
+                                                    className="truncate font-medium hover:underline hover:text-primary transition-colors text-left"
+                                                >
                                                     {doc.name}
-                                                </a>
+                                                </button>
                                             </div>
                                         </div>
                                     ))}
@@ -820,6 +829,13 @@ export default function TeilsystemEditPage() {
                     />
                 )
             }
+
+            <DocumentPreviewModal
+                isOpen={!!previewDoc}
+                onClose={() => setPreviewDoc(null)}
+                url={previewDoc?.url || ''}
+                title={previewDoc?.title || ''}
+            />
         </div >
     );
 }

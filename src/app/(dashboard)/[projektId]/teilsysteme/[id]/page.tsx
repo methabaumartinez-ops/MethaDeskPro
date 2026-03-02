@@ -30,6 +30,7 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { LagerortBadge } from '@/components/shared/LagerortBadge';
 import DokumentePanel from '@/components/shared/DokumentePanel';
 import { usePermissions } from '@/lib/hooks/usePermissions';
+import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
 
 export default function TeilsystemDetailPage() {
     const params = useParams();
@@ -52,6 +53,7 @@ export default function TeilsystemDetailPage() {
     const [showQrModal, setShowQrModal] = useState(false);
     const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
     const [assignedLieferanten, setAssignedLieferanten] = useState<Lieferant[]>([]);
+    const [previewDoc, setPreviewDoc] = useState<{ url: string, title: string } | null>(null);
 
     useEffect(() => {
         const loadData = async () => {
@@ -167,14 +169,11 @@ export default function TeilsystemDetailPage() {
                 <div className="flex flex-col items-center md:items-start md:border-r border-border/50 md:pl-4 md:pr-8 h-16 justify-center">
                     <div className="flex items-center gap-2">
                         {loPlanUrl ? (
-                            <a
-                                href={loPlanUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="group transition-all"
-                            >
-                                <LagerortBadge lagerort={lagerortObj} fallbackName={loBezeichnung} />
-                            </a>
+                            <LagerortBadge
+                                lagerort={lagerortObj}
+                                fallbackName={loBezeichnung}
+                                onClick={() => setPreviewDoc({ url: loPlanUrl, title: `Lageplan: ${loBezeichnung}` })}
+                            />
                         ) : (
                             <div
                                 title={item.lagerortId ? "Kein Plan hinterlegt" : undefined}
@@ -578,6 +577,12 @@ export default function TeilsystemDetailPage() {
                 }}
                 title="Position löschen"
                 description={`Sind Sie sicher, dass Sie "${posToDelete?.name}" permanent löschen möchten?`}
+            />
+            <DocumentPreviewModal
+                isOpen={!!previewDoc}
+                onClose={() => setPreviewDoc(null)}
+                url={previewDoc?.url || ''}
+                title={previewDoc?.title || ''}
             />
         </div>
     );

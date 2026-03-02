@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, ExternalLink, FileText, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, ExternalLink, FileText, ChevronUp, ChevronDown, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
 
 interface DokumentePanelProps {
     entityId: string;
@@ -36,6 +37,7 @@ export default function DokumentePanel({ entityId, entityType, projektId, readon
     const [form, setForm] = useState({
         name: '', typ: 'PDF' as DokumentTyp, url: '', sendeDatum: '', bemerkung: '',
     });
+    const [previewDoc, setPreviewDoc] = useState<{ url: string, title: string } | null>(null);
 
     useEffect(() => { loadDokumente(); }, [entityId]);
 
@@ -156,15 +158,14 @@ export default function DokumentePanel({ entityId, entityType, projektId, readon
                                 <span className="text-lg shrink-0">{ti.icon}</span>
                                 <div className="flex-1 min-w-0">
                                     {d.url ? (
-                                        <a
-                                            href={d.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex items-center gap-1 font-bold text-sm text-foreground hover:text-primary transition-colors truncate"
+                                        <button
+                                            type="button"
+                                            onClick={() => setPreviewDoc({ url: d.url, title: d.name })}
+                                            className="flex items-center gap-1 font-bold text-sm text-foreground hover:text-primary transition-colors truncate text-left"
                                         >
                                             {d.name}
-                                            <ExternalLink className="h-3 w-3 text-muted-foreground shrink-0" />
-                                        </a>
+                                            <Eye className="h-3 w-3 text-muted-foreground shrink-0" />
+                                        </button>
                                     ) : (
                                         <span className="font-bold text-sm text-foreground">{d.name}</span>
                                     )}
@@ -189,6 +190,13 @@ export default function DokumentePanel({ entityId, entityType, projektId, readon
                     })}
                 </div>
             )}
+
+            <DocumentPreviewModal
+                isOpen={!!previewDoc}
+                onClose={() => setPreviewDoc(null)}
+                url={previewDoc?.url || ''}
+                title={previewDoc?.title || ''}
+            />
         </div>
     );
 }

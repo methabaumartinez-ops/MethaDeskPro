@@ -9,6 +9,7 @@ interface LagerortBadgeProps {
     lagerort?: Lagerort | null;
     fallbackName?: string;
     className?: string;
+    onClick?: () => void;
 }
 
 const BEREICHE_CONFIG = [
@@ -19,7 +20,7 @@ const BEREICHE_CONFIG = [
     { name: 'Produktion', icon: Factory, color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-100', iconBg: 'bg-green-100' },
 ];
 
-export function LagerortBadge({ lagerort, fallbackName, className }: LagerortBadgeProps) {
+export function LagerortBadge({ lagerort, fallbackName, className, onClick }: LagerortBadgeProps) {
     if (!lagerort && !fallbackName) {
         return (
             <div className={cn("flex items-center gap-2", className)}>
@@ -45,7 +46,14 @@ export function LagerortBadge({ lagerort, fallbackName, className }: LagerortBad
     const name = lagerort?.bezeichnung || fallbackName || 'Lagerort';
 
     return (
-        <div className={cn("flex items-center gap-2 group transition-all shrink-0", className)}>
+        <div
+            onClick={onClick}
+            className={cn(
+                "flex items-center gap-2 group transition-all shrink-0",
+                onClick ? "cursor-pointer" : "",
+                className
+            )}
+        >
             {/* Icon Square */}
             <div className={cn(
                 "flex items-center justify-center h-10 w-10 rounded-2xl border-2 shadow-sm transition-all group-hover:scale-110 group-hover:shadow-md shrink-0",
