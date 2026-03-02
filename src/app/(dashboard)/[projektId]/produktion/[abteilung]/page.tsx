@@ -28,22 +28,23 @@ export default function AbteilungPage() {
     const abteilungConfig = ABTEILUNGEN_CONFIG.find(a => a.id === abteilungSlug);
     const abteilungName = abteilungConfig?.name || abteilungSlug;
 
+    const loadData = async () => {
+        setLoading(true);
+        try {
+            const [teilsysteme, proj] = await Promise.all([
+                SubsystemService.getTeilsysteme(projektId, abteilungName),
+                ProjectService.getProjektById(projektId)
+            ]);
+            setItems(teilsysteme);
+            setProject(proj);
+        } catch (error) {
+            console.error("Failed to load data", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const loadData = async () => {
-            setLoading(true);
-            try {
-                const [teilsysteme, proj] = await Promise.all([
-                    SubsystemService.getTeilsysteme(projektId, abteilungName),
-                    ProjectService.getProjektById(projektId)
-                ]);
-                setItems(teilsysteme);
-                setProject(proj);
-            } catch (error) {
-                console.error("Failed to load data", error);
-            } finally {
-                setLoading(false);
-            }
-        };
         loadData();
     }, [projektId, abteilungName]);
 
@@ -124,6 +125,7 @@ export default function AbteilungPage() {
                             items={filteredItems}
                             projektId={projektId}
                             onDelete={handleDelete}
+                            onRefresh={loadData}
                         />
                     ) : (
                         <div className="py-32 text-center flex flex-col items-center">

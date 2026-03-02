@@ -17,7 +17,7 @@ import { LagerortService } from '@/lib/services/lagerortService';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { LagerortSelect } from '@/components/shared/LagerortSelect';
 import { Teilsystem, ABTEILUNGEN_CONFIG, Lieferant, Lagerort } from '@/types';
-import { ArrowLeft, Save, Calendar as CalendarIcon, UploadCloud, FileType, Truck, X, Search, Plus, Paperclip, FileText, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Calendar as CalendarIcon, UploadCloud, FileType, Truck, X, Search, Plus, Paperclip, FileText, Loader2, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { ProjectService } from '@/lib/services/projectService';
@@ -374,6 +374,18 @@ export default function TeilsystemEditPage() {
         }
     };
 
+    const handleDelete = async () => {
+        if (!confirm(`Sind Sie sicher, dass Sie dieses Teilsystem permanent löschen möchten?`)) return;
+
+        try {
+            await SubsystemService.deleteTeilsystem(id);
+            router.push(`/${projektId}`);
+        } catch (error) {
+            console.error("Failed to delete", error);
+            alert("Fehler beim Löschen des Teilsystems");
+        }
+    };
+
     if (loading) return (
         <div className="h-96 flex items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -382,8 +394,10 @@ export default function TeilsystemEditPage() {
 
     const statusOptions = [
         { label: 'Offen', value: 'offen' },
-        { label: 'In Arbeit', value: 'in arbeit' },
+        { label: 'In Produktion', value: 'in_produktion' },
         { label: 'Bestellt', value: 'bestellt' },
+        { label: 'Fertig', value: 'fertig' },
+        { label: 'Geliefert', value: 'geliefert' },
         { label: 'Verbaut', value: 'verbaut' },
         { label: 'Abgeschlossen', value: 'abgeschlossen' },
     ];
@@ -784,18 +798,30 @@ export default function TeilsystemEditPage() {
                 </div>
 
                 {/* Bottom Action Row aligned perfectly right */}
-                <div className="flex justify-end gap-4 mt-8 sticky bottom-0 bg-background/80 backdrop-blur-sm py-4 border-t border-border/50 -mx-4 px-4 sm:mx-0 sm:px-0">
-                    <Link href={`/${projektId}/teilsysteme/${id}`}>
-                        <Button type="button" variant="outline" className="font-bold border-2">Abbrechen</Button>
-                    </Link>
-                    <Button type="submit" className="font-bold min-w-[140px]" disabled={isSubmitting}>
-                        {isSubmitting ? 'Wird gespeichert...' : (
-                            <span className="flex items-center gap-2">
-                                <Save className="h-4 w-4" />
-                                Speichern
-                            </span>
-                        )}
+                <div className="flex justify-between gap-4 mt-8 sticky bottom-0 bg-background/80 backdrop-blur-sm py-4 border-t border-border/50 -mx-4 px-4 sm:mx-0 sm:px-0">
+                    <Button
+                        type="button"
+                        variant="danger"
+                        className="font-bold h-10 px-6 flex items-center gap-2"
+                        onClick={handleDelete}
+                    >
+                        <Trash2 className="h-4 w-4" />
+                        Teilsystem löschen
                     </Button>
+
+                    <div className="flex gap-3">
+                        <Link href={`/${projektId}/teilsysteme/${id}`}>
+                            <Button type="button" variant="outline" className="font-bold border-2">Abbrechen</Button>
+                        </Link>
+                        <Button type="submit" className="font-bold min-w-[140px]" disabled={isSubmitting}>
+                            {isSubmitting ? 'Wird gespeichert...' : (
+                                <span className="flex items-center gap-2">
+                                    <Save className="h-4 w-4" />
+                                    Speichern
+                                </span>
+                            )}
+                        </Button>
+                    </div>
                 </div>
             </form >
 

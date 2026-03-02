@@ -16,6 +16,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
             case 'offen': return 'success';
             case 'bestellt': return 'warning';
             case 'in arbeit': return 'info';
+            case 'fertig': return 'success';
             case 'geliefert': return 'success';
             case 'verbaut': return 'info';
             case 'geaendert': return 'warning';
@@ -31,6 +32,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
             case 'offen': return 'Offen';
             case 'in_produktion': return 'In Produktion';
             case 'bestellt': return 'Bestellt';
+            case 'fertig': return 'Fertig';
             case 'geliefert': return 'Geliefert';
             case 'verbaut': return 'Verbaut';
             case 'geaendert': return 'Nachbearbeitung';

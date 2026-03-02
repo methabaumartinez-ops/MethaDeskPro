@@ -42,6 +42,17 @@ export const ABTEILUNGEN_CONFIG = [
   { id: 'subunternehmer', name: 'Subunternehmer', color: 'violet' },
 ] as const;
 
+export const ITEM_STATUS_OPTIONS = [
+  { label: 'Offen', value: 'offen' },
+  { label: 'In Produktion', value: 'in_produktion' },
+  { label: 'Bestellt', value: 'bestellt' },
+  { label: 'Fertig', value: 'fertig' },
+  { label: 'Geliefert', value: 'geliefert' },
+  { label: 'Verbaut', value: 'verbaut' },
+  { label: 'Abgeschlossen', value: 'abgeschlossen' },
+  { label: 'Nachbearbeitung', value: 'geaendert' },
+];
+
 export type Abteilung = typeof ABTEILUNGEN_CONFIG[number]['name'];
 export type AbteilungId = typeof ABTEILUNGEN_CONFIG[number]['id'];
 
@@ -99,6 +110,7 @@ export type ItemStatus =
   | 'offen'
   | 'in_produktion'
   | 'bestellt'
+  | 'fertig'
   | 'geliefert'
   | 'verbaut'
   | 'geaendert'
@@ -178,6 +190,8 @@ export interface Position {
   groupingKey?: string;
   ifcParentGlobalId?: string;
   ifcMeta?: any; // psets + summary
+  ifcUrl?: string;
+  ifcFileName?: string;
   status: ItemStatus;
   createdAt?: string;
   updatedAt?: string;
@@ -218,6 +232,8 @@ export interface Unterposition {
   ifcChildGlobalId?: string;
   ifcType?: string;
   rawPsets?: any;
+  ifcUrl?: string;
+  ifcFileName?: string;
   status: ItemStatus;
   createdAt?: string;
   updatedAt?: string;
