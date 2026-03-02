@@ -85,8 +85,9 @@ export default function AnalysePage() {
 
     // Total Labor Costs (Stunden * Mitarbeiter Stundensatz)
     const totalLabor = stunden.reduce((sum, s) => {
+        if (s.gesamtpreis !== undefined) return sum + s.gesamtpreis;
         const emp = mitarbeiter.find(m => m.id === s.mitarbeiterId);
-        const rate = emp?.stundensatz ?? 80; // Default rate if not set
+        const rate = emp?.stundensatz ?? 55; // Default rate fallback
         return sum + (s.stunden * rate);
     }, 0);
 
@@ -107,8 +108,9 @@ export default function AnalysePage() {
         const tsMat = materialkosten.filter(m => m.teilsystemId === ts.id);
 
         const laborCost = tsHrs.reduce((sum, s) => {
+            if (s.gesamtpreis !== undefined) return sum + s.gesamtpreis;
             const emp = mitarbeiter.find(m => m.id === s.mitarbeiterId);
-            return sum + (s.stunden * (emp?.stundensatz ?? 80));
+            return sum + (s.stunden * (emp?.stundensatz ?? 55));
         }, 0);
 
         const matCost = tsMat.reduce((sum, m) => sum + (m.gesamtpreis ?? m.menge * m.einzelpreis), 0);
@@ -136,9 +138,15 @@ export default function AnalysePage() {
     stunden.forEach(s => {
         const date = new Date(s.datum);
         const month = months[date.getMonth()];
-        const emp = mitarbeiter.find(m => m.id === s.mitarbeiterId);
-        const rate = emp?.stundensatz ?? 80;
-        monthlyData[month] = (monthlyData[month] || 0) + (s.stunden * rate);
+        let cost = 0;
+        if (s.gesamtpreis !== undefined) {
+            cost = s.gesamtpreis;
+        } else {
+            const emp = mitarbeiter.find(m => m.id === s.mitarbeiterId);
+            const rate = emp?.stundensatz ?? 80;
+            cost = s.stunden * rate;
+        }
+        monthlyData[month] = (monthlyData[month] || 0) + cost;
     });
 
     materialkosten.forEach(m => {
@@ -152,8 +160,9 @@ export default function AnalysePage() {
 
     ABTEILUNGEN_CONFIG.forEach((dept: { id: string, name: string }) => {
         const labor = stunden.filter(s => s.abteilung === dept.name || s.abteilungId === dept.id).reduce((sum, s) => {
+            if (s.gesamtpreis !== undefined) return sum + s.gesamtpreis;
             const emp = mitarbeiter.find(m => m.id === s.mitarbeiterId);
-            return sum + (s.stunden * (emp?.stundensatz ?? 80));
+            return sum + (s.stunden * (emp?.stundensatz ?? 55));
         }, 0);
 
         // For now, material is assigned to 'Einkauf' as a placeholder or by teilsystem if we had that mapping

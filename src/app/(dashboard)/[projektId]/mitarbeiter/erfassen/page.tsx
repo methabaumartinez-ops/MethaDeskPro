@@ -20,6 +20,7 @@ const mitarbeiterSchema = z.object({
     email: z.string().email('Ungültige E-Mail-Adresse'),
     department: z.string().optional(),
     rolle: z.string().min(1, 'Rolle ist erforderlich'),
+    stundensatz: z.coerce.number().min(0, 'Stundensatz muss mindestens 0 sein').optional(),
 });
 
 type MitarbeiterValues = z.infer<typeof mitarbeiterSchema>;
@@ -36,6 +37,7 @@ export default function MitarbeiterErfassenPage() {
         resolver: zodResolver(mitarbeiterSchema),
         defaultValues: {
             rolle: 'mitarbeiter',
+            stundensatz: 55,
         }
     });
 
@@ -87,6 +89,17 @@ export default function MitarbeiterErfassenPage() {
                         <div className="grid grid-cols-2 gap-4">
                             <Select label="Abteilung" options={departmentOptions} {...register('department')} error={(errors as any).department?.message} />
                             <Select label="Rolle" options={rolleOptions} {...register('rolle')} error={errors.rolle?.message} />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <Input
+                                label="Stundensatz (CHF/h)"
+                                type="number"
+                                step="0.01"
+                                placeholder="0.00"
+                                {...register('stundensatz')}
+                                error={errors.stundensatz?.message}
+                            />
                         </div>
 
                         <div className="space-y-2">

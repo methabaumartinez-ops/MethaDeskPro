@@ -94,6 +94,8 @@ export default function KostenPage() {
                 body: JSON.stringify({
                     ...stundenForm,
                     stunden: parseFloat(stundenForm.stunden),
+                    stundensatz: ma?.stundensatz || 55, // Snapshot of current rate
+                    gesamtpreis: (ma?.stundensatz || 55) * parseFloat(stundenForm.stunden),
                     teilsystemId: selectedTs,
                     projektId,
                     abteilungId, // Enviar el ID del departamento
@@ -165,6 +167,7 @@ export default function KostenPage() {
     }
 
     const totalStunden = stunden.reduce((a, s) => a + (s.stunden || 0), 0);
+    const totalLaborCost = stunden.reduce((a, s) => a + (s.gesamtpreis || 0), 0);
     const totalMaterial = material.reduce((a, m) => a + (m.gesamtpreis || m.einzelpreis * m.menge || 0), 0);
     const cstsName = teilsysteme.find(t => t.id === selectedTs)?.name;
 
@@ -209,13 +212,20 @@ export default function KostenPage() {
                 </CardContent>
             </Card>
 
-            {/* Totals overview */}
             {selectedTs && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <Card className="border-2 border-border shadow-sm dark:bg-card">
                         <CardContent className="p-4">
                             <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider mb-1">Stunden Total</p>
                             <p className="text-2xl font-black text-foreground">{totalStunden.toFixed(1)} <span className="text-sm font-bold text-muted-foreground">h</span></p>
+                        </CardContent>
+                    </Card>
+                    <Card className="border-2 border-border shadow-sm dark:bg-card">
+                        <CardContent className="p-4">
+                            <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider mb-1">Arbeitskosten</p>
+                            <p className="text-2xl font-black text-foreground">
+                                {totalLaborCost.toLocaleString('de-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-sm font-bold text-muted-foreground">CHF</span>
+                            </p>
                         </CardContent>
                     </Card>
                     <Card className="border-2 border-border shadow-sm dark:bg-card">
@@ -226,10 +236,12 @@ export default function KostenPage() {
                             </p>
                         </CardContent>
                     </Card>
-                    <Card className="border-2 border-border shadow-sm sm:col-span-1 col-span-2 dark:bg-card">
+                    <Card className="border-2 border-border shadow-sm dark:bg-card">
                         <CardContent className="p-4">
-                            <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider mb-1">Teilsystem</p>
-                            <p className="text-base font-black text-foreground truncate">{cstsName || '—'}</p>
+                            <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider mb-1">Gesamt Kosten</p>
+                            <p className="text-2xl font-black text-orange-600">
+                                {(totalLaborCost + totalMaterial).toLocaleString('de-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-sm font-bold text-muted-foreground">CHF</span>
+                            </p>
                         </CardContent>
                     </Card>
                 </div>
@@ -309,6 +321,7 @@ export default function KostenPage() {
                                                 <TableHead className="font-black">Datum</TableHead>
                                                 <TableHead className="font-black">Mitarbeiter</TableHead>
                                                 <TableHead className="font-black text-right">Stunden</TableHead>
+                                                <TableHead className="font-black text-right">Kosten</TableHead>
                                                 <TableHead className="font-black">Abteilung</TableHead>
                                                 <TableHead className="font-black">Tätigkeit</TableHead>
                                                 <TableHead className="w-10" />
@@ -320,6 +333,9 @@ export default function KostenPage() {
                                                     <TableCell className="font-bold text-sm">{s.datum}</TableCell>
                                                     <TableCell className="font-bold">{s.mitarbeiterName || s.mitarbeiterId}</TableCell>
                                                     <TableCell className="font-black text-right text-primary">{s.stunden}h</TableCell>
+                                                    <TableCell className="font-bold text-right text-slate-600 text-xs">
+                                                        {s.gesamtpreis ? `${s.gesamtpreis.toFixed(2)} CHF` : '—'}
+                                                    </TableCell>
                                                     <TableCell className="text-muted-foreground text-sm">{s.abteilung || '—'}</TableCell>
                                                     <TableCell className="text-muted-foreground text-sm">{s.taetigkeit || '—'}</TableCell>
                                                     <TableCell>
@@ -332,7 +348,10 @@ export default function KostenPage() {
                                             <TableRow className="bg-muted/50 font-black">
                                                 <TableCell colSpan={2} className="font-black uppercase text-xs text-muted-foreground tracking-wider">Total</TableCell>
                                                 <TableCell className="font-black text-right text-primary">{totalStunden.toFixed(1)}h</TableCell>
-                                                <TableCell colSpan={3} />
+                                                <TableCell className="font-black text-right text-slate-800">
+                                                    {stunden.reduce((acc, s) => acc + (s.gesamtpreis || 0), 0).toLocaleString('de-CH', { minimumFractionDigits: 2 })} CHF
+                                                </TableCell>
+                                                <TableCell colSpan={2} />
                                             </TableRow>
                                         </TableBody>
                                     </Table>

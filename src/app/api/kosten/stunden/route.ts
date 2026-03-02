@@ -1,7 +1,7 @@
 // src/app/api/kosten/stunden/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { DatabaseService } from '@/lib/services/db';
-import { TsStunden } from '@/types';
+import { TsStunden, Mitarbeiter } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(request: NextRequest) {
@@ -24,7 +24,20 @@ export async function POST(request: NextRequest) {
         if (!body.teilsystemId || !body.projektId || !body.mitarbeiterId || !body.datum || body.stunden == null) {
             return NextResponse.json({ error: 'Pflichtfelder fehlen' }, { status: 400 });
         }
-        const entry: TsStunden = { ...body, id: uuidv4(), createdAt: new Date().toISOString() };
+        let { stundensatz, gesamtpreis } = body;
+        if (stundensatz === undefined || gesamtpreis === undefined) {
+            const emp = await DatabaseService.get<Mitarbeiter>('mitarbeiter', body.mitarbeiterId);
+            stundensatz = emp?.stundensatz || 55;
+            gesamtpreis = stundensatz * body.stunden;
+        }
+
+        const entry: TsStunden = {
+            ...body,
+            stundensatz,
+            gesamtpreis,
+            id: uuidv4(),
+            createdAt: new Date().toISOString()
+        };
         const created = await DatabaseService.upsert('ts_stunden', entry);
         return NextResponse.json(created, { status: 201 });
     } catch (error) {

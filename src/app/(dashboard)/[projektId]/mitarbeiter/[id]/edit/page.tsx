@@ -16,7 +16,8 @@ export default function MitarbeiterEditPage() {
         nachname: '',
         email: '',
         rolle: '',
-        image: ''
+        image: '',
+        stundensatz: 0 as number
     });
 
     React.useEffect(() => {
@@ -28,7 +29,8 @@ export default function MitarbeiterEditPage() {
                     nachname: found.nachname,
                     email: found.email,
                     rolle: found.rolle,
-                    image: found.image || ''
+                    image: found.image || '',
+                    stundensatz: found.stundensatz || 55
                 });
             }
         };
@@ -110,6 +112,16 @@ export default function MitarbeiterEditPage() {
                             <Input
                                 value={formData.rolle}
                                 onChange={(e) => setFormData({ ...formData, rolle: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="max-w-[180px]">
+                            <label className="text-sm font-bold text-slate-700 mb-2 block">Stundensatz (CHF/h)</label>
+                            <Input
+                                type="number"
+                                step="0.01"
+                                value={formData.stundensatz}
+                                onChange={(e) => setFormData({ ...formData, stundensatz: parseFloat(e.target.value) || 0 })}
                                 required
                             />
                         </div>

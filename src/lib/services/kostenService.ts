@@ -30,7 +30,13 @@ export const KostenService = {
             if (!res.ok) throw new Error('Failed to create stunden');
             return res.json();
         }
-        const entry: TsStunden = { ...data, id: uuidv4(), createdAt: new Date().toISOString() };
+        const gesamtpreis = data.stundensatz ? data.stunden * data.stundensatz : undefined;
+        const entry: TsStunden = {
+            ...data,
+            id: uuidv4(),
+            gesamtpreis,
+            createdAt: new Date().toISOString()
+        };
         return DatabaseService.upsert('ts_stunden', entry);
     },
 

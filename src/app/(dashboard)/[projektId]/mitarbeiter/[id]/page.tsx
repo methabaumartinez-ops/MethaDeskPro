@@ -78,6 +78,12 @@ export default function MitarbeiterDetailPage() {
                                     {mitarbeiter.email}
                                 </p>
                             </div>
+                            <div className="pt-2">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Stundensatz</label>
+                                <p className="text-xl font-black text-primary mt-1">
+                                    {(mitarbeiter.stundensatz ?? 55).toFixed(2)} <span className="text-sm font-bold text-muted-foreground">CHF/h</span>
+                                </p>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>

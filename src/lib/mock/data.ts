@@ -283,6 +283,7 @@ export const mockMitarbeiter: Mitarbeiter[] = [
         rolle: 'Polier',
         email: 'f.martinez@methabau.ch',
         abteilung: 'Hochbau',
+        stundensatz: 55,
     },
     {
         id: 'm2',
@@ -291,6 +292,7 @@ export const mockMitarbeiter: Mitarbeiter[] = [
         rolle: 'Projektleiter',
         email: 'm.dean@methabau.ch',
         abteilung: 'Management',
+        stundensatz: 55,
     },
     {
         id: 'm3',
@@ -299,6 +301,7 @@ export const mockMitarbeiter: Mitarbeiter[] = [
         rolle: 'Bauleiter',
         email: 'f.stoerchli@methabau.ch',
         abteilung: 'Bauführung',
+        stundensatz: 55,
     },
     {
         id: 'm4',
@@ -307,6 +310,7 @@ export const mockMitarbeiter: Mitarbeiter[] = [
         rolle: 'BIM-Konstrukteur',
         email: 'm.mueller@methabau.ch',
         abteilung: 'Planung',
+        stundensatz: 55,
     }
 ];
 

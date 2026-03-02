@@ -98,6 +98,7 @@ export default function MitarbeiterListPage() {
                                     <TableRow className="hover:bg-transparent border-b border-border/50">
                                         <TableHead className="font-bold text-foreground py-4">Mitarbeiter</TableHead>
                                         <TableHead className="font-bold text-foreground">Rolle</TableHead>
+                                        <TableHead className="font-bold text-foreground">Stundensatz</TableHead>
                                         <TableHead className="font-bold text-foreground">E-Mail</TableHead>
                                         <TableHead className="text-right font-bold text-foreground">Aktionen</TableHead>
                                     </TableRow>
@@ -105,7 +106,7 @@ export default function MitarbeiterListPage() {
                                 <TableBody>
                                     {filteredItems.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={4} className="h-32 text-center text-muted-foreground font-medium">
+                                            <TableCell colSpan={5} className="h-32 text-center text-muted-foreground font-medium">
                                                 Keine Mitarbeiter gefunden.
                                             </TableCell>
                                         </TableRow>
@@ -127,6 +128,11 @@ export default function MitarbeiterListPage() {
                                                     <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold ring-1 ring-inset ring-slate-200 dark:ring-slate-700">
                                                         <Shield className="h-3 w-3" />
                                                         {item.rolle}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-1 font-bold text-slate-700 text-sm">
+                                                        {(item.stundensatz ?? 55).toFixed(2)} CHF/h
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>

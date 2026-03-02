@@ -385,6 +385,8 @@ export interface TsStunden {
   mitarbeiterName?: string;
   datum: string;
   stunden: number;
+  stundensatz?: number;      // CHF/h snapshot
+  gesamtpreis?: number;     // stunden * stundensatz
   abteilung?: Abteilung | string;
   abteilungId?: AbteilungId | string;
   taetigkeit?: string;       // z.B. "Montage", "Schweissen", "Planung"
