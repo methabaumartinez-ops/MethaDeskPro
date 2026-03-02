@@ -145,7 +145,7 @@ export default function TeilsystemDetailPage() {
                 <div className="space-y-1 w-full text-center md:text-left">
                     <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">TEILSYSTEM</span>
                     <div className="flex flex-col md:flex-row items-center md:items-baseline gap-1 md:gap-2">
-                        <span className="text-xl font-black text-foreground tracking-tight select-none">TS {(item.teilsystemNummer || '').replace(/^ts\s?/i, '')}</span>
+                        <span className="text-xl font-black text-foreground tracking-tight select-none">{(item.teilsystemNummer || '').replace(/^ts\s?/i, '')}</span>
                         <h1 className="text-lg md:text-xl font-bold text-foreground tracking-tight">{item.name}</h1>
                     </div>
                 </div>
@@ -557,7 +557,7 @@ export default function TeilsystemDetailPage() {
                 qrValue={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/teilsystem/${item.id}`}
                 countLabel="Anzahl Positionen"
                 count={positionen.length}
-                filePrefix="TS"
+                filePrefix=""
                 id={item.id}
             />
 

@@ -254,22 +254,15 @@ export default function LagerorteSeite() {
                                         className="rounded-none"
                                     />
                                 </div>
-                                {/* Logo Preview */}
-                                <div className="flex items-center gap-1 select-none">
-                                    <span className="text-2xl font-black tracking-tighter text-slate-800">
-                                        METHA<span className="text-orange-500">Desk</span>
-                                        <span className="ml-1 text-slate-400 font-light text-xs align-top mt-1">pro</span>
-                                    </span>
-                                </div>
                             </div>
 
                             {/* Label Section */}
                             <div className="text-center">
-                                <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-1">
+                                <h3 className="text-3xl font-black text-slate-800 tracking-tighter mb-1">
                                     {selectedQr.bezeichnung}
                                 </h3>
-                                <p className="text-[10px] font-bold text-orange-500/70 uppercase tracking-[0.2em] font-mono">
-                                    Lagerort QR-Code
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                                    LAGERORT QR-CODE
                                 </p>
                             </div>
 
@@ -279,26 +272,37 @@ export default function LagerorteSeite() {
                                     variant="outline"
                                     className="flex flex-col h-20 rounded-2xl border-2 border-slate-100 hover:border-orange-500 hover:bg-orange-50 transition-all group/btn"
                                     onClick={() => {
-                                        const svg = document.querySelector('.qr-svg-wrapper svg');
+                                        const svg = document.querySelector('.qr-svg-wrapper svg') as SVGSVGElement;
                                         if (svg) {
                                             const clonedSvg = svg.cloneNode(true) as SVGSVGElement;
 
-                                            // Expand height and viewBox to fit the logo
+                                            // Expand height and viewBox to fit the logo and text
                                             const originalWidth = parseInt(clonedSvg.getAttribute('width') || '220');
                                             const originalHeight = parseInt(clonedSvg.getAttribute('height') || '220');
                                             const originalViewBox = clonedSvg.getAttribute('viewBox') || '0 0 45 45';
                                             const vbValues = originalViewBox.split(' ').map(Number);
 
-                                            clonedSvg.setAttribute('height', (originalHeight + 60).toString());
-                                            clonedSvg.setAttribute('viewBox', `${vbValues[0]} ${vbValues[1]} ${vbValues[2]} ${vbValues[3] + 12}`);
+                                            clonedSvg.setAttribute('width', '1000');
+                                            clonedSvg.setAttribute('height', '1200');
+                                            clonedSvg.setAttribute('viewBox', `${vbValues[0]} ${vbValues[1] - 12} ${vbValues[2]} ${vbValues[3] + 20}`);
+                                            clonedSvg.setAttribute('style', 'background: white;');
+
+                                            // Add Header
+                                            const headerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                                            headerGroup.setAttribute('transform', `translate(${vbValues[2] / 2}, ${vbValues[1] - 4})`);
+                                            headerGroup.innerHTML = `
+                                                <text x="0" y="-2" font-family="Arial, sans-serif" font-weight="900" font-size="5px" text-anchor="middle" fill="#0f172a">${selectedQr.bezeichnung}</text>
+                                                <text x="0" y="1" font-family="Arial, sans-serif" font-weight="700" font-size="1.5px" text-anchor="middle" fill="#64748b" text-transform="uppercase">LAGERORT</text>
+                                            `;
+                                            clonedSvg.insertBefore(headerGroup, clonedSvg.firstChild);
 
                                             // Add Logo Group
                                             const logoGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-                                            logoGroup.setAttribute('transform', `translate(${vbValues[2] / 2}, ${vbValues[3] + 6})`);
+                                            logoGroup.setAttribute('transform', `translate(${vbValues[2] / 2}, ${vbValues[3] + 4})`);
 
                                             logoGroup.innerHTML = `
-                                                <text x="0" y="2" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="5.5px" text-anchor="middle">
-                                                    <tspan fill="#1e293b">METHA</tspan><tspan fill="#F26A21">Desk</tspan><tspan fill="#94a3b8" font-size="3.5px" font-weight="100" dy="-1.5">pro</tspan>
+                                                <text x="0" y="2" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="3.5px" text-anchor="middle">
+                                                    <tspan fill="#1e293b">METHA</tspan><tspan fill="#F26A21">Desk</tspan><tspan fill="#94a3b8" font-size="2px" font-weight="100" dy="-1">pro</tspan>
                                                 </text>
                                             `;
                                             clonedSvg.appendChild(logoGroup);
@@ -328,16 +332,31 @@ export default function LagerorteSeite() {
                                             if (printWin) {
                                                 printWin.document.write(`
                                                     <html>
-                                                        <head><title>Print QR</title></head>
-                                                        <body style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;font-family:sans-serif;">
-                                                            <div style="transform:scale(1.5);">${svg.outerHTML}</div>
-                                                            <div style="display:flex;align-items:center;justify-content:center;margin-top:30px;gap:4px;">
-                                                                <span style="color:#1e293b;font-family:sans-serif;font-weight:900;font-size:32px;letter-spacing:-1px;">METHA</span>
-                                                                <span style="color:#F26A21;font-family:sans-serif;font-weight:900;font-size:32px;letter-spacing:-1px;">Desk</span>
-                                                                <span style="color:#94a3b8;font-family:sans-serif;font-weight:300;font-size:14px;margin-bottom:12px;">pro</span>
+                                                        <head>
+                                                            <title>Print QR</title>
+                                                            <style>
+                                                                @page { size: auto; margin: 0mm; }
+                                                                body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: sans-serif; background: #fff; }
+                                                                .label-container { padding: 40px; border: 4px solid #f1f5f9; border-radius: 40px; text-align: center; width: 350px; }
+                                                                .number { font-size: 42px; font-weight: 900; color: #0f172a; margin: 0 0 5px 0; letter-spacing: -1px; }
+                                                                .name { font-size: 14px; font-weight: 700; color: #64748b; margin: 0 0 30px 0; text-transform: uppercase; letter-spacing: 2px; }
+                                                                .qr-container { margin-bottom: 20px; }
+                                                                .qr-container svg { width: 300px; height: 300px; }
+                                                                .brand { margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 4px; border-top: 2px solid #f1f5f9; padding-top: 20px; }
+                                                                .brand-metha { color: #1e293b; font-weight: 900; font-size: 28px; letter-spacing: -1.5px; }
+                                                                .brand-desk { color: #F26A21; font-weight: 900; font-size: 28px; letter-spacing: -1.5px; }
+                                                                .brand-pro { color: #94a3b8; font-weight: 300; font-size: 12px; margin-bottom: 12px; }
+                                                            </style>
+                                                        </head>
+                                                        <body>
+                                                            <div class="label-container">
+                                                                <div class="number">${selectedQr.bezeichnung}</div>
+                                                                <div class="name">LAGERORT QR-CODE</div>
+                                                                <div class="qr-container">${svg.outerHTML}</div>
+                                                                <div class="brand">
+                                                                    <span class="brand-metha">METHA</span><span class="brand-desk">Desk</span><span class="brand-pro">pro</span>
+                                                                </div>
                                                             </div>
-                                                            <h2 style="margin-top:20px;text-transform:uppercase;font-weight:900;margin-bottom:5px;">${selectedQr.bezeichnung}</h2>
-                                                            <p style="margin-top:0px;color:#f97316;letter-spacing:2px;font-size:12px;font-weight:700;">LAGERORT QR-CODE</p>
                                                             <script>setTimeout(() => { window.print(); window.close(); }, 500);</script>
                                                         </body>
                                                     </html>

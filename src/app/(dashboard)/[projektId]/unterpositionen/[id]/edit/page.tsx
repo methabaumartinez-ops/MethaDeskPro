@@ -122,7 +122,7 @@ export default function UnterpositionEditPage() {
             <div className="bg-card p-6 rounded-2xl shadow-sm border-2 border-border">
                 <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em]">UNTERPOSITION BEARBEITEN</span>
                 <h1 className="text-3xl font-black text-foreground tracking-tight mt-1">
-                    UP {unterposition?.posNummer} {unterposition?.name}
+                    {unterposition?.posNummer} {unterposition?.name}
                 </h1>
             </div>
 

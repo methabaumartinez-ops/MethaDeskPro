@@ -119,7 +119,7 @@ export default function PositionErfassenPage() {
                 <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">NEUE POSITION ZUORDNEN</span>
                 <div className="flex items-baseline gap-2 mt-1">
                     <span className="text-3xl font-black text-foreground tracking-tight">
-                        TS {(teilsystem?.teilsystemNummer || teilsystemId || '').replace(/^ts\s?/i, '')}
+                        {(teilsystem?.teilsystemNummer || teilsystemId || '').replace(/^ts\s?/i, '')}
                     </span>
                     <span className="text-3xl font-black text-foreground tracking-tight">{teilsystem?.name}</span>
                 </div>

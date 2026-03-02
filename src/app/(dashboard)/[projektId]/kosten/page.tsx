@@ -201,7 +201,7 @@ export default function KostenPage() {
                                 onChange={e => setSelectedTs(e.target.value)}
                                 options={[
                                     { label: '— Teilsystem wählen —', value: '' },
-                                    ...teilsysteme.map(t => ({ label: `TS ${t.teilsystemNummer} — ${t.name}`, value: t.id }))
+                                    ...teilsysteme.map(t => ({ label: `${t.teilsystemNummer} — ${t.name}`, value: t.id }))
                                 ]}
                             />
                         </div>

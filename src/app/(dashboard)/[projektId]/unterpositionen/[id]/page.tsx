@@ -97,19 +97,19 @@ export default function UnterpositionDetailPage() {
                         <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">TEILSYSTEM</span>
                         {teilsystem && (
                             <Badge variant="outline" className="h-5 text-[10px] font-black border-primary/30 bg-primary/5 text-primary">
-                                TS {teilsystem.teilsystemNummer || ''}
+                                {teilsystem.teilsystemNummer || ''}
                             </Badge>
                         )}
                         <span className="text-[10px] font-black text-orange-600 uppercase tracking-[0.2em] ml-2">POSITION</span>
                         {parentPosition && (
                             <Badge variant="outline" className="h-5 text-[10px] font-black border-orange-300 bg-orange-50 text-orange-600">
-                                POS {parentPosition.posNummer || ''}
+                                {parentPosition.posNummer || ''}
                             </Badge>
                         )}
                     </div>
                     <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em]">UNTERPOSITION</span>
                     <div className="flex flex-col md:flex-row items-center md:items-baseline gap-1 md:gap-3">
-                        <span className="text-3xl font-black text-foreground tracking-tight select-none">UP {unterposition.posNummer || '—'}</span>
+                        <span className="text-3xl font-black text-foreground tracking-tight select-none">{unterposition.posNummer || '—'}</span>
                         <h1 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">{unterposition.name}</h1>
                     </div>
                 </div>
@@ -277,7 +277,7 @@ export default function UnterpositionDetailPage() {
                                             <div className="flex gap-2 items-baseline">
                                                 <div className="h-1 w-1 rounded-full bg-orange-400 shrink-0 mt-1.5" />
                                                 <span className="text-[10px] font-bold text-muted-foreground">Teilsystem: </span>
-                                                <span className="text-[10px] font-medium text-foreground">{teilsystem.name} (TS {teilsystem.teilsystemNummer})</span>
+                                                <span className="text-[10px] font-medium text-foreground">{teilsystem.name} ({teilsystem.teilsystemNummer})</span>
                                             </div>
                                         )}
                                     </div>
@@ -312,11 +312,11 @@ export default function UnterpositionDetailPage() {
                 isOpen={showQrModal}
                 onClose={() => setShowQrModal(false)}
                 title={unterposition.name}
-                subtitle={`UPOS ${unterposition.posNummer || ''}${parentPosition ? ` | POS ${parentPosition.posNummer}` : ''}`}
+                subtitle={`UP ${unterposition.posNummer || ''} | POS ${parentPosition?.posNummer || ''} | TS ${(teilsystem?.teilsystemNummer || '').replace(/^ts\s?/i, '')}`}
                 qrValue={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/unterposition/${unterposition.id}`}
                 countLabel="Menge"
                 count={unterposition.menge}
-                filePrefix="UPOS"
+                filePrefix=""
                 id={unterposition.id}
             />
         </div>

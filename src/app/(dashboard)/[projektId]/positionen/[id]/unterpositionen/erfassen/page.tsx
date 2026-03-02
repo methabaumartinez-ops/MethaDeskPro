@@ -102,7 +102,7 @@ export default function UnterpositionErfassenPage() {
             <div className="bg-card p-6 rounded-2xl shadow-sm border-2 border-border">
                 <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">NEUE UNTERPOSITION ZUORDNEN</span>
                 <div className="flex items-baseline gap-2 mt-1">
-                    <span className="text-3xl font-black text-foreground tracking-tight">POS {position?.posNummer || '—'}</span>
+                    <span className="text-3xl font-black text-foreground tracking-tight">{position?.posNummer || '—'}</span>
                     <span className="text-3xl font-black text-foreground tracking-tight">{position?.name}</span>
                 </div>
             </div>

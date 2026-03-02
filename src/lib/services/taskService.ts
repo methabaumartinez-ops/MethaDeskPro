@@ -178,7 +178,7 @@ export class TaskService {
                     // Create new task for Bau Teilsystem
                     const newTask = await this.createTask({
                         projektId: ts.projektId,
-                        title: `TS ${ts.teilsystemNummer || ''} - ${ts.name}`.trim(),
+                        title: `${ts.teilsystemNummer || ''} - ${ts.name}`.trim(),
                         status: 'Offen',
                         sourceType: 'ts',
                         sourceTsId: ts.id,

@@ -106,13 +106,13 @@ export default function PositionDetailPage() {
                         <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">TEILSYSTEM</span>
                         {teilsystem && (
                             <Badge variant="outline" className="h-5 text-[10px] font-black border-primary/30 bg-primary/5 text-primary">
-                                TS {teilsystem.teilsystemNummer || ''}
+                                {teilsystem.teilsystemNummer || ''}
                             </Badge>
                         )}
                     </div>
                     <span className="text-[10px] font-black text-orange-600 uppercase tracking-[0.2em]">POSITION</span>
                     <div className="flex flex-col md:flex-row items-center md:items-baseline gap-1 md:gap-3">
-                        <span className="text-3xl font-black text-foreground tracking-tight select-none">POS {position.posNummer || '—'}</span>
+                        <span className="text-3xl font-black text-foreground tracking-tight select-none">{position.posNummer || '—'}</span>
                         <h1 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">{position.name}</h1>
                     </div>
                 </div>
@@ -413,11 +413,11 @@ export default function PositionDetailPage() {
                 isOpen={showQrModal}
                 onClose={() => setShowQrModal(false)}
                 title={position.name}
-                subtitle={`POS ${position.posNummer || ''}${teilsystem ? ` | TS ${(teilsystem.teilsystemNummer || '').replace(/^ts\s?/i, '')}` : ''}`}
+                subtitle={`POS ${position.posNummer || ''} | TS ${(teilsystem?.teilsystemNummer || '').replace(/^ts\s?/i, '')}`}
                 qrValue={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/position/${position.id}`}
                 countLabel="Anzahl Unterpositionen"
                 count={unterpositionen.length}
-                filePrefix="POS"
+                filePrefix=""
                 id={position.id}
             />
         </div>

@@ -1,9 +1,9 @@
 'use client';
-// src/components/shared/QrCodeGenerator.tsx
-// Genera un QR code SVG en cliente usando la librería qrcode
 
-import { useEffect, useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import { cn } from '@/lib/utils';
+
+const LOGO_DATA_URL = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 40'%3E%3Crect width='140' height='40' fill='white' rx='10'/%3E%3Ctext x='70' y='28' font-family='Arial, sans-serif' font-weight='900' font-size='20' text-anchor='middle'%3E%3Ctspan fill='%231e293b'%3EMETHA%3C/tspan%3E%3Ctspan fill='%23F26A21'%3EDesk%3C/tspan%3E%3Ctspan fill='%2394a3b8' font-size='10' font-weight='300' dy='-8'%3Epro%3C/tspan%3E%3C/text%3E%3C/svg%3E";
 
 interface QrCodeGeneratorProps {
     content: string;
@@ -13,48 +13,20 @@ interface QrCodeGeneratorProps {
     className?: string;
 }
 
-export default function QrCodeGenerator({ content, label, size = 200, showDownload = true, className }: QrCodeGeneratorProps) {
-    const [qrSvg, setQrSvg] = useState<string>('');
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        async function generateQr() {
-            try {
-                const QRCode = (await import('qrcode')).default;
-                const svg = await QRCode.toString(content, { type: 'svg', width: size, margin: 2 });
-                setQrSvg(svg);
-            } catch (error) {
-                console.error('QR generation error:', error);
-            } finally {
-                setLoading(false);
-            }
-        }
-        generateQr();
-    }, [content, size]);
-
-    const handleDownload = () => {
-        const blob = new Blob([qrSvg], { type: 'image/svg+xml' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `qr-${label || 'code'}.svg`;
-        a.click();
-        URL.revokeObjectURL(url);
-    };
-
-    if (loading) {
-        return (
-            <div style={{ width: size, height: size }} className="qr-loading">
-                <div className="spinner-sm"></div>
-            </div>
-        );
-    }
-
+export default function QrCodeGenerator({ content, label, size = 200, className }: QrCodeGeneratorProps) {
     return (
-        <div
-            style={{ width: size, height: size }}
-            dangerouslySetInnerHTML={{ __html: qrSvg }}
-            className={cn("qr-svg-wrapper bg-white p-1 rounded-sm", className)}
-        />
+        <div className={cn("qr-svg-wrapper bg-white p-1 rounded-sm", className)}>
+            <QRCodeSVG
+                value={content}
+                size={size}
+                level="H"
+                imageSettings={{
+                    src: LOGO_DATA_URL,
+                    height: size * 0.2,
+                    width: size * 0.2,
+                    excavate: true,
+                }}
+            />
+        </div>
     );
 }
