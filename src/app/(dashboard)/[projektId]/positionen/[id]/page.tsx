@@ -6,11 +6,12 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit, Plus, FileSpreadsheet, ListTodo, Printer, Share2, ShieldCheck, X, Download, MapPin } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/StatusBadge';
-import { cn } from '@/lib/utils';
+import { cn, getAppUrl } from '@/lib/utils';
 import Link from 'next/link';
 import { QRCodeSVG } from 'qrcode.react';
 import { QRCodeSection } from '@/components/shared/QRCodeSection';
 import { ItemQrModal } from '@/components/shared/ItemQrModal';
+import { ProjectService } from '@/lib/services/projectService';
 import { LagerortBadge } from '@/components/shared/LagerortBadge';
 import DokumentePanel from '@/components/shared/DokumentePanel';
 import { TrackingTimeline } from '@/components/shared/TrackingTimeline';
@@ -25,12 +26,15 @@ import { LagerortService } from '@/lib/services/lagerortService';
 import { useProjekt } from '@/lib/context/ProjektContext';
 
 export default function PositionDetailPage() {
-    const { id, projektId } = useParams() as { id: string, projektId: string };
+    const params = useParams() as { id: string, projektId?: string };
+    const id = params.id;
+    const [projektId, setProjektId] = useState<string>((params.projektId || '') as string);
     const searchParams = useSearchParams();
     const { can, role } = usePermissions();
     const isReadOnly = searchParams.get('mode') === 'readOnly' || !can('update');
     const [position, setPosition] = useState<Position | null>(null);
     const [teilsystem, setTeilsystem] = useState<Teilsystem | null>(null);
+    const [project, setProject] = useState<any>(null);
     const [unterpositionen, setUnterpositionen] = useState<Unterposition[]>([]);
     const [loading, setLoading] = useState(true);
     const [showQrModal, setShowQrModal] = useState(false);
@@ -43,14 +47,19 @@ export default function PositionDetailPage() {
             try {
                 const posData = await PositionService.getPositionById(id);
                 if (posData) {
-                    const [subPosData, tsData, loData] = await Promise.all([
+                    const pId = (params.projektId as string) || posData.projektId || '';
+                    if (pId !== projektId) setProjektId(pId);
+
+                    const [subPosData, tsData, loData, projectData] = await Promise.all([
                         SubPositionService.getUnterpositionen(id),
                         SubsystemService.getTeilsystemById(posData.teilsystemId),
-                        LagerortService.getLagerorte(projektId)
+                        LagerortService.getLagerorte(pId),
+                        ProjectService.getProjektById(pId)
                     ]);
                     setPosition(posData);
                     setUnterpositionen(subPosData);
                     setTeilsystem(tsData);
+                    setProject(projectData);
                     if (loData) setLagerorte(loData);
                 }
             } catch (error) {
@@ -60,7 +69,7 @@ export default function PositionDetailPage() {
             }
         };
         load();
-    }, [id]);
+    }, [id, params.projektId, projektId]);
 
     if (loading) return <div className="p-10 text-center">Laden...</div>;
     if (!position) return (
@@ -125,7 +134,7 @@ export default function PositionDetailPage() {
                         onClick={() => setShowQrModal(true)}
                     >
                         <QRCodeSVG
-                            value={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/position/${position.id}`}
+                            value={`${getAppUrl()}/share/position/${id}`}
                             size={56}
                         />
                     </div>
@@ -247,6 +256,64 @@ export default function PositionDetailPage() {
                 </Card>
             </div>
 
+            {/* Bottom: Unterpositionen (Full Width) */}
+            <Card className="shadow-lg border-2 border-border overflow-hidden">
+                <CardHeader className="py-4 px-6 bg-muted/30 border-b border-border flex flex-row items-center justify-between">
+                    <CardTitle className="text-lg font-black flex items-center gap-3">
+                        <ListTodo className="h-5 w-5 text-primary" />
+                        Unterpositionen / Komponenten
+                    </CardTitle>
+                    {(!isReadOnly && can('create')) && (
+                        <Link href={`/${projektId}/positionen/${id}/unterpositionen/erfassen`}>
+                            <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white font-bold h-9 px-6 rounded-full shadow-md flex items-center gap-2 transition-all hover:scale-105">
+                                <Plus className="h-4 w-4" />
+                                <span>Hinzufügen</span>
+                            </Button>
+                        </Link>
+                    )}
+                </CardHeader>
+                <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                        <Table className="border-none">
+                            <TableHeader className="bg-background">
+                                <TableRow className="border-b-2 border-border hover:bg-transparent">
+                                    <TableHead className="w-24 px-6 py-4 font-black text-foreground">Pos-Nr.</TableHead>
+                                    <TableHead className="px-6 py-4 font-black text-foreground">Bezeichnung</TableHead>
+                                    <TableHead className="w-32 px-6 py-4 font-black text-foreground">Menge</TableHead>
+                                    <TableHead className="w-32 px-6 py-4 font-black text-foreground">Status</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {unterpositionen.length > 0 ? (
+                                    unterpositionen.map((upos) => (
+                                        <TableRow key={upos.id} className="group hover:bg-muted/50 transition-colors cursor-pointer border-b border-border/50" onClick={() => router.push(`/${projektId}/unterpositionen/${upos.id}`)}>
+                                            <TableCell className="px-6 py-4 font-black text-primary">{upos.posNummer || '—'}</TableCell>
+                                            <TableCell className="px-6 py-4 font-bold text-foreground">{upos.name}</TableCell>
+                                            <TableCell className="px-6 py-4 font-bold text-muted-foreground">
+                                                <Badge variant="outline" className="font-black border-slate-300 bg-slate-50">{upos.menge} {upos.einheit}</Badge>
+                                            </TableCell>
+                                            <TableCell className="px-6 py-4"><StatusBadge status={upos.status} /></TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={4} className="h-32 text-center">
+                                            <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground/50">
+                                                <FileSpreadsheet className="h-8 w-8" />
+                                                <p className="text-sm font-bold uppercase tracking-wider">Keine Unterpositionen vorhanden</p>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <div className="h-10" />
+
+
             {/* MAIN CONTENT AREA: Details on the Left, Timeline/Docs on the Right */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                 {/* Left Side: Advanced IFC Metadata & IFC Details (5 cols) */}
@@ -353,76 +420,19 @@ export default function PositionDetailPage() {
                 </div>
             </div>
 
-            {/* Bottom: Unterpositionen (Full Width) */}
-            <Card className="shadow-lg border-2 border-border overflow-hidden">
-                <CardHeader className="py-4 px-6 bg-muted/30 border-b border-border flex flex-row items-center justify-between">
-                    <CardTitle className="text-lg font-black flex items-center gap-3">
-                        <ListTodo className="h-5 w-5 text-primary" />
-                        Unterpositionen / Komponenten
-                    </CardTitle>
-                    {(!isReadOnly && can('create')) && (
-                        <Link href={`/${projektId}/positionen/${id}/unterpositionen/erfassen`}>
-                            <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white font-bold h-9 px-6 rounded-full shadow-md flex items-center gap-2 transition-all hover:scale-105">
-                                <Plus className="h-4 w-4" />
-                                <span>Hinzufügen</span>
-                            </Button>
-                        </Link>
-                    )}
-                </CardHeader>
-                <CardContent className="p-0">
-                    <div className="overflow-x-auto">
-                        <Table className="border-none">
-                            <TableHeader className="bg-background">
-                                <TableRow className="border-b-2 border-border hover:bg-transparent">
-                                    <TableHead className="w-24 px-6 py-4 font-black text-foreground">Pos-Nr.</TableHead>
-                                    <TableHead className="px-6 py-4 font-black text-foreground">Bezeichnung</TableHead>
-                                    <TableHead className="w-32 px-6 py-4 font-black text-foreground">Menge</TableHead>
-                                    <TableHead className="w-32 px-6 py-4 font-black text-foreground">Status</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {unterpositionen.length > 0 ? (
-                                    unterpositionen.map((upos) => (
-                                        <TableRow key={upos.id} className="group hover:bg-muted/50 transition-colors cursor-pointer border-b border-border/50" onClick={() => router.push(`/${projektId}/unterpositionen/${upos.id}`)}>
-                                            <TableCell className="px-6 py-4 font-black text-primary">{upos.posNummer || '—'}</TableCell>
-                                            <TableCell className="px-6 py-4 font-bold text-foreground">{upos.name}</TableCell>
-                                            <TableCell className="px-6 py-4 font-bold text-muted-foreground">
-                                                <Badge variant="outline" className="font-black border-slate-300 bg-slate-50">{upos.menge} {upos.einheit}</Badge>
-                                            </TableCell>
-                                            <TableCell className="px-6 py-4"><StatusBadge status={upos.status} /></TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={4} className="h-32 text-center">
-                                            <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground/50">
-                                                <FileSpreadsheet className="h-8 w-8" />
-                                                <p className="text-sm font-bold uppercase tracking-wider">Keine Unterpositionen vorhanden</p>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <div className="h-10" />
-
             {/* Position QR Modal */}
             <ItemQrModal
                 isOpen={showQrModal}
                 onClose={() => setShowQrModal(false)}
                 title={position.name}
-                subtitle={`POS ${position.posNummer || ''} | TS ${(teilsystem?.teilsystemNummer || '').replace(/^ts\s?/i, '')}`}
-                qrValue={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/position/${position.id}`}
+                subtitle={`TS ${(teilsystem?.teilsystemNummer || '').replace(/^ts\s?/i, '')}`}
+                qrValue={`${getAppUrl()}/share/position/${position.id}`}
                 countLabel="Anzahl Unterpositionen"
                 count={unterpositionen.length}
                 filePrefix=""
                 id={position.id}
-                projectNumber={activeProjekt?.projektnummer}
-                projectName={activeProjekt?.projektname}
+                projectNumber={project?.projektnummer || activeProjekt?.projektnummer}
+                projectName={project?.projektname || activeProjekt?.projektname}
             />
         </div>
     );

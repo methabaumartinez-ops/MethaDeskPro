@@ -98,16 +98,30 @@ export const SubsystemService = {
     async deleteTeilsystem(id: string): Promise<void> {
         if (typeof window !== 'undefined') {
             const res = await fetch(`/api/teilsysteme/${id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error('Failed to delete teilsystem');
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                throw new Error(errorData.error || 'Failed to delete teilsystem');
+            }
             return;
         }
 
         const { DatabaseService } = await import('@/lib/services/db');
         const { PositionService } = await import('./positionService');
         const { DokumentService } = await import('./dokumentService');
-        const gDrive = eval('require')('./googleDriveService');
+        // Use eval('require') or similar trick to hide from bundler during client builds
+        let gDrive: any;
+        try {
+            gDrive = await eval('import("./googleDriveService")');
+        } catch (e) {
+            // Fallback for different environments if necessary
+            try {
+                gDrive = eval('require')('./googleDriveService');
+            } catch (e2) {
+                console.error("Failed to load gDrive server-side:", e, e2);
+            }
+        }
 
-        const ts = await this.getTeilsystemById(id);
+        const ts = await SubsystemService.getTeilsystemById(id);
         const positions = await PositionService.getPositionenByTeilsystem(id);
 
         for (const pos of positions) {

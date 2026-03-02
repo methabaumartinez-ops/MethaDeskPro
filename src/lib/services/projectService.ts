@@ -142,10 +142,15 @@ export const ProjectService = {
             await TaskService.deleteTask(task.id);
         }
 
-        // 4. Delete Project Folder from Drive if it exists
+        // Delete Project Folder from Drive if it exists
         if (project?.driveFolderId) {
             try {
-                const gDrive = eval('require')('./googleDriveService');
+                let gDrive: any;
+                try {
+                    gDrive = await eval('import("./googleDriveService")');
+                } catch (e) {
+                    gDrive = eval('require')('./googleDriveService');
+                }
                 await gDrive.deleteFileFromDrive(project.driveFolderId);
             } catch (e) {
                 console.error(`Failed to delete Drive folder ${project.driveFolderId}:`, e);

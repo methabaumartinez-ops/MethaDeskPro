@@ -26,7 +26,28 @@ interface ScanState {
     entityNummer?: string;
 }
 
-function parseEntityQr(qrText: string): { entityType: 'position' | 'unterposition'; entityId: string } | null {
+function parseEntityQr(qrText: string): { entityType: 'teilsystem' | 'position' | 'unterposition'; entityId: string } | null {
+    // 1. Support for full URLs (new style)
+    try {
+        if (qrText.startsWith('http') || qrText.includes('/share/')) {
+            const url = new URL(qrText);
+            const pathParts = url.pathname.split('/');
+            // Expected: /share/[type]/[id]
+            const shareIdx = pathParts.indexOf('share');
+            if (shareIdx !== -1 && pathParts.length >= shareIdx + 3) {
+                const type = pathParts[shareIdx + 1];
+                const id = pathParts[shareIdx + 2];
+                if (['teilsystem', 'position', 'unterposition'].includes(type)) {
+                    return { entityType: type as any, entityId: id };
+                }
+            }
+        }
+    } catch (e) {
+        // Not a URL, continue with legacy checks
+    }
+
+    // 2. Support for legacy / direct codes
+    if (qrText.startsWith('TEILSYSTEM:')) return { entityType: 'teilsystem', entityId: qrText.replace('TEILSYSTEM:', '') };
     if (qrText.startsWith('POSITION:')) return { entityType: 'position', entityId: qrText.replace('POSITION:', '') };
     if (qrText.startsWith('UNTERPOSITION:')) return { entityType: 'unterposition', entityId: qrText.replace('UNTERPOSITION:', '') };
     return null;
@@ -128,12 +149,7 @@ export default function LagerScanSeite() {
     }, []);
 
     function handleEntityScan(qrText: string) {
-        const parsed = parseEntityQr(qrText);
-        // Also support TEILSYSTEM:id
-        let finalParsed = parsed;
-        if (!finalParsed && qrText.startsWith('TEILSYSTEM:')) {
-            finalParsed = { entityType: 'teilsystem' as any, entityId: qrText.replace('TEILSYSTEM:', '') };
-        }
+        const finalParsed = parseEntityQr(qrText);
 
         if (!finalParsed) {
             setErrorMsg(`Ungültiger QR-Code: "${qrText}"\nErwartet: TEILSYSTEM:id, POSITION:id oder UNTERPOSITION:id`);

@@ -36,47 +36,57 @@ export function Sidebar({ projektId, className, forceProjectSelection = false }:
     const pathname = usePathname();
     const { can, role } = usePermissions();
 
-    const menuItems: MenuItem[] = [
-        { title: 'Dashboard Builder', href: `/${projektId}/my-dashboard`, icon: Sparkles },
-        {
-            title: 'Produktion',
-            href: forceProjectSelection ? '/projekte' : `/${projektId}/teilsysteme`,
-            icon: Layers,
-            subItems: [
-                ...[
-                    'planung', 'einkauf', 'avor', 'schlosserei', 'blech', 'werkhof', 'montage'
-                ].map(id => {
-                    const dept = ABTEILUNGEN_CONFIG.find(a => a.id === id);
-                    return {
-                        title: dept?.name || id,
-                        href: forceProjectSelection ? '/projekte' : `/${projektId}/produktion/${id}`
-                    };
-                }),
-                {
-                    title: 'Lieferanten',
-                    href: forceProjectSelection ? '/projekte' : `/${projektId}/produktion/lieferanten`
-                }
-            ]
-        },
-        { title: 'Ausführung', href: forceProjectSelection ? '/projekte' : `/${projektId}/ausfuehrung`, icon: Hammer },
-        {
-            title: 'Werkhof',
-            href: forceProjectSelection ? '/projekte' : `/${projektId}/werkhof`,
-            icon: Warehouse,
-            subItems: [
-                { title: 'Bestellungen', href: forceProjectSelection ? '/projekte' : `/${projektId}/werkhof` },
-                { title: 'Lager & QR', href: forceProjectSelection ? '/projekte' : `/${projektId}/lagerorte` },
-                { title: 'QR Scan', href: forceProjectSelection ? '/projekte' : `/${projektId}/lager-scan` },
-            ]
-        },
-        { title: 'Fuhrpark', href: `/fuhrpark`, icon: Car, permission: 'viewKosten' },
-        // Technische Tabs, die nur bei ausgewähltem Projekt angezeigt werden
-        ...(!forceProjectSelection ? [
-            { title: 'Kostenerfassung', href: `/${projektId}/kosten`, icon: DollarSign, permission: 'viewKosten' as keyof RolePermissions },
-            { title: 'Tabellen', href: `/${projektId}/tabellen`, icon: ListTodo, permission: 'read' as keyof RolePermissions },
-            { title: 'Analyse', href: `/${projektId}/analyse`, icon: BarChart3 },
-        ] : []),
-    ];
+    const isDashboardMode = pathname.includes('/dashboard-builder') || pathname.includes('/my-dashboard');
+
+    const menuItems: MenuItem[] = isDashboardMode
+        ? [
+            { title: 'Dashboard Builder', href: `/${projektId}/dashboard-builder`, icon: Sparkles },
+            { title: 'My Dashboard', href: `/${projektId}/my-dashboard`, icon: LayoutDashboard },
+            { title: 'Methabau Infrastruktur', href: forceProjectSelection ? '/projekte' : `/${projektId}/teilsysteme`, icon: Layers },
+        ]
+        : [
+            { title: 'Projektübersicht', href: '/projekte', icon: LayoutDashboard },
+            { title: 'Dashboard Builder', href: `/${projektId}/dashboard-builder`, icon: Sparkles },
+            { title: 'My Dashboard', href: `/${projektId}/my-dashboard`, icon: LayoutDashboard },
+            {
+                title: 'Produktion',
+                href: forceProjectSelection ? '/projekte' : `/${projektId}/teilsysteme`,
+                icon: Layers,
+                subItems: [
+                    ...[
+                        'planung', 'einkauf', 'avor', 'schlosserei', 'blech', 'werkhof', 'montage'
+                    ].map(id => {
+                        const dept = ABTEILUNGEN_CONFIG.find(a => a.id === id);
+                        return {
+                            title: dept?.name || id,
+                            href: forceProjectSelection ? '/projekte' : `/${projektId}/produktion/${id}`
+                        };
+                    }),
+                    {
+                        title: 'Lieferanten',
+                        href: forceProjectSelection ? '/projekte' : `/${projektId}/produktion/lieferanten`
+                    }
+                ]
+            },
+            { title: 'Ausführung', href: forceProjectSelection ? '/projekte' : `/${projektId}/ausfuehrung`, icon: Hammer },
+            {
+                title: 'Werkhof',
+                href: forceProjectSelection ? '/projekte' : `/${projektId}/werkhof`,
+                icon: Warehouse,
+                subItems: [
+                    { title: 'Bestellungen', href: forceProjectSelection ? '/projekte' : `/${projektId}/werkhof` },
+                    { title: 'Lager & QR', href: forceProjectSelection ? '/projekte' : `/${projektId}/lagerorte` },
+                    { title: 'QR Scan', href: forceProjectSelection ? '/projekte' : `/${projektId}/lager-scan` },
+                ]
+            },
+            { title: 'Fuhrpark', href: `/fuhrpark`, icon: Car, permission: 'viewKosten' },
+            // Technische Tabs, die nur bei ausgewähltem Projekt angezeigt werden
+            ...(!forceProjectSelection ? [
+                { title: 'Kostenerfassung', href: `/${projektId}/kosten`, icon: DollarSign, permission: 'viewKosten' as keyof RolePermissions },
+                { title: 'Tabellen', href: `/${projektId}/tabellen`, icon: ListTodo, permission: 'read' as keyof RolePermissions },
+                { title: 'Analyse', href: `/${projektId}/analyse`, icon: BarChart3 },
+            ] : []),
+        ];
 
     // Filtrar items permitidos
     const allowedItems = menuItems.filter(item => {

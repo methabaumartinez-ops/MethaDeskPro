@@ -21,7 +21,7 @@ import {
 import Link from 'next/link';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { cn, cleanBemerkung } from '@/lib/utils';
+import { cn, cleanBemerkung, getAppUrl } from '@/lib/utils';
 import { QRCodeSVG } from 'qrcode.react';
 
 import { QRCodeSection } from '@/components/shared/QRCodeSection';
@@ -34,10 +34,12 @@ import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
 
 export default function TeilsystemDetailPage() {
     const params = useParams();
-    const projektId = params?.projektId as string;
-    const id = params?.id as string;
-    const searchParams = useSearchParams();
     const router = useRouter();
+    const searchParams = useSearchParams();
+
+    // Fallback if projektId is missing from params (Public Share view)
+    const [projektId, setProjektId] = useState<string>((params?.projektId || '') as string);
+    const id = params?.id as string;
     const { can, role } = usePermissions();
     const isReadOnly = searchParams.get('mode') === 'readOnly' || !can('update');
     const canManageLager = can('manageLagerorte');
@@ -58,20 +60,30 @@ export default function TeilsystemDetailPage() {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [ts, ks, pos, lo] = await Promise.all([
-                    SubsystemService.getTeilsystemById(id),
-                    ProjectService.getProjektById(projektId),
+                // 1. Fetch Item First to get true projektId if missing
+                const ts = await SubsystemService.getTeilsystemById(id);
+                if (!ts) {
+                    setLoading(false);
+                    return;
+                }
+                setItem(ts);
+
+                // Update projektId if it was not in params
+                const pId = (params?.projektId as string) || ts.projektId;
+                if (pId !== projektId) setProjektId(pId);
+
+                // 2. Fetch other related data
+                const [ks, pos, lo] = await Promise.all([
+                    ProjectService.getProjektById(pId),
                     PositionService.getPositionenByTeilsystem(id),
-                    LagerortService.getLagerorte(projektId)
+                    LagerortService.getLagerorte(pId)
                 ]);
 
-                if (ts) {
-                    setItem(ts);
-                    if (ts.lieferantenIds?.length) {
-                        const allL = await SupplierService.getLieferanten();
-                        setAssignedLieferanten(allL.filter(l => ts.lieferantenIds!.includes(l.id)));
-                    }
+                if (ts.lieferantenIds?.length) {
+                    const allL = await SupplierService.getLieferanten();
+                    setAssignedLieferanten(allL.filter(l => ts.lieferantenIds!.includes(l.id)));
                 }
+
                 if (ks) setProject(ks);
                 if (pos) setPositionen(pos);
                 if (lo) setLagerorte(lo);
@@ -82,7 +94,7 @@ export default function TeilsystemDetailPage() {
             }
         };
         loadData();
-    }, [id, projektId]);
+    }, [id, params?.projektId, projektId]);
 
 
     if (loading) return (
@@ -160,7 +172,7 @@ export default function TeilsystemDetailPage() {
                         onClick={() => setShowQrModal(true)}
                     >
                         <QRCodeSVG
-                            value={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/teilsystem/${item.id}`}
+                            value={`${getAppUrl()}/share/teilsystem/${id}`}
                             size={56}
                         />
                     </div>
@@ -329,64 +341,60 @@ export default function TeilsystemDetailPage() {
                 </Card>
             </div>
 
-            {/* LOWER ROW: System Details + Viewer */}
+            {/* MAIN CONTENT AREA: Positions Table (Left) + IFC Viewer (Right) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-                {/* System Details (Left) */}
+                {/* Positions Table (Left - 5 columns) */}
                 <div className="lg:col-span-5 flex flex-col">
-                    <Card className="shadow-sm border-2 border-border overflow-hidden flex flex-col h-full">
-                        <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
-                            <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">System Details</CardTitle>
+                    <Card className="shadow-lg border-2 border-border overflow-hidden rounded-3xl flex flex-col h-full">
+                        <CardHeader className="border-b border-border flex flex-row justify-between items-center py-3 bg-muted/30 px-4">
+                            <CardTitle className="text-sm flex items-center gap-2 font-black uppercase tracking-wider text-muted-foreground">
+                                <ListTodo className="h-4 w-4 text-primary" />
+                                Positionen
+                            </CardTitle>
+                            {(!isReadOnly && can('create')) && (
+                                <Link href={`/${projektId}/teilsysteme/${id}/positionen/erfassen`}>
+                                    <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white font-bold h-7 px-3 rounded-full shadow-md flex items-center gap-1.5 transition-all hover:scale-105 text-[10px]">
+                                        <Plus className="h-3 w-3" />
+                                        <span>Add</span>
+                                    </Button>
+                                </Link>
+                            )}
                         </CardHeader>
-                        <CardContent className="p-0 flex-1 bg-white dark:bg-card">
-                            <div className="flex flex-col h-full divide-y divide-border">
-                                {detailFields.map((field, i) => (
-                                    <div key={i} className="px-4 flex-1 flex items-center justify-between hover:bg-muted/5 transition-colors min-h-[40px]">
-                                        <div className="flex items-center gap-2">
-                                            <div className="p-1 bg-muted rounded-md shrink-0">
-                                                <field.icon className={cn("h-3 w-3 text-muted-foreground", field.color)} />
-                                            </div>
-                                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">{field.label}</span>
-                                        </div>
-                                        <div className="text-right">
-                                            {field.isLink ? (
-                                                <div className="flex items-center gap-2 justify-end">
-                                                    {String(field.value)?.match(/^[a-zA-Z]:\\/) || String(field.value)?.startsWith('\\\\') ? (
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="h-5 px-1.5 text-[8px] font-black uppercase text-primary hover:bg-primary/10 flex items-center gap-1"
-                                                            onClick={() => {
-                                                                navigator.clipboard.writeText(String(field.value) || '');
-                                                                alert('Pfad kopiert!');
-                                                            }}
-                                                        >
-                                                            <Copy className="h-2 w-2" />
-                                                            Copy
-                                                        </Button>
-                                                    ) : (
-                                                        <a href={String(field.value)} target="_blank" rel="noreferrer" className="text-[10px] font-bold text-primary truncate max-w-[120px] hover:underline flex items-center gap-1">
-                                                            <span>Link</span>
-                                                            <ExternalLink className="h-2 w-2" />
-                                                        </a>
-                                                    )}
-                                                </div>
-                                            ) : (
-                                                <span className={cn("text-[10px] font-bold text-foreground", field.color)}>
-                                                    {field.value || '—'}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                        <CardContent className="p-0 flex-1 overflow-hidden flex flex-col">
+                            {positionen.length > 0 ? (
+                                <div className="overflow-auto max-h-[440px]">
+                                    <Table className="border-none rounded-none">
+                                        <TableHeader className="bg-background sticky top-0 z-10">
+                                            <TableRow className="border-b-2 border-border">
+                                                <TableHead className="pl-4 font-black text-foreground uppercase text-[9px] tracking-widest">Nr.</TableHead>
+                                                <TableHead className="font-black text-foreground uppercase text-[9px] tracking-widest">Name</TableHead>
+                                                <TableHead className="font-black text-foreground uppercase text-[9px] tracking-widest">Status</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {positionen.map((pos) => (
+                                                <TableRow key={pos.id} className="group hover:bg-muted/50 transition-colors cursor-pointer border-b border-border/50" onClick={() => router.push(`/${projektId}/positionen/${pos.id}`)}>
+                                                    <TableCell className="font-black text-primary py-3 pl-4 text-[10px]">{pos.posNummer || '—'}</TableCell>
+                                                    <TableCell className="py-3">
+                                                        <span className="font-bold text-foreground text-[11px] block truncate max-w-[120px]">{pos.name}</span>
+                                                    </TableCell>
+                                                    <TableCell className="py-3"><StatusBadge status={pos.status} className="scale-75 origin-left" /></TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            ) : (
+                                <div className="py-10 text-center">
+                                    <ListTodo className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase">Keine Positionen</p>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* System Details (Right, but previously Model was here, now Column spans) */}
-                {/* I will add Lieferanten section below System Details or in a new row */}
-
-                {/* Model Viewer (Right) */}
+                {/* Model Viewer (Right - 7 columns) */}
                 <div className="lg:col-span-7 flex flex-col gap-6">
                     <div className="flex-1 min-h-[500px] relative group shadow-xl border-4 border-orange-600/10 rounded-[2rem] overflow-hidden bg-white dark:bg-slate-900/50 ring-4 ring-orange-600/5">
                         {/* Custom Viewer Overlay */}
@@ -410,127 +418,57 @@ export default function TeilsystemDetailPage() {
 
                         <BimViewer modelName={`${item.name}${!item.ifcUrl ? '.ifc' : ''}`} modelUrl={item.ifcUrl} />
                     </div>
-
-                    {/* Lieferanten List Card */}
-                    <Card className="shadow-sm border-2 border-border overflow-hidden rounded-3xl bg-white dark:bg-card">
-                        <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border">
-                            <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                <Truck className="h-4 w-4" />
-                                Zugeordnete Lieferanten (ss)
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-4">
-                            {assignedLieferanten.length > 0 ? (
-                                <div className="flex flex-wrap gap-2">
-                                    {assignedLieferanten.map(l => (
-                                        <Link key={l.id} href={`/${projektId}/lieferanten/${l.id}`}>
-                                            <Badge variant="info" className="px-4 py-2 rounded-xl border-2 border-border bg-muted/20 text-xs font-black flex items-center gap-2 hover:bg-muted transition-all cursor-pointer">
-                                                <Truck className="h-3 w-3 text-primary" />
-                                                {l.name}
-                                                <ExternalLink className="h-3 w-3 opacity-40" />
-                                            </Badge>
-                                        </Link>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-[10px] font-bold text-muted-foreground/50 italic text-center py-4">
-                                    Keine Lieferanten zugewiesen.
-                                </p>
-                            )}
-                        </CardContent>
-                    </Card>
                 </div>
             </div>
 
-            {/* Bottom Section: Zugehörige Positionen Table */}
-            <Card className="shadow-lg border-2 border-border overflow-hidden rounded-3xl">
-                <CardHeader className="border-b border-border flex flex-row justify-between items-center py-4 bg-muted/30 px-6">
-                    <CardTitle className="text-lg flex items-center gap-2 font-black">
-                        <ListTodo className="h-5 w-5 text-primary" />
-                        Zugehörige Positionen
-                    </CardTitle>
-                    {(!isReadOnly && can('create')) && (
-                        <Link href={`/${projektId}/teilsysteme/${id}/positionen/erfassen`}>
-                            <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white font-bold h-9 px-6 rounded-full shadow-md flex items-center gap-2 transition-all hover:scale-105">
-                                <Plus className="h-4 w-4" />
-                                <span>Position hinzufügen</span>
-                            </Button>
-                        </Link>
-                    )}
+            {/* Bottom Row: System Details (Full Width) */}
+            <Card className="shadow-sm border-2 border-border overflow-hidden rounded-3xl bg-white dark:bg-card">
+                <CardHeader className="py-3 px-6 bg-muted/30 border-b border-border">
+                    <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">System Details</CardTitle>
                 </CardHeader>
-                <CardContent className="p-0">
-                    {positionen.length > 0 ? (
-                        <div className="overflow-x-auto">
-                            <Table className="border-none rounded-none">
-                                <TableHeader className="bg-background">
-                                    <TableRow className="border-b-2 border-border">
-                                        <TableHead className="w-24 pl-6 font-black text-foreground uppercase text-[10px] tracking-widest">Pos-Nr.</TableHead>
-                                        <TableHead className="font-black text-foreground uppercase text-[10px] tracking-widest">Bezeichnung</TableHead>
-                                        <TableHead className="font-black text-foreground uppercase text-[10px] tracking-widest">Menge</TableHead>
-                                        <TableHead className="font-black text-foreground uppercase text-[10px] tracking-widest">Status</TableHead>
-                                        {!isReadOnly && <TableHead className="text-right pr-6 font-black text-foreground uppercase text-[10px] tracking-widest">Aktionen</TableHead>}
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {positionen.map((pos) => (
-                                        <TableRow key={pos.id} className="group hover:bg-muted/50 transition-colors cursor-pointer border-b border-border/50" onClick={() => router.push(`/${projektId}/positionen/${pos.id}`)}>
-                                            <TableCell className="font-black text-primary py-4 pl-6">{pos.posNummer || '—'}</TableCell>
-                                            <TableCell className="py-4">
-                                                <div className="flex flex-col gap-0.5">
-                                                    <span className="font-bold text-foreground">{pos.name}</span>
-                                                    {pos.beschreibung && (
-                                                        <span className="text-[10px] text-muted-foreground font-medium truncate max-w-[400px]" title={pos.beschreibung}>
-                                                            {pos.beschreibung.replace(/ \| /g, ' • ')}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="font-bold text-muted-foreground">
-                                                <Badge variant="outline" className="font-black h-6 px-2">{pos.menge} {pos.einheit}</Badge>
-                                            </TableCell>
-                                            <TableCell><StatusBadge status={pos.status} /></TableCell>
-                                            {!isReadOnly && (
-                                                <TableCell className="text-right pr-6" onClick={(e) => e.stopPropagation()}>
-                                                    <div className="flex justify-end gap-1">
-                                                        <Link href={`/${projektId}/positionen/${pos.id}`}>
-                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-background hover:shadow-sm">
-                                                                <Eye className="h-4 w-4" />
-                                                            </Button>
-                                                        </Link>
-                                                        <Link href={`/${projektId}/positionen/${pos.id}/edit`}>
-                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-background hover:shadow-sm">
-                                                                <Edit className="h-4 w-4" />
-                                                            </Button>
-                                                        </Link>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className={cn(
-                                                                "h-8 w-8 text-muted-foreground/50 hover:text-red-600 hover:bg-red-50 hover:shadow-sm",
-                                                                !canDelete && "hidden"
-                                                            )}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setPosToDelete(pos);
-                                                                setConfirmOpen(true);
-                                                            }}
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-                                                </TableCell>
-                                            )}
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    ) : (
-                        <div className="py-20 text-center">
-                            <ListTodo className="h-10 w-10 text-muted-foreground/30 mx-auto mb-4" />
-                            <p className="text-sm font-bold text-muted-foreground">Keine Positionen für dieses Teilsystem erfasst.</p>
-                        </div>
-                    )}
+                <CardContent className="p-6">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                        {detailFields.map((field, i) => (
+                            <div key={i} className="flex flex-col gap-1.5">
+                                <div className="flex items-center gap-2">
+                                    <field.icon className={cn("h-3.5 w-3.5 text-muted-foreground", field.color)} />
+                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">{field.label}</span>
+                                </div>
+                                <div className="pl-5.5 font-bold text-xs truncate">
+                                    {field.isLink ? (
+                                        <a href={String(field.value)} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                                            <span>Link öffnen</span>
+                                            <ExternalLink className="h-2.5 w-2.5" />
+                                        </a>
+                                    ) : (
+                                        <span className={cn(field.color)}>{field.value || '—'}</span>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="mt-8 pt-6 border-t border-border">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-4">
+                            <Truck className="h-4 w-4" />
+                            Zugeordnete Lieferanten (ss)
+                        </CardTitle>
+                        {assignedLieferanten.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                                {assignedLieferanten.map(l => (
+                                    <Link key={l.id} href={`/${projektId}/lieferanten/${l.id}`}>
+                                        <Badge variant="info" className="px-4 py-2 rounded-xl border-2 border-border bg-muted/20 text-xs font-black flex items-center gap-2 hover:bg-muted transition-all cursor-pointer">
+                                            <Truck className="h-3 w-3 text-primary" />
+                                            {l.name}
+                                            <ExternalLink className="h-3 w-3 opacity-40" />
+                                        </Badge>
+                                    </Link>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-[10px] font-bold text-muted-foreground/50 italic">Keine Lieferanten zugewiesen.</p>
+                        )}
+                    </div>
                 </CardContent>
             </Card>
 
@@ -555,7 +493,7 @@ export default function TeilsystemDetailPage() {
                 onClose={() => setShowQrModal(false)}
                 title={item.name}
                 subtitle={`TS ${(item.teilsystemNummer || '').replace(/^ts\s?/i, '')}`}
-                qrValue={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/teilsystem/${item.id}`}
+                qrValue={`${getAppUrl()}/share/teilsystem/${item.id}`}
                 countLabel="Anzahl Positionen"
                 count={positionen.length}
                 filePrefix=""
@@ -577,8 +515,8 @@ export default function TeilsystemDetailPage() {
                         alert("Fehler beim Löschen der Position.");
                     }
                 }}
-                title="Position löschen"
-                description={`Sind Sie sicher, dass Sie "${posToDelete?.name}" permanent löschen möchten?`}
+                title="Position loeschen"
+                description={`Sind Sie sicher, dass Sie "${posToDelete?.name}" permanent loeschen moechten?`}
             />
             <DocumentPreviewModal
                 isOpen={!!previewDoc}

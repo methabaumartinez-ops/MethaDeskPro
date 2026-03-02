@@ -6,12 +6,13 @@ import { SubPositionService } from '@/lib/services/subPositionService';
 import { PositionService } from '@/lib/services/positionService';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { LagerortService } from '@/lib/services/lagerortService';
+import { ProjectService } from '@/lib/services/projectService';
 import { Unterposition, Position, Teilsystem, Lagerort } from '@/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit, FileSpreadsheet, ListTodo, Printer, Share2, ShieldCheck, X, Download, Plus, MapPin } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/StatusBadge';
-import { cn } from '@/lib/utils';
+import { cn, getAppUrl } from '@/lib/utils';
 import Link from 'next/link';
 import { QRCodeSVG } from 'qrcode.react';
 import { ItemQrModal } from '@/components/shared/ItemQrModal';
@@ -23,12 +24,15 @@ import { usePermissions } from '@/lib/hooks/usePermissions';
 import { useProjekt } from '@/lib/context/ProjektContext';
 
 export default function UnterpositionDetailPage() {
-    const { projektId, id } = useParams() as { projektId: string, id: string };
+    const params = useParams() as { id: string, projektId?: string };
+    const id = params.id;
+    const [projektId, setProjektId] = useState<string>((params.projektId || '') as string);
     const searchParams = useSearchParams();
     const isReadOnly = searchParams.get('mode') === 'readOnly';
     const [unterposition, setUnterposition] = useState<Unterposition | null>(null);
     const [parentPosition, setParentPosition] = useState<Position | null>(null);
     const [teilsystem, setTeilsystem] = useState<Teilsystem | null>(null);
+    const [project, setProject] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [showQrModal, setShowQrModal] = useState(false);
     const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
@@ -41,12 +45,19 @@ export default function UnterpositionDetailPage() {
             try {
                 const uposData = await SubPositionService.getUnterpositionById(id);
                 if (uposData) {
-                    const [posData, loData] = await Promise.all([
-                        PositionService.getPositionById(uposData.positionId),
-                        LagerortService.getLagerorte(projektId)
-                    ]);
                     setUnterposition(uposData);
+
+                    const pId = (params.projektId as string) || uposData.projektId || '';
+                    if (pId !== projektId) setProjektId(pId);
+
+                    const [posData, loData, projectData] = await Promise.all([
+                        PositionService.getPositionById(uposData.positionId),
+                        LagerortService.getLagerorte(pId),
+                        ProjectService.getProjektById(pId)
+                    ]);
+
                     if (loData) setLagerorte(loData);
+                    setProject(projectData);
                     if (posData) {
                         setParentPosition(posData);
                         const tsData = await SubsystemService.getTeilsystemById(posData.teilsystemId);
@@ -60,7 +71,7 @@ export default function UnterpositionDetailPage() {
             }
         };
         load();
-    }, [id, projektId]);
+    }, [id, params.projektId, projektId]);
 
     if (loading) return <div className="p-10 text-center">Laden...</div>;
     if (!unterposition) return <div className="p-10 text-center text-red-500">Unterposition nicht gefunden</div>;
@@ -122,7 +133,7 @@ export default function UnterpositionDetailPage() {
                         onClick={() => setShowQrModal(true)}
                     >
                         <QRCodeSVG
-                            value={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/unterposition/${unterposition.id}`}
+                            value={`${getAppUrl()}/share/unterposition/${id}`}
                             size={56}
                         />
                     </div>
@@ -203,10 +214,34 @@ export default function UnterpositionDetailPage() {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* 3) Actions Card */}
+                <Card className="shadow-lg border-2 border-orange-600/30 rounded-3xl overflow-hidden bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl">
+                    <CardContent className="p-4 flex flex-col gap-3 items-center justify-center h-full">
+                        <div className="flex items-center gap-3 w-full max-w-[240px]">
+                            <Link href={`/${projektId}/lager-scan?type=unterposition&id=${id}&action=einlagerung&qr=UNTERPOSITION:${id}`} className="flex-1">
+                                <Button variant="outline" className="w-full h-10 border-2 border-blue-400 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 text-blue-700 dark:text-blue-400 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
+                                    <div className="p-0.5 bg-blue-100 dark:bg-slate-900 rounded-full">
+                                        <ArrowLeft className="h-3 w-3 text-blue-600 dark:text-blue-400 rotate-[-90deg]" />
+                                    </div>
+                                    <span>Einlagern</span>
+                                </Button>
+                            </Link>
+                            <Link href={`/${projektId}/lager-scan?type=unterposition&id=${id}&action=auslagerung&qr=UNTERPOSITION:${id}`} className="flex-1">
+                                <Button variant="outline" className="w-full h-10 border-2 border-red-400 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-slate-700 text-red-700 dark:text-red-400 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
+                                    <div className="p-0.5 bg-red-100 dark:bg-slate-900 rounded-full">
+                                        <ArrowLeft className="h-3 w-3 text-red-600 dark:text-red-400 rotate-[90deg]" />
+                                    </div>
+                                    <span>Auslagern</span>
+                                </Button>
+                            </Link>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
 
             {/* MAIN CONTENT AREA */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch mt-6">
                 <div className="lg:col-span-5 flex flex-col gap-6">
                     <Card className="shadow-sm border-2 border-border overflow-hidden bg-white dark:bg-card h-full flex flex-col">
                         <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
@@ -313,16 +348,16 @@ export default function UnterpositionDetailPage() {
             <ItemQrModal
                 isOpen={showQrModal}
                 onClose={() => setShowQrModal(false)}
-                title={unterposition.name}
-                subtitle={`UP ${unterposition.posNummer || ''} | POS ${parentPosition?.posNummer || ''} | TS ${(teilsystem?.teilsystemNummer || '').replace(/^ts\s?/i, '')}`}
-                qrValue={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/unterposition/${unterposition.id}`}
+                title={`${parentPosition?.name} / ${unterposition.name}`}
+                subtitle={`TS ${(teilsystem?.teilsystemNummer || '').replace(/^ts\s?/i, '')}`}
+                qrValue={`${getAppUrl()}/share/unterposition/${unterposition.id}`}
                 countLabel="Menge"
                 count={unterposition.menge}
                 filePrefix=""
                 id={unterposition.id}
-                projectNumber={activeProjekt?.projektnummer}
-                projectName={activeProjekt?.projektname}
+                projectNumber={project?.projektnummer || activeProjekt?.projektnummer}
+                projectName={project?.projektname || activeProjekt?.projektname}
             />
-        </div>
+        </div >
     );
 }

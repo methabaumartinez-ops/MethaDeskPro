@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { PositionService } from '@/lib/services/positionService';
 import { LagerortService } from '@/lib/services/lagerortService';
 import { LagerortSelect } from '@/components/shared/LagerortSelect';
+import { SubsystemService } from '@/lib/services/subsystemService';
 import { Position, Teilsystem, Lagerort, Beschichtung, PlanStatus, ABTEILUNGEN_CONFIG } from '@/types';
 import { ArrowLeft, Save, UploadCloud, FileType, Paperclip, FileText, Loader2, X, Search, Plus, Loader, Trash2 } from 'lucide-react';
 import Link from 'next/link';
@@ -54,6 +55,7 @@ export default function PositionEditPage() {
     const [loading, setLoading] = useState(true);
     const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
     const [position, setPosition] = useState<Position | null>(null);
+    const [teilsystem, setTeilsystem] = useState<Teilsystem | null>(null);
 
     const { register, handleSubmit, formState: { errors, isSubmitting }, reset, watch, setValue } = useForm<PositionValues>({
         resolver: zodResolver(positionSchema),
@@ -99,6 +101,11 @@ export default function PositionEditPage() {
                         bemerkung: data.bemerkung || '',
                         ifcUrl: data.ifcUrl || '',
                     } as any);
+
+                    // Fetch parent teilsystem
+                    if (data.teilsystemId) {
+                        SubsystemService.getTeilsystemById(data.teilsystemId).then(setTeilsystem).catch(console.error);
+                    }
 
                     if (data.ifcUrl) {
                         try {
@@ -257,8 +264,23 @@ export default function PositionEditPage() {
                 Zurück zur Position
             </Link>
 
-            <div className="flex justify-between items-center">
+            <div className="flex justify-start items-center gap-4">
                 <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Position bearbeiten</h1>
+                {position && (
+                    <div className="flex items-center gap-3">
+                        {teilsystem && (
+                            <div className="flex items-baseline gap-2 bg-primary/5 px-4 py-2 rounded-xl border border-primary/20 shadow-sm">
+                                <span className="text-xl font-black text-primary drop-shadow-sm">TS{teilsystem.teilsystemNummer}</span>
+                                <span className="text-lg font-bold text-muted-foreground truncate max-w-[200px]">{teilsystem.name}</span>
+                            </div>
+                        )}
+                        <div className="w-px h-8 bg-border" />
+                        <div className="flex items-baseline gap-2 bg-muted/30 px-4 py-2 rounded-xl border border-border shadow-sm">
+                            <span className="text-xl font-black text-foreground/70 tracking-tight">POS</span>
+                            <span className="text-lg font-bold text-muted-foreground truncate max-w-[300px]">{position.name}</span>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">

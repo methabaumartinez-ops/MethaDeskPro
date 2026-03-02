@@ -153,7 +153,7 @@ export function ItemQrModal({
                         <span className="text-[10px] font-medium text-slate-400 uppercase tracking-widest mb-1">{projectNumber} {projectName}</span>
                     )}
                     <span className="text-4xl font-black text-slate-900 tracking-tighter leading-tight">{subtitle}</span>
-                    <h2 className="text-xl font-bold text-slate-500 tracking-tight mt-1 px-4">{title}</h2>
+                    <h2 className="text-xl font-black text-slate-800 tracking-tight mt-0.5 px-4">{title}</h2>
                 </div>
 
                 {/* Main QR Area */}

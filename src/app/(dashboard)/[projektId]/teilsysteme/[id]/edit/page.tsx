@@ -103,6 +103,7 @@ export default function TeilsystemEditPage() {
     const [isLieferantenOpen, setIsLieferantenOpen] = useState(false);
     const [loadingSubunternehmer, setLoadingSubunternehmer] = useState(true);
     const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
+    const [teilsystem, setTeilsystem] = useState<Teilsystem | null>(null);
 
     const [docDragActive, setDocDragActive] = useState(false);
     const [dokumenteFiles, setDokumenteFiles] = useState<any[]>([]);
@@ -173,6 +174,7 @@ export default function TeilsystemEditPage() {
             try {
                 const item = await SubsystemService.getTeilsystemById(id);
                 if (item) {
+                    setTeilsystem(item);
                     setValue('teilsystemNummer', item.teilsystemNummer || '');
                     setValue('ks', String(item.ks || ''));
                     setValue('name', item.name);
@@ -428,8 +430,14 @@ export default function TeilsystemEditPage() {
                 Zurück al Teilsystem
             </Link>
 
-            <div className="flex justify-between items-center">
+            <div className="flex justify-start items-center gap-4">
                 <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Teilsystem bearbeiten</h1>
+                {teilsystem && (
+                    <div className="flex items-baseline gap-2 bg-primary/5 px-4 py-2 rounded-xl border border-primary/20 shadow-sm">
+                        <span className="text-xl font-black text-primary drop-shadow-sm">TS{teilsystem.teilsystemNummer}</span>
+                        <span className="text-lg font-bold text-muted-foreground truncate max-w-[400px]">{teilsystem.name}</span>
+                    </div>
+                )}
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">

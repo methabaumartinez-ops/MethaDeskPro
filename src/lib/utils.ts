@@ -5,6 +5,11 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
+export function getAppUrl() {
+    if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_APP_URL || '';
+    return process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+}
+
 export function cleanBemerkung(text?: string): string {
     if (!text) return '';
     return text

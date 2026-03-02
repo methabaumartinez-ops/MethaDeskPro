@@ -58,8 +58,8 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
         // USE THE SERVICE FOR CASCADE DELETE
         await SubsystemService.deleteTeilsystem(id);
         return NextResponse.json({ success: true });
-    } catch (error) {
+    } catch (error: any) {
         console.error("API Error deleting teilsystem:", error);
-        return NextResponse.json({ error: 'Failed to delete' }, { status: 500 });
+        return NextResponse.json({ error: error.message || 'Failed to delete teilsystem' }, { status: 500 });
     }
 }
