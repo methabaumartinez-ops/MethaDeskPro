@@ -556,11 +556,6 @@ export default function TeilsystemErfassenPage() {
                                     error={errors.eroeffnetAm?.message}
                                 />
                                 <DateInput
-                                    label="Montagetermin"
-                                    className="h-9"
-                                    {...register('montagetermin')}
-                                />
-                                <DateInput
                                     label="Plan-Abgabe"
                                     className="h-9"
                                     {...register('abgabePlaner')}
@@ -569,6 +564,11 @@ export default function TeilsystemErfassenPage() {
                                     label="Lieferfrist"
                                     className="h-9"
                                     {...register('lieferfrist')}
+                                />
+                                <DateInput
+                                    label="Montagetermin"
+                                    className="h-9"
+                                    {...register('montagetermin')}
                                 />
                                 <Select
                                     label="Eröffnet durch *"

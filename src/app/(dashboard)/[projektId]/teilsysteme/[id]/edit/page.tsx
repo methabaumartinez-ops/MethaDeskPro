@@ -518,16 +518,16 @@ export default function TeilsystemEditPage() {
                                     className="h-9"
                                     {...register('lieferfrist')}
                                 />
+                                <DateInput
+                                    label="Montagetermin"
+                                    className="h-9"
+                                    {...register('montagetermin')}
+                                />
                                 <Select
                                     label="Eröffnet durch"
                                     options={mitarbeiterOptions}
                                     className="h-9"
                                     {...register('eroeffnetDurch')}
-                                />
-                                <DateInput
-                                    label="Montagetermin"
-                                    className="h-9"
-                                    {...register('montagetermin')}
                                 />
                             </div>
 
