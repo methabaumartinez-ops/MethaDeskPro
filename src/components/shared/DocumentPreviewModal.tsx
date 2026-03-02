@@ -15,8 +15,10 @@ interface DocumentPreviewModalProps {
 export function DocumentPreviewModal({ isOpen, onClose, url, title }: DocumentPreviewModalProps) {
     if (!isOpen) return null;
 
-    const isImage = /\.(jpg|jpeg|png|webp|avif|gif)$/i.test(url);
-    const isPDF = /\.pdf$/i.test(url);
+    // Enhanced detection: check extension and common URL patterns (like Google Drive)
+    const normalizedUrl = url.toLowerCase();
+    const isImage = /\.(jpg|jpeg|png|webp|avif|gif|svg)$/i.test(normalizedUrl) || normalizedUrl.includes('image');
+    const isPDF = /\.pdf($|\?)/i.test(normalizedUrl) || normalizedUrl.includes('drive.google.com') || normalizedUrl.includes('docs.google.com');
 
     return (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 md:p-8">
@@ -60,9 +62,10 @@ export function DocumentPreviewModal({ isOpen, onClose, url, title }: DocumentPr
                 <div className="flex-1 bg-slate-50 dark:bg-slate-900/50 p-4 md:p-8 relative overflow-hidden flex items-center justify-center">
                     {isPDF ? (
                         <iframe
-                            src={`${url}#view=FitH`}
+                            src={url.includes('drive.google.com') ? url.replace(/\/view\?usp=sharing|\/view/g, '/preview') : `${url}#view=FitH`}
                             className="w-full h-full rounded-2xl border-2 border-border/50 bg-white shadow-inner"
                             title={title}
+                            allow="autoplay"
                         />
                     ) : isImage ? (
                         <div className="relative w-full h-full flex items-center justify-center">
