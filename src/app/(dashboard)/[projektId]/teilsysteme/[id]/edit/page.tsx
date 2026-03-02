@@ -24,6 +24,7 @@ import { ProjectService } from '@/lib/services/projectService';
 import { cn } from '@/lib/utils';
 import { IfcImportModal, IfcExtractResult } from '@/components/shared/IfcImportModal';
 import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 const teilsystemSchema = z.object({
     teilsystemNummer: z.string().optional(),
@@ -110,6 +111,7 @@ export default function TeilsystemEditPage() {
     const [uploadingDocs, setUploadingDocs] = useState(false);
     const docInputRef = React.useRef<HTMLInputElement>(null);
     const [previewDoc, setPreviewDoc] = useState<{ url: string, title: string } | null>(null);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
     const loadDokumente = async () => {
         try {
@@ -380,8 +382,10 @@ export default function TeilsystemEditPage() {
     };
 
     const handleDelete = async () => {
-        if (!confirm(`Sind Sie sicher, dass Sie dieses Teilsystem permanent löschen möchten?`)) return;
+        setIsDeleteDialogOpen(true);
+    };
 
+    const confirmDelete = async () => {
         try {
             await SubsystemService.deleteTeilsystem(id);
             router.push(`/${projektId}`);

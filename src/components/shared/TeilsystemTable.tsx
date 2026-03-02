@@ -21,9 +21,18 @@ interface TeilsystemTableProps {
     onRefresh?: () => void;
     editable?: boolean;
     showAbteilung?: boolean;
+    currentAbteilung?: string;
 }
 
-export function TeilsystemTable({ items, projektId, onDelete, onRefresh, editable = false, showAbteilung = false }: TeilsystemTableProps) {
+export function TeilsystemTable({
+    items,
+    projektId,
+    onDelete,
+    onRefresh,
+    editable = false,
+    showAbteilung = false,
+    currentAbteilung
+}: TeilsystemTableProps) {
     const router = useRouter();
     const [warningOpen, setWarningOpen] = React.useState(false);
 
@@ -75,6 +84,8 @@ export function TeilsystemTable({ items, projektId, onDelete, onRefresh, editabl
                 </TableHeader>
                 <TableBody>
                     {sortedItems.map((item) => {
+                        const canEdit = editable && (!currentAbteilung || item.abteilung === currentAbteilung);
+
                         return (
                             <TableRow
                                 key={item.id}
@@ -111,7 +122,7 @@ export function TeilsystemTable({ items, projektId, onDelete, onRefresh, editabl
                                 </TableCell>
                                 {showAbteilung && (
                                     <TableCell className="p-4" onClick={(e) => e.stopPropagation()}>
-                                        {editable ? (
+                                        {canEdit ? (
                                             <Select
                                                 value={item.abteilung || 'Schlosserei'}
                                                 onChange={(e) => handleAbteilungChange(item, e.target.value as Abteilung)}
@@ -119,14 +130,14 @@ export function TeilsystemTable({ items, projektId, onDelete, onRefresh, editabl
                                                 className="h-9 text-xs font-bold w-full"
                                             />
                                         ) : (
-                                            <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest text-orange-600 border-orange-200">
+                                            <Badge variant={(ABTEILUNGEN_CONFIG.find(a => a.name === item.abteilung)?.color as any) || 'outline'} className="text-[10px] font-bold uppercase tracking-widest border-2">
                                                 {item.abteilung || 'Schlosserei'}
                                             </Badge>
                                         )}
                                     </TableCell>
                                 )}
                                 <TableCell className="p-4" onClick={(e) => e.stopPropagation()}>
-                                    {editable ? (
+                                    {canEdit ? (
                                         <Select
                                             value={item.status || 'offen'}
                                             onChange={(e) => handleStatusChange(item.id, e.target.value as ItemStatus)}

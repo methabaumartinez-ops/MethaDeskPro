@@ -2,8 +2,11 @@
 
 import React from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { X, Download, Printer, Share2 } from 'lucide-react';
+import { X, Download, Printer, Share2, Check, Package, Layers, FileText, ListTodo, Loader2, FileStack, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PositionService } from '@/lib/services/positionService';
+import { SubPositionService } from '@/lib/services/subPositionService';
+import { cn } from '@/lib/utils';
 
 interface ItemQrModalProps {
     isOpen: boolean;
@@ -138,8 +141,7 @@ export function ItemQrModal({
     };
 
     return (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose} />
+        <div className="fixed inset-0 z-[150] bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm animate-in fade-in duration-300 flex items-center justify-center p-4">
             <div className="relative bg-white dark:bg-card w-full max-w-sm rounded-[2.5rem] shadow-2xl border-2 border-primary/20 p-8 flex flex-col items-center gap-6 animate-in zoom-in slide-in-from-bottom-4 duration-300">
                 <button
                     onClick={onClose}
@@ -150,24 +152,24 @@ export function ItemQrModal({
 
                 <div className="text-center flex flex-col items-center">
                     {projectNumber && projectName && (
-                        <span className="text-[10px] font-medium text-slate-400 uppercase tracking-widest mb-1">{projectNumber} {projectName}</span>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{projectNumber} {projectName}</span>
                     )}
-                    <span className="text-4xl font-black text-slate-900 tracking-tighter leading-tight">{subtitle}</span>
-                    <h2 className="text-xl font-black text-slate-800 tracking-tight mt-0.5 px-4">{title}</h2>
+                    <span className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter leading-tight">{subtitle}</span>
+                    <h2 className="text-xl font-black text-slate-800 dark:text-slate-200 tracking-tight mt-0.5 px-4">{title}</h2>
                 </div>
 
                 {/* Main QR Area */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border-4 border-primary/10 shadow-inner group flex flex-col items-center gap-6">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] border-4 border-primary/10 shadow-inner group flex flex-col items-center gap-6">
                     <div id="item-qr-container">
                         <QRCodeSVG
                             value={qrValue}
-                            size={220}
+                            size={200}
                             level="H"
                             className="drop-shadow-sm group-hover:scale-105 transition-transform duration-500"
                             imageSettings={{
                                 src: LOGO_DATA_URL,
-                                height: 50,
-                                width: 50,
+                                height: 45,
+                                width: 45,
                                 excavate: true,
                             }}
                         />
@@ -175,44 +177,38 @@ export function ItemQrModal({
                 </div>
 
                 <div className="text-center">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 italic">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-1 italic">
                         {countLabel}
                     </p>
-                    <p className="text-2xl font-black text-primary leading-none">
+                    <p className="text-3xl font-black text-primary leading-none tracking-tighter">
                         {count}
                     </p>
                 </div>
 
                 <div className="flex gap-4 w-full justify-center">
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-12 w-12 rounded-2xl border-2 hover:bg-primary hover:text-white transition-all hover:scale-110 active:scale-90 shadow-sm"
+                    <button
+                        className="h-12 w-12 rounded-2xl border-2 border-border bg-background flex items-center justify-center hover:bg-primary hover:text-white transition-all hover:scale-110 active:scale-90 shadow-sm"
                         title="Download"
                         onClick={handleDownload}
                     >
                         <Download className="h-5 w-5" />
-                    </Button>
+                    </button>
 
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-12 w-12 rounded-2xl border-2 hover:bg-primary hover:text-white transition-all hover:scale-110 active:scale-90 shadow-sm"
+                    <button
+                        className="h-12 w-12 rounded-2xl border-2 border-border bg-background flex items-center justify-center hover:bg-primary hover:text-white transition-all hover:scale-110 active:scale-90 shadow-sm"
                         title="Print"
                         onClick={handlePrint}
                     >
                         <Printer className="h-5 w-5" />
-                    </Button>
+                    </button>
 
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-12 w-12 rounded-2xl border-2 hover:bg-primary hover:text-white transition-all hover:scale-110 active:scale-90 shadow-sm"
+                    <button
+                        className="h-12 w-12 rounded-2xl border-2 border-border bg-background flex items-center justify-center hover:bg-primary hover:text-white transition-all hover:scale-110 active:scale-90 shadow-sm"
                         title="Share"
                         onClick={handleShare}
                     >
                         <Share2 className="h-5 w-5" />
-                    </Button>
+                    </button>
                 </div>
             </div>
         </div>

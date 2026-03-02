@@ -65,7 +65,7 @@ export const ChatAssistant = ({
                     isSidebarMode ? "fixed left-[260px] bottom-4 z-50 shadow-2xl" : "",
                     isHeaderMode ? "fixed right-6 bottom-4 z-50 shadow-2xl" : ""
                 )}>
-                    <Card className="h-full flex flex-col shadow-2xl border-slate-200 bg-white dark:bg-slate-950 overflow-hidden">
+                    <Card className="h-full flex flex-col shadow-2xl border-2 border-slate-200 bg-white dark:bg-slate-950 overflow-hidden rounded-[2.5rem]">
                         <CardHeader className="bg-primary p-4 flex flex-row items-center justify-between space-y-0">
                             <div className="flex items-center gap-3">
                                 <div className="bg-white/20 p-2 rounded-xl flex items-center justify-center">

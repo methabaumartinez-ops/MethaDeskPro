@@ -511,24 +511,26 @@ export default function AusfuehrungPage() {
                                                             </TableCell>
                                                             <TableCell className="p-4" onClick={(e) => e.stopPropagation()}>
                                                                 <div className="flex flex-col gap-1">
-                                                                    <select
-                                                                        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-2 py-1 text-[10px] font-black uppercase tracking-tight focus:ring-1 focus:ring-orange-500 cursor-pointer hover:border-orange-500 transition-all outline-none"
-                                                                        value={item.status}
-                                                                        onChange={async (e) => {
-                                                                            const newStatus = e.target.value as any;
-                                                                            try {
-                                                                                await SubsystemService.updateTeilsystem(item.id, { status: newStatus });
-                                                                                setSubsystems(prev => prev.map(s => s.id === item.id ? { ...s, status: newStatus } : s));
-                                                                            } catch (err) {
-                                                                                console.error("Failed to update status", err);
-                                                                                alert("Fehler beim Aktualisieren des Status");
-                                                                            }
-                                                                        }}
-                                                                    >
-                                                                        <option value="offen">Offen</option>
-                                                                        <option value="verbaut">Verbaut</option>
-                                                                        <option value="geaendert">Nachbearbeitung</option>
-                                                                    </select>
+                                                                    {item.abteilung === 'Bau' ? (
+                                                                        <select
+                                                                            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-2 py-1 text-[10px] font-black uppercase tracking-tight focus:ring-1 focus:ring-orange-500 cursor-pointer hover:border-orange-500 transition-all outline-none"
+                                                                            value={item.status}
+                                                                            onChange={async (e) => {
+                                                                                const newStatus = e.target.value as any;
+                                                                                try {
+                                                                                    await SubsystemService.updateTeilsystem(item.id, { status: newStatus });
+                                                                                    setSubsystems(prev => prev.map(s => s.id === item.id ? { ...s, status: newStatus } : s));
+                                                                                } catch (err) {
+                                                                                    console.error("Failed to update status", err);
+                                                                                    alert("Fehler beim Aktualisieren des Status");
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            <option value="offen">Offen</option>
+                                                                            <option value="verbaut">Verbaut</option>
+                                                                            <option value="geaendert">Nachbearbeitung</option>
+                                                                        </select>
+                                                                    ) : null}
                                                                     <div>
                                                                         <StatusBadge status={item.status} className="scale-75 origin-left" />
                                                                     </div>

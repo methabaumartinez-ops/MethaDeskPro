@@ -132,6 +132,7 @@ export default function AbteilungPage() {
                             onRefresh={loadData}
                             editable={true}
                             showAbteilung={true}
+                            currentAbteilung={abteilungName}
                         />
                     ) : (
                         <div className="py-32 text-center flex flex-col items-center">

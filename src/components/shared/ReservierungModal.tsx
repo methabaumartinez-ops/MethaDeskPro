@@ -8,7 +8,8 @@ import { ProjectService } from '@/lib/services/projectService';
 import { FleetService } from '@/lib/services/fleetService';
 import { EmployeeService } from '@/lib/services/employeeService';
 import { Fahrzeug, FahrzeugReservierung, Projekt } from '@/types';
-import { X, CalendarDays } from 'lucide-react';
+import { X, CalendarDays, AlertTriangle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ReservierungModalProps {
     isOpen: boolean;
@@ -92,25 +93,29 @@ export function ReservierungModal({ isOpen, onClose, onSave, fahrzeug, projektId
     minResDateObj.setDate(now.getDate() + 3);
     const minReservationDate = minResDateObj.toISOString().split('T')[0];
 
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setErrorMsg(null);
+
         if (!form.fahrzeugId || !form.projektId || !form.reserviertAb || !form.reserviertBis || !form.reserviertDurch) {
-            alert('Bitte füllen Sie alle Pflichtfelder aus (Projekt, Zeitrum und Name).');
+            setErrorMsg('Bitte füllen Sie alle Pflichtfelder aus (Projekt, Zeitraum und Name).');
             return;
         }
 
         if (hasConflict) {
-            alert('Das Fahrzeug es in diesem Zeitraum bereits reserviert.');
+            setErrorMsg('Das Fahrzeug ist in diesem Zeitraum bereits reserviert.');
             return;
         }
 
         if (form.reserviertAb < minReservationDate) {
-            alert(`Reservierungen sind erst ab dem ${new Date(minResDateObj).toLocaleDateString('de-CH')} möglich (mindestens 3 Tage im Voraus).`);
+            setErrorMsg(`Reservierungen sind erst ab dem ${new Date(minResDateObj).toLocaleDateString('de-CH')} möglich (mindestens 3 Tage im Voraus).`);
             return;
         }
 
         if (form.reserviertBis < form.reserviertAb) {
-            alert('Das Enddatum muss nach dem Startdatum liegen.');
+            setErrorMsg('Das Enddatum muss nach dem Startdatum liegen.');
             return;
         }
 
@@ -146,106 +151,133 @@ export function ReservierungModal({ isOpen, onClose, onSave, fahrzeug, projektId
     ];
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-            {/* Backdrop */}
-            <div className="absolute inset-0 bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm" onClick={onClose} />
+        <div className="fixed inset-0 z-[150] bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+            <div className="relative bg-white dark:bg-card w-full max-w-lg rounded-[2.5rem] shadow-2xl border-2 border-primary/20 flex flex-col overflow-hidden animate-in zoom-in slide-in-from-bottom-8 duration-500">
 
-            {/* Modal */}
-            <div className="relative bg-white dark:bg-card dark:text-slate-100 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-strong w-full max-w-lg mx-4 overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-slate-900">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
-                    <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                            <CalendarDays className="h-5 w-5 text-primary" />
+                <div className="flex items-center justify-between px-10 py-8 border-b border-border bg-muted/30">
+                    <div className="flex items-center gap-5">
+                        <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center shadow-inner border-2 border-primary/10">
+                            <CalendarDays className="h-7 w-7 text-primary" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-bold text-foreground">Neue Reservierung</h2>
+                            <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-1 block leading-none">FLOTTENMANAGEMENT</span>
+                            <h2 className="text-2xl font-black text-foreground tracking-tighter leading-none">Reservierung</h2>
                             {fahrzeug && (
-                                <p className="text-sm text-muted-foreground">{fahrzeug.bezeichnung} – {fahrzeug.inventarnummer}</p>
+                                <p className="text-xs font-bold text-muted-foreground mt-1.5 opacity-60 uppercase">{fahrzeug.bezeichnung} – {fahrzeug.inventarnummer}</p>
                             )}
                         </div>
                     </div>
-                    <button onClick={onClose} className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-muted transition-colors">
-                        <X className="h-4 w-4 text-muted-foreground" />
+                    <button
+                        onClick={onClose}
+                        className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-400 hover:text-slate-600"
+                    >
+                        <X className="h-6 w-6" />
                     </button>
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <form onSubmit={handleSubmit} className="p-10 space-y-6">
                     {loadingData && (
-                        <div className="text-center py-2 text-sm text-muted-foreground">Lade Daten...</div>
-                    )}
-
-                    {!fahrzeug && (
-                        <Select
-                            label="Fahrzeug"
-                            options={fahrzeugOptions}
-                            value={form.fahrzeugId}
-                            onChange={e => setForm({ ...form, fahrzeugId: e.target.value })}
-                        />
-                    )}
-
-                    <Select
-                        label="Projekt"
-                        options={projektOptions}
-                        value={form.projektId}
-                        onChange={e => setForm({ ...form, projektId: e.target.value })}
-                    />
-
-                    {/* Baustelle input removed as requested */}
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                            <Input
-                                label="Reserviert ab"
-                                type="date"
-                                min={minReservationDate}
-                                value={form.reserviertAb}
-                                onChange={e => setForm({ ...form, reserviertAb: e.target.value })}
-                                className={hasConflict ? "border-red-500 focus:ring-red-500" : ""}
-                            />
-                            <p className="text-[10px] text-muted-foreground px-1">Min. 3 Tage Vorlauf</p>
+                        <div className="text-center py-4 text-xs font-black uppercase tracking-widest text-muted-foreground animate-pulse">
+                            Daten werden geladen...
                         </div>
-                        <Input
-                            label="Reserviert bis"
-                            type="date"
-                            min={form.reserviertAb || minReservationDate}
-                            value={form.reserviertBis}
-                            onChange={e => setForm({ ...form, reserviertBis: e.target.value })}
-                            className={hasConflict ? "border-red-500 focus:ring-red-500" : ""}
-                        />
+                    )}
+
+                    <div className="space-y-6">
+                        {!fahrzeug && (
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-1">Fahrzeug</label>
+                                <Select
+                                    options={fahrzeugOptions}
+                                    value={form.fahrzeugId}
+                                    onChange={e => setForm({ ...form, fahrzeugId: e.target.value })}
+                                />
+                            </div>
+                        )}
+
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-1">Baustelle / Projekt</label>
+                            <Select
+                                options={projektOptions}
+                                value={form.projektId}
+                                onChange={e => setForm({ ...form, projektId: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-1">Ab Datum</label>
+                                <Input
+                                    type="date"
+                                    min={minReservationDate}
+                                    value={form.reserviertAb}
+                                    onChange={e => setForm({ ...form, reserviertAb: e.target.value })}
+                                    className={cn(
+                                        "h-12 rounded-xl text-sm font-bold border-2",
+                                        hasConflict ? "border-red-500 focus-visible:ring-red-500" : "border-border/60"
+                                    )}
+                                />
+                                <p className="text-[9px] font-black text-muted-foreground/60 px-1 uppercase tracking-wider">Min. 3 Tage Vorlauf erforderlich</p>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-1">Bis Datum</label>
+                                <Input
+                                    type="date"
+                                    min={form.reserviertAb || minReservationDate}
+                                    value={form.reserviertBis}
+                                    onChange={e => setForm({ ...form, reserviertBis: e.target.value })}
+                                    className={cn(
+                                        "h-12 rounded-xl text-sm font-bold border-2",
+                                        hasConflict ? "border-red-500 focus-visible:ring-red-500" : "border-border/60"
+                                    )}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-1">Reserviert durch</label>
+                            <Select
+                                options={mitarbeiterOptions}
+                                value={form.reserviertDurch}
+                                onChange={e => setForm({ ...form, reserviertDurch: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-1">Bemerkung</label>
+                            <Input
+                                placeholder="Zusatzinformationen..."
+                                value={form.bemerkung}
+                                onChange={e => setForm({ ...form, bemerkung: e.target.value })}
+                                className="h-12 rounded-xl text-sm font-bold border-2 border-border/60"
+                            />
+                        </div>
+
+                        {errorMsg && (
+                            <div className="p-4 bg-red-50 dark:bg-red-950/20 border-2 border-red-500/20 rounded-2xl flex items-center gap-3 animate-in slide-in-from-top-2">
+                                <AlertTriangle className="h-5 w-5 text-red-600 shrink-0" />
+                                <p className="text-xs font-black text-red-600 uppercase tracking-tight leading-tight">
+                                    {errorMsg}
+                                </p>
+                            </div>
+                        )}
                     </div>
 
-                    {hasConflict && (
-                        <p className="text-xs font-bold text-red-600 animate-pulse">
-                            ⚠️ Achtung: Das Fahrzeug ist in diesem Zeitraum bereits reserviert!
-                        </p>
-                    )}
-
-                    <Select
-                        label="Reserviert durch"
-                        options={mitarbeiterOptions}
-                        value={form.reserviertDurch}
-                        onChange={e => setForm({ ...form, reserviertDurch: e.target.value })}
-                    />
-
-                    <Input
-                        label="Bemerkung"
-                        placeholder="Optional"
-                        value={form.bemerkung}
-                        onChange={e => setForm({ ...form, bemerkung: e.target.value })}
-                    />
-
-                    <div className="flex justify-end gap-3 pt-2">
-                        <Button variant="ghost" type="button" onClick={onClose}>
+                    <div className="flex gap-4 pt-6">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="flex-1 h-14 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-slate-600 transition-colors"
+                        >
                             Abbrechen
-                        </Button>
+                        </button>
                         <Button
                             type="submit"
-                            className="font-bold shadow-lg shadow-primary/20"
+                            className="flex-[2] h-14 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:grayscale disabled:scale-100"
                             disabled={!form.fahrzeugId || !form.projektId || !form.reserviertAb || !form.reserviertBis || !form.reserviertDurch || loadingData || hasConflict}
                         >
-                            Reservierung erstellen
+                            Reservierung Erstellen
                         </Button>
                     </div>
                 </form>
