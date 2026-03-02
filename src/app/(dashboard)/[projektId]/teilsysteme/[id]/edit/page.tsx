@@ -215,7 +215,10 @@ export default function TeilsystemEditPage() {
 
     useEffect(() => {
         if (currentAbteilung) {
-            setValue('ks', currentAbteilung === 'Bau' ? '1' : '2', { shouldValidate: true, shouldDirty: true });
+            let ksValue = '2';
+            if (currentAbteilung === 'Bau') ksValue = '1';
+            else if (currentAbteilung === 'Unternehmer') ksValue = '3';
+            setValue('ks', ksValue, { shouldValidate: true, shouldDirty: true });
         }
     }, [currentAbteilung, setValue]);
 
@@ -455,7 +458,7 @@ export default function TeilsystemEditPage() {
                                         error={errors.ks?.message}
                                     />
                                     <p className="text-[9px] font-black text-orange-600 mt-0.5 ml-1 uppercase">
-                                        {watch('ks') === '1' ? 'Baumeister' : watch('ks') === '2' ? 'Produktion' : ''}
+                                        {watch('ks') === '1' ? 'Baumeister' : watch('ks') === '2' ? 'Produktion' : watch('ks') === '3' ? 'Extern' : ''}
                                     </p>
                                 </div>
                                 <Input

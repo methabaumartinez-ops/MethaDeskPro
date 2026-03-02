@@ -1,4 +1,3 @@
-import 'server-only';
 import { google } from 'googleapis';
 import { Readable } from 'stream';
 
@@ -199,5 +198,50 @@ export const uploadFileToDrive = async (
             throw new Error(`Drive API Error (${error.response.status}): ${JSON.stringify(error.response.data)}`);
         }
         throw error;
+    }
+};
+/**
+ * Deletes a file or folder from Google Drive by its ID.
+ */
+export const deleteFileFromDrive = async (fileId: string) => {
+    const drive = getDriveClient();
+    if (!drive) throw new Error('Google Drive client is not available');
+
+    try {
+        await (drive.files as any).delete({
+            fileId: fileId,
+        });
+        console.log(`[DriveService] Deleted file/folder: ${fileId}`);
+        return true;
+    } catch (error: any) {
+        // If file already deleted or not accessible, we log it but don't usually throw
+        // to allow cascading deletes to continue.
+        if (error.code === 404) {
+            console.warn(`[DriveService] File not found for deletion: ${fileId}`);
+            return true;
+        }
+        console.error(`[DriveService] Error deleting file ${fileId}:`, error.message || error);
+        throw error;
+    }
+};
+
+/**
+ * Lists files in a folder.
+ */
+export const listFilesByParent = async (parentId: string) => {
+    const drive = getDriveClient();
+    if (!drive) throw new Error('Google Drive client is not available');
+
+    try {
+        const query = `'${parentId}' in parents and trashed=false`;
+        const res = await (drive.files as any).list({
+            q: query,
+            fields: 'files(id, name, mimeType)',
+            spaces: 'drive',
+        });
+        return res.data.files || [];
+    } catch (error: any) {
+        console.error(`[DriveService] Error listing files for parent ${parentId}:`, error.message || error);
+        return [];
     }
 };

@@ -5,6 +5,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Button } from '@/components/ui/button';
 import { Printer, Share2, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useProjekt } from '@/lib/context/ProjektContext';
 
 interface QRCodeSectionProps {
     url: string;
@@ -15,6 +16,7 @@ interface QRCodeSectionProps {
 
 export function QRCodeSection({ url, title, subtitle, compact = false }: QRCodeSectionProps) {
     const printRef = useRef<HTMLDivElement>(null);
+    const { activeProjekt } = useProjekt();
 
     const handlePrint = () => {
         const printContent = printRef.current;
@@ -40,6 +42,7 @@ export function QRCodeSection({ url, title, subtitle, compact = false }: QRCodeS
                             text-align: center;
                         }
                         .qr-container { padding: 40px; border: 2px solid #000; border-radius: 20px; }
+                        .project-info { font-size: 10px; color: #94748b; margin-bottom: 5px; text-transform: uppercase; }
                         h1 { margin-top: 20px; font-size: 24px; }
                         p { color: #666; margin-bottom: 20px; }
                         .url { font-size: 10px; color: #999; margin-top: 20px; }
@@ -47,6 +50,7 @@ export function QRCodeSection({ url, title, subtitle, compact = false }: QRCodeS
                 </head>
                 <body>
                     <div class="qr-container">
+                        ${activeProjekt?.projektnummer && activeProjekt?.projektname ? `<div class="project-info">${activeProjekt.projektnummer} ${activeProjekt.projektname}</div>` : ''}
                         ${printContent.innerHTML}
                         <h1>${title}</h1>
                         ${subtitle ? `<p>${subtitle}</p>` : ''}

@@ -1,8 +1,5 @@
-import { DatabaseService } from '@/lib/services/db';
 import { Teilsystem, Position, Material } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
-import { PositionService } from './positionService';
-import { MaterialService } from './materialService';
 
 export const SubsystemService = {
     // CRUD
@@ -25,14 +22,13 @@ export const SubsystemService = {
                 throw error;
             }
         }
-        // Filter by projektId if provided
+
+        const { DatabaseService } = await import('@/lib/services/db');
         let all = await DatabaseService.list<Teilsystem>('teilsysteme');
         if (projektId) {
             all = all.filter(t => t.projektId === projektId);
         }
         if (abteilungId) {
-            // Mapping ID to Name because the interface uses 'Abteilung' (the name/display string)
-            // or we might store both. Assuming we store the type 'Abteilung'
             all = all.filter(t => t.abteilung?.toLowerCase() === abteilungId.toLowerCase());
         }
         return all;
@@ -50,6 +46,7 @@ export const SubsystemService = {
                 throw error;
             }
         }
+        const { DatabaseService } = await import('@/lib/services/db');
         return DatabaseService.get<Teilsystem>('teilsysteme', id);
     },
 
@@ -68,6 +65,7 @@ export const SubsystemService = {
                 throw error;
             }
         }
+        const { DatabaseService } = await import('@/lib/services/db');
         const newSystem: Teilsystem = {
             ...teilsystem,
             id: teilsystem.id || uuidv4(),
@@ -90,6 +88,7 @@ export const SubsystemService = {
                 throw error;
             }
         }
+        const { DatabaseService } = await import('@/lib/services/db');
         const existing = await this.getTeilsystemById(id);
         if (!existing) throw new Error('Teilsystem not found');
         const updated = { ...existing, ...updates };
@@ -103,26 +102,43 @@ export const SubsystemService = {
             return;
         }
 
-        // 1. Get all positions for this TS to clean their children (UPos and Materials)
+        const { DatabaseService } = await import('@/lib/services/db');
+        const { PositionService } = await import('./positionService');
+        const { DokumentService } = await import('./dokumentService');
+        const gDrive = eval('require')('./googleDriveService');
+
+        const ts = await this.getTeilsystemById(id);
         const positions = await PositionService.getPositionenByTeilsystem(id);
 
         for (const pos of positions) {
-            // Delete Unterpositionen for this position
-            await DatabaseService.deleteByFilter('unterpositionen', {
-                must: [{ key: 'positionId', match: { value: pos.id } }]
-            });
-            // Delete Materials for this position
             await DatabaseService.deleteByFilter('material', {
                 must: [{ key: 'positionId', match: { value: pos.id } }]
             });
         }
 
-        // 2. Delete all parent positions in one batch
+        const allDocs = await DokumentService.getDokumente({ entityId: id });
+        for (const pos of positions) {
+            const posDocs = await DokumentService.getDokumente({ entityId: pos.id });
+            allDocs.push(...posDocs);
+        }
+
+        for (const doc of allDocs) {
+            if (doc.url && doc.url.includes('id=')) {
+                const fileId = doc.url.split('id=')[1].split('&')[0];
+                try { await gDrive.deleteFileFromDrive(fileId); } catch (e) { console.error(`Failed to delete doc ${fileId}:`, e); }
+            }
+            await DokumentService.deleteDokument(doc.id);
+        }
+
+        if (ts?.ifcUrl && ts.ifcUrl.includes('id=')) {
+            const ifcFileId = ts.ifcUrl.split('id=')[1].split('&')[0];
+            try { await gDrive.deleteFileFromDrive(ifcFileId); } catch (e) { console.error(`Failed to delete IFC ${ifcFileId}:`, e); }
+        }
+
         await DatabaseService.deleteByFilter('positionen', {
             must: [{ key: 'teilsystemId', match: { value: id } }]
         });
 
-        // 3. Finally delete the Teilsystem itself
         return DatabaseService.delete('teilsysteme', id);
     },
 
@@ -131,15 +147,11 @@ export const SubsystemService = {
         return !systems.some(s => s.teilsystemNummer === nummer && s.id !== excludeId);
     },
 
-    // Aggregations
     async getTeilsystemCount(projektId: string): Promise<number> {
         if (!projektId || projektId === 'undefined' || projektId === 'null') return 0;
         if (typeof window !== 'undefined') {
             const res = await fetch(`/api/teilsysteme?projektId=${projektId}`);
-            if (!res.ok) {
-                console.error(`[SubsystemService] Failed to fetch count for projekt ${projektId}:`, res.status);
-                return 0;
-            }
+            if (!res.ok) return 0;
             const data = await res.json();
             return Array.isArray(data) ? data.length : 0;
         }
@@ -156,6 +168,7 @@ export const SubsystemService = {
             const positionen: Position[] = await positionenRes.json();
             return Array.isArray(positionen) ? positionen.filter(p => tsIds.includes(p.teilsystemId)).length : 0;
         }
+        const { PositionService } = await import('./positionService');
         const teilsysteme = await this.getTeilsysteme(projektId);
         const tsIds = teilsysteme.map(t => t.id);
         const positionen = await PositionService.getPositionen();
@@ -170,20 +183,18 @@ export const SubsystemService = {
             const positionenRes = await fetch('/api/data/positionen');
             if (!positionenRes.ok) return 0;
             const positionen: Position[] = await positionenRes.json();
-            const projectPositions = Array.isArray(positionen) ? positionen.filter(p => tsIds.includes(p.teilsystemId)) : [];
-            const posIds = projectPositions.map(p => p.id);
-
+            const posIds = positionen.filter(p => tsIds.includes(p.teilsystemId)).map(p => p.id);
             const materialRes = await fetch('/api/data/material');
-            if (!materialRes.ok) return projectPositions.length > 0 ? 0 : 0; // consistent
+            if (!materialRes.ok) return 0;
             const material: Material[] = await materialRes.json();
             return Array.isArray(material) ? material.filter(m => m.positionId && posIds.includes(m.positionId)).length : 0;
         }
+        const { PositionService } = await import('./positionService');
+        const { MaterialService } = await import('./materialService');
         const teilsysteme = await this.getTeilsysteme(projektId);
         const tsIds = teilsysteme.map(t => t.id);
         const positionen = await PositionService.getPositionen();
-        const projectPositions = positionen.filter(p => tsIds.includes(p.teilsystemId));
-        const posIds = projectPositions.map(p => p.id);
-
+        const posIds = positionen.filter(p => tsIds.includes(p.teilsystemId)).map(p => p.id);
         const material = await MaterialService.getMaterial();
         return material.filter(m => m.positionId && posIds.includes(m.positionId)).length;
     },
@@ -197,45 +208,38 @@ export const SubsystemService = {
                     fetch('/api/data/positionen'),
                     fetch('/api/data/material')
                 ]);
-
                 if (!positionsRes.ok || !materialRes.ok) return [];
-
                 const positionen: Position[] = await positionsRes.json();
                 const material: Material[] = await materialRes.json();
-
                 const tsIds = teilsysteme.map(t => t.id);
-                const projectPositions = Array.isArray(positionen) ? positionen.filter(p => tsIds.includes(p.teilsystemId)) : [];
+                const projectPositions = positionen.filter(p => tsIds.includes(p.teilsystemId));
                 const posIds = projectPositions.map(p => p.id);
-                const projectMaterial = Array.isArray(material) ? material.filter(m => m.positionId && posIds.includes(m.positionId)) : [];
-
+                const projectMaterial = material.filter(m => m.positionId && posIds.includes(m.positionId));
                 const activities = [
                     ...teilsysteme.map((i: any) => ({ action: 'Teilsystem erstellt', target: i.name, time: i.created_at || new Date().toISOString(), link: `/${projektId}/teilsysteme` })),
                     ...projectPositions.map((i: any) => ({ action: 'Position erstellt', target: i.name, time: i.created_at || new Date().toISOString(), link: `/${projektId}/positionen` })),
                     ...projectMaterial.map((i: any) => ({ action: 'Material erfasst', target: i.name, time: i.created_at || new Date().toISOString(), link: `/${projektId}/material` }))
                 ];
-
                 return activities.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 5);
             } catch (error) {
                 console.error("[SubsystemService] Error in getRecentActivity:", error);
                 return [];
             }
         }
+        const { PositionService } = await import('./positionService');
+        const { MaterialService } = await import('./materialService');
         const teilsysteme = await this.getTeilsysteme(projektId);
         const tsIds = teilsysteme.map(t => t.id);
-
         const positionen = await PositionService.getPositionen();
         const projectPositions = positionen.filter(p => tsIds.includes(p.teilsystemId));
         const posIds = projectPositions.map(p => p.id);
-
         const material = await MaterialService.getMaterial();
         const projectMaterial = material.filter(m => m.positionId && posIds.includes(m.positionId));
-
         const activities = [
             ...teilsysteme.map((i: any) => ({ action: 'Teilsystem erstellt', target: i.name, time: i.created_at || new Date().toISOString(), link: `/${projektId}/teilsysteme` })),
             ...projectPositions.map((i: any) => ({ action: 'Position erstellt', target: i.name, time: i.created_at || new Date().toISOString(), link: `/${projektId}/positionen` })),
             ...projectMaterial.map((i: any) => ({ action: 'Material erfasst', target: i.name, time: i.created_at || new Date().toISOString(), link: `/${projektId}/material` }))
         ];
-
         return activities.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 5);
     }
 };

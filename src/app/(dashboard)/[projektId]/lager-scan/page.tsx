@@ -79,23 +79,23 @@ export default function LagerScanSeite() {
             let nummer = '';
 
             if (type === 'teilsystem') {
-                const { SubsystemService } = await import('@/lib/services/subsystemService');
-                const item = await SubsystemService.getTeilsystemById(id);
-                if (item) {
+                const res = await fetch(`/api/teilsysteme/${id}`);
+                if (res.ok) {
+                    const item = await res.json();
                     name = item.name;
                     nummer = String(item.teilsystemNummer || '');
                 }
             } else if (type === 'position') {
-                const { PositionService } = await import('@/lib/services/positionService');
-                const item = await PositionService.getPositionById(id);
-                if (item) {
+                const res = await fetch(`/api/data/positionen/${id}`);
+                if (res.ok) {
+                    const item = await res.json();
                     name = item.name;
                     nummer = item.posNummer || '';
                 }
             } else if (type === 'unterposition') {
-                const { SubPositionService } = await import('@/lib/services/subPositionService');
-                const item = await SubPositionService.getUnterpositionById(id);
-                if (item) {
+                const res = await fetch(`/api/data/unterpositionen/${id}`);
+                if (res.ok) {
+                    const item = await res.json();
                     name = item.name;
                     nummer = item.posNummer || '';
                 }

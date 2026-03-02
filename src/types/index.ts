@@ -40,6 +40,7 @@ export const ABTEILUNGEN_CONFIG = [
   { id: 'bau', name: 'Bau', color: 'error' },
   { id: 'zimmerei', name: 'Zimmerei', color: 'gray' },
   { id: 'subunternehmer', name: 'Subunternehmer', color: 'violet' },
+  { id: 'unternehmer', name: 'Unternehmer', color: 'violet' },
 ] as const;
 
 export const ITEM_STATUS_OPTIONS = [

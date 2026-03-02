@@ -12,7 +12,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useProjekt } from '@/lib/context/ProjektContext';
-import { ProjectService } from '@/lib/services/projectService';
 import { Signature } from '@/components/shared/Signature';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
@@ -27,7 +26,9 @@ export default function WelcomePage() {
     useEffect(() => {
         async function fetchFirstProject() {
             try {
-                const projects = await ProjectService.getProjekte();
+                const res = await fetch('/api/projekte');
+                if (!res.ok) throw new Error('Failed to fetch projects');
+                const projects = await res.json();
                 if (projects && projects.length > 0) {
                     setFirstProjectId(projects[0].id);
                 }

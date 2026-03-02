@@ -9,22 +9,55 @@ import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { cleanBemerkung } from '@/lib/utils';
+import { Select } from '@/components/ui/select';
+import { ITEM_STATUS_OPTIONS, ABTEILUNGEN_CONFIG, ItemStatus, Abteilung } from '@/types';
+import { SubsystemService } from '@/lib/services/subsystemService';
+import { AbteilungWarningModal } from './AbteilungWarningModal';
 
 interface TeilsystemTableProps {
     items: Teilsystem[];
     projektId: string;
     onDelete: (item: Teilsystem) => void;
     onRefresh?: () => void;
+    editable?: boolean;
+    showAbteilung?: boolean;
 }
 
-export function TeilsystemTable({ items, projektId, onDelete, onRefresh }: TeilsystemTableProps) {
+export function TeilsystemTable({ items, projektId, onDelete, onRefresh, editable = false, showAbteilung = false }: TeilsystemTableProps) {
     const router = useRouter();
+    const [warningOpen, setWarningOpen] = React.useState(false);
+
     // Default numeric sort by teilsystemNummer
     const sortedItems = [...items].sort((a, b) => {
         const numA = parseInt(a.teilsystemNummer?.replace(/\D/g, '') || '0', 10);
         const numB = parseInt(b.teilsystemNummer?.replace(/\D/g, '') || '0', 10);
         return numA - numB;
     });
+
+    const handleStatusChange = async (id: string, newStatus: ItemStatus) => {
+        try {
+            await SubsystemService.updateTeilsystem(id, { status: newStatus });
+            if (onRefresh) onRefresh();
+        } catch (error) {
+            console.error("Failed to update status", error);
+        }
+    };
+
+    const handleAbteilungChange = async (item: Teilsystem, newAbteilung: Abteilung) => {
+        if (item.status !== 'abgeschlossen') {
+            setWarningOpen(true);
+            return;
+        }
+
+        try {
+            await SubsystemService.updateTeilsystem(item.id, { abteilung: newAbteilung });
+            if (onRefresh) onRefresh();
+        } catch (error) {
+            console.error("Failed to update abteilung", error);
+        }
+    };
+
+    const abteilungOptions = ABTEILUNGEN_CONFIG.map(a => ({ label: a.name, value: a.name }));
 
     return (
         <div className="overflow-x-auto max-w-full">
@@ -35,7 +68,8 @@ export function TeilsystemTable({ items, projektId, onDelete, onRefresh }: Teils
                         <TableHead className="w-24 px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">KS</TableHead>
                         <TableHead className="min-w-[200px] px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Bezeichnung</TableHead>
                         <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Termine</TableHead>
-                        <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Status</TableHead>
+                        {showAbteilung && <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Abteilung</TableHead>}
+                        <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider w-40">Status</TableHead>
                         <TableHead className="w-10 px-4 py-4"></TableHead>
                     </TableRow>
                 </TableHeader>
@@ -53,7 +87,7 @@ export function TeilsystemTable({ items, projektId, onDelete, onRefresh }: Teils
                                     </Badge>
                                 </TableCell>
                                 <TableCell className="p-4 font-black text-muted-foreground text-xs whitespace-nowrap">
-                                    {item.ks === '1' ? '1 Baumeister' : item.ks === '2' ? '2 Produktion' : (item.ks || '1')}
+                                    {item.ks === '1' ? '1 Baumeister' : item.ks === '2' ? '2 Produktion' : item.ks === '3' ? '3 Extern' : (item.ks || '1')}
                                 </TableCell>
                                 <TableCell className="p-4">
                                     <div className="flex flex-col">
@@ -75,8 +109,33 @@ export function TeilsystemTable({ items, projektId, onDelete, onRefresh }: Teils
                                         </div>
                                     </div>
                                 </TableCell>
-                                <TableCell className="p-4">
-                                    <StatusBadge status={item.status || 'offen'} />
+                                {showAbteilung && (
+                                    <TableCell className="p-4" onClick={(e) => e.stopPropagation()}>
+                                        {editable ? (
+                                            <Select
+                                                value={item.abteilung || 'Schlosserei'}
+                                                onChange={(e) => handleAbteilungChange(item, e.target.value as Abteilung)}
+                                                options={abteilungOptions}
+                                                className="h-9 text-xs font-bold w-full"
+                                            />
+                                        ) : (
+                                            <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest text-orange-600 border-orange-200">
+                                                {item.abteilung || 'Schlosserei'}
+                                            </Badge>
+                                        )}
+                                    </TableCell>
+                                )}
+                                <TableCell className="p-4" onClick={(e) => e.stopPropagation()}>
+                                    {editable ? (
+                                        <Select
+                                            value={item.status || 'offen'}
+                                            onChange={(e) => handleStatusChange(item.id, e.target.value as ItemStatus)}
+                                            options={ITEM_STATUS_OPTIONS}
+                                            className="h-9 text-xs font-bold w-full"
+                                        />
+                                    ) : (
+                                        <StatusBadge status={item.status || 'offen'} />
+                                    )}
                                 </TableCell>
                                 <TableCell className="p-4 text-right">
                                     <div className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -88,6 +147,10 @@ export function TeilsystemTable({ items, projektId, onDelete, onRefresh }: Teils
                     })}
                 </TableBody>
             </Table>
+            <AbteilungWarningModal
+                isOpen={warningOpen}
+                onClose={() => setWarningOpen(false)}
+            />
         </div>
     );
 }

@@ -3,6 +3,9 @@ import { DatabaseService } from '@/lib/services/db';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { Projekt } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
+import { LagerortService } from './lagerortService';
+import { TaskService } from './taskService';
+import { TeamService } from './teamService';
 
 export const ProjectService = {
     async getProjekte(): Promise<Projekt[]> {
@@ -112,11 +115,44 @@ export const ProjectService = {
             if (!res.ok) throw new Error('Failed to delete project');
             return;
         }
-        // Cascade: Delete all Teilsysteme first
+
+        // 0. Get the project to find Drive Folder ID
+        const project = await this.getProjektById(id);
+
+        // 1. Cascade: Delete all Teilsysteme first (this handles TS-linked files)
         const teilsysteme = await SubsystemService.getTeilsysteme(id);
         for (const ts of teilsysteme) {
             await SubsystemService.deleteTeilsystem(ts.id);
         }
+
+        // 2. Cascade: Delete Lagerorte
+        const lagerorte = await LagerortService.getLagerorte(id);
+        for (const lo of lagerorte) {
+            await LagerortService.deleteLagerort(lo.id);
+        }
+
+        // 3. Cascade: Delete Teams and Tasks
+        const teams = await TeamService.getTeams(id);
+        for (const team of teams) {
+            await TeamService.deleteTeam(team.id);
+        }
+
+        const tasks = await TaskService.getTasks(id);
+        for (const task of tasks) {
+            await TaskService.deleteTask(task.id);
+        }
+
+        // 4. Delete Project Folder from Drive if it exists
+        if (project?.driveFolderId) {
+            try {
+                const gDrive = eval('require')('./googleDriveService');
+                await gDrive.deleteFileFromDrive(project.driveFolderId);
+            } catch (e) {
+                console.error(`Failed to delete Drive folder ${project.driveFolderId}:`, e);
+            }
+        }
+
+        // 5. Finally delete the project record
         return DatabaseService.delete('projekte', id);
     }
 };

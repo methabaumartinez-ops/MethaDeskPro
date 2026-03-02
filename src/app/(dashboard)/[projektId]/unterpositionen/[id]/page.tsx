@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { DocumentViewer } from '@/components/shared/DocumentViewer';
 import { TrackingTimeline } from '@/components/shared/TrackingTimeline';
 import { usePermissions } from '@/lib/hooks/usePermissions';
+import { useProjekt } from '@/lib/context/ProjektContext';
 
 export default function UnterpositionDetailPage() {
     const { projektId, id } = useParams() as { projektId: string, id: string };
@@ -32,6 +33,7 @@ export default function UnterpositionDetailPage() {
     const [showQrModal, setShowQrModal] = useState(false);
     const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
     const { can } = usePermissions();
+    const { activeProjekt } = useProjekt();
     const router = useRouter();
 
     useEffect(() => {
@@ -318,6 +320,8 @@ export default function UnterpositionDetailPage() {
                 count={unterposition.menge}
                 filePrefix=""
                 id={unterposition.id}
+                projectNumber={activeProjekt?.projektnummer}
+                projectName={activeProjekt?.projektname}
             />
         </div>
     );

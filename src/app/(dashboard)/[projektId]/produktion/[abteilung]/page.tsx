@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Layers, Search, Filter, ArrowLeft, Plus } from 'lucide-react';
-import { SubsystemService } from '@/lib/services/subsystemService';
-import { ProjectService } from '@/lib/services/projectService';
 import { Teilsystem, Projekt, ABTEILUNGEN_CONFIG } from '@/types';
 import { TeilsystemTable } from '@/components/shared/TeilsystemTable';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
@@ -31,12 +29,17 @@ export default function AbteilungPage() {
     const loadData = async () => {
         setLoading(true);
         try {
-            const [teilsysteme, proj] = await Promise.all([
-                SubsystemService.getTeilsysteme(projektId, abteilungName),
-                ProjectService.getProjektById(projektId)
+            const [teilsystemeRes, projRes] = await Promise.all([
+                fetch(`/api/teilsysteme?projektId=${projektId}&abteilungId=${abteilungName}`),
+                fetch(`/api/data/projekte/${projektId}`)
             ]);
-            setItems(teilsysteme);
-            setProject(proj);
+
+            if (teilsystemeRes.ok) {
+                setItems(await teilsystemeRes.json());
+            }
+            if (projRes.ok) {
+                setProject(await projRes.json());
+            }
         } catch (error) {
             console.error("Failed to load data", error);
         } finally {
@@ -61,7 +64,8 @@ export default function AbteilungPage() {
     const confirmDelete = async () => {
         if (!itemToDelete) return;
         try {
-            await SubsystemService.deleteTeilsystem(itemToDelete.id);
+            const res = await fetch(`/api/teilsysteme/${itemToDelete.id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Failed to delete');
             setItems(prev => prev.filter(i => i.id !== itemToDelete.id));
         } catch (error) {
             console.error("Failed to delete", error);
@@ -126,6 +130,8 @@ export default function AbteilungPage() {
                             projektId={projektId}
                             onDelete={handleDelete}
                             onRefresh={loadData}
+                            editable={true}
+                            showAbteilung={true}
                         />
                     ) : (
                         <div className="py-32 text-center flex flex-col items-center">

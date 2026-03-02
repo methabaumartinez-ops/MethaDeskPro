@@ -43,12 +43,12 @@ export default function LandingPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
           {[
             { title: 'Projektmanagement', desc: 'Zentrale Steuerung aller Bauvorhaben und Datenexport.', icon: CheckCircle2 },
-            { title: 'Systeme & Teile', desc: 'Detaillierte Übersicht der Teilsysteme und des Baustatus.', icon: Zap },
-            { title: 'Flottensteuerung', desc: 'Reservierung und Verwaltung von Maschinen und Fahrzeugen.', icon: Zap },
-            { title: 'Planung', desc: 'Überwachung von Terminen, Plänen und Lieferfristen.', icon: ShieldCheck },
-            { title: 'Baustellenpersonal', desc: 'Kontaktverzeichnis und Rollenverwaltung des Teams.', icon: CheckCircle2 },
-            { title: 'KI-Assistent', desc: 'Intelligente Abfragen Ihrer Projektdaten in Echtzeit.', icon: Zap },
-            { title: 'BIM 3D Viewer', desc: 'Visualisierung von IFC-Modellen direkt im Browser.', icon: ShieldCheck },
+            { title: 'Teilsysteme & Produktion', desc: 'Abteilungsverwaltung und detaillierte Bearbeitung des Baustatus.', icon: Zap },
+            { title: 'Logistik & Werkhof', desc: 'Materialbestellungen, QR-Codes und Lieferverfolgung.', icon: Zap },
+            { title: 'Ausführung', desc: 'Arbeitsvorbereitung, Checklisten und Statusaktualisierungen.', icon: ShieldCheck },
+            { title: 'Kostenerfassung', desc: 'Detaillierte Erfassung von Arbeitsstunden und Kosten pro Abteilung.', icon: CheckCircle2 },
+            { title: 'Datenanalyse & Tabellen', desc: 'Umfangreiche Auswertungen und Kostenanalysen in Echtzeit.', icon: Zap },
+            { title: 'BIM 3D Viewer', desc: 'Visualisierung und Prüfung von IFC-Modellen direkt im Browser.', icon: ShieldCheck },
             { title: 'Sicherheit & Rollen', desc: 'Rollenbasierter Zugriff und höchster Datenschutz.', icon: ShieldCheck },
           ].map((feature, i) => (
             <div key={i} className="p-3 bg-white dark:bg-card rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col items-center text-center transition-all hover:border-primary hover:shadow-md group">

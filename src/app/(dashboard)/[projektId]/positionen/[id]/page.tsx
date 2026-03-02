@@ -22,6 +22,7 @@ import { PositionService } from '@/lib/services/positionService';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { SubPositionService } from '@/lib/services/subPositionService';
 import { LagerortService } from '@/lib/services/lagerortService';
+import { useProjekt } from '@/lib/context/ProjektContext';
 
 export default function PositionDetailPage() {
     const { id, projektId } = useParams() as { id: string, projektId: string };
@@ -34,6 +35,7 @@ export default function PositionDetailPage() {
     const [loading, setLoading] = useState(true);
     const [showQrModal, setShowQrModal] = useState(false);
     const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
+    const { activeProjekt } = useProjekt();
     const router = useRouter();
 
     useEffect(() => {
@@ -419,6 +421,8 @@ export default function PositionDetailPage() {
                 count={unterpositionen.length}
                 filePrefix=""
                 id={position.id}
+                projectNumber={activeProjekt?.projektnummer}
+                projectName={activeProjekt?.projektname}
             />
         </div>
     );

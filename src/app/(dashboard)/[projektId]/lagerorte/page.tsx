@@ -14,6 +14,7 @@ import { Plus, QrCode, MapPin, Package, Pencil, Trash2, X, ScanLine, Constructio
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { ProjectService } from '@/lib/services/projectService';
+import { useProjekt } from '@/lib/context/ProjektContext';
 
 const BEREICHE = [
     { name: 'Werkhof', icon: Truck, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' },
@@ -25,6 +26,7 @@ const BEREICHE = [
 
 export default function LagerorteSeite() {
     const { projektId } = useParams<{ projektId: string }>();
+    const { activeProjekt } = useProjekt();
     const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
@@ -258,6 +260,11 @@ export default function LagerorteSeite() {
 
                             {/* Label Section */}
                             <div className="text-center">
+                                {activeProjekt?.projektnummer && activeProjekt?.projektname && (
+                                    <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest mb-1 italic">
+                                        {activeProjekt.projektnummer} {activeProjekt.projektname}
+                                    </p>
+                                )}
                                 <h3 className="text-3xl font-black text-slate-800 tracking-tighter mb-1">
                                     {selectedQr.bezeichnung}
                                 </h3>
@@ -283,16 +290,17 @@ export default function LagerorteSeite() {
                                             const vbValues = originalViewBox.split(' ').map(Number);
 
                                             clonedSvg.setAttribute('width', '1000');
-                                            clonedSvg.setAttribute('height', '1200');
-                                            clonedSvg.setAttribute('viewBox', `${vbValues[0]} ${vbValues[1] - 12} ${vbValues[2]} ${vbValues[3] + 20}`);
+                                            clonedSvg.setAttribute('height', '1250');
+                                            clonedSvg.setAttribute('viewBox', `${vbValues[0]} ${vbValues[1] - 16} ${vbValues[2]} ${vbValues[3] + 24}`);
                                             clonedSvg.setAttribute('style', 'background: white;');
 
                                             // Add Header
                                             const headerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-                                            headerGroup.setAttribute('transform', `translate(${vbValues[2] / 2}, ${vbValues[1] - 4})`);
+                                            headerGroup.setAttribute('transform', `translate(${vbValues[2] / 2}, ${vbValues[1] - 6})`);
                                             headerGroup.innerHTML = `
-                                                <text x="0" y="-2" font-family="Arial, sans-serif" font-weight="900" font-size="5px" text-anchor="middle" fill="#0f172a">${selectedQr.bezeichnung}</text>
-                                                <text x="0" y="1" font-family="Arial, sans-serif" font-weight="700" font-size="1.5px" text-anchor="middle" fill="#64748b" text-transform="uppercase">LAGERORT</text>
+                                                ${activeProjekt?.projektnummer && activeProjekt?.projektname ? `<text x="0" y="-4" font-family="Arial, sans-serif" font-weight="400" font-size="1.5px" text-anchor="middle" fill="#94a3b8">${activeProjekt.projektnummer} ${activeProjekt.projektname}</text>` : ''}
+                                                <text x="0" y="-1" font-family="Arial, sans-serif" font-weight="900" font-size="5px" text-anchor="middle" fill="#0f172a">${selectedQr.bezeichnung}</text>
+                                                <text x="0" y="2" font-family="Arial, sans-serif" font-weight="700" font-size="1.5px" text-anchor="middle" fill="#64748b" text-transform="uppercase">LAGERORT</text>
                                             `;
                                             clonedSvg.insertBefore(headerGroup, clonedSvg.firstChild);
 
@@ -338,6 +346,7 @@ export default function LagerorteSeite() {
                                                                 @page { size: auto; margin: 0mm; }
                                                                 body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: sans-serif; background: #fff; }
                                                                 .label-container { padding: 40px; border: 4px solid #f1f5f9; border-radius: 40px; text-align: center; width: 350px; }
+                                                                .project-info { font-size: 11px; font-weight: 400; color: #94a3b8; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 1px; }
                                                                 .number { font-size: 42px; font-weight: 900; color: #0f172a; margin: 0 0 5px 0; letter-spacing: -1px; }
                                                                 .name { font-size: 14px; font-weight: 700; color: #64748b; margin: 0 0 30px 0; text-transform: uppercase; letter-spacing: 2px; }
                                                                 .qr-container { margin-bottom: 20px; }
@@ -350,6 +359,7 @@ export default function LagerorteSeite() {
                                                         </head>
                                                         <body>
                                                             <div class="label-container">
+                                                                ${activeProjekt?.projektnummer && activeProjekt?.projektname ? `<div class="project-info">${activeProjekt.projektnummer} ${activeProjekt.projektname}</div>` : ''}
                                                                 <div class="number">${selectedQr.bezeichnung}</div>
                                                                 <div class="name">LAGERORT QR-CODE</div>
                                                                 <div class="qr-container">${svg.outerHTML}</div>

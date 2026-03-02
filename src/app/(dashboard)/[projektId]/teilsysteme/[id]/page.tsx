@@ -111,7 +111,7 @@ export default function TeilsystemDetailPage() {
 
     const detailFields = [
         { label: 'System-Nr.', value: item.teilsystemNummer, icon: Hash },
-        { label: 'KS / Kostenstelle', value: item.ks === '1' ? '1 Baumeister' : item.ks === '2' ? '2 Produktion' : item.ks, icon: Briefcase },
+        { label: 'KS / Kostenstelle', value: item.ks === '1' ? '1 Baumeister' : item.ks === '2' ? '2 Produktion' : item.ks === '3' ? '3 Extern' : item.ks, icon: Briefcase },
         { label: 'Bezeichnung', value: item.name, icon: FileText },
         { label: 'Gebäude', value: (item as any).gebäude || (item.beschreibung?.match(/Gebäude: (.*?)(?: \||$)/)?.[1]), icon: MapPin },
         { label: 'Abschnitt', value: (item as any).abschnitt || (item.beschreibung?.match(/Abschnitt: (.*?)(?: \||$)/)?.[1]), icon: MapPin },
@@ -560,6 +560,8 @@ export default function TeilsystemDetailPage() {
                 count={positionen.length}
                 filePrefix=""
                 id={item.id}
+                projectNumber={project?.projektnummer}
+                projectName={project?.projektname}
             />
 
             <ConfirmDialog
