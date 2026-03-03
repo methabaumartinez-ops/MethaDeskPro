@@ -97,23 +97,23 @@ export default function AusfuehrungPage() {
                 // Sync Bau Teilsysteme to Tasks
                 await TaskService.syncBauTeilsysteme(projektId);
 
-                const [subs, vehs, best, tms, tks, mitsRes] = await Promise.all([
+                const [subs, vehs, best, tms, fetchedTasks, mitsRes] = await Promise.all([
                     SubsystemService.getTeilsysteme(projektId),
                     FleetService.getFahrzeuge(),
                     BestellService.getBestellungen(projektId),
                     TeamService.getTeams(projektId),
-                    TaskService.getTasks(projektId),
+                    TaskService.getTasks({ projektId }),
                     fetch(`/api/data/mitarbeiter`)
                 ]);
 
                 let mits = [];
                 if (mitsRes.ok) mits = await mitsRes.json();
 
-                setSubsystems(subs);
+                setSubsystems(subs as Teilsystem[]);
                 setVehicles(vehs);
                 setBestellungen(best);
-                setTeams(tms);
-                setTasks(tks);
+                setTeams(tms as any[]);
+                setTasks(fetchedTasks as any[]);
                 setMitarbeiter(mits);
 
                 // Handle tab parameter
@@ -145,8 +145,9 @@ export default function AusfuehrungPage() {
         const matchesSearch = (item.teilsystemNummer?.toLowerCase() || '').includes(search.toLowerCase()) ||
             (item.name?.toLowerCase() || '').includes(search.toLowerCase());
 
-        if (activeTab === 'bau_teilsysteme') {
-            return matchesSearch && item.abteilung === 'Bau';
+        if (activeTab === 'ts_baustelle') {
+            // "TS am Baustelle" defined as those in department 'Bau' OR with status 'geliefert'/'verbaut'
+            return matchesSearch && (item.abteilung === 'Bau' || item.status === 'geliefert' || item.status === 'verbaut');
         }
         return matchesSearch;
     }).sort((a, b) => {
@@ -368,20 +369,20 @@ export default function AusfuehrungPage() {
                             )}
                         >
                             <Layers className="h-4 w-4" />
-                            Teilsysteme
+                            Teilsysteme (Alle)
                         </TabsTrigger>
                         <TabsTrigger
-                            active={activeTab === 'bau_teilsysteme'}
-                            onClick={() => setActiveTab('bau_teilsysteme')}
+                            active={activeTab === 'ts_baustelle'}
+                            onClick={() => setActiveTab('ts_baustelle')}
                             className={cn(
                                 "flex items-center gap-2 font-black text-xs uppercase px-6 h-11 rounded-full border-2 transition-all",
-                                activeTab === 'bau_teilsysteme'
+                                activeTab === 'ts_baustelle'
                                     ? "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-200"
                                     : "bg-white border-slate-100 text-slate-500 hover:border-orange-200 hover:text-orange-600"
                             )}
                         >
                             <HardHat className="h-4 w-4" />
-                            Bau Teilsysteme
+                            TS am Baustelle
                         </TabsTrigger>
                         <TabsTrigger
                             active={activeTab === 'logistik'}
@@ -457,7 +458,7 @@ export default function AusfuehrungPage() {
                             </div>
                         ) : (
                             <>
-                                <TabsContent active={activeTab === 'teilsysteme' || activeTab === 'bau_teilsysteme'} className="mt-0 h-full">
+                                <TabsContent active={activeTab === 'teilsysteme' || activeTab === 'ts_baustelle'} className="mt-0 h-full">
                                     {filteredSubsystems.length > 0 ? (
                                         <div className="overflow-x-auto max-w-full">
                                             <Table>

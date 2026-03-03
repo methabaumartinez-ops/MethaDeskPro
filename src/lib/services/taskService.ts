@@ -1,6 +1,8 @@
 import { DatabaseService } from '@/lib/services/db';
 import { Task, TaskStatus } from '@/types/ausfuehrung';
+import { Teilsystem } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
+import { SubsystemService } from './subsystemService';
 
 export const TaskService = {
     async getTasks(filters?: { teamId?: string; status?: TaskStatus; projektId?: string }): Promise<Task[]> {
@@ -24,8 +26,8 @@ export const TaskService = {
     },
 
     async createTask(data: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Promise<Task> {
-        if (!data.teamId || !data.title) {
-            throw new Error('Title and Team are required to create a task');
+        if (!data.title) {
+            throw new Error('Title is required to create a task');
         }
 
         const id = uuidv4();
@@ -62,6 +64,29 @@ export const TaskService = {
         for (const st of subtasks) {
             if (st.taskId === id) {
                 await DatabaseService.delete('ausfuehrung_subtasks', st.id);
+            }
+        }
+    },
+
+    async syncBauTeilsysteme(projektId: string): Promise<void> {
+        // Use client-side safe fetch if in browser, else direct DB
+        const allTS = await SubsystemService.getTeilsysteme(projektId);
+        const bauTS = allTS.filter(ts => ts.abteilung === 'Bau');
+
+        const existingTasks = await this.getTasks({ projektId });
+
+        for (const ts of bauTS) {
+            const alreadyExists = existingTasks.some(t => t.teilsystemId === ts.id);
+            if (!alreadyExists) {
+                await this.createTask({
+                    projektId,
+                    teamId: '', // Unassigned initially
+                    teilsystemId: ts.id,
+                    title: `TS ${ts.teilsystemNummer}: ${ts.name}`,
+                    description: ts.beschreibung || ts.bemerkung || '',
+                    status: 'offen',
+                    priority: 'mittel'
+                });
             }
         }
     }
