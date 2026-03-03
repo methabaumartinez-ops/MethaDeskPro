@@ -48,7 +48,8 @@ export function Sidebar({ projektId, className, forceProjectSelection = false }:
                 icon: Layers,
                 subItems: [
                     { title: 'Produktion', href: `/${projektId}/teilsysteme` },
-                    { title: 'Ausführung', href: `/${projektId}/ausfuehrung` },
+                    { title: 'Ausführung (Tasks)', href: `/${projektId}/ausfuehrung/tasks` },
+                    { title: 'Ausführung (Teams)', href: `/${projektId}/ausfuehrung/teams` },
                     { title: 'Werkhof', href: `/${projektId}/werkhof` },
                     { title: 'Fuhrpark', href: `/fuhrpark` },
                     { title: 'Kostenerfassung', href: `/${projektId}/kosten` },
@@ -81,7 +82,15 @@ export function Sidebar({ projektId, className, forceProjectSelection = false }:
                     }
                 ]
             },
-            { title: 'Ausführung', href: forceProjectSelection ? '/projekte' : `/${projektId}/ausfuehrung`, icon: Hammer },
+            {
+                title: 'Ausführung',
+                href: forceProjectSelection ? '/projekte' : `/${projektId}/ausfuehrung/tasks`,
+                icon: Hammer,
+                subItems: [
+                    { title: 'Aufgaben', href: forceProjectSelection ? '/projekte' : `/${projektId}/ausfuehrung/tasks` },
+                    { title: 'Teams', href: forceProjectSelection ? '/projekte' : `/${projektId}/ausfuehrung/teams` },
+                ]
+            },
             {
                 title: 'Werkhof',
                 href: forceProjectSelection ? '/projekte' : `/${projektId}/werkhof`,

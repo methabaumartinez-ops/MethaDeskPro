@@ -55,8 +55,8 @@ export const ChatAssistant = ({
 
     return (
         <div className={cn(
-            "z-50 flex flex-col",
-            isSidebarMode ? "" : "fixed bottom-6 right-6 items-end"
+            "z-[100] flex flex-col",
+            isSidebarMode ? "" : "fixed bottom-10 right-6 items-end"
         )}>
             {/* Chat Window */}
             {isOpen && (
@@ -164,7 +164,7 @@ export const ChatAssistant = ({
                 className={cn(
                     "rounded-full shadow-2xl transition-all duration-500 flex items-center justify-center p-0 overflow-hidden",
                     isOpen ? "h-14 w-14 bg-slate-900 hover:bg-slate-800 rotate-90" : "h-14 w-14 bg-white hover:bg-slate-50 border-2 border-primary hover:scale-110 shadow-lg",
-                    isSidebarMode ? "h-10 w-10 border-none bg-transparent hover:bg-white/10" : "fixed bottom-6 right-6"
+                    isSidebarMode ? "h-10 w-10 border-none bg-transparent hover:bg-white/10" : "fixed bottom-10 right-6"
                 )}
             >
                 {isOpen ? (

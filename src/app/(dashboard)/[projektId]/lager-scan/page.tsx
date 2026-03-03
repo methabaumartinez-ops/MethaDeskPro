@@ -27,6 +27,7 @@ interface ScanState {
 }
 
 function parseEntityQr(qrText: string): { entityType: 'teilsystem' | 'position' | 'unterposition'; entityId: string } | null {
+    qrText = qrText.trim();
     // 1. Support for full URLs (new style)
     try {
         if (qrText.startsWith('http') || qrText.includes('/share/')) {
@@ -47,14 +48,15 @@ function parseEntityQr(qrText: string): { entityType: 'teilsystem' | 'position' 
     }
 
     // 2. Support for legacy / direct codes
-    if (qrText.startsWith('TEILSYSTEM:')) return { entityType: 'teilsystem', entityId: qrText.replace('TEILSYSTEM:', '') };
-    if (qrText.startsWith('POSITION:')) return { entityType: 'position', entityId: qrText.replace('POSITION:', '') };
-    if (qrText.startsWith('UNTERPOSITION:')) return { entityType: 'unterposition', entityId: qrText.replace('UNTERPOSITION:', '') };
+    if (qrText.startsWith('TEILSYSTEM:')) return { entityType: 'teilsystem', entityId: qrText.replace('TEILSYSTEM:', '').trim() };
+    if (qrText.startsWith('POSITION:')) return { entityType: 'position', entityId: qrText.replace('POSITION:', '').trim() };
+    if (qrText.startsWith('UNTERPOSITION:')) return { entityType: 'unterposition', entityId: qrText.replace('UNTERPOSITION:', '').trim() };
     return null;
 }
 
 function parseLagerortQr(qrText: string): string | null {
-    if (qrText.startsWith('LAGERORT:')) return qrText.replace('LAGERORT:', '');
+    qrText = qrText.trim();
+    if (qrText.startsWith('LAGERORT:')) return qrText.replace('LAGERORT:', '').trim();
     try {
         if (qrText.startsWith('http') || qrText.includes('/share/')) {
             const url = new URL(qrText);

@@ -22,8 +22,8 @@ export default function QrCodeGenerator({ content, label, size = 200, className 
                 level="H"
                 imageSettings={{
                     src: LOGO_DATA_URL,
-                    height: size * 0.2,
-                    width: size * 0.2,
+                    height: size * 0.15,
+                    width: size * 0.5,
                     excavate: true,
                 }}
             />

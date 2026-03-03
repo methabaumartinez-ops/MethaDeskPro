@@ -29,7 +29,6 @@ export default function ProjektePage() {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<ViewMode>('aktiv');
     const [archivingId, setArchivingId] = useState<string | null>(null);
-    const [confirmDeleteProject, setConfirmDeleteProject] = useState<Projekt | null>(null);
     const router = useRouter();
 
     const isAdmin = currentUser?.role === 'admin';
@@ -78,21 +77,6 @@ export default function ProjektePage() {
     const handleEdit = (e: React.MouseEvent, p: Projekt) => {
         e.stopPropagation();
         router.push(`/projekte/bearbeiten/${p.id}`);
-    };
-
-    const handleArchiveConfirm = async () => {
-        if (!confirmDeleteProject) return;
-        const projectId = confirmDeleteProject.id;
-        setConfirmDeleteProject(null);
-        setArchivingId(projectId);
-        try {
-            await ProjectService.archiveProjekt(projectId);
-            setProjekte(prev => prev.filter(p => p.id !== projectId));
-        } catch (error: any) {
-            showAlert(`Fehler beim Archivieren: ${error?.message || String(error)}`);
-        } finally {
-            setArchivingId(null);
-        }
     };
 
     const getProjectImage = (p: Projekt) => {
@@ -208,18 +192,6 @@ export default function ProjektePage() {
                                             >
                                                 <Pencil className="h-3.5 w-3.5 text-slate-700" />
                                             </Button>
-
-                                            {isAdmin && (
-                                                <Button
-                                                    variant="secondary"
-                                                    size="icon"
-                                                    className="h-7 w-7 rounded-lg bg-red-500/90 hover:bg-red-600 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    onClick={(e) => { e.stopPropagation(); setConfirmDeleteProject(p); }}
-                                                    title="Projekt löschen und archivieren"
-                                                >
-                                                    <Trash2 className="h-3.5 w-3.5 text-white" />
-                                                </Button>
-                                            )}
                                         </div>
 
                                         <div className="absolute top-3 right-3">
@@ -370,50 +342,41 @@ export default function ProjektePage() {
                 </p>
             </footer>
 
-            {/* Delete Confirmation Dialog */}
-            <ConfirmDialog
-                isOpen={!!confirmDeleteProject}
-                onClose={() => setConfirmDeleteProject(null)}
-                onConfirm={handleArchiveConfirm}
-                variant="danger"
-                title="Projekt archivieren und löschen"
-                description={`Das Projekt "${confirmDeleteProject?.projektname}" wird vor dem Löschen als ZIP-Datei in Google Drive archiviert (inkl. aller Daten und Dateien). Dieser Vorgang kann einige Minuten dauern.`}
-                confirmLabel="Archivieren und löschen"
-            />
-
             {/* Infoblatt Preview Modal */}
-            {previewUrl && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-10">
-                    <div
-                        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300"
-                        onClick={() => setPreviewUrl(null)}
-                    />
-                    <div className="relative bg-white dark:bg-card w-full h-full max-w-5xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col animate-in zoom-in slide-in-from-bottom-4 duration-300">
-                        <div className="p-4 border-b dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
-                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                                <FileText className="h-5 w-5 text-blue-600" />
-                                Infoblatt Vorschau
-                            </h3>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setPreviewUrl(null)}
-                                className="rounded-full hover:bg-slate-200"
-                            >
-                                <X className="h-5 w-5" />
-                            </Button>
-                        </div>
-                        <div className="flex-1 bg-slate-100 dark:bg-slate-950 relative">
-                            <iframe
-                                src={getPreviewUrl(previewUrl)}
-                                className="w-full h-full border-none"
-                                title="Infoblatt Preview"
-                                allow="autoplay"
-                            />
+            {
+                previewUrl && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-10">
+                        <div
+                            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300"
+                            onClick={() => setPreviewUrl(null)}
+                        />
+                        <div className="relative bg-white dark:bg-card w-full h-full max-w-5xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col animate-in zoom-in slide-in-from-bottom-4 duration-300">
+                            <div className="p-4 border-b dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+                                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                    <FileText className="h-5 w-5 text-blue-600" />
+                                    Infoblatt Vorschau
+                                </h3>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setPreviewUrl(null)}
+                                    className="rounded-full hover:bg-slate-200"
+                                >
+                                    <X className="h-5 w-5" />
+                                </Button>
+                            </div>
+                            <div className="flex-1 bg-slate-100 dark:bg-slate-950 relative">
+                                <iframe
+                                    src={getPreviewUrl(previewUrl)}
+                                    className="w-full h-full border-none"
+                                    title="Infoblatt Preview"
+                                    allow="autoplay"
+                                />
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }

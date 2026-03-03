@@ -168,8 +168,8 @@ export function ItemQrModal({
                             className="drop-shadow-sm group-hover:scale-105 transition-transform duration-500"
                             imageSettings={{
                                 src: LOGO_DATA_URL,
-                                height: 45,
-                                width: 45,
+                                height: 30,
+                                width: 100,
                                 excavate: true,
                             }}
                         />

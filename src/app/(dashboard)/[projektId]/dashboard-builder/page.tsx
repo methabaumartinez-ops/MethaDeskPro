@@ -99,7 +99,7 @@ export default function MyDashboardPage() {
 
             {/* FLOATING CHAT WIDGET */}
             <div className={cn(
-                "fixed bottom-8 right-8 z-[100] transition-all duration-500 transform",
+                "fixed bottom-10 right-8 z-[100] transition-all duration-500 transform",
                 isChatOpen ? "w-[400px] translate-y-0 opacity-100" : "w-14 h-14 translate-y-2 opacity-90"
             )}>
                 {isChatOpen ? (

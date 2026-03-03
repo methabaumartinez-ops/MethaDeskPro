@@ -163,7 +163,7 @@ export function SupportChat() {
 
             {/* Chat Window */}
             {isOpen && (
-                <div className="fixed bottom-6 right-6 z-[300] w-[380px] max-w-[calc(100vw-1.5rem)] flex flex-col rounded-2xl shadow-2xl border border-border bg-white dark:bg-card overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300">
+                <div className="fixed bottom-10 right-6 z-[300] w-[380px] max-w-[calc(100vw-1.5rem)] flex flex-col rounded-2xl shadow-2xl border border-border bg-white dark:bg-card overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300">
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-primary to-orange-500 text-white">
                         <div className="flex items-center gap-2.5">
