@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { DatabaseService } from '@/lib/services/db';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
-        const id = params.id;
+        const { id } = await params;
         const data = await DatabaseService.get('bestellungen', id);
         if (!data) {
             return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -18,9 +18,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     }
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
-        const id = params.id;
+        const { id } = await params;
         const body = await req.json();
         const existing = await DatabaseService.get('bestellungen', id);
 
@@ -41,9 +41,9 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
-        const id = params.id;
+        const { id } = await params;
         await DatabaseService.delete('bestellungen', id);
         return NextResponse.json({ success: true });
     } catch (error) {

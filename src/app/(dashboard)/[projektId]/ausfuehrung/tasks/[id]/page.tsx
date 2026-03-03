@@ -23,9 +23,9 @@ const toast = Object.assign(
     }
 );
 
-export default function TaskDetailPage({ params }: { params: { projektId: string, id: string } }) {
+export default function TaskDetailPage({ params }: { params: Promise<{ projektId: string, id: string }> }) {
+    const { projektId, id } = React.use(params);
     const router = useRouter();
-    const { projektId, id } = params;
 
     const [task, setTask] = React.useState<Task | null>(null);
     const [team, setTeam] = React.useState<Team | null>(null);

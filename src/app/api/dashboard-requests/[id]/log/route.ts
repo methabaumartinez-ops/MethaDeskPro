@@ -4,9 +4,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
-        const requestId = params.id;
+        const { id: requestId } = await params;
         console.log(`API: Fetching conversation log for request: ${requestId}`);
 
         const data = await DatabaseService.list('conversation_logs', {
@@ -27,9 +27,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     }
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
-        const requestId = params.id;
+        const { id: requestId } = await params;
         const body = await req.json();
         console.log(`API: Saving conversation log for request: ${requestId}`);
 

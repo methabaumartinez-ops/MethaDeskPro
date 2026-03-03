@@ -14,10 +14,10 @@ import { TaskForm } from '@/components/ausfuehrung/TaskForm';
 import { TaskStatusBadge } from '@/components/ausfuehrung/TaskStatusBadge';
 import { Badge } from '@/components/ui/badge';
 
-export default function TasksPage({ params }: { params: { projektId: string } }) {
+export default function TasksPage({ params }: { params: Promise<{ projektId: string }> }) {
+    const { projektId } = React.use(params);
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { projektId } = params;
 
     const [tasks, setTasks] = React.useState<Task[]>([]);
     const [teams, setTeams] = React.useState<Record<string, Team>>({});

@@ -18,9 +18,9 @@ const toast = {
     error: (msg: string) => window.alert('Fehler: ' + msg)
 };
 
-export default function TeamDetailPage({ params }: { params: { projektId: string, id: string } }) {
+export default function TeamDetailPage({ params }: { params: Promise<{ projektId: string, id: string }> }) {
+    const { projektId, id } = React.use(params);
     const router = useRouter();
-    const { projektId, id } = params;
 
     const [team, setTeam] = React.useState<Team | null>(null);
     const [workers, setWorkers] = React.useState<Worker[]>([]);

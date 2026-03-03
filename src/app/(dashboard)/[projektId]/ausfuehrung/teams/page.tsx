@@ -11,9 +11,9 @@ import { Users, UsersRound, Plus, Pencil, ArrowRight, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { TeamForm } from '@/components/ausfuehrung/TeamForm';
 
-export default function TeamsPage({ params }: { params: { projektId: string } }) {
+export default function TeamsPage({ params }: { params: Promise<{ projektId: string }> }) {
+    const { projektId } = React.use(params);
     const router = useRouter();
-    const { projektId } = params;
 
     const [teams, setTeams] = React.useState<Team[]>([]);
     const [workersData, setWorkersData] = React.useState<Record<string, Worker>>({});
