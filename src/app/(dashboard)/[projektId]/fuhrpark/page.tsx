@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
@@ -89,7 +90,7 @@ export default function FuhrparkPage() {
 
         } catch (error) {
             console.error("Failed to delete vehicle", error);
-            alert("Fehler beim Löschen des Fahrzeugs");
+            showAlert("Fehler beim Löschen des Fahrzeugs");
         }
     };
 
@@ -116,7 +117,7 @@ export default function FuhrparkPage() {
 
         } catch (error) {
             console.error("Failed to delete reservation", error);
-            alert("Fehler beim Löschen der Reservierung");
+            showAlert("Fehler beim Löschen der Reservierung");
         }
     };
 
@@ -138,7 +139,7 @@ export default function FuhrparkPage() {
             }
         } catch (err) {
             console.error(err);
-            alert('Fehler beim Speichern der Reservierung: ' + (err instanceof Error ? err.message : 'Unbekannter Fehler'));
+            showAlert('Fehler beim Speichern der Reservierung: ' + (err instanceof Error ? err.message : 'Unbekannter Fehler'));
         }
     };
 

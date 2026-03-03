@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -67,7 +68,7 @@ export default function LagerorteSeite() {
                     );
                 } catch (err) {
                     console.error('File upload failed:', err);
-                    alert('Fehler beim Hochladen der Datei.');
+                    showAlert('Fehler beim Hochladen der Datei.');
                     return;
                 } finally {
                     setUploading(false);
@@ -392,7 +393,7 @@ export default function LagerorteSeite() {
                                             }).catch(console.error);
                                         } else {
                                             navigator.clipboard.writeText(window.location.href);
-                                            alert('Link kopiert!');
+                                            showAlert('Link kopiert!');
                                         }
                                     }}
                                 >

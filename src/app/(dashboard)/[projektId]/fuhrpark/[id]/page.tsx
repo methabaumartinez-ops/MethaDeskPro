@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -81,7 +82,7 @@ export default function FahrzeugDetailPage() {
             setVehicle(updated);
         } catch (error) {
             console.error("Upload failed", error);
-            alert("Upload fehlgeschlagen");
+            showAlert("Upload fehlgeschlagen");
         } finally {
             setUploading(false);
         }

@@ -1,4 +1,5 @@
-'use client';
+﻿'use client';
+import { showAlert } from '@/lib/alert';
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { useProjekt } from '@/lib/context/ProjektContext';
@@ -88,7 +89,7 @@ export default function ProjektePage() {
             await ProjectService.archiveProjekt(projectId);
             setProjekte(prev => prev.filter(p => p.id !== projectId));
         } catch (error: any) {
-            alert(`Fehler beim Archivieren: ${error?.message || String(error)}`);
+            showAlert(`Fehler beim Archivieren: ${error?.message || String(error)}`);
         } finally {
             setArchivingId(null);
         }
@@ -304,6 +305,7 @@ export default function ProjektePage() {
                                                 src={getProjectImage(p)}
                                                 alt="Projektbild"
                                                 className="w-full h-full object-cover grayscale"
+                                                onError={(e) => { (e.target as HTMLImageElement).src = '/images/Foto.png'; }}
                                             />
                                             <div className="absolute inset-0 bg-slate-900/60" />
                                             <div className="absolute inset-0 flex items-center justify-center">

@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
@@ -40,7 +41,7 @@ export default function MaterialListPage() {
                 setItems(prev => prev.filter(i => i.id !== item.id));
             } catch (error) {
                 console.error("Failed to delete", error);
-                alert("Fehler beim Löschen");
+                showAlert("Fehler beim Löschen");
             }
         }
     };

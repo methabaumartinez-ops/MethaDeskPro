@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -152,7 +153,7 @@ export default function FahrzeugDetailPage() {
             setEditing(false);
         } catch (err) {
             console.error('Error updating fahrzeug:', err);
-            alert('Fehler beim Speichern der Änderungen.');
+            showAlert('Fehler beim Speichern der Änderungen.');
         }
     };
 
@@ -175,7 +176,7 @@ export default function FahrzeugDetailPage() {
             router.push('/fuhrpark');
         } catch (err) {
             console.error('Error deleting vehicle:', err);
-            alert('Fehler beim Löschen des Fahrzeugs.');
+            showAlert('Fehler beim Löschen des Fahrzeugs.');
         }
     };
 
@@ -186,7 +187,7 @@ export default function FahrzeugDetailPage() {
             setReservierungen(prev => prev.filter(r => r.id !== resId));
         } catch (err) {
             console.error('Error deleting reservation:', err);
-            alert('Fehler beim Löschen der Reservierung.');
+            showAlert('Fehler beim Löschen der Reservierung.');
         }
     };
 
@@ -216,7 +217,7 @@ export default function FahrzeugDetailPage() {
             setModalOpen(false);
         } catch (err) {
             console.error('Error creating reservation:', err);
-            alert('Fehler beim Erstellen der Reservierung.');
+            showAlert('Fehler beim Erstellen der Reservierung.');
         }
     };
 

@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React, { useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -85,7 +86,7 @@ export default function FahrzeugErfassenPage() {
             update('manualUrl', url);
         } catch (error) {
             console.error("Upload failed", error);
-            alert("Upload fehlgeschlagen");
+            showAlert("Upload fehlgeschlagen");
         } finally {
             setUploading(false);
         }
@@ -126,7 +127,7 @@ export default function FahrzeugErfassenPage() {
             router.push(`/${projektId}/fuhrpark`);
         } catch (error) {
             console.error("Failed to create vehicle", error);
-            alert("Fehler beim Speichern");
+            showAlert("Fehler beim Speichern");
         }
     };
 

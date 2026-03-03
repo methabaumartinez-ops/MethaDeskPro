@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
@@ -95,7 +96,7 @@ export default function PositionErfassenPage() {
             router.push(`/${projektId}/teilsysteme/${teilsystemId}`);
         } catch (error) {
             console.error('Failed to create position', error);
-            alert('Fehler beim Speichern');
+            showAlert('Fehler beim Speichern');
         }
     };
 

@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
@@ -84,7 +85,7 @@ export default function PlannerPage() {
         } catch (error) {
             console.error("Upload failed:", error);
             const message = error instanceof Error ? error.message : "Upload fehlgeschlagen";
-            alert(`Upload fehlgeschlagen: ${message}`);
+            showAlert(`Upload fehlgeschlagen: ${message}`);
         } finally {
             setUploading(false);
             setDragActive(null);
@@ -282,7 +283,7 @@ export default function PlannerPage() {
                                                 className="shrink-0 font-bold"
                                                 onClick={() => {
                                                     navigator.clipboard.writeText(selectedItem.wemaLink || '');
-                                                    alert('Pfad kopiert!');
+                                                    showAlert('Pfad kopiert!');
                                                 }}
                                             >
                                                 <Copy className="h-4 w-4 mr-2" />

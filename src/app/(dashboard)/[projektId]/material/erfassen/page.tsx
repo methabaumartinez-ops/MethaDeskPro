@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -50,7 +51,7 @@ export default function MaterialErfassenPage() {
             router.push(`/${projektId}/material`);
         } catch (error) {
             console.error("Failed to create material", error);
-            alert("Fehler beim Speichern");
+            showAlert("Fehler beim Speichern");
         }
     };
 

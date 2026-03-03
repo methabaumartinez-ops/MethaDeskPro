@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -71,7 +72,7 @@ export default function CreateLieferantPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.name) {
-            alert('Bitte Firmenname eingeben');
+            showAlert('Bitte Firmenname eingeben');
             return;
         }
 
@@ -84,7 +85,7 @@ export default function CreateLieferantPage() {
             router.push(`/${projektId}/produktion/lieferanten`);
         } catch (error) {
             console.error('Error creating supplier:', error);
-            alert('Fehler beim Speichern');
+            showAlert('Fehler beim Speichern');
         } finally {
             setLoading(false);
         }

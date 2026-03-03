@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -56,7 +57,7 @@ export default function TaskCreatePage() {
     };
 
     const handleSave = async () => {
-        if (!title.trim()) return alert('Bitte Aufgabentitel eingeben');
+        if (!title.trim()) return showAlert('Bitte Aufgabentitel eingeben');
 
         setLoading(true);
         try {
@@ -85,7 +86,7 @@ export default function TaskCreatePage() {
             router.push(`/${projektId}/ausfuehrung?tab=teams_aufgaben`);
         } catch (error) {
             console.error(error);
-            alert('Fehler beim Erstellen der Aufgabe');
+            showAlert('Fehler beim Erstellen der Aufgabe');
         } finally {
             setLoading(false);
         }

@@ -1,4 +1,5 @@
-'use client';
+﻿'use client';
+import { showAlert } from '@/lib/alert';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -31,7 +32,7 @@ export default function CreateLieferantPage() {
         setLoading(true);
         try {
             if (!formData.name) {
-                alert('Bitte geben Sie einen Namen ein.');
+                showAlert('Bitte geben Sie einen Namen ein.');
                 return;
             }
 
@@ -39,7 +40,7 @@ export default function CreateLieferantPage() {
             router.push('/einkauf?tab=lieferanten');
         } catch (error) {
             console.error('Failed to create supplier:', error);
-            alert('Fehler beim Erstellen des Lieferanten.');
+            showAlert('Fehler beim Erstellen des Lieferanten.');
         } finally {
             setLoading(false);
         }

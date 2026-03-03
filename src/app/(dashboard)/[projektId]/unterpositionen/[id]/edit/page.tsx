@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -228,7 +229,7 @@ export default function UnterpositionEditPage() {
             router.push(`/${projektId}/unterpositionen/${id}`);
         } catch (error) {
             console.error('Failed to update unterposition', error);
-            alert('Fehler beim Speichern');
+            showAlert('Fehler beim Speichern');
         }
     };
 
@@ -240,7 +241,7 @@ export default function UnterpositionEditPage() {
             router.push(`/${projektId}/positionen/${unterposition?.positionId || ''}`);
         } catch (error) {
             console.error("Failed to delete", error);
-            alert("Fehler beim Löschen");
+            showAlert("Fehler beim Löschen");
         }
     };
 

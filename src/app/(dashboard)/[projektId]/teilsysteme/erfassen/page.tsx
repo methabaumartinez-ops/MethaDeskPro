@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React, { useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
@@ -256,7 +257,7 @@ export default function TeilsystemErfassenPage() {
             router.push(`/${projektId}/teilsysteme`);
         } catch (error: any) {
             console.error("Failed to create teilsystem", error);
-            alert(`Fehler beim Speichern:\n\n${error?.message || String(error)}`);
+            showAlert(`Fehler beim Speichern:\n\n${error?.message || String(error)}`);
         }
     };
 
@@ -329,7 +330,7 @@ export default function TeilsystemErfassenPage() {
             }
         } catch (error: any) {
             console.error("Auto-import failed", error);
-            alert(`Auto-Import fehlgeschlagen: ${error.message}`);
+            showAlert(`Auto-Import fehlgeschlagen: ${error.message}`);
         } finally {
             setImportingAuto(false);
             setExtracting(false);

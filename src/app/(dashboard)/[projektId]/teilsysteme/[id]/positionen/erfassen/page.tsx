@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -56,7 +57,7 @@ export default function PositionErfassenPage() {
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             console.log("File selected:", e.target.files[0].name);
-            alert(`Datei "${e.target.files[0].name}" zum Upload bereit.`);
+            showAlert(`Datei "${e.target.files[0].name}" zum Upload bereit.`);
         }
     };
 
@@ -79,7 +80,7 @@ export default function PositionErfassenPage() {
             router.push(`/${projektId}/teilsysteme/${teilsystemId}`);
         } catch (error) {
             console.error("Error creating position:", error);
-            alert("Fehler beim Speichern der Position.");
+            showAlert("Fehler beim Speichern der Position.");
         }
     };
 
@@ -99,7 +100,7 @@ export default function PositionErfassenPage() {
         setDragActive(false);
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
             console.log("File dropped:", e.dataTransfer.files[0].name);
-            alert(`Datei "${e.dataTransfer.files[0].name}" zum Upload bereit.`);
+            showAlert(`Datei "${e.dataTransfer.files[0].name}" zum Upload bereit.`);
         }
     };
 

@@ -97,7 +97,7 @@ export async function POST(
                     await Promise.all(
                         batch.map(async (file) => {
                             try {
-                                const buffer = await downloadFileFromDriveAsBuffer(file.id);
+                                const buffer = await downloadFileFromDriveAsBuffer(file.id, file.mimeType);
                                 // Preserve directory structure in ZIP
                                 const relativePath = file.path.startsWith('archivos_drive/')
                                     ? file.path.slice('archivos_drive/'.length)

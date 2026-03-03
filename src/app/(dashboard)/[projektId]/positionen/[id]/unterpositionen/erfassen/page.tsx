@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -79,7 +80,7 @@ export default function UnterpositionErfassenPage() {
             router.push(`/${projektId}/positionen/${positionId}`);
         } catch (error) {
             console.error('Error creating sub-position:', error);
-            alert('Fehler beim Speichern der Unterposition.');
+            showAlert('Fehler beim Speichern der Unterposition.');
         }
     };
 

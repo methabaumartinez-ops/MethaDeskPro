@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -34,7 +35,7 @@ export default function TaskDetailPage() {
                 const fetchedTasks = await TaskService.getTasks(projektId);
                 const currentTask = fetchedTasks.find(t => t.id === id);
                 if (!currentTask) {
-                    alert('Aufgabe nicht gefunden');
+                    showAlert('Aufgabe nicht gefunden');
                     return router.push(`/${projektId}/ausfuehrung?tab=teams_aufgaben`);
                 }
                 setTask(currentTask);
@@ -138,11 +139,11 @@ export default function TaskDetailPage() {
             setTask({ ...task, costLogged: true, status: 'Abgerechnet' });
             setShowAbrechnung(false);
 
-            alert('Stunden erfolgreich erfasst.');
+            showAlert('Stunden erfolgreich erfasst.');
 
         } catch (err) {
             console.error(err);
-            alert('Fehler bei der Kostenerfassung');
+            showAlert('Fehler bei der Kostenerfassung');
         } finally {
             setLoading(false);
         }

@@ -261,13 +261,38 @@ export const listFolderFilesRecursive = async (parentId: string, parentPath = ''
     return results;
 };
 
+// MIME types for Google Workspace files and their export formats
+const GOOGLE_EXPORT_MAP: Record<string, { mime: string; ext: string }> = {
+    'application/vnd.google-apps.document': { mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', ext: '.docx' },
+    'application/vnd.google-apps.spreadsheet': { mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', ext: '.xlsx' },
+    'application/vnd.google-apps.presentation': { mime: 'application/vnd.openxmlformats-officedocument.presentationml.presentation', ext: '.pptx' },
+    'application/vnd.google-apps.form': { mime: 'application/pdf', ext: '.pdf' },
+    'application/vnd.google-apps.drawing': { mime: 'image/png', ext: '.png' },
+};
+
 /**
  * Downloads a file from Google Drive as a Buffer.
+ * Handles Google Workspace files (Docs, Sheets, etc.) by exporting them first.
  */
-export const downloadFileFromDriveAsBuffer = async (fileId: string): Promise<Buffer> => {
+export const downloadFileFromDriveAsBuffer = async (
+    fileId: string,
+    mimeType?: string
+): Promise<Buffer> => {
     const drive = getDriveClient();
     if (!drive) throw new Error('Google Drive client is not available');
 
+    const exportInfo = mimeType ? GOOGLE_EXPORT_MAP[mimeType] : null;
+
+    if (exportInfo) {
+        // Google Workspace file — export it to Office format
+        const res = await (drive.files as any).export(
+            { fileId, mimeType: exportInfo.mime },
+            { responseType: 'arraybuffer' }
+        );
+        return Buffer.from(res.data as ArrayBuffer);
+    }
+
+    // Regular binary file — download directly
     const res = await (drive.files as any).get(
         { fileId, alt: 'media' },
         { responseType: 'arraybuffer' }

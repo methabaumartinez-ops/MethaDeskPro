@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -44,7 +45,7 @@ export default function MitarbeiterEditPage() {
             router.push(`/${projektId}/mitarbeiter/${id}`);
         } catch (error) {
             console.error("Failed to update employee", error);
-            alert("Fehler beim Speichern");
+            showAlert("Fehler beim Speichern");
         }
     };
 

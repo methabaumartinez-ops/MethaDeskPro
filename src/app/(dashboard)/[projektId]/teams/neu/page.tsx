@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -55,8 +56,8 @@ export default function TeamCreatePage() {
     };
 
     const handleSave = async () => {
-        if (!name.trim()) return alert('Bitte Teamnamen eingeben');
-        if (selectedMembers.length === 0) return alert('Bitte wählen Sie mindestens ein Mitglied aus.');
+        if (!name.trim()) return showAlert('Bitte Teamnamen eingeben');
+        if (selectedMembers.length === 0) return showAlert('Bitte wählen Sie mindestens ein Mitglied aus.');
 
         setLoading(true);
         try {
@@ -81,7 +82,7 @@ export default function TeamCreatePage() {
             router.push(`/${projektId}/ausfuehrung?tab=teams_aufgaben`);
         } catch (error) {
             console.error(error);
-            alert('Fehler beim Speichern des Teams');
+            showAlert('Fehler beim Speichern des Teams');
         } finally {
             setLoading(false);
         }

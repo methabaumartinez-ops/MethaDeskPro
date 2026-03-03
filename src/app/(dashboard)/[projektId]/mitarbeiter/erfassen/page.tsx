@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -54,7 +55,7 @@ export default function MitarbeiterErfassenPage() {
             router.push(`/${projektId}/mitarbeiter`);
         } catch (error) {
             console.error("Failed to create employee", error);
-            alert("Fehler beim Speichern");
+            showAlert("Fehler beim Speichern");
         }
     };
 

@@ -5,7 +5,7 @@ import { useProjekt } from '@/lib/context/ProjektContext';
 import { Button } from '@/components/ui/button';
 import { LogOut, User, FolderSync, Menu } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-// import { mockStore } from '@/lib/mock/store'; // Removed
+import { SupportChat } from '@/components/shared/SupportChat';
 
 export function Header({ onMenuClick, hideProjectInfo = false }: { onMenuClick?: () => void, hideProjectInfo?: boolean }) {
     const { activeProjekt, currentUser, logout } = useProjekt();
@@ -67,6 +67,8 @@ export function Header({ onMenuClick, hideProjectInfo = false }: { onMenuClick?:
                         </div>
                     )}
 
+
+                    <SupportChat />
 
                     <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" onClick={handleLogout}>
                         <LogOut className="h-5 w-5" />

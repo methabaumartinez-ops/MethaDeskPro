@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -106,7 +107,7 @@ export default function MitarbeiterDetailPage() {
                                         router.push(`/${projektId}/mitarbeiter`);
                                     } catch (error) {
                                         console.error("Failed to delete", error);
-                                        alert("Fehler beim Löschen");
+                                        showAlert("Fehler beim Löschen");
                                     }
                                 }
                             }}

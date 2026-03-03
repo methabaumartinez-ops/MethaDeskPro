@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
@@ -515,7 +516,7 @@ export default function TeilsystemDetailPage() {
                         setPositionen(prev => prev.filter(p => p.id !== posToDelete.id));
                     } catch (error) {
                         console.error("Failed to delete position:", error);
-                        alert("Fehler beim Löschen der Position.");
+                        showAlert("Fehler beim Löschen der Position.");
                     }
                 }}
                 variant="danger"

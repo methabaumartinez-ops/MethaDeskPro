@@ -1,4 +1,5 @@
-'use client';
+﻿'use client';
+import { showAlert } from '@/lib/alert';
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
@@ -165,11 +166,11 @@ export default function ProjektErfassenPage() {
                 }
             }
 
-            window.alert('Projekt erfolgreich erstellt');
+            window.showAlert('Projekt erfolgreich erstellt');
             router.push('/projekte');
         } catch (error: any) {
             console.error('Failed to create project:', error);
-            window.alert(`Fehler beim Erstellen des Projekts: ${error.message || JSON.stringify(error)}`);
+            window.showAlert(`Fehler beim Erstellen des Projekts: ${error.message || JSON.stringify(error)}`);
         }
     };
 

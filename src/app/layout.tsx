@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ProjektProvider } from "@/lib/context/ProjektContext";
-
+import { AlertProvider } from "@/components/shared/AlertProvider";
 import { ChatAssistant } from "@/components/shared/ChatAssistant";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -21,7 +21,9 @@ export default function RootLayout({
     <html lang="de">
       <body className="antialiased">
         <ProjektProvider>
-          {children}
+          <AlertProvider>
+            {children}
+          </AlertProvider>
         </ProjektProvider>
       </body>
     </html>

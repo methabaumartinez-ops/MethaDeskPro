@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -235,7 +236,7 @@ export default function PositionEditPage() {
             router.back();
         } catch (error: any) {
             console.error("Failed to update position:", error);
-            alert(`Fehler beim Speichern:\n\n${error?.message || String(error)}`);
+            showAlert(`Fehler beim Speichern:\n\n${error?.message || String(error)}`);
         }
     };
 
@@ -247,7 +248,7 @@ export default function PositionEditPage() {
             router.back();
         } catch (error) {
             console.error("Failed to delete", error);
-            alert("Fehler beim Löschen");
+            showAlert("Fehler beim Löschen");
         }
     };
 

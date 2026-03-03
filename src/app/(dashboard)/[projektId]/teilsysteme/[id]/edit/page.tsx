@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -377,7 +378,7 @@ export default function TeilsystemEditPage() {
             router.push(`/${projektId}/teilsysteme/${id}`);
         } catch (error: any) {
             console.error("Failed to update teilsystem:", error);
-            alert(`Fehler beim Speichern des Teilsystems:\n\n${error?.message || String(error)}`);
+            showAlert(`Fehler beim Speichern des Teilsystems:\n\n${error?.message || String(error)}`);
         }
     };
 
@@ -391,7 +392,7 @@ export default function TeilsystemEditPage() {
             router.push(`/${projektId}`);
         } catch (error) {
             console.error("Failed to delete", error);
-            alert("Fehler beim Löschen des Teilsystems");
+            showAlert("Fehler beim Löschen des Teilsystems");
         }
     };
 

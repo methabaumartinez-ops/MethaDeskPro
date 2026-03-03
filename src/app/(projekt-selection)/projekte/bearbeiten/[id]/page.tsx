@@ -1,4 +1,5 @@
 'use client';
+import { showAlert } from '@/lib/alert';
 
 import React from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -220,11 +221,11 @@ export default function ProjektBearbeitenPage() {
                 infoBlattUrl: infoBlattUrl,
                 infoBlattName: infoBlattName,
             });
-            window.alert('Projekt erfolgreich aktualisiert');
+            window.showAlert('Projekt erfolgreich aktualisiert');
             router.push('/projekte');
         } catch (error: any) {
             console.error('Failed to update project:', error);
-            window.alert(`Fehler: ${error.message}`);
+            window.showAlert(`Fehler: ${error.message}`);
         }
     };
 
@@ -251,11 +252,11 @@ export default function ProjektBearbeitenPage() {
             a.remove();
             URL.revokeObjectURL(url);
 
-            window.alert('Projekt erfolgreich exportiert und gelöscht');
+            window.showAlert('Projekt erfolgreich exportiert und gelöscht');
             router.push('/projekte');
         } catch (error: any) {
             console.error("Failed to export/delete project:", error);
-            alert(`Fehler beim Exportieren und Löschen: ${error instanceof Error ? error.message : String(error)}`);
+            showAlert(`Fehler beim Exportieren und Löschen: ${error instanceof Error ? error.message : String(error)}`);
         } finally {
             setIsDeleting(false);
         }
