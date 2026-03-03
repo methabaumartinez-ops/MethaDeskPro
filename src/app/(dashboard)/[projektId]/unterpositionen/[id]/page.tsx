@@ -74,7 +74,19 @@ export default function UnterpositionDetailPage() {
     }, [id, params.projektId, projektId]);
 
     if (loading) return <div className="p-10 text-center">Laden...</div>;
-    if (!unterposition) return <div className="p-10 text-center text-red-500">Unterposition nicht gefunden</div>;
+    if (!unterposition) return (
+        <div className="p-20 text-center flex flex-col items-center gap-4">
+            <div className="text-red-500 font-bold">Unterposition nicht gefunden (ID: {id})</div>
+            <p className="text-sm text-muted-foreground">Die gesuchte Unterposition existiert in der aktuellen Datenbank nicht.</p>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+                Seite aktualisieren
+            </Button>
+            <Button variant="ghost" onClick={() => router.push(`/${projektId}/positionen/${unterposition?.positionId}`)}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Zurück
+            </Button>
+        </div>
+    );
 
     const lagerortObj = unterposition.lagerortId ? lagerorte.find(lo => lo.id === unterposition.lagerortId) : null;
     const loBezeichnung = lagerortObj?.bezeichnung || (unterposition as any).lagerortName || unterposition.lagerortId || 'Nicht zugewiesen';

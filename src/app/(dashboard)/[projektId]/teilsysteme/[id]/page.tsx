@@ -104,10 +104,10 @@ export default function TeilsystemDetailPage() {
         </div>
     );
 
-    if (!item || !project) return (
+    if (!item) return (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
             <div className="text-center font-bold text-muted-foreground">
-                {!item ? `Teilsystem nicht gefunden (ID: ${id})` : `Projekt nicht gefunden (ID: ${projektId})`}
+                Teilsystem nicht gefunden (ID: {id})
             </div>
             <Button variant="outline" onClick={() => window.location.reload()}>
                 Seite aktualisieren

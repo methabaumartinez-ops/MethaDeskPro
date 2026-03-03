@@ -74,9 +74,12 @@ export default function PositionDetailPage() {
     if (loading) return <div className="p-10 text-center">Laden...</div>;
     if (!position) return (
         <div className="p-20 text-center flex flex-col items-center gap-4">
-            <div className="text-red-500 font-bold">Position nicht gefunden</div>
+            <div className="text-red-500 font-bold">Position nicht gefunden (ID: {id})</div>
             <p className="text-sm text-muted-foreground">Die gesuchte Position existiert in der aktuellen Datenbank nicht.</p>
-            <Button variant="outline" onClick={() => router.push(`/${projektId}/positionen`)}>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+                Seite aktualisieren
+            </Button>
+            <Button variant="ghost" onClick={() => router.push(`/${projektId}/positionen`)}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Zurück zur Übersicht
             </Button>

@@ -39,8 +39,8 @@ export const ProjectService = {
                 }
                 return await res.json();
             } catch (error) {
-                console.error(`[ProjectService] Network or Parse error fetching project ${id}:`, error);
-                throw error;
+                console.warn(`[ProjectService] Could not fetch project ${id} (may be unauthenticated):`, error);
+                return null;
             }
         }
         return DatabaseService.get<Projekt>('projekte', id);
