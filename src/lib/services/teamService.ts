@@ -5,14 +5,17 @@ import { v4 as uuidv4 } from 'uuid';
 export const TeamService = {
     async getTeams(projektId?: string): Promise<Team[]> {
         const teams = await DatabaseService.list<Team>('teams');
+        const normalized = teams.map(t => ({ ...t, members: t.members || [] }));
         if (projektId) {
-            return teams.filter(t => t.projektId === projektId);
+            return normalized.filter(t => t.projektId === projektId);
         }
-        return teams;
+        return normalized;
     },
 
     async getTeamById(id: string): Promise<Team | null> {
-        return DatabaseService.get<Team>('teams', id);
+        const team = await DatabaseService.get<Team>('teams', id);
+        if (!team) return null;
+        return { ...team, members: team.members || [] };
     },
 
     async createTeam(data: Omit<Team, 'id' | 'createdAt' | 'updatedAt'>): Promise<Team> {

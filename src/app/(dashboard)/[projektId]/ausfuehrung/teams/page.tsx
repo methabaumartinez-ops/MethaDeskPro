@@ -128,11 +128,11 @@ export default function TeamsPage({ params }: { params: Promise<{ projektId: str
                             <CardContent className="p-5 pt-3">
                                 <div className="mt-2 flex flex-col gap-3">
                                     <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-400">
-                                        <span>Mitglieder ({team.members.length})</span>
+                                        <span>Mitglieder ({(team.members || []).length})</span>
                                         <ArrowRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-orange-500 transition-all duration-300" />
                                     </div>
                                     <div className="flex flex-wrap gap-1.5">
-                                        {team.members.slice(0, 4).map(wId => {
+                                        {(team.members || []).slice(0, 4).map(wId => {
                                             const w = workersData[wId];
                                             if (!w) return null;
                                             return (
@@ -141,12 +141,12 @@ export default function TeamsPage({ params }: { params: Promise<{ projektId: str
                                                 </Badge>
                                             );
                                         })}
-                                        {team.members.length > 4 && (
+                                        {(team.members || []).length > 4 && (
                                             <Badge variant="outline" className="border-dashed border-slate-300 text-slate-400 font-bold px-2">
-                                                +{team.members.length - 4} weitere
+                                                +{(team.members || []).length - 4} weitere
                                             </Badge>
                                         )}
-                                        {team.members.length === 0 && (
+                                        {(!team.members || team.members.length === 0) && (
                                             <span className="text-[11px] text-muted-foreground italic">Keine Mitglieder</span>
                                         )}
                                     </div>

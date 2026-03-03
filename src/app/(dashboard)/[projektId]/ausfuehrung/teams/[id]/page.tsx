@@ -39,7 +39,8 @@ export default function TeamDetailPage({ params }: { params: Promise<{ projektId
             setTeam(fetchedTeam);
 
             const allWorkers = await WorkerService.getAllWorkers();
-            const teamWorkers = allWorkers.filter(w => fetchedTeam.members.includes(w.id));
+            const teamMembers = fetchedTeam.members || [];
+            const teamWorkers = allWorkers.filter(w => teamMembers.includes(w.id));
             setWorkers(teamWorkers);
         } catch (error) {
             console.error("Fehler beim Abrufen der Teamdetails.", error);
@@ -123,7 +124,7 @@ export default function TeamDetailPage({ params }: { params: Promise<{ projektId
                             </div>
                             <div>
                                 <span className="block text-xs uppercase text-slate-400 font-bold mb-1 tracking-wider">Mitgliederzahl</span>
-                                <span className="text-sm font-semibold text-slate-700">{team.members.length} Personen</span>
+                                <span className="text-sm font-semibold text-slate-700">{(team.members || []).length} Personen</span>
                             </div>
                         </div>
                     </CardContent>
