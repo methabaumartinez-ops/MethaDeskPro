@@ -1,6 +1,5 @@
 'use client';
 import { showAlert } from '@/lib/alert';
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useProjekt } from '@/lib/context/ProjektContext';
@@ -14,18 +13,25 @@ import { SubsystemService } from '@/lib/services/subsystemService';
 import { FleetService } from '@/lib/services/fleetService';
 import { TeamService } from '@/lib/services/teamService';
 import { TaskService } from '@/lib/services/taskService';
-import { Teilsystem, Fahrzeug, Team, TeamMember, Task, Subtask, Mitarbeiter } from '@/types';
+import { cn } from '@/lib/utils';
 import {
     Search, Filter, Layers, Link as LinkIcon,
     Car, HardHat, Package, Truck, Plus, CheckCircle2, Clock, Inbox, Trash2, Send, Edit2, MessageSquare,
     Eye, CalendarPlus, Wrench, Camera, ArrowLeft, Users, CheckSquare, UserPlus
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { BestellService } from '@/lib/services/bestellService';
-import { MaterialBestellung, BestellungItem, FahrzeugReservierung, ABTEILUNGEN_CONFIG } from '@/types';
+import { MaterialBestellung, BestellungItem, FahrzeugReservierung, ABTEILUNGEN_CONFIG, Mitarbeiter, Teilsystem, Fahrzeug } from '@/types';
+import { Team, Worker, Task, TaskStatus } from '@/types/ausfuehrung';
 import { Badge } from '@/components/ui/badge';
 import { ReservierungModal } from '@/components/shared/ReservierungModal';
+import { TaskForm } from '@/components/ausfuehrung/TaskForm';
+import { TeamForm } from '@/components/ausfuehrung/TeamForm';
+import { TaskStatusBadge } from '@/components/ausfuehrung/TaskStatusBadge';
+import { SubtaskService } from '@/lib/services/subtaskService';
+import { WorkerService } from '@/lib/services/workerService';
+import { EmployeeService } from '@/lib/services/employeeService';
+import { BestellService } from '@/lib/services/bestellService';
+import { X, ClipboardList, FileQuestion, ArrowRight, Info, Users as UsersIcon } from 'lucide-react';
 
 const KATEGORIE_LABELS: Record<string, string> = {
     scherenbuehne: 'Scherenbühne',
@@ -61,7 +67,17 @@ export default function AusfuehrungPage() {
     const [teams, setTeams] = useState<Team[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [mitarbeiter, setMitarbeiter] = useState<Mitarbeiter[]>([]);
+    const [workersData, setWorkersData] = useState<Record<string, Worker>>({});
+    const [taskStats, setTaskStats] = useState<Record<string, { total: number, done: number }>>({});
     const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+
+    // Filter states for tasks
+    const [filterTeamId, setFilterTeamId] = useState<string>('all');
+    const [filterStatus, setFilterStatus] = useState<string>('all');
+
+    // Dialog/Form states
+    const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
+    const [isTeamDialogOpen, setIsTeamDialogOpen] = useState(false);
 
     // Form State for creating new Material Orders
     const [isCreatingOrder, setIsCreatingOrder] = useState(false);
@@ -91,52 +107,67 @@ export default function AusfuehrungPage() {
     const [search, setSearch] = useState('');
     const [activeTab, setActiveTab] = useState('teilsysteme');
 
-    useEffect(() => {
-        const loadData = async () => {
-            try {
-                // Sync Bau Teilsysteme to Tasks
-                await TaskService.syncBauTeilsysteme(projektId);
+    const loadData = async () => {
+        try {
+            setLoading(true);
+            // Sync Bau Teilsysteme to Tasks
+            await TaskService.syncBauTeilsysteme(projektId);
 
-                const [subs, vehs, best, tms, fetchedTasks, mitsRes] = await Promise.all([
-                    SubsystemService.getTeilsysteme(projektId),
-                    FleetService.getFahrzeuge(),
-                    BestellService.getBestellungen(projektId),
-                    TeamService.getTeams(projektId),
-                    TaskService.getTasks({ projektId }),
-                    fetch(`/api/data/mitarbeiter`)
-                ]);
+            const [subs, vehs, best, tms, fetchedTasks, mitsRes, allWorkers] = await Promise.all([
+                SubsystemService.getTeilsysteme(projektId),
+                FleetService.getFahrzeuge(),
+                BestellService.getBestellungen(projektId),
+                TeamService.getTeams(projektId),
+                TaskService.getTasks({ projektId }),
+                EmployeeService.getMitarbeiter(),
+                WorkerService.getAllWorkers(projektId)
+            ]);
 
-                let mits = [];
-                if (mitsRes.ok) mits = await mitsRes.json();
+            setSubsystems(subs as Teilsystem[]);
+            setVehicles(vehs);
+            setBestellungen(best);
+            setTeams(tms as any[]);
+            setTasks(fetchedTasks as any[]);
+            setMitarbeiter(mitsRes);
 
-                setSubsystems(subs as Teilsystem[]);
-                setVehicles(vehs);
-                setBestellungen(best);
-                setTeams(tms as any[]);
-                setTasks(fetchedTasks as any[]);
-                setMitarbeiter(mits);
+            const wMap: Record<string, Worker> = {};
+            allWorkers.forEach(w => { wMap[w.id] = w; });
+            setWorkersData(wMap);
 
-                // Handle tab parameter
-                const tab = searchParams.get('tab');
-                if (tab) {
-                    setActiveTab(tab);
-                }
-
-                // Check for edit parameter in URL
-                const editId = searchParams.get('edit');
-                if (editId) {
-                    const orderToEdit = best.find(b => b.id === editId);
-                    if (orderToEdit) {
-                        handleEditOrder(orderToEdit);
-                        setActiveTab('logistik');
-                    }
-                }
-            } catch (error) {
-                console.error("Failed to load data", error);
-            } finally {
-                setLoading(false);
+            // Compute subtask stats to show progress
+            const statsMap: Record<string, { total: number, done: number }> = {};
+            for (const task of fetchedTasks) {
+                const subT = await SubtaskService.getSubtasksByTaskId(task.id);
+                statsMap[task.id] = {
+                    total: subT.length,
+                    done: subT.filter(s => s.status === 'fertig').length
+                };
             }
-        };
+            setTaskStats(statsMap);
+
+            // Handle tab parameter
+            const tab = searchParams.get('tab');
+            if (tab) {
+                setActiveTab(tab);
+            }
+
+            // Check for edit parameter in URL
+            const editId = searchParams.get('edit');
+            if (editId) {
+                const orderToEdit = best.find(b => b.id === editId);
+                if (orderToEdit) {
+                    handleEditOrder(orderToEdit);
+                    setActiveTab('logistik');
+                }
+            }
+        } catch (error) {
+            console.error("Failed to load data", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         loadData();
     }, [projektId, searchParams]);
 
@@ -170,6 +201,21 @@ export default function AusfuehrungPage() {
 
         return matchesSearch && matchesKategorie;
     });
+
+    const filteredTasks = tasks.filter(t => {
+        const matchesSearch = (t.title?.toLowerCase() || '').includes(search.toLowerCase()) ||
+            (t.description?.toLowerCase() || '').includes(search.toLowerCase());
+
+        const matchesTeam = filterTeamId === 'all' || t.teamId === filterTeamId;
+        const matchesStatus = filterStatus === 'all' || t.status === filterStatus;
+
+        return matchesSearch && matchesTeam && matchesStatus;
+    });
+
+    const filteredTeams = teams.filter(t =>
+        (t.name?.toLowerCase() || '').includes(search.toLowerCase()) ||
+        (t.description?.toLowerCase() || '').includes(search.toLowerCase())
+    );
 
     const handleAddOrderItem = () => {
         setNewOrderItems([...newOrderItems, { name: '', menge: '', einheit: '', tsnummer: '', bemerkung: '', showBemerkung: false }]);
@@ -369,7 +415,7 @@ export default function AusfuehrungPage() {
                             )}
                         >
                             <Layers className="h-4 w-4" />
-                            Teilsysteme (Alle)
+                            TS (Alle)
                         </TabsTrigger>
                         <TabsTrigger
                             active={activeTab === 'ts_baustelle'}
@@ -398,6 +444,32 @@ export default function AusfuehrungPage() {
                             Bestellung ({bestellungen.length})
                         </TabsTrigger>
                         <TabsTrigger
+                            active={activeTab === 'tasks'}
+                            onClick={() => setActiveTab('tasks')}
+                            className={cn(
+                                "flex items-center gap-2 font-black text-xs uppercase px-6 h-11 rounded-full border-2 transition-all",
+                                activeTab === 'tasks'
+                                    ? "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-200"
+                                    : "bg-white border-slate-100 text-slate-500 hover:border-orange-200 hover:text-orange-600"
+                            )}
+                        >
+                            <ClipboardList className="h-4 w-4" />
+                            Aufgaben ({tasks.length})
+                        </TabsTrigger>
+                        <TabsTrigger
+                            active={activeTab === 'teams'}
+                            onClick={() => setActiveTab('teams')}
+                            className={cn(
+                                "flex items-center gap-2 font-black text-xs uppercase px-6 h-11 rounded-full border-2 transition-all",
+                                activeTab === 'teams'
+                                    ? "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-200"
+                                    : "bg-white border-slate-100 text-slate-500 hover:border-orange-200 hover:text-orange-600"
+                            )}
+                        >
+                            <Users className="h-4 w-4" />
+                            Teams ({teams.length})
+                        </TabsTrigger>
+                        <TabsTrigger
                             active={activeTab === 'fahrzeuge'}
                             onClick={() => setActiveTab('fahrzeuge')}
                             className={cn(
@@ -410,19 +482,6 @@ export default function AusfuehrungPage() {
                             <Car className="h-4 w-4" />
                             Fahrzeuge ({vehicles.length})
                         </TabsTrigger>
-                        <TabsTrigger
-                            active={activeTab === 'teams_aufgaben'}
-                            onClick={() => setActiveTab('teams_aufgaben')}
-                            className={cn(
-                                "flex items-center gap-2 font-black text-xs uppercase px-6 h-11 rounded-full border-2 transition-all",
-                                activeTab === 'teams_aufgaben'
-                                    ? "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-200"
-                                    : "bg-white border-slate-100 text-slate-500 hover:border-orange-200 hover:text-orange-600"
-                            )}
-                        >
-                            <Users className="h-4 w-4" />
-                            Teams & Aufgaben ({tasks.length})
-                        </TabsTrigger>
                     </TabsList>
                 </div>
 
@@ -433,10 +492,11 @@ export default function AusfuehrungPage() {
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                                 <Input
                                     placeholder={
-                                        activeTab === 'teilsysteme' ? "Suche nach Nummer o. Name..." :
+                                        activeTab === 'teilsysteme' || activeTab === 'ts_baustelle' ? "Suche nach Nummer o. Name..." :
                                             activeTab === 'logistik' ? "Suche nach Container o. Besteller..." :
-                                                activeTab === 'teams_aufgaben' ? "Suche nach Team o. Aufgabe..." :
-                                                    "Suche nach Bezeichnung o. Inventarnummer..."
+                                                activeTab === 'tasks' ? "Suche nach Aufgabe o. Beschreibung..." :
+                                                    activeTab === 'teams' ? "Suche nach Team o. Beschreibung..." :
+                                                        "Suche nach Bezeichnung o. Inventarnummer..."
                                     }
                                     className="pl-10 h-9 text-sm bg-background border-slate-200 dark:border-slate-800"
                                     value={search}
@@ -940,138 +1000,224 @@ export default function AusfuehrungPage() {
                                     )}
                                 </TabsContent>
 
-                                <TabsContent active={activeTab === 'teams_aufgaben'} className="mt-0 h-full overflow-y-auto bg-slate-50/50 p-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
-                                        {/* Teams Spalte */}
-                                        <div className="md:col-span-1 border-r border-slate-200 pr-4">
-                                            <div className="flex justify-between items-center mb-4">
-                                                <h3 className="font-black text-slate-800 flex items-center gap-2">
-                                                    <Users className="h-5 w-5 text-orange-500" />
-                                                    Teams ({teams.length})
-                                                </h3>
-                                                <Link href={`/${projektId}/teams/neu`}>
-                                                    <Button size="sm" variant="outline" className="h-8 text-[10px] uppercase font-bold text-orange-600 border-orange-200 bg-white shadow-sm hover:bg-orange-50 hover:text-orange-700">
-                                                        <Plus className="h-3 w-3 mr-1" /> Neues Team
-                                                    </Button>
-                                                </Link>
+                                <TabsContent active={activeTab === 'tasks'} className="mt-0 h-full overflow-y-auto bg-slate-50/50 p-6">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <div>
+                                            <h3 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+                                                <ClipboardList className="h-6 w-6 text-orange-500" />
+                                                Aufgaben Management
+                                            </h3>
+                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Überblick über alle Projektaktivitäten</p>
+                                        </div>
+                                        <div className="flex gap-3">
+                                            <div className="flex items-center gap-2 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-sm">
+                                                <Filter className="h-3.5 w-3.5 text-slate-400" />
+                                                <select
+                                                    className="text-xs font-bold text-slate-600 bg-transparent outline-none focus:ring-0"
+                                                    value={filterStatus}
+                                                    onChange={(e) => setFilterStatus(e.target.value)}
+                                                >
+                                                    <option value="all">Alle Zustände</option>
+                                                    <option value="offen">Offen</option>
+                                                    <option value="in_arbeit">In Arbeit</option>
+                                                    <option value="blockiert">Blockiert</option>
+                                                    <option value="fertig">Fertig</option>
+                                                </select>
                                             </div>
-                                            {teams.length === 0 ? (
-                                                <div className="text-sm text-center text-slate-400 font-medium bg-white p-6 rounded-xl border border-dashed border-slate-200">
-                                                    Keine Teams erstellt.
-                                                </div>
-                                            ) : (
-                                                <div className="space-y-3">
-                                                    {teams.map(team => (
-                                                        <Card
-                                                            key={team.id}
-                                                            className={cn("cursor-pointer border-2 transition-all group hover:border-orange-300", selectedTeamId === team.id ? "border-orange-500 shadow-md bg-orange-50/50" : "border-slate-100 bg-white")}
-                                                            onClick={() => setSelectedTeamId(team.id)}
-                                                        >
-                                                            <div className="p-4">
-                                                                <div className="flex justify-between items-start mb-2">
-                                                                    <h4 className="font-bold text-sm text-slate-800 tracking-tight">{team.name}</h4>
-                                                                    <div className="bg-slate-100 text-slate-500 rounded-full h-6 w-6 flex items-center justify-center text-[10px] font-bold">
-                                                                        {tasks.filter(t => t.teamId === team.id).length}
+                                            <Button
+                                                onClick={() => { setIsTaskDialogOpen(true); setEditingOrder(null); }}
+                                                className="h-10 px-6 font-black text-xs uppercase rounded-full bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-200 transition-all active:scale-95"
+                                            >
+                                                <Plus className="h-4 w-4 mr-2" /> Neue Aufgabe
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {filteredTasks.length === 0 ? (
+                                            <div className="col-span-full py-20 flex flex-col items-center justify-center bg-white border-2 border-dashed border-slate-200 rounded-3xl">
+                                                <ClipboardList className="h-12 w-12 text-slate-200 mb-4" />
+                                                <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">Keine Aufgaben gefunden</p>
+                                            </div>
+                                        ) : (
+                                            filteredTasks.map(task => (
+                                                <Card key={task.id} className="group relative overflow-hidden border-2 border-slate-100 hover:border-orange-500/50 transition-all hover:shadow-xl hover:shadow-orange-100/50 bg-white rounded-2xl">
+                                                    <div className="p-5">
+                                                        <div className="flex justify-between items-start mb-4">
+                                                            <div className="space-y-1">
+                                                                <TaskStatusBadge status={task.status} size="sm" />
+                                                                {task.priority && (
+                                                                    <div className={cn(
+                                                                        "text-[10px] font-black uppercase tracking-widest ml-1 px-1.5 py-0.5 rounded",
+                                                                        task.priority === 'hoch' ? "text-red-600 bg-red-50" :
+                                                                            task.priority === 'mittel' ? "text-orange-600 bg-orange-50" : "text-emerald-600 bg-emerald-50"
+                                                                    )}>
+                                                                        {task.priority} Prio
                                                                     </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full text-slate-400 hover:text-orange-600 hover:bg-orange-50">
+                                                                    <Edit2 className="h-3.5 w-3.5" />
+                                                                </Button>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-7 w-7 rounded-full text-slate-400 hover:text-red-600 hover:bg-red-50"
+                                                                    onClick={() => {
+                                                                        if (confirm('Aufgabe löschen?')) {
+                                                                            TaskService.deleteTask(task.id).then(() => loadData());
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+
+                                                        <Link href={`/${projektId}/ausfuehrung/tasks/${task.id}`}>
+                                                            <h4 className="font-black text-slate-800 text-lg leading-tight hover:text-orange-600 transition-colors cursor-pointer line-clamp-2 min-h-[3rem]">
+                                                                {task.title}
+                                                            </h4>
+                                                        </Link>
+
+                                                        {task.description && (
+                                                            <p className="text-sm text-slate-500 mt-2 font-medium line-clamp-2 min-h-[2.5rem]">{task.description}</p>
+                                                        )}
+
+                                                        <div className="mt-5 pt-4 border-t border-slate-50 space-y-4">
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-2">
+                                                                    <UsersIcon className="h-3.5 w-3.5 text-slate-400" />
+                                                                    <span className="text-xs font-bold text-slate-600">
+                                                                        {task.teamId && teams.find(t => t.id === task.teamId)
+                                                                            ? teams.find(t => t.id === task.teamId)?.name
+                                                                            : "Unzugeordnet"
+                                                                        }
+                                                                    </span>
+                                                                </div>
+                                                                <div className="text-xs font-black text-slate-400">
+                                                                    {taskStats[task.id] && taskStats[task.id].total > 0 ? (
+                                                                        <span className="flex items-center gap-1.5 text-emerald-600">
+                                                                            <CheckCircle2 className="h-3 w-3" />
+                                                                            {taskStats[task.id].done}/{taskStats[task.id].total} Subtasks
+                                                                        </span>
+                                                                    ) : (
+                                                                        "0 Subtasks"
+                                                                    )}
                                                                 </div>
                                                             </div>
-                                                        </Card>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
 
-                                        {/* Aufgaben Spalte */}
-                                        <div className="md:col-span-2 pl-2">
-                                            <div className="flex justify-between items-center mb-4">
-                                                <h3 className="font-black text-slate-800 flex items-center gap-2">
-                                                    <CheckSquare className="h-5 w-5 text-orange-500" />
-                                                    {selectedTeamId ? `Zugeordnete Aufgaben` : `Alle Aufgaben (${tasks.length})`}
-                                                </h3>
-                                                <div className="flex gap-2">
-                                                    {selectedTeamId && (
-                                                        <Button size="sm" variant="ghost" onClick={() => setSelectedTeamId(null)} className="h-8 text-xs font-bold text-slate-500 hover:text-slate-700">Filter aufheben</Button>
-                                                    )}
-                                                    <Link href={`/${projektId}/aufgaben/neu`}>
-                                                        <Button size="sm" variant="outline" className="h-8 text-[10px] uppercase font-bold text-orange-600 border-orange-200 bg-white shadow-sm hover:bg-orange-50 hover:text-orange-700">
-                                                            <Plus className="h-3 w-3 mr-1" /> Neue Aufgabe
-                                                        </Button>
-                                                    </Link>
-                                                </div>
-                                            </div>
-
-                                            {tasks.filter(t => selectedTeamId ? t.teamId === selectedTeamId : true).length === 0 ? (
-                                                <EmptyState label={selectedTeamId ? "Dem Team sind keine Aufgaben zugeordnet." : "Keine Aufgaben gefunden"} icon={CheckSquare} />
-                                            ) : (
-                                                <div className="space-y-3 pb-8">
-                                                    {tasks
-                                                        .filter(t => selectedTeamId ? t.teamId === selectedTeamId : true)
-                                                        .map(task => (
-                                                            <Card key={task.id} className="border border-slate-200 shadow-sm hover:border-orange-300 transition-colors bg-white">
-                                                                <div className="p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-                                                                    <div>
-                                                                        <div className="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-widest flex items-center gap-1.5">
-                                                                            {task.sourceType === 'ts' ? (
-                                                                                <span className="text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 flex items-center gap-1"><Layers className="h-3 w-3" /> Aus TS generiert</span>
-                                                                            ) : (
-                                                                                <span className="text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">Manuell</span>
-                                                                            )}
-                                                                            {task.teamId && teams.find(t => t.id === task.teamId) && (
-                                                                                <span className="text-orange-600 font-bold bg-orange-50 px-1.5 py-0.5 rounded border border-orange-100">
-                                                                                    {teams.find(t => t.id === task.teamId)?.name}
-                                                                                </span>
-                                                                            )}
-                                                                        </div>
-                                                                        <Link href={`/${projektId}/aufgaben/${task.id}`}>
-                                                                            <h4 className="font-black text-slate-800 text-sm md:text-base leading-tight hover:text-orange-600 transition-colors cursor-pointer">
-                                                                                {task.title}
-                                                                            </h4>
-                                                                        </Link>
-                                                                        {task.description && (
-                                                                            <p className="text-xs text-slate-500 mt-1 line-clamp-2 md:line-clamp-1 font-medium">{task.description}</p>
-                                                                        )}
-                                                                    </div>
-                                                                    <div className="flex sm:flex-col items-center sm:items-end gap-2 shrink-0">
-                                                                        <select
-                                                                            className={cn(
-                                                                                "bg-white border rounded-md px-2 py-1 text-[10px] font-black uppercase tracking-tight focus:ring-1 focus:ring-orange-500 cursor-pointer hover:border-orange-500 transition-all outline-none",
-                                                                                task.status === 'Offen' ? "border-amber-200 text-amber-700" :
-                                                                                    task.status === 'In Arbeit' ? "border-blue-200 text-blue-700" :
-                                                                                        task.status === 'Erledigt' ? "border-emerald-200 text-emerald-700" :
-                                                                                            "border-red-200 text-red-700"
-                                                                            )}
-                                                                            value={task.status}
-                                                                            onChange={async (e) => {
-                                                                                const newStatus = e.target.value as any;
-                                                                                try {
-                                                                                    await TaskService.updateTask(task.id, { projektId, status: newStatus });
-                                                                                    setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: newStatus, projektId } : t));
-                                                                                } catch (err) {
-                                                                                    console.error("Failed to update status", err);
-                                                                                    showAlert("Fehler beim Aktualisieren");
-                                                                                }
-                                                                            }}
-                                                                        >
-                                                                            <option value="Offen">Offen</option>
-                                                                            <option value="In Arbeit">In Arbeit</option>
-                                                                            <option value="Erledigt">Erledigt</option>
-                                                                            <option value="Blockiert">Blockiert</option>
-                                                                        </select>
-                                                                        <div className="flex items-center gap-1.5">
-                                                                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-right whitespace-nowrap">Priorität:</span>
-                                                                            <span className={cn(
-                                                                                "text-[10px] font-black uppercase",
-                                                                                task.priority === 'Hoch' ? "text-red-500" :
-                                                                                    task.priority === 'Mittel' ? "text-amber-500" : "text-emerald-500"
-                                                                            )}>{task.priority}</span>
-                                                                        </div>
-                                                                    </div>
+                                                            {taskStats[task.id] && taskStats[task.id].total > 0 && (
+                                                                <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                                                    <div
+                                                                        className="h-full bg-orange-500 transition-all duration-500"
+                                                                        style={{ width: `${(taskStats[task.id].done / taskStats[task.id].total) * 100}%` }}
+                                                                    />
                                                                 </div>
-                                                            </Card>
-                                                        ))}
-                                                </div>
-                                            )}
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="bg-slate-50/80 px-5 py-3 flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                        <span>ID: {task.id.slice(0, 8)}</span>
+                                                        <span className="flex items-center gap-1">
+                                                            <CalendarPlus className="h-3 w-3" />
+                                                            {new Date(task.createdAt).toLocaleDateString()}
+                                                        </span>
+                                                    </div>
+                                                </Card>
+                                            ))
+                                        )}
+                                    </div>
+                                </TabsContent>
+
+                                <TabsContent active={activeTab === 'teams'} className="mt-0 h-full overflow-y-auto bg-slate-50/50 p-6">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <div>
+                                            <h3 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+                                                <UsersIcon className="h-6 w-6 text-orange-500" />
+                                                Teamübersicht
+                                            </h3>
+                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Struktur und Teammitglieder</p>
                                         </div>
+                                        <Button
+                                            onClick={() => setIsTeamDialogOpen(true)}
+                                            className="h-10 px-6 font-black text-xs uppercase rounded-full bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-200 transition-all active:scale-95"
+                                        >
+                                            <Plus className="h-4 w-4 mr-2" /> Neues Team
+                                        </Button>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {filteredTeams.length === 0 ? (
+                                            <div className="col-span-full py-20 flex flex-col items-center justify-center bg-white border-2 border-dashed border-slate-200 rounded-3xl">
+                                                <UsersIcon className="h-12 w-12 text-slate-200 mb-4" />
+                                                <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">Keine Teams definiert</p>
+                                            </div>
+                                        ) : (
+                                            filteredTeams.map(team => (
+                                                <Card key={team.id} className="relative overflow-hidden border-2 border-slate-100 hover:border-orange-500 transition-all hover:shadow-xl bg-white rounded-2xl">
+                                                    <div className="p-6">
+                                                        <div className="flex justify-between items-start mb-4">
+                                                            <h4 className="text-lg font-black text-slate-800 tracking-tight">{team.name}</h4>
+                                                            <div className="flex gap-1 shrink-0">
+                                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-orange-600">
+                                                                    <Edit2 className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8 text-slate-400 hover:text-red-600"
+                                                                    onClick={() => {
+                                                                        if (confirm('Team löschen?')) {
+                                                                            TeamService.deleteTeam(team.id).then(() => loadData());
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+
+                                                        {team.description && (
+                                                            <p className="text-sm text-slate-500 font-medium mb-6">{team.description}</p>
+                                                        )}
+
+                                                        <div className="space-y-4">
+                                                            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 pb-2">
+                                                                <span>Mitglieder</span>
+                                                                <span>{team.members?.length || 0} Personen</span>
+                                                            </div>
+                                                            <div className="flex flex-wrap gap-2 min-h-[2rem]">
+                                                                {team.members?.map(wId => {
+                                                                    const worker = workersData[wId];
+                                                                    const employee = mitarbeiter.find(m => m.id === worker?.id);
+                                                                    return (
+                                                                        <Badge key={wId} variant="outline" className="bg-slate-50 border-slate-200 text-slate-600 text-[10px] font-bold px-2 py-1">
+                                                                            {worker?.fullName || "Unbekannt"}
+                                                                        </Badge>
+                                                                    );
+                                                                })}
+                                                                {(!team.members || team.members.length === 0) && (
+                                                                    <p className="text-xs text-slate-300 italic font-medium">Keine Mitglieder zugeordnet</p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="mt-8">
+                                                            <Button
+                                                                variant="outline"
+                                                                className="w-full h-10 text-[10px] font-black uppercase tracking-widest border-2 border-slate-100 hover:border-orange-500 hover:text-orange-600 transition-all rounded-xl"
+                                                            >
+                                                                <UserPlus className="h-3.5 w-3.5 mr-2" />
+                                                                Mitglieder verwalten
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </Card>
+                                            ))
+                                        )}
                                     </div>
                                 </TabsContent>
                             </>
@@ -1086,6 +1232,30 @@ export default function AusfuehrungPage() {
                 onSave={handleSaveReservierung}
                 fahrzeug={selectedFahrzeug}
                 projektId={projektId}
+            />
+
+            <TaskForm
+                isOpen={isTaskDialogOpen}
+                onClose={() => setIsTaskDialogOpen(false)}
+                onSave={async (data) => {
+                    await TaskService.createTask({ ...data, projektId });
+                    setIsTaskDialogOpen(false);
+                    loadData();
+                }}
+                teams={teams}
+                mitarbeiter={mitarbeiter}
+                proyectoId={projektId}
+                teilsysteme={subsystems}
+            />
+
+            <TeamForm
+                isOpen={isTeamDialogOpen}
+                onClose={() => setIsTeamDialogOpen(false)}
+                onSave={async (data) => {
+                    await TeamService.createTeam({ ...data, projektId });
+                    setIsTeamDialogOpen(false);
+                    loadData();
+                }}
             />
         </div>
     );

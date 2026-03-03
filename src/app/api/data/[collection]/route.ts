@@ -6,8 +6,9 @@ import { getUserFromToken } from '@/lib/services/authService';
 
 const ALLOWED_COLLECTIONS = [
     'projekte', 'teilsysteme', 'positionen', 'unterpositionen',
-    'material', 'mitarbeiter', 'fahrzeuge', 'fahrzeug_reservierungen', 'reservierungen', 'lieferanten', 'subunternehmer',
-    'teams', 'team_members', 'tasks', 'subtasks'
+    'material', 'mitarbeiter', 'workers', 'fahrzeuge', 'fahrzeug_reservierungen', 'reservierungen', 'lieferanten', 'subunternehmer',
+    'teams', 'team_members', 'tasks', 'subtasks',
+    'ausfuehrung_tasks', 'ausfuehrung_subtasks', 'ausfuehrung_task_resources', 'ausfuehrung_resources'
 ];
 
 export async function GET(req: Request, { params }: { params: Promise<{ collection: string }> }) {
