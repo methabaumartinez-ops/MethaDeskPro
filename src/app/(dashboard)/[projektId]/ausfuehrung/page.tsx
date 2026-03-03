@@ -7,7 +7,7 @@ import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { FleetService } from '@/lib/services/fleetService';
@@ -401,7 +401,7 @@ export default function AusfuehrungPage() {
                 </div>
             </div>
 
-            <Tabs className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 flex flex-col overflow-hidden">
                 <div className="flex justify-between items-center mb-2">
                     <TabsList className="bg-transparent p-0 gap-2 h-auto flex-wrap">
                         <TabsTrigger
@@ -1224,7 +1224,7 @@ export default function AusfuehrungPage() {
                         )}
                     </CardContent>
                 </Card>
-            </Tabs>
+            </div>
 
             <ReservierungModal
                 isOpen={modalOpen}
