@@ -21,8 +21,6 @@ export default function TeilsystemeListPage() {
     const [project, setProject] = useState<Projekt | null>(null);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
-    const [confirmOpen, setConfirmOpen] = useState(false);
-    const [itemToDelete, setItemToDelete] = useState<Teilsystem | null>(null);
 
     useEffect(() => {
         const loadData = async () => {
@@ -48,21 +46,6 @@ export default function TeilsystemeListPage() {
         return matchesSearch;
     });
 
-    const handleDelete = (item: Teilsystem) => {
-        setItemToDelete(item);
-        setConfirmOpen(true);
-    };
-
-    const confirmDelete = async () => {
-        if (!itemToDelete) return;
-        try {
-            await SubsystemService.deleteTeilsystem(itemToDelete.id);
-            setItems(prev => prev.filter(i => i.id !== itemToDelete.id));
-        } catch (error) {
-            console.error("Failed to delete", error);
-            alert("Fehler beim Löschen");
-        }
-    };
 
     return (
         <div className="space-y-4 animate-in fade-in duration-500 pb-10">
@@ -115,7 +98,6 @@ export default function TeilsystemeListPage() {
                         <TeilsystemTable
                             items={filteredItems}
                             projektId={projektId}
-                            onDelete={handleDelete}
                         />
                     ) : (
                         <div className="py-32 text-center flex flex-col items-center">
@@ -137,14 +119,6 @@ export default function TeilsystemeListPage() {
                 </CardContent>
             </Card>
 
-            <ConfirmDialog
-                isOpen={confirmOpen}
-                onClose={() => setConfirmOpen(false)}
-                onConfirm={confirmDelete}
-                variant="danger"
-                title="Teilsystem löschen"
-                description={`Sind Sie sicher, dass Sie "${itemToDelete?.name}" permanent löschen möchten? Dieser Vorgang kann nicht rückgängig gemacht werden.`}
-            />
         </div>
     );
 }

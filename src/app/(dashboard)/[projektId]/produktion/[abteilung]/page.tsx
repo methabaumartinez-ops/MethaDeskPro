@@ -19,8 +19,6 @@ export default function AbteilungPage() {
     const [project, setProject] = useState<Projekt | null>(null);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
-    const [confirmOpen, setConfirmOpen] = useState(false);
-    const [itemToDelete, setItemToDelete] = useState<Teilsystem | null>(null);
 
     // Find department name from slug
     const abteilungConfig = ABTEILUNGEN_CONFIG.find(a => a.id === abteilungSlug);
@@ -56,22 +54,6 @@ export default function AbteilungPage() {
         (item.name?.toLowerCase() || '').includes(search.toLowerCase())
     );
 
-    const handleDelete = (item: Teilsystem) => {
-        setItemToDelete(item);
-        setConfirmOpen(true);
-    };
-
-    const confirmDelete = async () => {
-        if (!itemToDelete) return;
-        try {
-            const res = await fetch(`/api/teilsysteme/${itemToDelete.id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error('Failed to delete');
-            setItems(prev => prev.filter(i => i.id !== itemToDelete.id));
-        } catch (error) {
-            console.error("Failed to delete", error);
-            alert("Fehler beim Löschen");
-        }
-    };
 
     return (
         <div className="space-y-4 animate-in fade-in duration-500 pb-10">
@@ -128,7 +110,6 @@ export default function AbteilungPage() {
                         <TeilsystemTable
                             items={filteredItems}
                             projektId={projektId}
-                            onDelete={handleDelete}
                             onRefresh={loadData}
                             editable={true}
                             showAbteilung={true}
@@ -148,14 +129,6 @@ export default function AbteilungPage() {
                 </CardContent>
             </Card>
 
-            <ConfirmDialog
-                isOpen={confirmOpen}
-                onClose={() => setConfirmOpen(false)}
-                onConfirm={confirmDelete}
-                variant="danger"
-                title="Teilsystem löschen"
-                description={`Sind Sie sicher, dass Sie "${itemToDelete?.name}" permanent löschen möchten?`}
-            />
         </div>
     );
 }

@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { Teilsystem } from '@/types';
-import { ArrowRight, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { cleanBemerkung } from '@/lib/utils';
@@ -18,7 +17,6 @@ import { AbteilungWarningModal } from './AbteilungWarningModal';
 interface TeilsystemTableProps {
     items: Teilsystem[];
     projektId: string;
-    onDelete: (item: Teilsystem) => void;
     onRefresh?: () => void;
     editable?: boolean;
     showAbteilung?: boolean;
@@ -28,7 +26,6 @@ interface TeilsystemTableProps {
 export function TeilsystemTable({
     items,
     projektId,
-    onDelete,
     onRefresh,
     editable = false,
     showAbteilung = false,
@@ -149,17 +146,9 @@ export function TeilsystemTable({
                                         <StatusBadge status={item.status || 'offen'} />
                                     )}
                                 </TableCell>
-                                <TableCell className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
-                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end gap-2">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8 text-muted-foreground hover:text-red-600 hover:bg-red-50"
-                                            onClick={() => onDelete(item)}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                        <ArrowRight className="h-4 w-4 text-orange-400 cursor-pointer" onClick={() => router.push(`/${projektId}/teilsysteme/${item.id}`)} />
+                                <TableCell className="p-4 text-right">
+                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <ArrowRight className="h-4 w-4 text-orange-400" />
                                     </div>
                                 </TableCell>
                             </TableRow>

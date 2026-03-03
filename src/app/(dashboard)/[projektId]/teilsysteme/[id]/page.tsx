@@ -147,23 +147,12 @@ export default function TeilsystemDetailPage() {
                 </div>
 
                 {!isReadOnly && (
-                    <div className="flex items-center gap-3">
-                        <Link href={`/${projektId}/teilsysteme/${item.id}/edit`}>
-                            <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
-                                <Edit className="h-4 w-4" />
-                                <span>Bearbeiten</span>
-                            </Button>
-                        </Link>
-                        {canDelete && (
-                            <Button
-                                onClick={() => setConfirmOpen(true)}
-                                className="h-9 px-6 bg-red-600 hover:bg-red-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-red-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
-                            >
-                                <Trash2 className="h-4 w-4" />
-                                <span>Löschen</span>
-                            </Button>
-                        )}
-                    </div>
+                    <Link href={`/${projektId}/teilsysteme/${item.id}/edit`}>
+                        <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                            <Edit className="h-4 w-4" />
+                            <span>Bearbeiten</span>
+                        </Button>
+                    </Link>
                 )}
             </div>
 
@@ -520,29 +509,18 @@ export default function TeilsystemDetailPage() {
                     setPosToDelete(null);
                 }}
                 onConfirm={async () => {
-                    if (posToDelete) {
-                        try {
-                            await PositionService.deletePosition(posToDelete.id);
-                            setPositionen(prev => prev.filter(p => p.id !== posToDelete.id));
-                        } catch (error) {
-                            console.error("Failed to delete position:", error);
-                            alert("Fehler beim Löschen der Position.");
-                        }
-                    } else {
-                        try {
-                            await SubsystemService.deleteTeilsystem(item.id);
-                            router.push(`/${projektId}/teilsysteme`);
-                        } catch (error) {
-                            console.error("Failed to delete teilsystem:", error);
-                            alert("Fehler beim Löschen des Teilsystems.");
-                        }
+                    if (!posToDelete) return;
+                    try {
+                        await PositionService.deletePosition(posToDelete.id);
+                        setPositionen(prev => prev.filter(p => p.id !== posToDelete.id));
+                    } catch (error) {
+                        console.error("Failed to delete position:", error);
+                        alert("Fehler beim Löschen der Position.");
                     }
                 }}
                 variant="danger"
-                title={posToDelete ? "Position loeschen" : "Teilsystem loeschen"}
-                description={posToDelete
-                    ? `Sind Sie sicher, dass Sie "${posToDelete?.name}" permanent loeschen moechten?`
-                    : `Sind Sie sicher, dass Sie das Teilsystem "${item.name}" permanent loeschen moechten? Alle Positionen werden ebenfalls gelöscht.`}
+                title="Position loeschen"
+                description={`Sind Sie sicher, dass Sie "${posToDelete?.name}" permanent loeschen moechten?`}
             />
             <DocumentPreviewModal
                 isOpen={!!previewDoc}
