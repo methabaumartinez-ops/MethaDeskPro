@@ -70,7 +70,7 @@ type ProjektValues = z.infer<typeof projektSchema>;
 
 export default function ProjektErfassenPage() {
     const router = useRouter();
-    const { currentUser } = useProjekt();
+    const { currentUser, setActiveProjekt } = useProjekt();
     const [imageFile, setImageFile] = React.useState<File | null>(null);
     const [infoBlattFile, setInfoBlattFile] = React.useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
@@ -132,7 +132,7 @@ export default function ProjektErfassenPage() {
             };
 
             // 1. Create the project FIRST (this also creates the Drive folder)
-            await ProjectService.createProjekt({
+            const newProject = await ProjectService.createProjekt({
                 ...data,
                 id: projectId,
                 projektleiter: resolveName(data.projektleiter),
@@ -167,7 +167,11 @@ export default function ProjektErfassenPage() {
             }
 
             window.showAlert('Projekt erfolgreich erstellt');
-            router.push('/projekte');
+            // Fetch the final project state to ensure all fields (including files and drive ids) are in context
+            const finalProject = await ProjectService.getProjektById(projectId);
+            if (finalProject) setActiveProjekt(finalProject);
+
+            router.push(`/${projectId}`);
         } catch (error: any) {
             console.error('Failed to create project:', error);
             window.showAlert(`Fehler beim Erstellen des Projekts: ${error.message || JSON.stringify(error)}`);
