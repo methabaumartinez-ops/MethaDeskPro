@@ -55,6 +55,18 @@ function parseEntityQr(qrText: string): { entityType: 'teilsystem' | 'position' 
 
 function parseLagerortQr(qrText: string): string | null {
     if (qrText.startsWith('LAGERORT:')) return qrText.replace('LAGERORT:', '');
+    try {
+        if (qrText.startsWith('http') || qrText.includes('/share/')) {
+            const url = new URL(qrText);
+            const pathParts = url.pathname.split('/');
+            const shareIdx = pathParts.indexOf('share');
+            if (shareIdx !== -1 && pathParts[shareIdx + 1] === 'lagerort') {
+                return pathParts[shareIdx + 2];
+            }
+        }
+    } catch (e) {
+        // Ignorar error al parsear URL
+    }
     return null;
 }
 

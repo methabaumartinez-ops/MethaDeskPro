@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import TeilsystemDetailPage from '@/app/(dashboard)/[projektId]/teilsysteme/[id]/page';
 import PositionDetailPage from '@/app/(dashboard)/[projektId]/positionen/[id]/page';
 import UnterpositionDetailPage from '@/app/(dashboard)/[projektId]/unterpositionen/[id]/page';
+import LagerortShareView from './LagerortShareView';
 
 export default function PublicSharePage() {
     const { type, id } = useParams() as { type: string; id: string };
@@ -27,6 +28,7 @@ export default function PublicSharePage() {
             case 'teilsystem': return <TeilsystemDetailPage />;
             case 'position': return <PositionDetailPage />;
             case 'unterposition': return <UnterpositionDetailPage />;
+            case 'lagerort': return <LagerortShareView id={id} />;
             default: return (
                 <div className="text-center py-20 font-bold text-muted-foreground">
                     Ungültiger Typ: {type}
