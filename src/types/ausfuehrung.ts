@@ -25,6 +25,7 @@ export interface Task {
     id: string;
     projektId: string;
     teamId: string; // FK to Team
+    teilsystemId?: string; // FK to Teilsystem (Optional)
     title: string;
     description?: string;
     status: TaskStatus;

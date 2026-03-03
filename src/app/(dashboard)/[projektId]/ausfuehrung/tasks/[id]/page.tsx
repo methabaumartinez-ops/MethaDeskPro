@@ -7,9 +7,11 @@ import { TeamService } from '@/lib/services/teamService';
 import { SubtaskService } from '@/lib/services/subtaskService';
 import { WorkerService } from '@/lib/services/workerService';
 import { Task, Team, Subtask, SubtaskStatus, TaskStatus, Worker } from '@/types/ausfuehrung';
+import { Teilsystem } from '@/types';
+import { SubsystemService } from '@/lib/services/subsystemService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Pencil, Trash2, ListChecks, ArrowRightCircle, X } from 'lucide-react';
+import { ArrowLeft, Pencil, Trash2, ListChecks, ArrowRightCircle, X, Layers } from 'lucide-react';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { TaskForm } from '@/components/ausfuehrung/TaskForm';
 import { TaskStatusBadge } from '@/components/ausfuehrung/TaskStatusBadge';
@@ -29,6 +31,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ projektId
 
     const [task, setTask] = React.useState<Task | null>(null);
     const [team, setTeam] = React.useState<Team | null>(null);
+    const [teilsystem, setTeilsystem] = React.useState<Teilsystem | null>(null);
     const [subtasks, setSubtasks] = React.useState<Subtask[]>([]);
     const [workers, setWorkers] = React.useState<Worker[]>([]);
 
@@ -45,8 +48,14 @@ export default function TaskDetailPage({ params }: { params: Promise<{ projektId
             }
             setTask(fetchedTask);
 
-            const fetchedTeam = await TeamService.getTeamById(fetchedTask.teamId);
+            // Concurrent loading of team and TS
+            const [fetchedTeam, fetchedTS] = await Promise.all([
+                TeamService.getTeamById(fetchedTask.teamId),
+                fetchedTask.teilsystemId ? SubsystemService.getTeilsystemById(fetchedTask.teilsystemId) : Promise.resolve(null)
+            ]);
+
             setTeam(fetchedTeam);
+            setTeilsystem(fetchedTS);
 
             const st = await SubtaskService.getSubtasksByTaskId(id);
             setSubtasks(st);
@@ -228,6 +237,15 @@ export default function TaskDetailPage({ params }: { params: Promise<{ projektId
                                 <span className="text-muted-foreground italic">Kein Team zugewiesen</span>
                             )}
                         </div>
+                        {teilsystem && (
+                            <div className="pt-3 border-t border-slate-100">
+                                <span className="block text-xs uppercase text-slate-400 font-bold mb-1">Teilsystem Nummer</span>
+                                <div className="flex items-center gap-2">
+                                    <Layers className="h-4 w-4 text-orange-500" />
+                                    <span className="font-bold text-slate-700">TS {teilsystem.teilsystemNummer}</span>
+                                </div>
+                            </div>
+                        )}
                         <div className="pt-3 border-t border-slate-100">
                             <span className="block text-xs uppercase text-slate-400 font-bold mb-1">Fortschritt ({progress}%)</span>
                             <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">

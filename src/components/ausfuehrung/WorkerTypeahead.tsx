@@ -53,10 +53,14 @@ export function WorkerTypeahead({
     };
 
     const selectedWorkers = workers.filter((w) => selectedIds.includes(w.id));
-    const filteredWorkers = workers.filter(w =>
-        w.fullName.toLowerCase().includes(search.toLowerCase()) ||
-        w.role?.toLowerCase().includes(search.toLowerCase())
-    );
+    const filteredWorkers = React.useMemo(() => {
+        return workers
+            .filter(w =>
+                w.fullName.toLowerCase().includes(search.toLowerCase()) ||
+                w.role?.toLowerCase().includes(search.toLowerCase())
+            )
+            .sort((a, b) => a.fullName.localeCompare(b.fullName));
+    }, [workers, search]);
 
     return (
         <div className="flex flex-col gap-2 relative" ref={containerRef}>

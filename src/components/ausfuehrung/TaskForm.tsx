@@ -7,10 +7,12 @@ import { TaskService } from '@/lib/services/taskService';
 import { TeamService } from '@/lib/services/teamService';
 import { SubtaskService } from '@/lib/services/subtaskService';
 import { Team, Task, TaskStatus, Priority } from '@/types/ausfuehrung';
+import { Teilsystem } from '@/types';
+import { SubsystemService } from '@/lib/services/subsystemService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from "@/components/ui/select";
-import { Loader2, Plus, Trash2, GripVertical } from 'lucide-react';
+import { Loader2, Plus, Trash2, GripVertical, Layers } from 'lucide-react';
 
 const toast = {
     success: (msg: string) => window.alert('Erfolg: ' + msg),
@@ -26,6 +28,7 @@ interface TaskFormProps {
 
 export function TaskForm({ projektId, taskToEdit, onSuccess, onCancel }: TaskFormProps) {
     const [teams, setTeams] = React.useState<Team[]>([]);
+    const [teilsysteme, setTeilsysteme] = React.useState<Teilsystem[]>([]);
     const [isLoading, setIsLoading] = React.useState(false);
 
     // Subtask Drafts during Creation/Editing
@@ -39,6 +42,7 @@ export function TaskForm({ projektId, taskToEdit, onSuccess, onCancel }: TaskFor
         title: string;
         description?: string;
         teamId: string;
+        teilsystemId: string;
         status: TaskStatus;
         priority: Priority;
     }>({
@@ -46,6 +50,7 @@ export function TaskForm({ projektId, taskToEdit, onSuccess, onCancel }: TaskFor
             title: taskToEdit?.title || '',
             description: taskToEdit?.description || '',
             teamId: taskToEdit?.teamId || '',
+            teilsystemId: taskToEdit?.teilsystemId || '',
             status: taskToEdit?.status || 'offen',
             priority: taskToEdit?.priority || 'mittel'
         }
@@ -54,8 +59,14 @@ export function TaskForm({ projektId, taskToEdit, onSuccess, onCancel }: TaskFor
     React.useEffect(() => {
         const loadInitial = async () => {
             try {
-                const fetchedTeams = await TeamService.getTeams(projektId);
-                setTeams(fetchedTeams);
+                const [fetchedTeams, fetchedTS] = await Promise.all([
+                    TeamService.getTeams(projektId),
+                    SubsystemService.getTeilsysteme(projektId)
+                ]);
+
+                // Alphabetical sorting
+                setTeams(fetchedTeams.sort((a, b) => a.name.localeCompare(b.name)));
+                setTeilsysteme(fetchedTS.sort((a, b) => (a.teilsystemNummer || '').localeCompare(b.teilsystemNummer || '')));
 
                 if (isEdit && taskToEdit) {
                     const existingSt = await SubtaskService.getSubtasksByTaskId(taskToEdit.id);
@@ -100,6 +111,7 @@ export function TaskForm({ projektId, taskToEdit, onSuccess, onCancel }: TaskFor
                     title: data.title,
                     description: data.description,
                     teamId: data.teamId,
+                    teilsystemId: data.teilsystemId || undefined,
                     status: data.status,
                     priority: data.priority
                 });
@@ -113,6 +125,7 @@ export function TaskForm({ projektId, taskToEdit, onSuccess, onCancel }: TaskFor
                     title: data.title,
                     description: data.description,
                     teamId: data.teamId,
+                    teilsystemId: data.teilsystemId || undefined,
                     status: data.status,
                     priority: data.priority
                 });
@@ -152,6 +165,28 @@ export function TaskForm({ projektId, taskToEdit, onSuccess, onCancel }: TaskFor
                         {...register('title', { required: 'Bitte geben Sie einen Titel ein.' })}
                     />
                     {errors.title && <p className="text-xs text-red-500 font-semibold">{errors.title.message as string}</p>}
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-slate-800 font-bold block text-sm italic opacity-70">Verknüpftes Teilsystem (Optional)</label>
+                    <Controller
+                        name="teilsystemId"
+                        control={control}
+                        render={({ field }) => (
+                            <Select
+                                value={field.value}
+                                onChange={(e) => field.onChange(e.target.value)}
+                                disabled={isLoading}
+                                options={[
+                                    { label: 'Kein Teilsystem...', value: '' },
+                                    ...teilsysteme.map(ts => ({
+                                        label: `${ts.teilsystemNummer || ''} - ${ts.name}`.trim(),
+                                        value: ts.id
+                                    }))
+                                ]}
+                            />
+                        )}
+                    />
                 </div>
 
                 <div className="space-y-2">

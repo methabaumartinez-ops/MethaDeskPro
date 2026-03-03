@@ -6,10 +6,12 @@ import { TaskService } from '@/lib/services/taskService';
 import { TeamService } from '@/lib/services/teamService';
 import { SubtaskService } from '@/lib/services/subtaskService';
 import { Task, Team, TaskStatus } from '@/types/ausfuehrung';
+import { Teilsystem } from '@/types';
+import { SubsystemService } from '@/lib/services/subsystemService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
-import { ClipboardList, Plus, FileQuestion, Filter, Info, Users, X } from 'lucide-react';
+import { ClipboardList, Plus, FileQuestion, Filter, Info, Users, X, Layers } from 'lucide-react';
 import { TaskForm } from '@/components/ausfuehrung/TaskForm';
 import { TaskStatusBadge } from '@/components/ausfuehrung/TaskStatusBadge';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +23,7 @@ export default function TasksPage({ params }: { params: Promise<{ projektId: str
 
     const [tasks, setTasks] = React.useState<Task[]>([]);
     const [teams, setTeams] = React.useState<Record<string, Team>>({});
+    const [teilsysteme, setTeilsysteme] = React.useState<Record<string, Teilsystem>>({});
     const [taskStats, setTaskStats] = React.useState<Record<string, { total: number, done: number }>>({});
     const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
@@ -38,11 +41,19 @@ export default function TasksPage({ params }: { params: Promise<{ projektId: str
             const fetchedTasks = await TaskService.getTasks({ projektId, teamId: tId, status });
             setTasks(fetchedTasks);
 
-            // Load Teams
-            const allTeams = await TeamService.getTeams(projektId);
+            // Load Teams & Teilsysteme
+            const [allTeams, allTS] = await Promise.all([
+                TeamService.getTeams(projektId),
+                SubsystemService.getTeilsysteme(projektId)
+            ]);
+
             const tMap: Record<string, Team> = {};
             allTeams.forEach(t => { tMap[t.id] = t; });
             setTeams(tMap);
+
+            const tsMap: Record<string, Teilsystem> = {};
+            allTS.forEach(ts => { tsMap[ts.id] = ts; });
+            setTeilsysteme(tsMap);
 
             // Compute subtask stats to show progress
             const statsMap: Record<string, { total: number, done: number }> = {};
@@ -184,12 +195,20 @@ export default function TasksPage({ params }: { params: Promise<{ projektId: str
                                 className="group cursor-pointer border border-slate-200 hover:border-orange-500/50 transition-all hover:shadow-lg hover:-translate-y-1 duration-300 flex flex-col"
                             >
                                 <CardHeader className="p-5 pb-3">
-                                    <div className="flex justify-between items-start mb-2 gap-2">
-                                        <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 font-semibold truncate gap-1 text-[10px] uppercase py-0.5">
+                                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                                        <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 font-semibold truncate gap-1 text-[10px] uppercase py-0.5 max-w-[120px]">
                                             <Users className="h-3 w-3" />
                                             {teamName}
                                         </Badge>
-                                        <TaskStatusBadge status={task.status} />
+                                        {task.teilsystemId && teilsysteme[task.teilsystemId] && (
+                                            <Badge variant="outline" className="bg-orange-50 text-orange-600 border-orange-100 font-bold gap-1 text-[10px] py-0.5">
+                                                <Layers className="h-3 w-3" />
+                                                TS {teilsysteme[task.teilsystemId].teilsystemNummer}
+                                            </Badge>
+                                        )}
+                                        <div className="ml-auto">
+                                            <TaskStatusBadge status={task.status} />
+                                        </div>
                                     </div>
                                     <CardTitle className="text-lg font-bold text-slate-800 line-clamp-2 group-hover:text-orange-600 transition-colors leading-tight">
                                         {task.title}

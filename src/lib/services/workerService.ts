@@ -6,8 +6,8 @@ export const WorkerService = {
     async getActiveWorkers(projektId?: string): Promise<Worker[]> {
         const allWorkers = await DatabaseService.list<Worker>('workers');
 
-        // Filtrar activos y por proyecto si aplica
-        const activeWorkers = allWorkers.filter(w => w.active && (!projektId || w.projektId === projektId));
+        // Filtrar activos y por proyecto si aplica (incluiyendo trabajadores globales sin projektId)
+        const activeWorkers = allWorkers.filter(w => w.active && (!projektId || !w.projektId || w.projektId === projektId));
 
         // Orden alfabético por fullName
         return activeWorkers.sort((a, b) => a.fullName.localeCompare(b.fullName));
@@ -15,7 +15,7 @@ export const WorkerService = {
 
     async getAllWorkers(projektId?: string): Promise<Worker[]> {
         const allWorkers = await DatabaseService.list<Worker>('workers');
-        const workers = allWorkers.filter(w => (!projektId || w.projektId === projektId));
+        const workers = allWorkers.filter(w => (!projektId || !w.projektId || w.projektId === projektId));
         return workers.sort((a, b) => a.fullName.localeCompare(b.fullName));
     },
 
