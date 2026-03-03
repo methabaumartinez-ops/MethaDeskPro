@@ -101,6 +101,10 @@ export interface Projekt {
   driveFolderId?: string;
   createdBy?: string;
   createdAt: string;
+  // Soft-delete & Archive
+  deletedAt?: string;
+  archivedZipUrl?: string;
+  archivedZipName?: string;
 }
 
 // ============================================================

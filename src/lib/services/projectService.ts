@@ -13,13 +13,16 @@ export const ProjectService = {
             try {
                 const res = await fetch('/api/projekte');
                 if (!res.ok) throw new Error('Failed to fetch projects');
-                return await res.json();
+                const all = await res.json() as Projekt[];
+                // Filter out soft-deleted projects
+                return all.filter(p => !p.deletedAt);
             } catch (error) {
                 console.error("Client fetch error:", error);
                 throw error;
             }
         }
-        return DatabaseService.list<Projekt>('projekte');
+        const all = await DatabaseService.list<Projekt>('projekte');
+        return all.filter(p => !p.deletedAt);
     },
 
     async getProjektById(id: string): Promise<Projekt | null> {
@@ -159,5 +162,44 @@ export const ProjectService = {
 
         // 5. Finally delete the project record
         return DatabaseService.delete('projekte', id);
-    }
+    },
+
+    /**
+     * Archives a project: exports all data + Drive files to a ZIP,
+     * uploads it to _MethaDeskArchives in Drive, then soft-deletes the project.
+     * Only for client-side use (calls the dedicated archive API).
+     */
+    async archiveProjekt(id: string): Promise<{ zipUrl: string; zipName: string }> {
+        if (typeof window === 'undefined') {
+            throw new Error('archiveProjekt must be called from the client side');
+        }
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5 * 60 * 1000); // 5 min timeout
+        try {
+            const res = await fetch(`/api/projekte/${id}/archive`, {
+                method: 'POST',
+                signal: controller.signal,
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+                throw new Error(err.error || `Archive failed: ${res.status}`);
+            }
+            return await res.json();
+        } finally {
+            clearTimeout(timeout);
+        }
+    },
+
+    /**
+     * Returns deleted/archived projects. Only for admins.
+     */
+    async getDeletedProjekte(): Promise<Projekt[]> {
+        if (typeof window === 'undefined') {
+            const all = await DatabaseService.list<Projekt>('projekte');
+            return all.filter(p => p.deletedAt);
+        }
+        const res = await fetch('/api/projekte/deleted');
+        if (!res.ok) throw new Error('Failed to load deleted projects');
+        return await res.json();
+    },
 };

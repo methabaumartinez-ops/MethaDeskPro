@@ -226,11 +226,14 @@ export const deleteFileFromDrive = async (fileId: string) => {
 };
 
 /**
- * Lists files in a folder.
+ * Lists files in a folder (recursive).
+ * Returns flat list of {id, name, mimeType, path} for all non-folder files.
  */
-export const listFilesByParent = async (parentId: string) => {
+export const listFolderFilesRecursive = async (parentId: string, parentPath = ''): Promise<{ id: string; name: string; mimeType: string; path: string }[]> => {
     const drive = getDriveClient();
     if (!drive) throw new Error('Google Drive client is not available');
+
+    const results: { id: string; name: string; mimeType: string; path: string }[] = [];
 
     try {
         const query = `'${parentId}' in parents and trashed=false`;
@@ -239,9 +242,65 @@ export const listFilesByParent = async (parentId: string) => {
             fields: 'files(id, name, mimeType)',
             spaces: 'drive',
         });
-        return res.data.files || [];
+        const files = res.data.files || [];
+
+        for (const file of files) {
+            const filePath = parentPath ? `${parentPath}/${file.name}` : file.name;
+            if (file.mimeType === 'application/vnd.google-apps.folder') {
+                // Recurse into subfolder
+                const subFiles = await listFolderFilesRecursive(file.id, filePath);
+                results.push(...subFiles);
+            } else {
+                results.push({ id: file.id, name: file.name, mimeType: file.mimeType, path: filePath });
+            }
+        }
     } catch (error: any) {
-        console.error(`[DriveService] Error listing files for parent ${parentId}:`, error.message || error);
-        return [];
+        console.error(`[DriveService] Error listing files recursively for ${parentId}:`, error.message);
     }
+
+    return results;
+};
+
+/**
+ * Downloads a file from Google Drive as a Buffer.
+ */
+export const downloadFileFromDriveAsBuffer = async (fileId: string): Promise<Buffer> => {
+    const drive = getDriveClient();
+    if (!drive) throw new Error('Google Drive client is not available');
+
+    const res = await (drive.files as any).get(
+        { fileId, alt: 'media' },
+        { responseType: 'arraybuffer' }
+    );
+    return Buffer.from(res.data as ArrayBuffer);
+};
+
+/**
+ * Ensures the _MethaDeskArchives folder exists in the Drive ROOT.
+ * Returns its folder ID.
+ */
+export const ensureArchivesFolder = async (): Promise<string> => {
+    const drive = getDriveClient();
+    if (!drive) throw new Error('Google Drive client is not available');
+    if (!ROOT_FOLDER_ID) throw new Error('GOOGLE_ROOT_FOLDER_ID is missing');
+
+    const folderName = '_MethaDeskArchives';
+    const escapedName = escapeQueryValue(folderName);
+    const query = `mimeType='application/vnd.google-apps.folder' and name='${escapedName}' and '${ROOT_FOLDER_ID}' in parents and trashed=false`;
+
+    const res = await (drive.files as any).list({ q: query, fields: 'files(id)', spaces: 'drive' });
+    if (res.data.files && res.data.files.length > 0) {
+        return res.data.files[0].id;
+    }
+
+    // Create if not found
+    const file = await (drive.files as any).create({
+        requestBody: {
+            name: folderName,
+            mimeType: 'application/vnd.google-apps.folder',
+            parents: [ROOT_FOLDER_ID],
+        },
+        fields: 'id',
+    });
+    return file.data.id;
 };
