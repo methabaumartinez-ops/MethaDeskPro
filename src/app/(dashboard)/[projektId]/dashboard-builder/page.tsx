@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import {
-    Sparkles, PanelTop, Layout, Cpu, Zap, Workflow, History, Clock, ListTodo
+    Sparkles, Layout, Cpu, Zap, Workflow, History, Clock, ListTodo
 } from 'lucide-react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,7 @@ export default function MyDashboardPage() {
     const { currentUser } = useProjekt();
     const [requests, setRequests] = useState<DashboardRequest[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(true);
-    const [isChatOpen, setIsChatOpen] = useState(false);
+
 
     useEffect(() => {
         const loadRequests = async () => {
@@ -96,40 +96,6 @@ export default function MyDashboardPage() {
                 </div>
             </div>
 
-            {/* FLOATING CHAT WIDGET */}
-            <div className={cn(
-                "fixed bottom-8 right-8 z-[100] transition-all duration-500 transform",
-                isChatOpen ? "w-[400px] translate-y-0 opacity-100" : "w-14 h-14 translate-y-2 opacity-90"
-            )}>
-                {isChatOpen ? (
-                    <div className="relative group">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute -top-3 -right-3 z-[110] bg-slate-900 text-white rounded-full h-8 w-8 shadow-xl hover:bg-primary transition-colors border-2 border-white"
-                            onClick={() => setIsChatOpen(false)}
-                        >
-                            <PanelTop className="h-4 w-4" />
-                        </Button>
-                        <DashboardBuilderChat
-                            userId={currentUser?.id || ''}
-                            projektId={projektId}
-                            isFloating={true}
-                        />
-                    </div>
-                ) : (
-                    <Button
-                        onClick={() => setIsChatOpen(true)}
-                        className="w-14 h-14 rounded-2xl shadow-xl bg-primary text-white hover:scale-105 active:scale-95 transition-all p-0 flex items-center justify-center relative group"
-                    >
-                        <Sparkles className="w-6 h-6" />
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full border-2 border-white flex items-center justify-center">
-                            <span className="text-[8px] font-black">!</span>
-                        </div>
-                    </Button>
-                )}
-            </div>
-
             {/* MAIN CONTENT */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -172,8 +138,17 @@ export default function MyDashboardPage() {
                     </Card>
                 </div>
 
-                {/* SIDEBAR: EXAMPLES & HISTORY */}
+                {/* SIDEBAR: CHAT + EXAMPLES & HISTORY */}
                 <div className="space-y-6">
+                    {/* Dashboard Builder Chat - Now Embedded */}
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-700 delay-200">
+                        <DashboardBuilderChat
+                            userId={currentUser?.id || ''}
+                            projektId={projektId}
+                            isFloating={false}
+                        />
+                    </div>
+
                     <Card className="bg-slate-50 dark:bg-slate-900/50 border-none rounded-xl p-5 shadow-inner">
                         <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                             <Sparkles size={12} className="text-primary" />
