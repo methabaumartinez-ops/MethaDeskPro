@@ -222,25 +222,44 @@ export async function ensureUsersCollection(): Promise<void> {
         }
 
         // Seed default admin user if missing
+        // SECURITY: In production, seeding is disabled by default.
+        // Set SEED_ADMIN=true in env vars to enable (one-time, first-run only).
         try {
             const adminUsers = await DatabaseService.list(COLLECTION, {
                 must: [{ key: 'email', match: { value: 'admin@methabau.ch' } }]
             });
 
             if (adminUsers.length === 0) {
-                const adminPasswordHash = await hashPassword('admin123');
-                const adminUser: StoredUser = {
-                    id: uuidv4(),
-                    vorname: 'Admin',
-                    nachname: 'Methabau',
-                    email: 'admin@methabau.ch',
-                    passwordHash: adminPasswordHash,
-                    role: 'admin',
-                    createdAt: new Date().toISOString(),
-                    confirmed: true,
-                };
-                await DatabaseService.upsert(COLLECTION, adminUser);
-                console.log('Created default admin user: admin@methabau.ch / admin123');
+                const isProduction = process.env.NODE_ENV === 'production';
+                const seedEnabled = process.env.SEED_ADMIN === 'true';
+
+                if (isProduction && !seedEnabled) {
+                    console.warn('[Auth] No admin user found. Seeding is disabled in production.');
+                    console.warn('[Auth] Set SEED_ADMIN=true to create the initial admin user, then remove it.');
+                } else {
+                    // Generate a random one-time bootstrap password (or use env override)
+                    const bootstrapPassword = process.env.ADMIN_BOOTSTRAP_PASSWORD || uuidv4().replace(/-/g, '').substring(0, 16);
+                    const adminPasswordHash = await hashPassword(bootstrapPassword);
+                    const adminUser: StoredUser = {
+                        id: uuidv4(),
+                        vorname: 'Admin',
+                        nachname: 'Methabau',
+                        email: 'admin@methabau.ch',
+                        passwordHash: adminPasswordHash,
+                        role: 'admin',
+                        createdAt: new Date().toISOString(),
+                        confirmed: true,
+                    };
+                    await DatabaseService.upsert(COLLECTION, adminUser);
+                    console.log('\n══════════════════════════════════════════════');
+                    console.log('  🔐 ADMIN BOOTSTRAP — WICHTIG');
+                    console.log('══════════════════════════════════════════════');
+                    console.log('  Admin-Benutzer erstellt: admin@methabau.ch');
+                    console.log(`  Bootstrap-Passwort:      ${bootstrapPassword}`);
+                    console.log('  ⚠️  Bitte sofort nach dem Login ändern!');
+                    console.log('  Setze SEED_ADMIN=false oder entferne die Var.');
+                    console.log('══════════════════════════════════════════════\n');
+                }
             }
         } catch (seedErr) {
             console.error('Error seeding admin user:', seedErr);

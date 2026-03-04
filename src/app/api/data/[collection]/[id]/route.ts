@@ -3,8 +3,8 @@ import { DatabaseService } from '@/lib/services/db';
 import { cookies } from 'next/headers';
 import { getUserFromToken } from '@/lib/services/authService';
 import { ProjectService } from '@/lib/services/projectService';
-import { SubsystemService } from '@/lib/services/subsystemService';
-import { PositionService } from '@/lib/services/positionService';
+import { deleteTeilsystemWithCascade, deletePositionWithCascade } from '@/lib/services/server/deleteHelpers';
+import { requireAuth } from '@/lib/helpers/requireAuth';
 
 const ALLOWED_COLLECTIONS = [
     'projekte', 'teilsysteme', 'positionen', 'unterpositionen',
@@ -12,6 +12,10 @@ const ALLOWED_COLLECTIONS = [
 ];
 
 export async function GET(req: Request, { params }: { params: Promise<{ collection: string, id: string }> }) {
+    // SECURITY: Require authentication for all single-item reads.
+    const { error } = await requireAuth();
+    if (error) return error;
+
     try {
         const { collection, id } = await params;
         if (!ALLOWED_COLLECTIONS.includes(collection)) {
@@ -25,67 +29,77 @@ export async function GET(req: Request, { params }: { params: Promise<{ collecti
 
         return NextResponse.json(item);
     } catch (error) {
-        console.error(`API Error fetching item from collection:`, error);
+        console.error('API Error fetching item from collection:', error);
         return NextResponse.json({ error: 'Failed to fetch' }, { status: 500 });
     }
 }
 
 export async function PUT(req: Request, { params }: { params: Promise<{ collection: string, id: string }> }) {
+    const { error } = await requireAuth(['admin', 'projektleiter']);
+    if (error) return error;
+
     try {
         const { collection, id } = await params;
         if (!ALLOWED_COLLECTIONS.includes(collection)) {
             return NextResponse.json({ error: 'Collection not accessible' }, { status: 403 });
         }
 
-        const cookieStore = await cookies();
-        const token = cookieStore.get('methabau_token')?.value;
-        if (!token) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 });
-
-        const user = await getUserFromToken(token);
-        if (!user || (user.role !== 'admin' && user.role !== 'projektleiter')) {
-            return NextResponse.json({ error: 'Keine Berechtigung zum Bearbeiten von Daten.' }, { status: 403 });
-        }
-
         const body = await req.json();
 
-        // Merge with existing data to prevent overwriting fields
         const existing = await DatabaseService.get(collection, id);
         const merged = existing ? { ...(existing as Record<string, unknown>), ...body, id } : { ...body, id };
 
         const updated = await DatabaseService.upsert(collection, merged);
         return NextResponse.json(updated);
     } catch (error) {
-        console.error(`API Error updating item in collection:`, error);
+        console.error('API Error updating item in collection:', error);
         return NextResponse.json({ error: 'Failed to update' }, { status: 500 });
     }
 }
 
-export async function DELETE(req: Request, { params }: { params: Promise<{ collection: string, id: string }> }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ collection: string, id: string }> }) {
+    const { error } = await requireAuth(['admin', 'projektleiter', 'mitarbeiter']);
+    if (error) return error;
+
     try {
         const { collection, id } = await params;
         if (!ALLOWED_COLLECTIONS.includes(collection)) {
             return NextResponse.json({ error: 'Collection not accessible' }, { status: 403 });
         }
 
-        const cookieStore = await cookies();
-        const token = cookieStore.get('methabau_token')?.value;
-        if (!token) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 });
+        const body = await req.json();
+        const existing = await DatabaseService.get(collection, id);
+        const merged = existing ? { ...(existing as Record<string, unknown>), ...body, id } : { ...body, id };
 
-        const user = await getUserFromToken(token);
-        if (!user || user.role !== 'admin') {
-            return NextResponse.json({ error: 'Nur Administratoren können Daten löschen.' }, { status: 403 });
+        const updated = await DatabaseService.upsert(collection, merged);
+        return NextResponse.json(updated);
+    } catch (error) {
+        console.error('API Error patching item in collection:', error);
+        return NextResponse.json({ error: 'Failed to patch' }, { status: 500 });
+    }
+}
+
+export async function DELETE(req: Request, { params }: { params: Promise<{ collection: string, id: string }> }) {
+    const { error } = await requireAuth(['admin']);
+    if (error) return error;
+
+    try {
+        const { collection, id } = await params;
+        if (!ALLOWED_COLLECTIONS.includes(collection)) {
+            return NextResponse.json({ error: 'Collection not accessible' }, { status: 403 });
         }
 
-        // Use high-level services for cascade deletion if available
         switch (collection) {
-            case 'projekte':
-                await ProjectService.deleteProjekt(id);
+            case 'projekte': {
+                const p = await DatabaseService.get('projekte', id);
+                if (p) await DatabaseService.upsert('projekte', { ...(p as object), deletedAt: new Date().toISOString() } as any);
                 break;
+            }
             case 'teilsysteme':
-                await SubsystemService.deleteTeilsystem(id);
+                await deleteTeilsystemWithCascade(id);
                 break;
             case 'positionen':
-                await PositionService.deletePosition(id);
+                await deletePositionWithCascade(id);
                 break;
             default:
                 await DatabaseService.delete(collection, id);
@@ -93,8 +107,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ colle
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error(`API Error deleting item from collection:`, error);
+        console.error('API Error deleting item from collection:', error);
         return NextResponse.json({ error: 'Failed to delete' }, { status: 500 });
     }
 }
-

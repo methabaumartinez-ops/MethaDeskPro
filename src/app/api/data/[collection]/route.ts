@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { DatabaseService } from '@/lib/services/db';
 import { v4 as uuidv4 } from 'uuid';
-import { cookies } from 'next/headers';
-import { getUserFromToken } from '@/lib/services/authService';
+import { requireAuth } from '@/lib/helpers/requireAuth';
 
 const ALLOWED_COLLECTIONS = [
     'projekte', 'teilsysteme', 'positionen', 'unterpositionen',
@@ -12,6 +11,10 @@ const ALLOWED_COLLECTIONS = [
 ];
 
 export async function GET(req: Request, { params }: { params: Promise<{ collection: string }> }) {
+    // SECURITY: Require authentication for all reads.
+    const { error } = await requireAuth();
+    if (error) return error;
+
     try {
         const { collection } = await params;
         if (!ALLOWED_COLLECTIONS.includes(collection)) {
@@ -21,11 +24,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ collecti
 
         const { searchParams } = new URL(req.url);
 
-        console.log(`API: Fetching from collection '${collection}'...`);
-
-        // Construct filter from query params if needed
+        // Construct filter from query params
         let filter = undefined;
-        // Example: ?projektId=123
         const entries = Array.from(searchParams.entries()).filter(([key]) => key !== '_r' && key !== 't');
         if (entries.length > 0) {
             const must = entries.map(([key, value]) => ({
@@ -48,23 +48,17 @@ export async function GET(req: Request, { params }: { params: Promise<{ collecti
 }
 
 export async function POST(req: Request, { params }: { params: Promise<{ collection: string }> }) {
+    // SECURITY: Require admin or projektleiter to create records.
+    const { error } = await requireAuth(['admin', 'projektleiter']);
+    if (error) return error;
+
     try {
         const { collection } = await params;
         if (!ALLOWED_COLLECTIONS.includes(collection)) {
             return NextResponse.json({ error: 'Collection not accessible' }, { status: 403 });
         }
 
-        const cookieStore = await cookies();
-        const token = cookieStore.get('methabau_token')?.value;
-        if (!token) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 });
-
-        const user = await getUserFromToken(token);
-        if (!user || (user.role !== 'admin' && user.role !== 'projektleiter')) {
-            return NextResponse.json({ error: 'Keine Berechtigung zum Erstellen von Daten.' }, { status: 403 });
-        }
-
         const body = await req.json();
-        console.log(`API: Creating item in '${collection}'...`, body);
 
         const newItem = {
             ...body,
@@ -84,19 +78,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ collect
 }
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ collection: string }> }) {
+    // SECURITY: Require admin or projektleiter to delete records.
+    const { error } = await requireAuth(['admin', 'projektleiter']);
+    if (error) return error;
+
     try {
         const { collection } = await params;
         if (!ALLOWED_COLLECTIONS.includes(collection)) {
             return NextResponse.json({ error: 'Collection not accessible' }, { status: 403 });
-        }
-
-        const cookieStore = await cookies();
-        const token = cookieStore.get('methabau_token')?.value;
-        if (!token) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 });
-
-        const user = await getUserFromToken(token);
-        if (!user || (user.role !== 'admin' && user.role !== 'projektleiter')) {
-            return NextResponse.json({ error: 'Keine Berechtigung zum Löschen von Daten.' }, { status: 403 });
         }
 
         const { searchParams } = new URL(req.url);
@@ -106,7 +95,6 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ colle
             return NextResponse.json({ error: 'ID is required for deletion' }, { status: 400 });
         }
 
-        console.log(`API: Deleting item ${id} from '${collection}'...`);
         await DatabaseService.delete(collection, id);
         return NextResponse.json({ success: true });
     } catch (error) {

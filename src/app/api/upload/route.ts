@@ -38,8 +38,8 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Dateityp nicht erlaubt.' }, { status: 400 });
         }
 
-        const { ProjectService } = await import('@/lib/services/projectService');
-        const project = await ProjectService.getProjektById(projektId);
+        const { DatabaseService } = await import('@/lib/services/db');
+        const project = await DatabaseService.get<any>('projekte', projektId);
         if (!project) {
             return NextResponse.json({ error: 'Project not found' }, { status: 404 });
         }
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
             if (folderId) {
                 // Update project with new folder ID
                 project.driveFolderId = folderId;
-                await ProjectService.updateProjekt(projektId, { driveFolderId: folderId });
+                await DatabaseService.upsert('projekte', { ...project, driveFolderId: folderId });
             } else {
                 return NextResponse.json({ error: 'Failed to create Drive folder for project' }, { status: 500 });
             }

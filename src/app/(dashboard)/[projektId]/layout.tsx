@@ -52,7 +52,7 @@ export default function DashboardLayout({
         );
     }
 
-    const isMyDashboard = pathname?.includes('/my-dashboard');
+    const isMyDashboard = pathname?.includes('/my-dashboard') || pathname?.includes('/dashboard-builder');
     const isGlobalPage = pathname?.includes('/chat') ||
         pathname?.includes('/my-dashboard') ||
         pathname?.includes('/dashboard-builder') ||
@@ -103,7 +103,7 @@ export default function DashboardLayout({
                 </div>
             </div>
 
-            {/* Global Chat Assistant */}
+            {/* Global Chat Assistant - Hidden on My Dashboard and Dashboard Builder to avoid overlap */}
             {!isMyDashboard && (
                 <ChatAssistant />
             )}

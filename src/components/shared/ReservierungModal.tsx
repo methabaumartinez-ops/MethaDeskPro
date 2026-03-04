@@ -10,6 +10,7 @@ import { EmployeeService } from '@/lib/services/employeeService';
 import { Fahrzeug, FahrzeugReservierung, Projekt } from '@/types';
 import { X, CalendarDays, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useProjekt } from '@/lib/context/ProjektContext';
 
 interface ReservierungModalProps {
     isOpen: boolean;
@@ -17,9 +18,11 @@ interface ReservierungModalProps {
     onSave: (reservierung: FahrzeugReservierung) => void;
     fahrzeug?: Fahrzeug;
     projektId?: string;
+    defaultMachineId?: string;
 }
 
-export function ReservierungModal({ isOpen, onClose, onSave, fahrzeug, projektId }: ReservierungModalProps) {
+export function ReservierungModal({ isOpen, onClose, onSave, fahrzeug, projektId, defaultMachineId }: ReservierungModalProps) {
+    const { currentUser } = useProjekt();
     const [projekte, setProjekte] = useState<Projekt[]>([]);
     const [fahrzeugeList, setFahrzeugeList] = useState<Fahrzeug[]>([]);
     const [mitarbeiter, setMitarbeiter] = useState<any[]>([]);
@@ -27,12 +30,12 @@ export function ReservierungModal({ isOpen, onClose, onSave, fahrzeug, projektId
     const [loadingData, setLoadingData] = useState(false);
 
     const [form, setForm] = useState({
-        fahrzeugId: fahrzeug?.id || '',
+        fahrzeugId: fahrzeug?.id || defaultMachineId || '',
         projektId: projektId || '',
         baustelle: '',
         reserviertAb: '',
         reserviertBis: '',
-        reserviertDurch: '',
+        reserviertDurch: currentUser?.email?.split('@')[0] || '',
         bemerkung: '',
     });
 
@@ -58,12 +61,17 @@ export function ReservierungModal({ isOpen, onClose, onSave, fahrzeug, projektId
     }, [isOpen]);
 
     useEffect(() => {
-        setForm(prev => ({
-            ...prev,
-            fahrzeugId: fahrzeug?.id || prev.fahrzeugId || '',
-            projektId: projektId || prev.projektId || ''
-        }));
-    }, [fahrzeug, projektId]);
+        if (isOpen) {
+            setForm(prev => ({
+                ...prev,
+                fahrzeugId: fahrzeug?.id || defaultMachineId || prev.fahrzeugId || '',
+                projektId: projektId || prev.projektId || '',
+                reserviertDurch: prev.reserviertDurch || currentUser?.email?.split('@')[0] || ''
+            }));
+        }
+    }, [isOpen, fahrzeug, projektId, defaultMachineId, currentUser]);
+
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     if (!isOpen) return null;
 
@@ -92,8 +100,6 @@ export function ReservierungModal({ isOpen, onClose, onSave, fahrzeug, projektId
     const minResDateObj = new Date();
     minResDateObj.setDate(now.getDate() + 3);
     const minReservationDate = minResDateObj.toISOString().split('T')[0];
-
-    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

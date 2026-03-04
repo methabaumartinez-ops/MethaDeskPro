@@ -1,0 +1,30 @@
+
+> methadesk@0.1.0 build
+> next build
+
+   ▲ Next.js 15.1.7
+   - Environments: .env
+
+   Creating an optimized production build ...
+Failed to compile.
+
+./src/lib/services/db.ts
+Error:   [31mx[0m You're importing a component that needs "server-only". That only works in a Server Component which is not supported in the pages/ directory. Read more: https://nextjs.org/docs/app/building-your-
+  [31m|[0m application/rendering/server-components
+  [31m|[0m 
+  [31m|[0m 
+   ,-[[36;1;4mC:\Users\f.martinez\Desktop\BauDeskPro\src\lib\services\db.ts[0m:1:1]
+ [2m1[0m | import 'server-only';
+   : [35;1m^^^^^^^^^^^^^^^^^^^^^[0m
+ [2m2[0m | import { qdrantClient } from '@/lib/qdrant/client';
+ [2m3[0m | import { v4 as uuidv4 } from 'uuid';
+ [2m3[0m | import { mockStore } from '@/lib/mock/store';
+   `----
+
+Import trace for requested module:
+./src/lib/services/db.ts
+./src/lib/services/projectService.ts
+./src/app/(dashboard)/[projektId]/layout.tsx
+
+
+> Build failed because of webpack errors

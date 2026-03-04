@@ -138,17 +138,8 @@ export default function MyDashboardPage() {
                     </Card>
                 </div>
 
-                {/* SIDEBAR: CHAT + EXAMPLES & HISTORY */}
+                {/* SIDEBAR: EXAMPLES & HISTORY */}
                 <div className="space-y-6">
-                    {/* Dashboard Builder Chat - Now Embedded */}
-                    <div className="animate-in fade-in slide-in-from-right-4 duration-700 delay-200">
-                        <DashboardBuilderChat
-                            userId={currentUser?.id || ''}
-                            projektId={projektId}
-                            isFloating={false}
-                        />
-                    </div>
-
                     <Card className="bg-slate-50 dark:bg-slate-900/50 border-none rounded-xl p-5 shadow-inner">
                         <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                             <Sparkles size={12} className="text-primary" />
@@ -207,6 +198,13 @@ export default function MyDashboardPage() {
                     </Card>
                 </div>
             </div>
+
+            {/* Dashboard Builder Chat - Now Floating with Pulse Attention */}
+            <DashboardBuilderChat
+                userId={currentUser?.id || ''}
+                projektId={projektId}
+                isFloating={true}
+            />
         </div>
     );
 }

@@ -1,3 +1,4 @@
+import 'server-only';
 import { qdrantClient } from '@/lib/qdrant/client';
 import { v4 as uuidv4 } from 'uuid';
 import { mockStore } from '@/lib/mock/store';

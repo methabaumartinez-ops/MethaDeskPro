@@ -1,0 +1,230 @@
+
+> methadesk@0.1.0 build
+> next build
+
+   ▲ Next.js 15.1.7
+   - Environments: .env
+
+   Creating an optimized production build ...
+ ⚠ Compiled with warnings
+
+./src/app/api/admin/cleanup/route.ts
+Attempted import error: 'listFilesByParent' is not exported from '@/lib/services/googleDriveService' (imported as 'listFilesByParent').
+
+Import trace for requested module:
+./src/app/api/admin/cleanup/route.ts
+
+./src/app/api/admin/cleanup/route.ts
+Attempted import error: 'listFilesByParent' is not exported from '@/lib/services/googleDriveService' (imported as 'listFilesByParent').
+
+Import trace for requested module:
+./src/app/api/admin/cleanup/route.ts
+
+   Skipping validation of types
+   Skipping linting
+   Collecting page data ...
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+   Generating static pages (0/46) ...
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+[Qdrant] QDRANT_URL is not set. Set it to the internal service URL in Easypanel (e.g., http://qdrant:6333). Do NOT use NEXT_PUBLIC_QDRANT_URL as this exposes the URL to the browser bundle.
+[Qdrant] QDRANT_API_KEY is not set. Qdrant will be accessible without authentication — do not expose the port publicly.
+Failed to obtain server version. Unable to check client-server compatibility. Set checkCompatibility=false to skip version check.
+   Generating static pages (11/46) 
+   Generating static pages (22/46) 
+   Generating static pages (34/46) 
+ ✓ Generating static pages (46/46)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                                Size     First Load JS
+┌ ○ /                                                      642 B           110 kB
+├ ○ /_not-found                                            990 B           107 kB
+├ ƒ /[projektId]                                           269 B           106 kB
+├ ƒ /[projektId]/analyse                                   8.42 kB         121 kB
+├ ƒ /[projektId]/aufgaben/[id]                             7.31 kB         120 kB
+├ ƒ /[projektId]/aufgaben/neu                              5.86 kB         119 kB
+├ ƒ /[projektId]/ausfuehrung                               14.1 kB         136 kB
+├ ƒ /[projektId]/ausfuehrung/tasks                         5.1 kB          133 kB
+├ ƒ /[projektId]/ausfuehrung/tasks/[id]                    4.93 kB         137 kB
+├ ƒ /[projektId]/ausfuehrung/teams                         3.3 kB          130 kB
+├ ƒ /[projektId]/ausfuehrung/teams/[id]                    5.09 kB         132 kB
+├ ƒ /[projektId]/berichte                                  2.03 kB         115 kB
+├ ƒ /[projektId]/chat                                      5.12 kB         182 kB
+├ ƒ /[projektId]/dashboard-builder                         8.56 kB         121 kB
+├ ƒ /[projektId]/fuhrpark                                  5.29 kB         127 kB
+├ ƒ /[projektId]/fuhrpark/[id]                             5.69 kB         122 kB
+├ ƒ /[projektId]/fuhrpark/erfassen                         5.73 kB         122 kB
+├ ƒ /[projektId]/kosten                                    8.69 kB         122 kB
+├ ƒ /[projektId]/lager-scan                                6.93 kB         124 kB
+├ ƒ /[projektId]/lagerorte                                 9.65 kB         133 kB
+├ ƒ /[projektId]/lieferanten                               4.1 kB          121 kB
+├ ƒ /[projektId]/lieferanten/erfassen                      5.3 kB          122 kB
+├ ƒ /[projektId]/material                                  4.79 kB         121 kB
+├ ƒ /[projektId]/material/erfassen                         2.85 kB         144 kB
+├ ƒ /[projektId]/mitarbeiter                               4.29 kB         121 kB
+├ ƒ /[projektId]/mitarbeiter/[id]                          2.86 kB         119 kB
+├ ƒ /[projektId]/mitarbeiter/[id]/edit                     3.21 kB         116 kB
+├ ƒ /[projektId]/mitarbeiter/erfassen                      3.86 kB         145 kB
+├ ƒ /[projektId]/my-dashboard                              583 B           106 kB
+├ ƒ /[projektId]/planer                                    7.95 kB         121 kB
+├ ƒ /[projektId]/positionen                                6.16 kB         123 kB
+├ ƒ /[projektId]/positionen/[id]                           2.47 kB         150 kB
+├ ƒ /[projektId]/positionen/[id]/edit                      7.71 kB         153 kB
+├ ƒ /[projektId]/positionen/[id]/unterpositionen/erfassen  3.04 kB         148 kB
+├ ƒ /[projektId]/positionen/erfassen                       3.84 kB         149 kB
+├ ƒ /[projektId]/produktion/[abteilung]                    1.85 kB         125 kB
+├ ƒ /[projektId]/produktion/lieferanten                    4.21 kB         121 kB
+├ ƒ /[projektId]/tabellen                                  9.31 kB         122 kB
+├ ƒ /[projektId]/teams/neu                                 5.38 kB         118 kB
+├ ƒ /[projektId]/teilsysteme                               2.46 kB         125 kB
+├ ƒ /[projektId]/teilsysteme/[id]                          1.34 kB         294 kB
+├ ƒ /[projektId]/teilsysteme/[id]/edit                     9.21 kB         162 kB
+├ ƒ /[projektId]/teilsysteme/[id]/positionen/erfassen      7.2 kB          152 kB
+├ ƒ /[projektId]/teilsysteme/erfassen                      6.39 kB         159 kB
+├ ƒ /[projektId]/unterpositionen/[id]                      417 B           147 kB
+├ ƒ /[projektId]/unterpositionen/[id]/edit                 7.17 kB         152 kB
+├ ƒ /[projektId]/werkhof                                   7.98 kB         121 kB
+├ ƒ /api/admin/cleanup                                     269 B           106 kB
+├ ƒ /api/auth/callback/google                              269 B           106 kB
+├ ƒ /api/auth/change-password                              269 B           106 kB
+├ ƒ /api/auth/confirm                                      269 B           106 kB
+├ ƒ /api/auth/google                                       269 B           106 kB
+├ ƒ /api/auth/login                                        269 B           106 kB
+├ ƒ /api/auth/logout                                       269 B           106 kB
+├ ƒ /api/auth/me                                           269 B           106 kB
+├ ƒ /api/auth/register                                     269 B           106 kB
+├ ƒ /api/auth/reset_admin                                  269 B           106 kB
+├ ƒ /api/beschichter                                       269 B           106 kB
+├ ƒ /api/bestellungen                                      269 B           106 kB
+├ ƒ /api/bestellungen/[id]                                 269 B           106 kB
+├ ƒ /api/chat                                              269 B           106 kB
+├ ƒ /api/dashboard-requests                                269 B           106 kB
+├ ƒ /api/dashboard-requests/[id]/log                       269 B           106 kB
+├ ƒ /api/data/[collection]                                 269 B           106 kB
+├ ƒ /api/data/[collection]/[id]                            269 B           106 kB
+├ ƒ /api/data/syncBauTeilsysteme                           269 B           106 kB
+├ ƒ /api/dokumente                                         269 B           106 kB
+├ ƒ /api/dokumente/[id]                                    269 B           106 kB
+├ ƒ /api/embeddings                                        269 B           106 kB
+├ ƒ /api/ifc-extract                                       269 B           106 kB
+├ ƒ /api/ifc-metadata                                      269 B           106 kB
+├ ƒ /api/ifc-parse                                         269 B           106 kB
+├ ƒ /api/ifc-proxy                                         269 B           106 kB
+├ ƒ /api/image-proxy                                       269 B           106 kB
+├ ƒ /api/kosten/material                                   269 B           106 kB
+├ ƒ /api/kosten/material/[id]                              269 B           106 kB
+├ ƒ /api/kosten/stunden                                    269 B           106 kB
+├ ƒ /api/kosten/stunden/[id]                               269 B           106 kB
+├ ƒ /api/lagerbewegungen                                   269 B           106 kB
+├ ƒ /api/lagerorte                                         269 B           106 kB
+├ ƒ /api/lagerorte/[id]                                    269 B           106 kB
+├ ƒ /api/mitarbeiter                                       269 B           106 kB
+├ ƒ /api/projekte                                          269 B           106 kB
+├ ƒ /api/projekte/[id]/archive                             269 B           106 kB
+├ ƒ /api/projekte/[id]/export-delete                       269 B           106 kB
+├ ƒ /api/projekte/deleted                                  269 B           106 kB
+├ ƒ /api/search                                            269 B           106 kB
+├ ƒ /api/teams                                             269 B           106 kB
+├ ƒ /api/teams/[id]                                        269 B           106 kB
+├ ƒ /api/teilsystem-import                                 269 B           106 kB
+├ ƒ /api/teilsysteme                                       269 B           106 kB
+├ ƒ /api/teilsysteme/[id]                                  269 B           106 kB
+├ ƒ /api/test_users                                        269 B           106 kB
+├ ƒ /api/upload                                            269 B           106 kB
+├ ƒ /api/wasm/[file]                                       269 B           106 kB
+├ ○ /confirm                                               2.92 kB         116 kB
+├ ○ /einkauf                                               5.84 kB         122 kB
+├ ○ /einkauf/lieferanten/erfassen                          3.4 kB          120 kB
+├ ○ /fuhrpark                                              5.53 kB         128 kB
+├ ƒ /fuhrpark/[id]                                         5.67 kB         128 kB
+├ ○ /fuhrpark/erfassen                                     5.06 kB         122 kB
+├ ○ /login                                                 4.01 kB         145 kB
+├ ○ /profil                                                3.94 kB         146 kB
+├ ○ /projekte                                              6.05 kB         124 kB
+├ ƒ /projekte/bearbeiten/[id]                              8.38 kB         149 kB
+├ ○ /projekte/erfassen                                     7.76 kB         149 kB
+├ ○ /register                                              4.37 kB         145 kB
+├ ƒ /share/[type]/[id]                                     2.3 kB          315 kB
+├ ○ /test-css                                              432 B           106 kB
+└ ○ /welcome                                               3.5 kB          122 kB
++ First Load JS shared by all                              106 kB
+  ├ chunks/1517-df53e6c201cc5eb9.js                        50.6 kB
+  ├ chunks/4bd1b696-8025ca895f800602.js                    53 kB
+  └ other shared chunks (total)                            2.1 kB
+
+
+ƒ Middleware                                               42.4 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

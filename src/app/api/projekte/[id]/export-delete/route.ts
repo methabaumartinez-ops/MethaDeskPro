@@ -1,26 +1,28 @@
 import { NextResponse } from 'next/server';
 import { DatabaseService } from '@/lib/services/db';
+import { requireAuth } from '@/lib/helpers/requireAuth';
 
 /**
  * POST /api/projekte/[id]/export-delete
- * 
- * Exports ALL project data (project + teilsysteme + positionen) as JSON,
- * then deletes the data from Qdrant.
+ * Exports ALL project data as JSON, then hard-deletes from Qdrant.
+ * Requires admin authorization.
  */
 export async function POST(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    // SECURITY: Only admins can export+delete projects.
+    const { error } = await requireAuth(['admin']);
+    if (error) return error;
+
     try {
         const { id } = await params;
 
-        // 1. Get the project
         const projekt = await DatabaseService.get('projekte', id);
         if (!projekt) {
             return NextResponse.json({ error: 'Projekt nicht gefunden.' }, { status: 404 });
         }
 
-        // 2. Get all related data
         let teilsysteme: any[] = [];
         try {
             teilsysteme = await DatabaseService.list('teilsysteme', {
@@ -35,7 +37,6 @@ export async function POST(
             });
         } catch { console.warn('Positionen collection may be missing or empty'); }
 
-        // Also try to get any other project-scoped collections
         let ausfuehrungen: any[] = [];
         try {
             ausfuehrungen = await DatabaseService.list('ausfuehrung', {
@@ -48,7 +49,6 @@ export async function POST(
             lieferanten = await DatabaseService.list('lieferanten');
         } catch { /* collection may not exist */ }
 
-        // 3. Build the export object
         const exportData = {
             _exportInfo: {
                 exportedAt: new Date().toISOString(),
@@ -63,26 +63,18 @@ export async function POST(
             lieferanten,
         };
 
-        // 4. Delete all related data from Qdrant
-        // Delete positionen first (deepest level)
         for (const pos of positionen) {
             try { await DatabaseService.delete('positionen', (pos as any).id); } catch { /* ignore */ }
         }
-
-        // Delete teilsysteme
         for (const ts of teilsysteme) {
             try { await DatabaseService.delete('teilsysteme', (ts as any).id); } catch { /* ignore */ }
         }
-
-        // Delete ausfuehrungen
         for (const a of ausfuehrungen) {
             try { await DatabaseService.delete('ausfuehrung', (a as any).id); } catch { /* ignore */ }
         }
 
-        // Delete the project itself
         await DatabaseService.delete('projekte', id);
 
-        // 5. Return the export data as JSON download
         return new NextResponse(JSON.stringify(exportData, null, 2), {
             status: 200,
             headers: {

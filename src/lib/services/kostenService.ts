@@ -1,94 +1,54 @@
 // src/lib/services/kostenService.ts
-import { DatabaseService } from '@/lib/services/db';
 import { TsStunden, TsMaterialkosten } from '@/types';
-import { v4 as uuidv4 } from 'uuid';
-
 export const KostenService = {
     // ---- Stunden ----
     async getStunden(teilsystemId?: string, projektId?: string): Promise<TsStunden[]> {
-        if (typeof window !== 'undefined') {
-            const params = new URLSearchParams();
-            if (teilsystemId) params.set('teilsystemId', teilsystemId);
-            if (projektId) params.set('projektId', projektId);
-            const res = await fetch(`/api/kosten/stunden?${params}`);
-            if (!res.ok) throw new Error('Failed to fetch stunden');
-            return res.json();
-        }
-        const all = await DatabaseService.list<TsStunden>('ts_stunden');
-        if (teilsystemId) return all.filter(s => s.teilsystemId === teilsystemId);
-        if (projektId) return all.filter(s => s.projektId === projektId);
-        return all;
+        const params = new URLSearchParams();
+                    if (teilsystemId) params.set('teilsystemId', teilsystemId);
+                    if (projektId) params.set('projektId', projektId);
+                    const res = await fetch(`/api/kosten/stunden?${params}`);
+                    if (!res.ok) throw new Error('Failed to fetch stunden');
+                    return res.json();
     },
 
     async createStunden(data: Omit<TsStunden, 'id' | 'createdAt'>): Promise<TsStunden> {
-        if (typeof window !== 'undefined') {
-            const res = await fetch('/api/kosten/stunden', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            });
-            if (!res.ok) throw new Error('Failed to create stunden');
-            return res.json();
-        }
-        const gesamtpreis = data.stundensatz ? data.stunden * data.stundensatz : undefined;
-        const entry: TsStunden = {
-            ...data,
-            id: uuidv4(),
-            gesamtpreis,
-            createdAt: new Date().toISOString()
-        };
-        return DatabaseService.upsert('ts_stunden', entry);
+        const res = await fetch('/api/kosten/stunden', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data),
+                    });
+                    if (!res.ok) throw new Error('Failed to create stunden');
+                    return res.json();
     },
 
     async deleteStunden(id: string): Promise<void> {
-        if (typeof window !== 'undefined') {
-            await fetch(`/api/kosten/stunden/${id}`, { method: 'DELETE' });
-            return;
-        }
-        return DatabaseService.delete('ts_stunden', id);
+        await fetch(`/api/kosten/stunden/${id}`, { method: 'DELETE' });
+                    return;
     },
 
     // ---- Materialkosten ----
     async getMaterialkosten(teilsystemId?: string, projektId?: string): Promise<TsMaterialkosten[]> {
-        if (typeof window !== 'undefined') {
-            const params = new URLSearchParams();
-            if (teilsystemId) params.set('teilsystemId', teilsystemId);
-            if (projektId) params.set('projektId', projektId);
-            const res = await fetch(`/api/kosten/material?${params}`);
-            if (!res.ok) throw new Error('Failed to fetch materialkosten');
-            return res.json();
-        }
-        const all = await DatabaseService.list<TsMaterialkosten>('ts_materialkosten');
-        if (teilsystemId) return all.filter(m => m.teilsystemId === teilsystemId);
-        if (projektId) return all.filter(m => m.projektId === projektId);
-        return all;
+        const params = new URLSearchParams();
+                    if (teilsystemId) params.set('teilsystemId', teilsystemId);
+                    if (projektId) params.set('projektId', projektId);
+                    const res = await fetch(`/api/kosten/material?${params}`);
+                    if (!res.ok) throw new Error('Failed to fetch materialkosten');
+                    return res.json();
     },
 
     async createMaterialkosten(data: Omit<TsMaterialkosten, 'id' | 'createdAt' | 'gesamtpreis'>): Promise<TsMaterialkosten> {
-        if (typeof window !== 'undefined') {
-            const res = await fetch('/api/kosten/material', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            });
-            if (!res.ok) throw new Error('Failed to create materialkosten');
-            return res.json();
-        }
-        const entry: TsMaterialkosten = {
-            ...data,
-            id: uuidv4(),
-            gesamtpreis: data.menge * data.einzelpreis,
-            createdAt: new Date().toISOString(),
-        };
-        return DatabaseService.upsert('ts_materialkosten', entry);
+        const res = await fetch('/api/kosten/material', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data),
+                    });
+                    if (!res.ok) throw new Error('Failed to create materialkosten');
+                    return res.json();
     },
 
     async deleteMaterialkosten(id: string): Promise<void> {
-        if (typeof window !== 'undefined') {
-            await fetch(`/api/kosten/material/${id}`, { method: 'DELETE' });
-            return;
-        }
-        return DatabaseService.delete('ts_materialkosten', id);
+        await fetch(`/api/kosten/material/${id}`, { method: 'DELETE' });
+                    return;
     },
 
     // ---- Aggregation ----

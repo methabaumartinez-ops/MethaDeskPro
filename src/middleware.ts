@@ -13,7 +13,9 @@ function addSecurityHeaders(response: NextResponse) {
 
 // Rutas públicas que NO requieren autenticación
 const PUBLIC_PATHS = ['/', '/login', '/register', '/confirm'];
-const PUBLIC_PREFIXES = ['/api/auth/', '/api/chat', '/api/teilsysteme', '/api/data', '/api/material', '/api/positionen', '/api/lieferanten', '/api/projekte', '/api/upload', '/_next/', '/favicon.ico', '/share/'];
+// SECURITY: Only truly public prefixes. All /api/* routes are protected by default.
+// Route handlers perform additional fine-grained RBAC checks as defense-in-depth.
+const PUBLIC_PREFIXES = ['/api/auth/', '/_next/', '/favicon.ico', '/share/'];
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
@@ -36,13 +38,32 @@ export async function middleware(request: NextRequest) {
     // Cookie-Token überprüfen
     const token = request.cookies.get('methabau_token')?.value;
 
+    // SECURITY FIX: API routes must NEVER redirect to /login.
+    // A redirect returns HTML, which client fetch() cannot parse as JSON,
+    // causing opaque "Failed to fetch" errors instead of clean 401 responses.
+    const isApiRoute = pathname.startsWith('/api/');
+
     if (!token) {
+        if (isApiRoute) {
+            return NextResponse.json(
+                { error: 'Nicht authentifiziert.' },
+                { status: 401 }
+            );
+        }
         return NextResponse.redirect(new URL('/login', request.url));
     }
 
     const payload = await verifyToken(token);
     if (!payload) {
-        // Token inválido o expirado → limpiar cookie y redirigir
+        if (isApiRoute) {
+            const response = NextResponse.json(
+                { error: 'Ungültiger oder abgelaufener Token.' },
+                { status: 401 }
+            );
+            response.cookies.set('methabau_token', '', { maxAge: 0, path: '/' });
+            return response;
+        }
+        // For page routes: clear cookie and redirect to login
         const response = NextResponse.redirect(new URL('/login', request.url));
         response.cookies.set('methabau_token', '', { maxAge: 0, path: '/' });
         return response;

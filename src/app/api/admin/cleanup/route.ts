@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { ProjectService } from '@/lib/services/projectService';
-import { SubsystemService } from '@/lib/services/subsystemService';
+import { DatabaseService } from '@/lib/services/db';
 import { listFilesByParent, deleteFileFromDrive } from '@/lib/services/googleDriveService';
 import { cookies } from 'next/headers';
 import { getUserFromToken } from '@/lib/services/authService';
@@ -22,7 +21,8 @@ export async function POST(req: Request) {
         console.log('[Cleanup] Starting global IFC cleanup...');
 
         // 1. Get all projects
-        const projects = await ProjectService.getProjekte();
+        const allProj = await DatabaseService.list<any>('projekte');
+        const projects = allProj.filter(p => !p.deletedAt);
         let deletedCount = 0;
         let keptCount = 0;
         let errors = [];
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
             const ifcFiles = await listFilesByParent(ifcSubfolder.id);
 
             // 4. Get all Teilsysteme for this project to find used IFC URLs
-            const teilsysteme = await SubsystemService.getTeilsysteme(project.id);
+            const teilsysteme = await DatabaseService.list<any>('teilsysteme', { filter: { must: [{ key: 'projektId', match: { value: project.id } }] } });
             const usedFileIds = new Set<string>();
 
             teilsysteme.forEach(ts => {

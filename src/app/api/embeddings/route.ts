@@ -1,6 +1,7 @@
 // src/app/api/embeddings/route.ts
 // Genera embeddings usando @xenova/transformers (all-MiniLM-L6-v2, 384 dims)
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/helpers/requireAuth';
 
 let pipeline: any = null;
 
@@ -13,6 +14,9 @@ async function getPipeline() {
 }
 
 export async function POST(request: NextRequest) {
+    // SECURITY: Require auth to prevent CPU-intensive model inference abuse.
+    const { error } = await requireAuth();
+    if (error) return error;
     try {
         const { text } = await request.json();
         if (!text || typeof text !== 'string') {

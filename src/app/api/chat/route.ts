@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { AIService } from '@/lib/services/aiService';
 import { z } from 'zod';
+import { requireAuth } from '@/lib/helpers/requireAuth';
 
 export const maxDuration = 30;
 
@@ -10,6 +11,10 @@ const chatSchema = z.object({
 });
 
 export async function POST(req: Request) {
+    // SECURITY: Require authentication to prevent unauthenticated OpenAI cost abuse.
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) return new Response(JSON.stringify({ error: 'API Key missing' }), { status: 500 });
 

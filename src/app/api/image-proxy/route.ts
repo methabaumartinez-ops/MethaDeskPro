@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/helpers/requireAuth';
 
 export async function GET(req: Request) {
+    // SECURITY: Require authentication to prevent public SSRF proxy abuse.
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const { searchParams } = new URL(req.url);
     const driveUrl = searchParams.get('url');
 
@@ -44,10 +49,9 @@ export async function GET(req: Request) {
         return new NextResponse(buffer, {
             headers: {
                 'Content-Type': contentType,
-                'Cache-Control': 'public, max-age=86400', // Cache for 24h
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                'Cache-Control': 'private, max-age=3600', // private: only for authenticated responses
+                'Access-Control-Allow-Origin': process.env.NEXT_PUBLIC_APP_URL || 'same-origin',
+                'Access-Control-Allow-Methods': 'GET',
             },
         });
     } catch (error) {

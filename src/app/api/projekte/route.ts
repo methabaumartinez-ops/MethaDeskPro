@@ -1,14 +1,20 @@
 import { NextResponse } from 'next/server';
 import { DatabaseService } from '@/lib/services/db';
 import { v4 as uuidv4 } from 'uuid';
+import { requireAuth } from '@/lib/helpers/requireAuth';
+import { cookies } from 'next/headers';
+import { getUserFromToken } from '@/lib/services/authService';
 
 export async function GET() {
+    // SECURITY: All authenticated users can list projects.
+    const { error } = await requireAuth();
+    if (error) return error;
+
     try {
-        console.log("API: Fetching projekte from Qdrant...");
         const data = await DatabaseService.list('projekte');
         return NextResponse.json(data);
     } catch (error) {
-        console.error("API Error fetching projects:", error);
+        console.error('API Error fetching projects:', error);
         return NextResponse.json(
             { error: 'Failed to fetch projects' },
             { status: 500 }
@@ -17,11 +23,13 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+    // SECURITY: Only admins and projektleiters can create projects.
+    const { error } = await requireAuth(['admin', 'projektleiter']);
+    if (error) return error;
+
     try {
         const body = await req.json();
-        console.log("API: Creating project in Qdrant...", body);
 
-        // Ensure ID and basic fields
         const newProject = {
             ...body,
             id: body.id || uuidv4(),
@@ -48,7 +56,7 @@ export async function POST(req: Request) {
         const result = await DatabaseService.upsert('projekte', newProject);
         return NextResponse.json(result);
     } catch (error) {
-        console.error("API Error creating project:", error);
+        console.error('API Error creating project:', error);
         return NextResponse.json(
             { error: 'Failed to create project' },
             { status: 500 }

@@ -3,8 +3,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { searchSemantic } from '@/lib/qdrant/semanticSearch';
 import { DatabaseService } from '@/lib/services/db';
+import { requireAuth } from '@/lib/helpers/requireAuth';
 
 export async function GET(request: NextRequest) {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q') || '';
     const projektId = searchParams.get('projektId') || undefined;
