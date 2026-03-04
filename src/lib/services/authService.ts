@@ -12,7 +12,7 @@ const JWT_EXPIRY_HOURS = 24;
 // Password Hashing (PBKDF2 via Web Crypto API)
 // ============================================================
 
-async function hashPassword(password: string): Promise<string> {
+export async function hashPassword(password: string): Promise<string> {
     const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH));
     const encoder = new TextEncoder();
     const keyMaterial = await crypto.subtle.importKey(
