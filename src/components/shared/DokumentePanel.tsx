@@ -142,7 +142,7 @@ export default function DokumentePanel({ entityId, entityType, projektId, readon
             {/* Document List */}
             {loading ? (
                 <div className="space-y-2">
-                    {[1, 2].map(i => <div key={i} className="h-12 bg-muted rounded-lg animate-pulse" />)}
+                    {[1, 2].map(i => <div key={`${entityId}-skeleton-${i}`} className="h-12 bg-muted rounded-lg animate-pulse" />)}
                 </div>
             ) : dokumente.length === 0 ? (
                 <div className="py-8 text-center">

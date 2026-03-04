@@ -8,10 +8,12 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, User, Mail, Shield, Phone, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { EmployeeService } from '@/lib/services/employeeService';
+import { useSmartBack } from '@/lib/navigation/useSmartBack';
 
 export default function MitarbeiterDetailPage() {
     const { projektId, id } = useParams() as { projektId: string; id: string };
     const router = useRouter();
+    const goBack = useSmartBack(`/${projektId}/mitarbeiter`);
     const [mitarbeiter, setMitarbeiter] = React.useState<any>(null);
 
     React.useEffect(() => {
@@ -33,7 +35,7 @@ export default function MitarbeiterDetailPage() {
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => router.back()}>
+                <Button variant="ghost" size="icon" onClick={goBack}>
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
                 <div>

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Header } from '@/components/layout/Header';
 import { useRouter } from 'next/navigation';
+import { useSmartBack } from '@/lib/navigation/useSmartBack';
 import {
     User,
     Mail,
@@ -35,6 +36,7 @@ type PasswordValues = z.infer<typeof passwordSchema>;
 export default function ProfilPage() {
     const { currentUser, logout } = useProjekt();
     const router = useRouter();
+    const goBack = useSmartBack('/projekte');
     const [showPasswordForm, setShowPasswordForm] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -93,7 +95,7 @@ export default function ProfilPage() {
                 <main className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8">
                     {/* Back button */}
                     <button
-                        onClick={() => router.back()}
+                        onClick={goBack}
                         className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-primary transition-colors mb-6"
                     >
                         <ArrowLeft className="h-4 w-4" />

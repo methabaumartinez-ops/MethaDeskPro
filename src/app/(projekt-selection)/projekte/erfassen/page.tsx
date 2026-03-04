@@ -166,11 +166,11 @@ export default function ProjektErfassenPage() {
                 }
             }
 
-            window.showAlert('Projekt erfolgreich erstellt');
+            showAlert('Projekt erfolgreich erstellt');
             router.push('/projekte');
         } catch (error: any) {
             console.error('Failed to create project:', error);
-            window.showAlert(`Fehler beim Erstellen des Projekts: ${error.message || JSON.stringify(error)}`);
+            showAlert(`Fehler beim Erstellen des Projekts: ${error.message || JSON.stringify(error)}`);
         }
     };
 

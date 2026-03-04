@@ -8,10 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { EmployeeService } from '@/lib/services/employeeService';
+import { useSmartBack } from '@/lib/navigation/useSmartBack';
 
 export default function MitarbeiterEditPage() {
     const { projektId, id } = useParams() as { projektId: string; id: string };
     const router = useRouter();
+    const goBack = useSmartBack(`/${projektId}/mitarbeiter/${id}`);
     const [formData, setFormData] = React.useState({
         vorname: '',
         nachname: '',
@@ -52,7 +54,7 @@ export default function MitarbeiterEditPage() {
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => router.back()}>
+                <Button variant="ghost" size="icon" onClick={goBack}>
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
                 <div>
@@ -128,7 +130,7 @@ export default function MitarbeiterEditPage() {
                         </div>
                         <div className="flex gap-3 pt-4">
                             <Button type="submit" className="font-bold">Speichern</Button>
-                            <Button type="button" variant="outline" onClick={() => router.back()}>Abbrechen</Button>
+                            <Button type="button" variant="outline" onClick={goBack}>Abbrechen</Button>
                         </div>
                     </form>
                 </CardContent>

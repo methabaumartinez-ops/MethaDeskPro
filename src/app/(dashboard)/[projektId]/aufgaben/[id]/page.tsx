@@ -13,10 +13,12 @@ import { TaskService } from '@/lib/services/taskService';
 import { TeamService } from '@/lib/services/teamService';
 import { Task, Subtask, Team, TeamMember, Mitarbeiter } from '@/types';
 import Link from 'next/link';
+import { useSmartBack } from '@/lib/navigation/useSmartBack';
 
 export default function TaskDetailPage() {
     const { projektId, id } = useParams() as { projektId: string, id: string };
     const router = useRouter();
+    const goBack = useSmartBack(`/${projektId}/ausfuehrung?tab=teams_aufgaben`);
 
     const [task, setTask] = useState<Task | null>(null);
     const [subtasks, setSubtasks] = useState<Subtask[]>([]);
@@ -155,7 +157,7 @@ export default function TaskDetailPage() {
     return (
         <div className="flex flex-col h-[calc(100vh-6rem)] space-y-6 max-w-5xl mx-auto w-full">
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => router.back()} className="h-10 w-10 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-full transition-colors">
+                <Button variant="ghost" size="icon" onClick={goBack} className="h-10 w-10 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-full transition-colors">
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
                 <div className="flex-1">
@@ -279,7 +281,7 @@ export default function TaskDetailPage() {
                                 <div className="flex justify-end gap-3">
                                     <Button variant="outline" onClick={() => setShowAbrechnung(false)} className="h-9">Später erfassen</Button>
                                     <Button onClick={handleSaveAbrechnung} className="h-9 bg-orange-600 hover:bg-orange-700 text-white font-bold gap-2">
-                                        <Save className="h-4 w-4" /> Abrechnen & Abschließen
+                                        <Save className="h-4 w-4" /> Abrechnen & Abschliessen
                                     </Button>
                                 </div>
                             </CardContent>

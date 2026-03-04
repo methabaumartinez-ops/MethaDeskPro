@@ -88,7 +88,7 @@ export default function MyDashboardPage() {
                     <div className="flex flex-col items-start md:items-end gap-2">
                         <div className="flex -space-x-1.5 opacity-60">
                             {[1, 2, 3].map(i => (
-                                <div key={i} className="w-6 h-6 rounded-full border-2 border-slate-900 bg-slate-800" />
+                                <div key={`avatar-${i}`} className="w-6 h-6 rounded-full border-2 border-slate-900 bg-slate-800" />
                             ))}
                         </div>
                         <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">+50 Anfragen</span>
@@ -102,8 +102,8 @@ export default function MyDashboardPage() {
                 {/* FEATURES GRID */}
                 <div className="lg:col-span-2 space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {features.map((f, i) => (
-                            <Card key={i} className="bg-white/40 dark:bg-slate-900/40 border-slate-100/50 dark:border-slate-800/50 shadow-sm rounded-xl hover:bg-white/60 dark:hover:bg-slate-900/60 transition-all">
+                        {features.map((f) => (
+                            <Card key={f.title} className="bg-white/40 dark:bg-slate-900/40 border-slate-100/50 dark:border-slate-800/50 shadow-sm rounded-xl hover:bg-white/60 dark:hover:bg-slate-900/60 transition-all">
                                 <CardContent className="p-4 flex gap-3">
                                     <div className="p-2 bg-primary/5 rounded-lg shrink-0">
                                         <f.icon className="w-4 h-4 text-primary" />
@@ -128,8 +128,8 @@ export default function MyDashboardPage() {
                                 { step: "2", text: "Chat-Bedarf" },
                                 { step: "3", text: "KI-Validierung und Modellierung" },
                                 { step: "4", text: "Integration" }
-                            ].map((s, i) => (
-                                <div key={i} className="flex flex-col items-center text-center gap-2">
+                            ].map((s) => (
+                                <div key={`step-${s.step}`} className="flex flex-col items-center text-center gap-2">
                                     <span className="w-5 h-5 rounded-full bg-white text-primary text-[9px] font-black flex items-center justify-center border border-primary/10">{s.step}</span>
                                     <p className="text-[9px] font-bold text-slate-600 uppercase tracking-tight leading-none">{s.text}</p>
                                 </div>
@@ -146,8 +146,8 @@ export default function MyDashboardPage() {
                             Anwendung
                         </h3>
                         <div className="space-y-3">
-                            {examples.map((ex, i) => (
-                                <div key={i} className="p-3 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg shadow-sm hover:border-primary/20 transition-all cursor-pointer">
+                            {examples.map((ex) => (
+                                <div key={ex.title} className="p-3 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg shadow-sm hover:border-primary/20 transition-all cursor-pointer">
                                     <h5 className="text-[9px] font-black text-primary uppercase mb-1">{ex.title}</h5>
                                     <p className="text-[10px] text-slate-500 italic font-medium leading-tight">"{ex.text}"</p>
                                 </div>

@@ -102,6 +102,17 @@ export const ProjectService = {
         return await res.json();
     },
 
+    async restoreProjekt(id: string): Promise<{ success: boolean }> {
+        const res = await fetch(`/api/projekte/${id}/restore`, {
+            method: 'POST'
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || 'Failed to restore project');
+        }
+        return await res.json();
+    },
+
     async triggerInfoBlattGeneration(projektId: string): Promise<void> {
         const res = await fetch('/api/dashboard-requests', {
             method: 'POST',

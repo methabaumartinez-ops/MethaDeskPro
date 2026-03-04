@@ -58,7 +58,7 @@ export function Sidebar({ projektId, className, forceProjectSelection = false }:
             },
         ]
         : [
-            { title: 'Projektübersicht', href: '/projekte', icon: LayoutDashboard },
+
             { title: 'Dashboard Builder', href: `/${projektId}/dashboard-builder`, icon: Sparkles },
             { title: 'My Dashboard', href: `/${projektId}/my-dashboard`, icon: LayoutDashboard },
             {

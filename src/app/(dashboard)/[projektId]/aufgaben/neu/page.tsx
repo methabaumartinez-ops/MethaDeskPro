@@ -12,10 +12,12 @@ import { TaskService } from '@/lib/services/taskService';
 import { TeamService } from '@/lib/services/teamService';
 import { Team, TaskPriority, TaskStatus, Subtask } from '@/types';
 import Link from 'next/link';
+import { useSmartBack } from '@/lib/navigation/useSmartBack';
 
 export default function TaskCreatePage() {
     const { projektId } = useParams() as { projektId: string };
     const router = useRouter();
+    const goBack = useSmartBack(`/${projektId}/ausfuehrung?tab=teams_aufgaben`);
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -95,7 +97,7 @@ export default function TaskCreatePage() {
     return (
         <div className="flex flex-col h-[calc(100vh-6rem)] space-y-6 max-w-5xl mx-auto w-full">
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => router.back()} className="h-10 w-10 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-full transition-colors">
+                <Button variant="ghost" size="icon" onClick={goBack} className="h-10 w-10 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-full transition-colors">
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
                 <div>

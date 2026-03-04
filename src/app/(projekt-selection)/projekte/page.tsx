@@ -145,7 +145,7 @@ export default function ProjektePage() {
                             )}
                         >
                             <ArchiveX className="h-3.5 w-3.5" />
-                            Gelöscht
+                            Archiviert
                         </button>
                     </div>
                 )}
@@ -271,17 +271,17 @@ export default function ProjektePage() {
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                 {deletedProjekte.map((p) => (
-                                    <Card key={p.id} className="border-2 border-slate-300 dark:border-slate-700 overflow-hidden bg-slate-50 dark:bg-slate-900/50 opacity-80">
+                                    <Card key={p.id} className="border-2 border-slate-200 dark:border-slate-700 overflow-hidden bg-slate-50 dark:bg-slate-900/50">
                                         <div className="h-28 w-full overflow-hidden relative">
                                             <img
                                                 src={getProjectImage(p)}
                                                 alt="Projektbild"
-                                                className="w-full h-full object-cover grayscale"
+                                                className="w-full h-full object-cover grayscale opacity-60"
                                                 onError={(e) => { (e.target as HTMLImageElement).src = '/images/Foto.png'; }}
                                             />
-                                            <div className="absolute inset-0 bg-slate-900/60" />
+                                            <div className="absolute inset-0 bg-slate-900/50" />
                                             <div className="absolute inset-0 flex items-center justify-center">
-                                                <Badge className="bg-red-600 text-white border-0 text-[10px] font-black uppercase tracking-widest px-3 py-1 shadow-lg">
+                                                <Badge className="bg-slate-700 text-white border-0 text-[10px] font-black uppercase tracking-widest px-3 py-1 shadow-lg">
                                                     Archiviert
                                                 </Badge>
                                             </div>
@@ -302,7 +302,7 @@ export default function ProjektePage() {
                                                 <span className="line-clamp-1">{p.ort}, {p.kanton}</span>
                                             </div>
                                             <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-                                                <AlertTriangle className="h-3 w-3 text-red-500" />
+                                                <AlertTriangle className="h-3 w-3 text-slate-400" />
                                                 <span>Gelöscht: {new Date(p.deletedAt!).toLocaleDateString('de-CH')}</span>
                                             </div>
                                             {p.archivedZipName && (
@@ -312,7 +312,28 @@ export default function ProjektePage() {
                                                 </div>
                                             )}
                                         </CardContent>
-                                        <CardFooter className="pt-0 pb-4">
+                                        <CardFooter className="pt-0 pb-4 flex flex-col gap-2">
+                                            {/* Restore button */}
+                                            <Button
+                                                variant="secondary"
+                                                className="w-full h-9 text-xs font-bold gap-2 hover:bg-green-100 hover:text-green-700 transition-colors"
+                                                onClick={async () => {
+                                                    try {
+                                                        await ProjectService.restoreProjekt(p.id);
+                                                        // Optimistically remove from deleted list
+                                                        setDeletedProjekte(prev => prev.filter(x => x.id !== p.id));
+                                                        // Refresh active list
+                                                        loadProjekte();
+                                                    } catch (err: any) {
+                                                        showAlert({ title: 'Fehler', message: err.message || 'Wiederherstellung fehlgeschlagen.', variant: 'danger' });
+                                                    }
+                                                }}
+                                            >
+                                                <ArchiveX className="h-3.5 w-3.5" />
+                                                Wiederherstellen
+                                            </Button>
+
+                                            {/* Backup link */}
                                             {p.archivedZipUrl ? (
                                                 <a href={p.archivedZipUrl} target="_blank" rel="noreferrer" className="w-full">
                                                     <Button variant="outline" className="w-full h-9 text-xs font-bold gap-2">
@@ -322,7 +343,7 @@ export default function ProjektePage() {
                                                     </Button>
                                                 </a>
                                             ) : (
-                                                <Button variant="outline" className="w-full h-9 text-xs font-bold gap-2 opacity-40" disabled>
+                                                <Button variant="outline" className="w-full h-9 text-xs font-bold gap-2 opacity-30" disabled>
                                                     Kein Backup verfügbar
                                                 </Button>
                                             )}
@@ -333,6 +354,7 @@ export default function ProjektePage() {
                         )}
                     </div>
                 )}
+
             </main>
 
             <footer className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-t border-slate-100 dark:border-slate-800 py-3 flex flex-row items-center justify-between px-8 z-[60]">

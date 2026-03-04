@@ -16,6 +16,7 @@ import { SubsystemService } from '@/lib/services/subsystemService';
 import { Position, Teilsystem, Lagerort, Beschichtung, PlanStatus, ABTEILUNGEN_CONFIG } from '@/types';
 import { ArrowLeft, Save, UploadCloud, FileType, Paperclip, FileText, Loader2, X, Search, Plus, Loader, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+import { useSmartBack } from '@/lib/navigation/useSmartBack';
 import { cn } from '@/lib/utils';
 import { ProjectService } from '@/lib/services/projectService';
 import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
@@ -232,7 +233,7 @@ export default function PositionEditPage() {
                 ifcUrl: uploadedIfcUrl,
                 ifcFileName: selectedFileName || undefined
             });
-            router.back();
+            router.replace(`/${projektId}/positionen/${id}`);
         } catch (error: any) {
             console.error("Failed to update position:", error);
             alert(`Fehler beim Speichern:\n\n${error?.message || String(error)}`);
@@ -244,7 +245,12 @@ export default function PositionEditPage() {
 
         try {
             await PositionService.deletePosition(id);
-            router.back();
+            const tsId = position?.teilsystemId;
+            if (tsId) {
+                router.replace(`/${projektId}/teilsysteme/${tsId}`);
+            } else {
+                router.replace(`/${projektId}/teilsysteme`);
+            }
         } catch (error) {
             console.error("Failed to delete", error);
             alert("Fehler beim Löschen");

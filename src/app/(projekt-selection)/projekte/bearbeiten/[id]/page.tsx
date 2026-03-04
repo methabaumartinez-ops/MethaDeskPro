@@ -13,8 +13,9 @@ import { ProjectService } from '@/lib/services/projectService';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { EmployeeService } from '@/lib/services/employeeService';
 import { useProjekt } from '@/lib/context/ProjektContext';
-import { ArrowLeft, Save, Building2, MapPin, User, Hash, Loader2, Plus, FileText, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Building2, MapPin, User, Hash, Loader2, Plus, FileText, Trash2, Archive, ChevronDown, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 const FormSelect = React.forwardRef<
     HTMLSelectElement,
@@ -104,9 +105,20 @@ export default function ProjektBearbeitenPage() {
     const [imageFile, setImageFile] = React.useState<File | null>(null);
     const [infoBlattFile, setInfoBlattFile] = React.useState<File | null>(null);
     const [imagePreview, setImagePreview] = React.useState<string | null>(null);
-    const [isDeleting, setIsDeleting] = React.useState(false);
     const [projektName, setProjektName] = React.useState<string>('');
     const [projektNummer, setProjektNummer] = React.useState<string>('');
+
+    // --- Archive state ---
+    const [isArchiving, setIsArchiving] = React.useState(false);
+    const [showArchiveConfirm, setShowArchiveConfirm] = React.useState(false);
+
+    // --- Hard delete state (admin only, double confirmation) ---
+    const [showHardDeleteAdvanced, setShowHardDeleteAdvanced] = React.useState(false);
+    const [isDeleting, setIsDeleting] = React.useState(false);
+    const [showHardDelete1, setShowHardDelete1] = React.useState(false);
+    const [showHardDelete2, setShowHardDelete2] = React.useState(false);
+
+    const isAdmin = currentUser?.role === 'admin';
 
     const {
         register,
@@ -129,7 +141,6 @@ export default function ProjektBearbeitenPage() {
     React.useEffect(() => {
         const loadProject = async () => {
             try {
-                // Fetch all projects and find by id (more reliable than single-item endpoint)
                 const allProjects = await ProjectService.getProjekte();
                 const projekt = allProjects.find(p => p.id === id);
                 if (!projekt) {
@@ -173,20 +184,15 @@ export default function ProjektBearbeitenPage() {
         if (file) {
             setImageFile(file);
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result as string);
-            };
+            reader.onloadend = () => { setImagePreview(reader.result as string); };
             reader.readAsDataURL(file);
         }
     };
 
     const handleInfoBlattChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-            setInfoBlattFile(file);
-        }
+        if (file) setInfoBlattFile(file);
     };
-
 
     React.useEffect(() => {
         const loadMitarbeiter = async () => {
@@ -221,17 +227,39 @@ export default function ProjektBearbeitenPage() {
                 infoBlattUrl: infoBlattUrl,
                 infoBlattName: infoBlattName,
             });
-            window.showAlert('Projekt erfolgreich aktualisiert');
+            showAlert('Projekt erfolgreich aktualisiert');
             router.push('/projekte');
         } catch (error: any) {
             console.error('Failed to update project:', error);
-            window.showAlert(`Fehler: ${error.message}`);
+            showAlert(`Fehler: ${error.message}`);
         }
     };
 
-    const handleDelete = async () => {
-        if (!confirm(`Möchten Sie das Projekt "${projektName}" wirklich exportieren und löschen?\n\nAlle Projektdaten (Teilsysteme, Positionen etc.) werden als JSON exportiert und anschliessend aus der Datenbank entfernt.`)) return;
+    // ── ARCHIVE (primary delete action) ──────────────────────────────────────
+    const handleArchiveConfirmed = async () => {
+        setIsArchiving(true);
+        try {
+            await ProjectService.archiveProjekt(id);
+            showAlert({
+                title: 'Projekt archiviert',
+                message: 'Das Projekt wurde erfolgreich archiviert und als ZIP gesichert.',
+                variant: 'success',
+            });
+            router.push('/projekte');
+        } catch (error: any) {
+            console.error('Failed to archive project:', error);
+            showAlert({
+                title: 'Archivierung fehlgeschlagen',
+                message: error.message || 'Unbekannter Fehler bei der Archivierung.',
+                variant: 'danger',
+            });
+        } finally {
+            setIsArchiving(false);
+        }
+    };
 
+    // ── HARD DELETE (admin, double confirmation) ──────────────────────────────
+    const handleHardDeleteConfirmed = async () => {
         setIsDeleting(true);
         try {
             const res = await fetch(`/api/projekte/${id}/export-delete`, { method: 'POST' });
@@ -241,7 +269,6 @@ export default function ProjektBearbeitenPage() {
                 throw new Error(err.error || 'Export fehlgeschlagen');
             }
 
-            // Download the exported JSON
             const blob = await res.blob();
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -252,11 +279,19 @@ export default function ProjektBearbeitenPage() {
             a.remove();
             URL.revokeObjectURL(url);
 
-            window.showAlert('Projekt erfolgreich exportiert und gelöscht');
+            showAlert({
+                title: 'Projekt gelöscht',
+                message: 'Das Projekt wurde exportiert und dauerhaft gelöscht.',
+                variant: 'success',
+            });
             router.push('/projekte');
         } catch (error: any) {
-            console.error("Failed to export/delete project:", error);
-            showAlert(`Fehler beim Exportieren und Löschen: ${error instanceof Error ? error.message : String(error)}`);
+            console.error('Failed to export/delete project:', error);
+            showAlert({
+                title: 'Löschen fehlgeschlagen',
+                message: error instanceof Error ? error.message : String(error),
+                variant: 'danger',
+            });
         } finally {
             setIsDeleting(false);
         }
@@ -463,26 +498,27 @@ export default function ProjektBearbeitenPage() {
                         </div>
                     </CardContent>
                     <CardFooter className="bg-slate-50 border-t border-slate-100 p-8 flex justify-between items-center gap-4">
+                        {/* Primary: Archive button */}
                         <Button
                             type="button"
-                            variant="danger"
-                            className="font-bold h-12 px-8 flex items-center gap-2"
-                            onClick={handleDelete}
-                            disabled={isDeleting || isSubmitting}
+                            variant="outline"
+                            className="font-bold h-12 px-8 flex items-center gap-2 border-orange-300 text-orange-700 hover:bg-orange-50"
+                            onClick={() => setShowArchiveConfirm(true)}
+                            disabled={isArchiving || isSubmitting}
                         >
-                            {isDeleting ? (
+                            {isArchiving ? (
                                 <Loader2 className="h-5 w-5 animate-spin" />
                             ) : (
-                                <Trash2 className="h-5 w-5" />
+                                <Archive className="h-5 w-5" />
                             )}
-                            <span>Projekt löschen</span>
+                            <span>Archivieren</span>
                         </Button>
 
                         <div className="flex gap-4">
                             <Link href="/projekte">
                                 <Button type="button" variant="outline" className="font-bold h-12 px-8">Abbrechen</Button>
                             </Link>
-                            <Button type="submit" className="font-bold h-12 px-10 shadow-lg shadow-primary/20" disabled={isSubmitting || isDeleting}>
+                            <Button type="submit" className="font-bold h-12 px-10 shadow-lg shadow-primary/20" disabled={isSubmitting || isArchiving}>
                                 {isSubmitting ? (
                                     <span className="flex items-center gap-2">
                                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -499,6 +535,86 @@ export default function ProjektBearbeitenPage() {
                     </CardFooter>
                 </Card>
             </form>
+
+            {/* ── Advanced Admin Section: Hard Delete ───────────────────────────── */}
+            {isAdmin && (
+                <div className="border border-red-200 rounded-2xl overflow-hidden">
+                    <button
+                        type="button"
+                        className="w-full flex items-center justify-between p-5 bg-red-50 hover:bg-red-100 transition-colors text-left"
+                        onClick={() => setShowHardDeleteAdvanced(prev => !prev)}
+                    >
+                        <div className="flex items-center gap-3">
+                            <ShieldAlert className="h-5 w-5 text-red-600" />
+                            <div>
+                                <p className="text-sm font-black text-red-700 uppercase tracking-widest">Erweiterte Admin-Optionen</p>
+                                <p className="text-xs text-red-500 font-medium">Nur für Administratoren sichtbar</p>
+                            </div>
+                        </div>
+                        <ChevronDown className={`h-5 w-5 text-red-500 transition-transform ${showHardDeleteAdvanced ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {showHardDeleteAdvanced && (
+                        <div className="p-6 bg-white space-y-4">
+                            <div className="p-4 bg-red-50 border border-red-200 rounded-xl space-y-2">
+                                <p className="text-sm font-black text-red-800 uppercase tracking-wider flex items-center gap-2">
+                                    <Trash2 className="h-4 w-4" /> Dauerhaftes Löschen
+                                </p>
+                                <p className="text-xs text-red-600 font-medium leading-relaxed">
+                                    Exportiert alle Projektdaten als JSON und löscht das Projekt dauerhaft aus der Datenbank.
+                                    <strong className="block mt-1">Diese Aktion ist nicht umkehrbar. Es wird kein Backup in Drive erstellt.</strong>
+                                </p>
+                                <Button
+                                    type="button"
+                                    variant="danger"
+                                    className="font-bold h-10 px-6 flex items-center gap-2 mt-2"
+                                    onClick={() => setShowHardDelete1(true)}
+                                    disabled={isDeleting || isArchiving}
+                                >
+                                    {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                    <span>Projekt dauerhaft löschen</span>
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* ── Archive Confirmation Modal ────────────────────────────────────── */}
+            <ConfirmDialog
+                isOpen={showArchiveConfirm}
+                onClose={() => setShowArchiveConfirm(false)}
+                onConfirm={handleArchiveConfirmed}
+                title="Projekt archivieren?"
+                description="Das Projekt wird archiviert und als ZIP gesichert. Die Daten werden aus der aktiven Datenbank entfernt. Sie können das Projekt jederzeit wiederherstellen."
+                confirmLabel="Archivieren"
+                cancelLabel="Abbrechen"
+                variant="warning"
+            />
+
+            {/* ── Hard Delete: First Confirmation ──────────────────────────────── */}
+            <ConfirmDialog
+                isOpen={showHardDelete1}
+                onClose={() => setShowHardDelete1(false)}
+                onConfirm={() => { setShowHardDelete1(false); setShowHardDelete2(true); }}
+                title="Wirklich löschen?"
+                description={`Sie sind dabei, das Projekt "${projektName}" dauerhaft zu löschen. Die Daten werden als JSON exportiert, dann komplett entfernt. Kein Drive-Backup wird erstellt.`}
+                confirmLabel="Ja, weiter"
+                cancelLabel="Abbrechen"
+                variant="danger"
+            />
+
+            {/* ── Hard Delete: Second (Final) Confirmation ──────────────────────── */}
+            <ConfirmDialog
+                isOpen={showHardDelete2}
+                onClose={() => setShowHardDelete2(false)}
+                onConfirm={handleHardDeleteConfirmed}
+                title="Letzte Warnung"
+                description="Diese Aktion ist NICHT umkehrbar. Das Projekt wird dauerhaft gelöscht. Sind Sie absolut sicher?"
+                confirmLabel="Dauerhaft löschen"
+                cancelLabel="Abbrechen"
+                variant="danger"
+            />
         </div>
     );
 }

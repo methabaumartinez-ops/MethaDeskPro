@@ -179,7 +179,7 @@ export default function PlannerPage() {
                     <CardContent className="p-0 flex-1 overflow-y-auto">
                         {loading ? (
                             <div className="p-4 space-y-3">
-                                {[1, 2, 3].map(i => <div key={i} className="h-16 bg-slate-100 rounded-lg animate-pulse" />)}
+                                {[1, 2, 3].map(i => <div key={`planer-skeleton-${i}`} className="h-16 bg-slate-100 rounded-lg animate-pulse" />)}
                             </div>
                         ) : filteredItems.length > 0 ? (
                             <div className="divide-y divide-slate-100">
