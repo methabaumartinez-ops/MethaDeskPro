@@ -85,6 +85,13 @@ export function Sidebar({ projektId, className, forceProjectSelection = false }:
                 title: 'Ausführung',
                 href: forceProjectSelection ? '/projekte' : `/${projektId}/ausfuehrung`,
                 icon: Hammer,
+                subItems: [
+                    { title: 'TS - Alle', href: forceProjectSelection ? '/projekte' : `/${projektId}/ausfuehrung?tab=teilsysteme` },
+                    { title: 'TS am Baustelle', href: forceProjectSelection ? '/projekte' : `/${projektId}/ausfuehrung?tab=ts_baustelle` },
+                    { title: 'Bestellungen', href: forceProjectSelection ? '/projekte' : `/${projektId}/ausfuehrung?tab=logistik` },
+                    { title: 'Aufgaben', href: forceProjectSelection ? '/projekte' : `/${projektId}/ausfuehrung/tasks` },
+                    { title: 'Teams', href: forceProjectSelection ? '/projekte' : `/${projektId}/ausfuehrung/teams` },
+                ]
             },
             {
                 title: 'Werkhof',

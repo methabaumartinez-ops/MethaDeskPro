@@ -33,7 +33,6 @@ export interface Task {
     startDate?: string;
     dueDate?: string;
     createdBy?: string;
-    sourceType?: 'ts' | 'manual';
     createdAt: string;
     updatedAt: string;
 }

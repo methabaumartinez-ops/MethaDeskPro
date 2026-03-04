@@ -1,5 +1,4 @@
 'use client';
-import { showAlert } from '@/lib/alert';
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -25,7 +24,6 @@ import { ProjectService } from '@/lib/services/projectService';
 import { cn } from '@/lib/utils';
 import { IfcImportModal, IfcExtractResult } from '@/components/shared/IfcImportModal';
 import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
-import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 const teilsystemSchema = z.object({
     teilsystemNummer: z.string().optional(),
@@ -112,7 +110,6 @@ export default function TeilsystemEditPage() {
     const [uploadingDocs, setUploadingDocs] = useState(false);
     const docInputRef = React.useRef<HTMLInputElement>(null);
     const [previewDoc, setPreviewDoc] = useState<{ url: string, title: string } | null>(null);
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
     const loadDokumente = async () => {
         try {
@@ -378,21 +375,19 @@ export default function TeilsystemEditPage() {
             router.push(`/${projektId}/teilsysteme/${id}`);
         } catch (error: any) {
             console.error("Failed to update teilsystem:", error);
-            showAlert(`Fehler beim Speichern des Teilsystems:\n\n${error?.message || String(error)}`);
+            alert(`Fehler beim Speichern des Teilsystems:\n\n${error?.message || String(error)}`);
         }
     };
 
     const handleDelete = async () => {
-        setIsDeleteDialogOpen(true);
-    };
+        if (!confirm(`Sind Sie sicher, dass Sie dieses Teilsystem permanent löschen möchten?`)) return;
 
-    const confirmDelete = async () => {
         try {
             await SubsystemService.deleteTeilsystem(id);
             router.push(`/${projektId}`);
         } catch (error) {
             console.error("Failed to delete", error);
-            showAlert("Fehler beim Löschen des Teilsystems");
+            alert("Fehler beim Löschen des Teilsystems");
         }
     };
 
@@ -439,7 +434,8 @@ export default function TeilsystemEditPage() {
                 <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Teilsystem bearbeiten</h1>
                 {teilsystem && (
                     <div className="flex items-baseline gap-2 bg-primary/5 px-4 py-2 rounded-xl border border-primary/20 shadow-sm">
-                        <span className="text-xl font-extrabold text-primary tracking-tight">TS {teilsystem.teilsystemNummer} {teilsystem.name}</span>
+                        <span className="text-xl font-black text-primary drop-shadow-sm">TS{teilsystem.teilsystemNummer}</span>
+                        <span className="text-lg font-bold text-muted-foreground truncate max-w-[400px]">{teilsystem.name}</span>
                     </div>
                 )}
             </div>
@@ -876,15 +872,6 @@ export default function TeilsystemEditPage() {
                 onClose={() => setPreviewDoc(null)}
                 url={previewDoc?.url || ''}
                 title={previewDoc?.title || ''}
-            />
-
-            <ConfirmDialog
-                isOpen={isDeleteDialogOpen}
-                onClose={() => setIsDeleteDialogOpen(false)}
-                onConfirm={confirmDelete}
-                variant="danger"
-                title="Teilsystem löschen"
-                description={`Sind Sie sicher, dass Sie dieses Teilsystem permanent löschen möchten? Alle zugehörigen Positionen und Daten werden ebenfalls gelöscht.`}
             />
         </div >
     );

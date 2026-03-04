@@ -97,7 +97,7 @@ type ProjektValues = z.infer<typeof projektSchema>;
 export default function ProjektBearbeitenPage() {
     const router = useRouter();
     const { id } = useParams() as { id: string };
-    const { currentUser, setActiveProjekt } = useProjekt();
+    const { currentUser } = useProjekt();
     const [loading, setLoading] = React.useState(true);
     const [notFound, setNotFound] = React.useState(false);
     const [mitarbeiter, setMitarbeiter] = React.useState<any[]>([]);
@@ -214,7 +214,7 @@ export default function ProjektBearbeitenPage() {
                 infoBlattName = infoBlattFile.name;
             }
 
-            const updated = await ProjectService.updateProjekt(id, {
+            await ProjectService.updateProjekt(id, {
                 ...data,
                 status: data.status as any,
                 imageUrl: imageUrl,
@@ -222,8 +222,7 @@ export default function ProjektBearbeitenPage() {
                 infoBlattName: infoBlattName,
             });
             window.showAlert('Projekt erfolgreich aktualisiert');
-            if (updated) setActiveProjekt(updated);
-            router.push(`/${id}`);
+            router.push('/projekte');
         } catch (error: any) {
             console.error('Failed to update project:', error);
             window.showAlert(`Fehler: ${error.message}`);
