@@ -6,6 +6,16 @@ import { SubsystemService } from './subsystemService';
 
 export const TaskService = {
     async getTasks(filters?: { teamId?: string; status?: TaskStatus; projektId?: string }): Promise<Task[]> {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams();
+            if (filters?.projektId) params.append('projektId', filters.projektId);
+            if (filters?.teamId) params.append('teamId', filters.teamId);
+            if (filters?.status) params.append('status', filters.status);
+            const res = await fetch(`/api/data/ausfuehrung_tasks?${params.toString()}`);
+            if (!res.ok) throw new Error('Failed to fetch tasks');
+            return await res.json();
+        }
+
         let tasks = await DatabaseService.list<Task>('ausfuehrung_tasks');
 
         if (filters?.projektId) {
@@ -22,12 +32,28 @@ export const TaskService = {
     },
 
     async getTaskById(id: string): Promise<Task | null> {
+        if (typeof window !== 'undefined') {
+            const res = await fetch(`/api/data/ausfuehrung_tasks/${id}`);
+            if (res.status === 404) return null;
+            if (!res.ok) throw new Error('Failed to fetch task');
+            return await res.json();
+        }
         return DatabaseService.get<Task>('ausfuehrung_tasks', id);
     },
 
     async createTask(data: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Promise<Task> {
         if (!data.title) {
             throw new Error('Title is required to create a task');
+        }
+
+        if (typeof window !== 'undefined') {
+            const res = await fetch('/api/data/ausfuehrung_tasks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (!res.ok) throw new Error('Failed to create task');
+            return await res.json();
         }
 
         const id = uuidv4();
@@ -47,6 +73,16 @@ export const TaskService = {
     },
 
     async updateTask(id: string, updates: Partial<Task>): Promise<Task> {
+        if (typeof window !== 'undefined') {
+            const res = await fetch(`/api/data/ausfuehrung_tasks/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates)
+            });
+            if (!res.ok) throw new Error('Failed to update task');
+            return await res.json();
+        }
+
         const existing = await this.getTaskById(id);
         if (!existing) throw new Error('Task not found');
         return DatabaseService.upsert('ausfuehrung_tasks', {
@@ -57,6 +93,12 @@ export const TaskService = {
     },
 
     async deleteTask(id: string): Promise<void> {
+        if (typeof window !== 'undefined') {
+            const res = await fetch(`/api/data/ausfuehrung_tasks?id=${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Failed to delete task');
+            return;
+        }
+
         await DatabaseService.delete('ausfuehrung_tasks', id);
         // Cascade destroy: 
         // We'd ideally clean up 'ausfuehrung_subtasks' and 'ausfuehrung_task_resources'
@@ -69,7 +111,7 @@ export const TaskService = {
     },
 
     async syncBauTeilsysteme(projektId: string): Promise<void> {
-        // Use client-side safe fetch if in browser, else direct DB
+        // This is safe because both getTeilsysteme and getTasks are now browser-safe
         const allTS = await SubsystemService.getTeilsysteme(projektId);
         const bauTS = allTS.filter(ts => ts.abteilung === 'Bau');
 

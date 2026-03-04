@@ -4,18 +4,39 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const SubtaskService = {
     async getSubtasksByTaskId(taskId: string): Promise<Subtask[]> {
+        if (typeof window !== 'undefined') {
+            const res = await fetch(`/api/data/ausfuehrung_subtasks?taskId=${taskId}`);
+            if (!res.ok) throw new Error('Failed to fetch subtasks');
+            return await res.json();
+        }
         const subtasks = await DatabaseService.list<Subtask>('ausfuehrung_subtasks');
         const filtered = subtasks.filter(s => s.taskId === taskId);
         return filtered.sort((a, b) => a.orderIndex - b.orderIndex);
     },
 
     async getSubtaskById(id: string): Promise<Subtask | null> {
+        if (typeof window !== 'undefined') {
+            const res = await fetch(`/api/data/ausfuehrung_subtasks/${id}`);
+            if (res.status === 404) return null;
+            if (!res.ok) throw new Error('Failed to fetch subtask');
+            return await res.json();
+        }
         return DatabaseService.get<Subtask>('ausfuehrung_subtasks', id);
     },
 
     async createSubtask(data: Omit<Subtask, 'id' | 'createdAt' | 'updatedAt' | 'orderIndex'> & { orderIndex?: number }): Promise<Subtask> {
         if (!data.taskId || !data.title) {
             throw new Error('Title and Task ID are required to create a subtask');
+        }
+
+        if (typeof window !== 'undefined') {
+            const res = await fetch('/api/data/ausfuehrung_subtasks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (!res.ok) throw new Error('Failed to create subtask');
+            return await res.json();
         }
 
         const id = uuidv4();
@@ -44,6 +65,16 @@ export const SubtaskService = {
     },
 
     async updateSubtask(id: string, updates: Partial<Subtask>): Promise<Subtask> {
+        if (typeof window !== 'undefined') {
+            const res = await fetch(`/api/data/ausfuehrung_subtasks/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates)
+            });
+            if (!res.ok) throw new Error('Failed to update subtask');
+            return await res.json();
+        }
+
         const existing = await this.getSubtaskById(id);
         if (!existing) throw new Error('Subtask not found');
         return DatabaseService.upsert('ausfuehrung_subtasks', {
@@ -54,6 +85,7 @@ export const SubtaskService = {
     },
 
     async reorderSubtasks(taskId: string, newOrderIds: string[]): Promise<void> {
+        // reorderSubtasks is fine because it calls updateSubtask which is now safe
         const allSubtasks = await this.getSubtasksByTaskId(taskId);
 
         for (let i = 0; i < newOrderIds.length; i++) {
@@ -66,6 +98,11 @@ export const SubtaskService = {
     },
 
     async deleteSubtask(id: string): Promise<void> {
+        if (typeof window !== 'undefined') {
+            const res = await fetch(`/api/data/ausfuehrung_subtasks?id=${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Failed to delete subtask');
+            return;
+        }
         return DatabaseService.delete('ausfuehrung_subtasks', id);
     }
 };
