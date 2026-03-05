@@ -26,7 +26,7 @@ import { BestellService } from '@/lib/services/bestellService';
 import { MaterialBestellung, BestellungItem, FahrzeugReservierung, ABTEILUNGEN_CONFIG } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { ReservierungModal } from '@/components/shared/ReservierungModal';
-
+import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 const KATEGORIE_LABELS: Record<string, string> = {
     scherenbuehne: 'Scherenbühne',
     teleskopbuehne: 'Teleskopbühne',
@@ -348,12 +348,17 @@ export default function AusfuehrungPage() {
 
     return (
         <div className="flex flex-col h-[calc(100vh-6rem)] space-y-3">
-            <div className="flex justify-between items-center gap-4">
-                <div>
-                    <h2 className="text-2xl font-black text-primary tracking-tight dark:text-orange-400">Ausführung</h2>
-                    <p className="text-slate-500 font-medium text-xs">Übersicht und Ressourcen.</p>
-                </div>
-            </div>
+            <ModuleActionBanner
+                icon={HardHat}
+                title="Ausführung"
+                searchPlaceholder={
+                    activeTab === 'teilsysteme' ? "Suche nach Nummer o. Name..." :
+                        activeTab === 'logistik' ? "Suche nach Container o. Besteller..." :
+                            activeTab === 'teams_aufgaben' ? "Suche nach Team o. Aufgabe..." :
+                                "Suche nach Bezeichnung o. Inventarnummer..."
+                }
+                onSearch={setSearch}
+            />
 
             <Tabs className="flex-1 flex flex-col overflow-hidden">
                 <div className="flex justify-between items-center mb-2">
@@ -427,28 +432,6 @@ export default function AusfuehrungPage() {
                 </div>
 
                 <Card className="flex-1 flex flex-col overflow-hidden border-none shadow-none bg-transparent">
-                    <CardHeader className="py-0 px-0 pb-3 border-none">
-                        <div className="flex gap-3 items-center">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                                <Input
-                                    placeholder={
-                                        activeTab === 'teilsysteme' ? "Suche nach Nummer o. Name..." :
-                                            activeTab === 'logistik' ? "Suche nach Container o. Besteller..." :
-                                                activeTab === 'teams_aufgaben' ? "Suche nach Team o. Aufgabe..." :
-                                                    "Suche nach Bezeichnung o. Inventarnummer..."
-                                    }
-                                    className="pl-10 h-9 text-sm bg-background border-slate-200 dark:border-slate-800"
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                />
-                            </div>
-                            <Button variant="outline" size="sm" className="gap-2 font-bold h-9">
-                                <Filter className="h-4 w-4" />
-                                Filter
-                            </Button>
-                        </div>
-                    </CardHeader>
 
                     <CardContent className="p-0 flex-1 overflow-auto bg-card border rounded-lg shadow-sm">
                         {loading ? (

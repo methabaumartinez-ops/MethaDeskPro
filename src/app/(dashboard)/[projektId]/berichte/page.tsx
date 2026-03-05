@@ -4,16 +4,17 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { FileText, BarChart, ClipboardList } from 'lucide-react';
+import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 
 export default function BerichtePage() {
     const [activeTab, setActiveTab] = React.useState('planer');
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-extrabold text-primary tracking-tight">Berichte</h1>
-                <p className="text-muted-foreground font-medium mt-1">Projektanalysen und Statusberichte.</p>
-            </div>
+            <ModuleActionBanner
+                icon={FileText}
+                title="Berichte"
+            />
 
             <Tabs>
                 <TabsList>

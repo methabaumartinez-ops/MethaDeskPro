@@ -14,8 +14,7 @@ import { Teilsystem, Mitarbeiter, TsStunden, TsMaterialkosten, Abteilung, ABTEIL
 import { Clock, Package2, Plus, Trash2, Download, ChevronDown, ChevronUp, DollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useProjekt } from '@/lib/context/ProjektContext';
-
-// Remove hardcoded ABTEILUNGEN array
+import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 
 
 export default function KostenPage() {
@@ -180,18 +179,13 @@ export default function KostenPage() {
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-10">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Kostenerfassung</h1>
-                    <p className="text-muted-foreground font-medium mt-1">Stunden und Material pro Teilsystem erfassen</p>
-                </div>
-                {selectedTs && (
-                    <Button variant="outline" onClick={exportCsv} className="font-bold gap-2">
-                        <Download className="h-4 w-4" />
-                        CSV Export
-                    </Button>
-                )}
-            </div>
+            <ModuleActionBanner
+                icon={DollarSign}
+                title="Kostenerfassung"
+                ctaLabel={selectedTs ? "CSV Export" : undefined}
+                ctaOnClick={selectedTs ? exportCsv : undefined}
+                ctaIcon={selectedTs ? Download : undefined}
+            />
 
             {/* Teilsystem selector */}
             <Card className="border-2 border-primary/50 shadow-md bg-primary/5">

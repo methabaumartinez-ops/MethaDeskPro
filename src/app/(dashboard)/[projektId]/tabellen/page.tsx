@@ -32,6 +32,7 @@ import { SubunternehmerService } from '@/lib/services/subunternehmerService';
 import { useParams, useRouter } from 'next/navigation';
 import { ABTEILUNGEN_CONFIG } from '@/types';
 import { Badge } from '@/components/ui/badge';
+import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 
 export default function TabellenPage() {
     const { projektId } = useParams() as { projektId: string };
@@ -330,162 +331,169 @@ export default function TabellenPage() {
     };
 
     return (
-        <div className="flex flex-col md:flex-row h-full md:h-[calc(100vh-8rem)] gap-6">
-            {/* Sidebar Menu - Desktop */}
-            <div className="w-64 shrink-0 hidden md:block border-r pr-6 space-y-6">
-                <div>
-                    <h2 className="text-lg font-bold flex items-center gap-2">
-                        <Database className="h-5 w-5 text-primary" />
-                        Tabellen
-                    </h2>
-                    <p className="text-xs text-muted-foreground">Datenbank-Übersicht</p>
-                </div>
+        <div className="flex flex-col h-[calc(100vh-6rem)] overflow-hidden">
+            <ModuleActionBanner
+                icon={TableIcon}
+                title="Datenbank-Tabellen"
+                ctaLabel="Export (.csv)"
+                ctaOnClick={handleExport}
+                ctaIcon={HardDrive}
+            />
 
-                <div className="space-y-4">
-                    {/* Project Selector */}
-                    <div className="space-y-2">
-                        <label className="text-xs font-semibold text-muted-foreground uppercase">Projekt Filter</label>
-                        <Select
-                            value={selectedProject || 'all'}
-                            onChange={(e) => setSelectedProject(e.target.value === 'all' ? '' : e.target.value)}
-                            options={[
-                                { label: 'Alle Projekte', value: 'all' },
-                                ...projects.map(p => ({ label: `${p.projektnummer} - ${p.projektname}`, value: p.id }))
-                            ]}
-                        />
+            <div className="flex flex-col md:flex-row flex-1 gap-6 min-h-0">
+                {/* Sidebar Menu - Desktop */}
+                <div className="w-64 shrink-0 hidden md:block border-r pr-6 space-y-6">
+                    <div>
+                        <h2 className="text-lg font-bold flex items-center gap-2">
+                            <Database className="h-5 w-5 text-primary" />
+                            Tabellen
+                        </h2>
+                        <p className="text-xs text-muted-foreground">Datenbank-Übersicht</p>
                     </div>
 
-                    <div className="space-y-1">
-                        {tables.map(table => (
-                            <button
-                                key={table.id}
-                                onClick={() => setActiveTable(table.id)}
-                                className={cn(
-                                    "w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors text-left",
-                                    activeTable === table.id
-                                        ? "bg-white text-primary shadow-sm border"
-                                        : "text-muted-foreground hover:bg-white/50 hover:text-foreground"
-                                )}
-                            >
-                                <table.icon className="h-4 w-4" />
-                                <div className="flex flex-col">
-                                    <span>{table.label}</span>
-                                </div>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            {/* Mobile Menu - Dropdown */}
-            <div className="md:hidden w-full space-y-4">
-                <Select
-                    value={activeTable}
-                    onChange={(e) => setActiveTable(e.target.value)}
-                    options={tables.map(t => ({ label: t.label, value: t.id }))}
-                    className="w-full bg-white"
-                />
-                <Select
-                    value={selectedProject || 'all'}
-                    onChange={(e) => setSelectedProject(e.target.value === 'all' ? '' : e.target.value)}
-                    options={[
-                        { label: 'Alle Projekte', value: 'all' },
-                        ...projects.map(p => ({ label: `${p.projektnummer} - ${p.projektname}`, value: p.id }))
-                    ]}
-                    className="w-full bg-slate-100"
-                />
-            </div>
-
-            {/* Content Area */}
-            <div className="flex-1 overflow-y-auto bg-slate-50/50 rounded-xl border p-6">
-                <div className="space-y-6">
-                    <div className="flex items-center justify-between sticky top-[-1.5rem] z-30 bg-white pb-4 -mx-6 px-6 pt-6 mb-4 shadow-sm">
-                        <div>
-                            <h1 className="text-2xl font-bold flex items-center gap-2">
-                                {tables.find(t => t.id === activeTable)?.icon &&
-                                    React.createElement(tables.find(t => t.id === activeTable)!.icon, { className: "h-6 w-6 text-slate-400" })
-                                }
-                                {tables.find(t => t.id === activeTable)?.label}
-                            </h1>
-                            <p className="text-muted-foreground">
-                                {tables.find(t => t.id === activeTable)?.description}
-                                {selectedProject && selectedProject !== 'all' && !['mitarbeiter', 'lieferanten', 'fahrzeuge'].includes(activeTable) && (
-                                    <span className="ml-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
-                                        {projects.find(p => p.id === selectedProject)?.name}
-                                    </span>
-                                )}
-                            </p>
+                    <div className="space-y-4">
+                        {/* Project Selector */}
+                        <div className="space-y-2">
+                            <label className="text-xs font-semibold text-muted-foreground uppercase">Projekt Filter</label>
+                            <Select
+                                value={selectedProject || 'all'}
+                                onChange={(e) => setSelectedProject(e.target.value === 'all' ? '' : e.target.value)}
+                                options={[
+                                    { label: 'Alle Projekte', value: 'all' },
+                                    ...projects.map(p => ({ label: `${p.projektnummer} - ${p.projektname}`, value: p.id }))
+                                ]}
+                            />
                         </div>
-                        <div className="flex gap-2">
-                            {(activeTable === 'mitarbeiter' || activeTable === 'subunternehmer') && (
-                                <Button
-                                    className="bg-primary hover:bg-primary/90 text-white font-black uppercase text-[10px] h-9 px-6 rounded-full shadow-md flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
-                                    onClick={() => {
-                                        if (activeTable === 'mitarbeiter') {
-                                            router.push(`/${projektId}/mitarbeiter/erfassen`);
-                                        } else {
-                                            const name = prompt('Name des Subunternehmers (ss):');
-                                            if (name) SubunternehmerService.createSubunternehmer({ name }).then(() => window.location.reload());
-                                        }
-                                    }}
+
+                        <div className="space-y-1">
+                            {tables.map(table => (
+                                <button
+                                    key={table.id}
+                                    onClick={() => setActiveTable(table.id)}
+                                    className={cn(
+                                        "w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors text-left",
+                                        activeTable === table.id
+                                            ? "bg-white text-primary shadow-sm border"
+                                            : "text-muted-foreground hover:bg-white/50 hover:text-foreground"
+                                    )}
                                 >
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    Hinzufügen (ss)
-                                </Button>
-                            )}
-                            <Button className="bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] h-9 px-6 rounded-full shadow-md flex items-center gap-2 transition-all hover:scale-105 active:scale-95" onClick={handleExport}>
-                                <HardDrive className="h-4 w-4 mr-2" />
-                                Exportieren
-                            </Button>
+                                    <table.icon className="h-4 w-4" />
+                                    <div className="flex flex-col">
+                                        <span>{table.label}</span>
+                                    </div>
+                                </button>
+                            ))}
                         </div>
                     </div>
+                </div>
 
-                    <Card className="border-none shadow-none bg-white">
-                        <CardContent className="p-0 min-h-[400px]">
-                            {loading ? (
-                                <div className="flex flex-col items-center justify-center p-20 gap-4 text-muted-foreground">
-                                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                                    <p>Lade Daten...</p>
-                                </div>
-                            ) : data.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center p-20 gap-4 text-muted-foreground opacity-50">
-                                    <Database className="h-12 w-12" />
-                                    <p>Keine Einträge in dieser Tabelle gefunden.</p>
-                                </div>
-                            ) : (
-                                <div className="overflow-x-auto">
-                                    <Table>
-                                        <TableHeader className="bg-orange-50/50">
-                                            <TableRow>
-                                                {columns.map(col => (
-                                                    <TableHead key={col} className={cn(
-                                                        "font-bold uppercase text-[10px] text-orange-600 whitespace-nowrap",
-                                                        col.toLowerCase() === 'id' ? "text-right" : "text-left"
-                                                    )}>
-                                                        {col}
-                                                    </TableHead>
-                                                ))}
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {data.map((row, i) => (
-                                                <TableRow key={i} className="hover:bg-slate-50/50">
+                {/* Mobile Menu - Dropdown */}
+                <div className="md:hidden w-full space-y-4">
+                    <Select
+                        value={activeTable}
+                        onChange={(e) => setActiveTable(e.target.value)}
+                        options={tables.map(t => ({ label: t.label, value: t.id }))}
+                        className="w-full bg-white"
+                    />
+                    <Select
+                        value={selectedProject || 'all'}
+                        onChange={(e) => setSelectedProject(e.target.value === 'all' ? '' : e.target.value)}
+                        options={[
+                            { label: 'Alle Projekte', value: 'all' },
+                            ...projects.map(p => ({ label: `${p.projektnummer} - ${p.projektname}`, value: p.id }))
+                        ]}
+                        className="w-full bg-slate-100"
+                    />
+                </div>
+
+                {/* Content Area */}
+                <div className="flex-1 overflow-hidden bg-slate-50/50 rounded-xl border flex flex-col">
+                    <div className="p-6 flex flex-col flex-1 min-h-0">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h2 className="text-xl font-bold flex items-center gap-2">
+                                    {tables.find(t => t.id === activeTable)?.icon &&
+                                        React.createElement(tables.find(t => t.id === activeTable)!.icon, { className: "h-5 w-5 text-primary" })
+                                    }
+                                    {tables.find(t => t.id === activeTable)?.label}
+                                </h2>
+                                <p className="text-muted-foreground text-sm">
+                                    {tables.find(t => t.id === activeTable)?.description}
+                                    {selectedProject && selectedProject !== 'all' && !['mitarbeiter', 'lieferanten', 'fahrzeuge'].includes(activeTable) && (
+                                        <span className="ml-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
+                                            {projects.find(p => p.id === selectedProject)?.projektname}
+                                        </span>
+                                    )}
+                                </p>
+                            </div>
+                            <div className="flex gap-2">
+                                {(activeTable === 'mitarbeiter' || activeTable === 'subunternehmer') && (
+                                    <Button
+                                        size="sm"
+                                        className="bg-primary hover:bg-primary/90 text-white font-black uppercase text-[10px] h-9 px-4 rounded-lg shadow-md flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+                                        onClick={() => {
+                                            if (activeTable === 'mitarbeiter') {
+                                                router.push(`/${projektId}/mitarbeiter/erfassen`);
+                                            } else {
+                                                const name = prompt('Name des Subunternehmers (ss):');
+                                                if (name) SubunternehmerService.createSubunternehmer({ name }).then(() => window.location.reload());
+                                            }
+                                        }}
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                        Hinzufügen
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+
+                        <Card className="border-none shadow-none bg-white flex-1 min-h-0 flex flex-col">
+                            <CardContent className="p-0 flex-1 overflow-y-auto">
+                                {loading ? (
+                                    <div className="flex flex-col items-center justify-center p-20 gap-4 text-muted-foreground">
+                                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                                        <p>Lade Daten...</p>
+                                    </div>
+                                ) : data.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center p-20 gap-4 text-muted-foreground opacity-50">
+                                        <Database className="h-12 w-12" />
+                                        <p>Keine Einträge in dieser Tabelle gefunden.</p>
+                                    </div>
+                                ) : (
+                                    <div className="overflow-x-auto">
+                                        <Table>
+                                            <TableHeader className="bg-orange-50/50">
+                                                <TableRow>
                                                     {columns.map(col => (
-                                                        <TableCell key={`${i}-${col}`} className={cn(
-                                                            "text-xs font-medium whitespace-nowrap max-w-[200px] truncate",
-                                                            col.toLowerCase() === 'id' || col.toLowerCase() === 'aktionen' ? "text-right" : "text-left"
+                                                        <TableHead key={col} className={cn(
+                                                            "font-bold uppercase text-[10px] text-orange-600 whitespace-nowrap",
+                                                            col.toLowerCase() === 'id' ? "text-right" : "text-left"
                                                         )}>
-                                                            {renderCellContent(row[col], col, row)}
-                                                        </TableCell>
+                                                            {col}
+                                                        </TableHead>
                                                     ))}
                                                 </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {data.map((row, i) => (
+                                                    <TableRow key={i} className="hover:bg-slate-50/50">
+                                                        {columns.map(col => (
+                                                            <TableCell key={`${i}-${col}`} className={cn(
+                                                                "text-xs font-medium whitespace-nowrap max-w-[200px] truncate",
+                                                                col.toLowerCase() === 'id' || col.toLowerCase() === 'aktionen' ? "text-right" : "text-left"
+                                                            )}>
+                                                                {renderCellContent(row[col], col, row)}
+                                                            </TableCell>
+                                                        ))}
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
             </div>
         </div>

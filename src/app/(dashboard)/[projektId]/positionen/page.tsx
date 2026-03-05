@@ -2,20 +2,21 @@
 import { showAlert } from '@/lib/alert';
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { PositionService } from '@/lib/services/positionService';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { Position, Teilsystem } from '@/types';
-import { Plus, Search, Eye, Filter, ListTodo, Edit, Trash2 } from 'lucide-react';
+import { Eye, Filter, ListTodo, Edit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 
 export default function PositionenListPage() {
     const { projektId } = useParams() as { projektId: string };
+    const router = useRouter();
     const [items, setItems] = useState<Position[]>([]);
     const [teilsysteme, setTeilsysteme] = useState<Record<string, Teilsystem>>({});
     const [search, setSearch] = useState('');
@@ -29,14 +30,10 @@ export default function PositionenListPage() {
                     SubsystemService.getTeilsysteme(projektId)
                 ]);
 
-                // Create a map for quick lookup
                 const tsMap: Record<string, Teilsystem> = {};
-                tsData.forEach(ts => {
-                    tsMap[ts.id] = ts;
-                });
+                tsData.forEach(ts => { tsMap[ts.id] = ts; });
                 setTeilsysteme(tsMap);
 
-                // Filter positions to current project
                 const projectTsIds = tsData.map(ts => ts.id);
                 setItems(posData.filter(p => projectTsIds.includes(p.teilsystemId)));
             } catch (error) {
@@ -53,40 +50,28 @@ export default function PositionenListPage() {
         (teilsysteme[item.teilsystemId]?.name.toLowerCase() || '').includes(search.toLowerCase())
     );
 
+    const autocompleteItems = items.map(i => ({
+        id: i.id,
+        label: i.name,
+        sublabel: teilsysteme[i.teilsystemId]?.name,
+    }));
+
     return (
         <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Positionen</h1>
-                    <p className="text-muted-foreground font-medium mt-1">Überblick über alle erfassten Positionen des Projekts.</p>
-                </div>
-                <Link href={`/${projektId}/positionen/erfassen`}>
-                    <Button className="h-11 px-8 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest shadow-lg shadow-orange-200 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
-                        <Plus className="h-5 w-5" />
-                        <span>Position erfassen</span>
-                    </Button>
-                </Link>
-            </div>
+            <ModuleActionBanner
+                icon={ListTodo}
+                title="Positionen"
+                items={autocompleteItems}
+                onSelect={(id) => router.push(`/${projektId}/positionen/${id}`)}
+                onSearch={(q) => setSearch(q)}
+                searchPlaceholder="Nach Bezeichnung o. Teilsystem suchen..."
+                ctaLabel="Position erfassen"
+                ctaHref={`/${projektId}/positionen/erfassen`}
+            />
 
             <Card className="shadow-xl border-2 border-border overflow-hidden rounded-2xl">
-                <CardHeader className="pb-4">
-                    <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
-                        <div className="relative w-full md:w-96">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Nach Bezeichnung o. Teilsystem suchen..."
-                                className="pl-10"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
-                        </div>
-                        <Button variant="outline" size="sm" className="gap-2 font-bold">
-                            <Filter className="h-4 w-4" />
-                            Filter
-                        </Button>
-                    </div>
-                </CardHeader>
-                <CardContent>
+                <CardContent className="pt-4">
+
                     {loading ? (
                         <div className="py-20 flex flex-col items-center justify-center space-y-4">
                             <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />

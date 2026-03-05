@@ -8,7 +8,7 @@ import { useProjekt } from '@/lib/context/ProjektContext';
 import { ProjectService } from '@/lib/services/projectService';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Signature } from '@/components/shared/Signature';
+
 import { ChatAssistant } from '@/components/shared/ChatAssistant';
 
 export default function DashboardLayout({
@@ -62,21 +62,33 @@ export default function DashboardLayout({
         pathname?.includes('/fuhrpark') ||
         pathname?.includes('/tabellen');
 
+    // Header height:
+    // Global pages: h-14 = 3.5rem (56px)
+    // Project pages: single-row banner header ≈ py-2 + 58px banner + py-2 + 1px border ≈ 80px = 5rem
+    const headerOffset = isGlobalPage ? '3.5rem' : '5rem';
+
     return (
         <div className="min-h-screen bg-background transition-colors">
             <Header
                 onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 hideProjectInfo={isGlobalPage}
+                projectBanner={!isGlobalPage ? <ProjectBanner className="rounded-none shadow-none" /> : undefined}
             />
 
-            <div className="flex pt-16">
-                <Sidebar projektId={projektId} className="fixed left-0 top-16 z-30 hidden lg:block" />
+            <div className="flex" style={{ paddingTop: headerOffset }}>
+                {/* Sidebar wrapper — positioned below the dynamic header */}
+                <div
+                    className="fixed left-0 z-30 hidden lg:flex"
+                    style={{ top: headerOffset, bottom: 0 }}
+                >
+                    <Sidebar projektId={projektId} className="h-full" />
+                </div>
 
-                <main className="flex-1 lg:ml-64 flex flex-col min-h-[calc(100vh-4rem)] overflow-x-hidden">
+                <main
+                    className="flex-1 lg:ml-64 flex flex-col overflow-x-hidden"
+                    style={{ minHeight: `calc(100vh - ${headerOffset})` }}
+                >
                     <div className="p-[1cm] w-full flex-1">
-                        {!isGlobalPage && (
-                            <ProjectBanner />
-                        )}
                         {children}
                     </div>
                 </main>

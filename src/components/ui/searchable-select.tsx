@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { ChevronDown, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface Option {
     label: string;
@@ -15,9 +16,11 @@ interface SearchableSelectProps {
     onChange: (value: string) => void;
     error?: string;
     placeholder?: string;
+    className?: string;
+    variant?: 'default' | 'neutral';
 }
 
-export const SearchableSelect = ({ label, options, value, onChange, error, placeholder = 'Suchen...' }: SearchableSelectProps) => {
+export const SearchableSelect = ({ label, options, value, onChange, error, placeholder = 'Suchen...', className, variant = 'default' }: SearchableSelectProps) => {
     const [isOpen, setIsOpen] = React.useState(false);
     const [search, setSearch] = React.useState('');
     const containerRef = React.useRef<HTMLDivElement>(null);
@@ -65,9 +68,13 @@ export const SearchableSelect = ({ label, options, value, onChange, error, place
             <label className="text-sm font-medium leading-none">{label}</label>
             <div className="relative">
                 <div
-                    className={`flex h-10 w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm cursor-pointer transition-colors
-                        ${isOpen ? 'border-primary ring-2 ring-ring ring-offset-2' : 'border-input'}
-                        ${error ? 'border-red-500' : ''}`}
+                    className={cn(
+                        "flex w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm cursor-pointer transition-colors outline-none",
+                        isOpen ? 'border-primary ring-2 ring-ring ring-offset-2' : 'border-input',
+                        error && 'border-red-500',
+                        !className?.includes('h-') && "h-10",
+                        className
+                    )}
                     onClick={() => {
                         setIsOpen(!isOpen);
                         if (!isOpen) {
@@ -114,8 +121,12 @@ export const SearchableSelect = ({ label, options, value, onChange, error, place
                                 filteredOptions.map(opt => (
                                     <div
                                         key={opt.value}
-                                        className={`px-3 py-2 text-sm cursor-pointer transition-colors
-                                            ${opt.value === value ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-slate-50'}`}
+                                        className={cn(
+                                            "px-3 py-2 text-sm cursor-pointer transition-colors",
+                                            opt.value === value
+                                                ? (variant === 'neutral' ? 'bg-slate-100 font-bold' : 'bg-primary/10 text-primary font-medium')
+                                                : 'hover:bg-slate-50'
+                                        )}
                                         onClick={() => handleSelect(opt)}
                                     >
                                         {opt.label}

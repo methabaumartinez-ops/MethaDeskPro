@@ -25,6 +25,7 @@ import { MaterialService } from '@/lib/services/materialService';
 import { Teilsystem, TsStunden, TsMaterialkosten, Mitarbeiter, ABTEILUNGEN_CONFIG, Fahrzeug, Material, FahrzeugReservierung } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Truck, Package, Hammer, Car } from 'lucide-react';
+import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 
 // Helper to format currency in CHF
 const formatCHF = (value: number) => {
@@ -199,29 +200,22 @@ export default function AnalysePage() {
     return (
         <div className="flex flex-col gap-10 p-4 pb-20">
             {/* Page Header */}
-            <div className="flex justify-between items-center bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100">
-                <div className="flex items-center gap-4">
-                    <div className="p-3 bg-orange-100 rounded-2xl">
-                        <BarChart3 className="text-orange-600 h-6 w-6" />
-                    </div>
-                    <div>
-                        <h2 className="text-2xl font-black text-slate-800 tracking-tight dark:text-orange-400">Projekt-Analyse</h2>
-                        <p className="text-slate-500 font-medium text-xs">Strategische Übersicht (Echtzeit-Daten aus Datenbank / CHF).</p>
-                    </div>
-                </div>
-                <div className="flex gap-2">
-                    <span className="bg-slate-50 px-4 py-2 rounded-2xl text-[10px] font-black border border-slate-200 text-slate-500 flex items-center gap-2 shadow-sm uppercase tracking-widest">
-                        <Clock size={14} className="text-orange-500" />
-                        Stand: {new Date().toLocaleDateString('de-CH')}
-                    </span>
-                </div>
-            </div>
+            <ModuleActionBanner
+                icon={BarChart3}
+                title="Projekt-Analyse"
+            />
 
             {/* --- SECCIÓN 1: FINANZIELLER ÜBERBLICK --- */}
             <div className="space-y-6">
-                <div className="flex items-center gap-3 px-2">
-                    <div className="h-8 w-1 bg-orange-500 rounded-full" />
-                    <h3 className="text-lg font-black uppercase tracking-widest text-slate-600">1. Finanzielle Analyse</h3>
+                <div className="flex items-center justify-between px-2">
+                    <div className="flex items-center gap-3">
+                        <div className="h-8 w-1 bg-orange-500 rounded-full" />
+                        <h3 className="text-lg font-black uppercase tracking-widest text-slate-600">1. Finanzielle Analyse</h3>
+                    </div>
+                    <span className="bg-white px-4 py-2 rounded-2xl text-[10px] font-black border border-slate-200 text-slate-500 flex items-center gap-2 shadow-sm uppercase tracking-widest">
+                        <Clock size={14} className="text-orange-500" />
+                        Stand: {new Date().toLocaleDateString('de-CH')}
+                    </span>
                 </div>
 
                 {/* KPI Section */}

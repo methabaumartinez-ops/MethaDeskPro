@@ -11,6 +11,7 @@ import { MaterialBestellung, BestellungItem, Projekt } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Warehouse, Package, CheckCircle2, Circle, Truck, Inbox, ArrowRight, Check, Edit2, MessageSquare, Camera, ListChecks, Clock, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
@@ -119,23 +120,10 @@ export default function WerkhofPage() {
 
     return (
         <div className="space-y-10 h-full flex flex-col pt-2 max-w-7xl mx-auto pb-20">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div>
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tight">Logistik & Werkhof</h1>
-                    <p className="text-muted-foreground font-medium mt-1">Überwache und verwalte alle Materialflüsse der Projekte.</p>
-                </div>
-                <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/20 rounded-xl">
-                            <Warehouse className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-black uppercase text-primary/60 tracking-widest">Lagerkapazität</p>
-                            <p className="text-sm font-black text-primary">Normalbetrieb</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <ModuleActionBanner
+                icon={Warehouse}
+                title="Logistik & Werkhof"
+            />
 
             {loading ? (
                 <div className="flex-1 flex items-center justify-center py-20">

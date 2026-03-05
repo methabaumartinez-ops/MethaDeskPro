@@ -19,6 +19,7 @@ import { ProjectService } from '@/lib/services/projectService';
 import { Teilsystem } from '@/types';
 import { cn } from '@/lib/utils';
 import { ChatAssistant } from '@/components/shared/ChatAssistant';
+import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 
 export default function PlannerPage() {
     const { projektId } = useParams() as { projektId: string };
@@ -147,35 +148,22 @@ export default function PlannerPage() {
     };
 
     return (
-        <div className="h-[calc(100vh-6rem)] flex flex-col gap-6 animate-in fade-in duration-500 pb-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
-                <div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Planer</h1>
-                    <p className="text-slate-500 font-medium mt-1">Überwachen Sie Meilensteine, Planabgaben und Lieferfristen.</p>
-                </div>
-                <div className="flex gap-2">
-                    <Button variant="outline" className="font-bold gap-2">
-                        <Download className="h-4 w-4" />
-                        Exportieren
-                    </Button>
-                </div>
-            </div>
+        <div className="h-[calc(100vh-6rem)] flex flex-col animate-in fade-in duration-500 pb-4 overflow-hidden">
+            <ModuleActionBanner
+                icon={Calendar}
+                title="Planer"
+                ctaLabel="Exportieren"
+                ctaOnClick={() => showAlert('Export gestartet...')}
+                ctaIcon={Download}
+                onSearch={setSearch}
+            />
 
             {/* Master-Detail Layout */}
             <div className="flex flex-1 gap-6 min-h-0 overflow-hidden">
                 {/* Column 1: List (25%) */}
                 <Card className="w-1/4 flex flex-col border-none shadow-md bg-white h-full">
-                    <CardHeader className="p-4 border-b bg-slate-50/50">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                            <Input
-                                placeholder="Suche..."
-                                className="pl-9 h-9 border-slate-200 bg-white"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
-                        </div>
-                    </CardHeader>
+                    {/* Search is now in ModuleActionBanner, removing local search area */}
+
                     <CardContent className="p-0 flex-1 overflow-y-auto">
                         {loading ? (
                             <div className="p-4 space-y-3">

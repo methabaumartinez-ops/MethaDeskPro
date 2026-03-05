@@ -13,6 +13,7 @@ import { LagerortService } from '@/lib/services/lagerortService';
 import QrCodeGenerator from '@/components/shared/QrCodeGenerator';
 import { Plus, QrCode, MapPin, Package, Pencil, Trash2, X, ScanLine, Construction, Warehouse, Globe, Factory, Truck, Map, ExternalLink, Download, Printer, Share2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 import { cn } from '@/lib/utils';
 import { ProjectService } from '@/lib/services/projectService';
 import { useProjekt } from '@/lib/context/ProjektContext';
@@ -123,42 +124,13 @@ export default function LagerorteSeite() {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-10">
-            {/* Header / Navigation Section */}
-            <div className="flex justify-between items-center mb-6 px-2">
-                <div className="flex items-center gap-6">
-                    {/* Brand Logo */}
-                    <div className="flex items-center gap-1 select-none">
-                        <span className="text-2xl font-black tracking-tighter text-slate-800 dark:text-slate-200">
-                            METHA<span className="text-orange-500">Desk</span>
-                            <span className="ml-1 text-slate-400 font-light text-xs align-top mt-1">pro</span>
-                        </span>
-                    </div>
+            <ModuleActionBanner
+                icon={MapPin}
+                title="Lagerorte"
+                ctaLabel="Neu"
+                ctaOnClick={openCreate}
+            />
 
-                    <div className="h-6 w-[1px] bg-border/60" />
-
-                    <Link href={`/${projektId}/dashboard`}>
-                        <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
-                            <ArrowLeft className="h-4 w-4" />
-                            Zurück
-                        </Button>
-                    </Link>
-                </div>
-
-                <div className="flex items-center gap-4">
-                    <h1 className="text-xl font-black text-slate-400 uppercase tracking-[0.2em] hidden md:block">Lagerorte</h1>
-                    <div className="flex gap-2 ml-4">
-                        <Link href={`/${projektId}/lager-scan`}>
-                            <Button variant="outline" className="h-10 px-4 font-black uppercase text-[10px] tracking-widest rounded-xl border-2 flex gap-2">
-                                <ScanLine className="h-4 w-4" />
-                                QR Scan
-                            </Button>
-                        </Link>
-                        <Button onClick={openCreate} className="h-10 px-6 font-black uppercase text-[10px] tracking-widest rounded-xl shadow-lg shadow-primary/20 flex gap-2">
-                            <Plus className="h-4 w-4" /> NEU
-                        </Button>
-                    </div>
-                </div>
-            </div>
 
             {/* Form Modal */}
             {showForm && (

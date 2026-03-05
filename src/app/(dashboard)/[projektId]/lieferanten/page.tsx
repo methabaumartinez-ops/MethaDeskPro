@@ -9,6 +9,7 @@ import { SupplierService } from '@/lib/services/supplierService';
 import { Lieferant } from '@/types';
 import { Plus, Truck, Mail, Phone, MapPin, Search } from 'lucide-react';
 import Link from 'next/link';
+import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 
 export default function LieferantenListPage() {
     const { projektId } = useParams() as { projektId: string };
@@ -49,30 +50,15 @@ export default function LieferantenListPage() {
 
     return (
         <div className="flex flex-col h-[calc(100vh-6rem)] space-y-4 max-w-none">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 px-2">
-                <div>
-                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Lieferanten</h1>
-                    <p className="text-muted-foreground font-medium mt-1">Kontaktliste der Partner und Lieferanten.</p>
-                </div>
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="relative w-full md:w-72">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <input
-                            type="text"
-                            placeholder="Lieferant suchen..."
-                            className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 transition-all"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <Link href={`/${projektId}/lieferanten/erfassen`}>
-                        <Button className="h-11 px-8 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest shadow-lg shadow-orange-200 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
-                            <Plus className="h-5 w-5" />
-                            <span>Hinzufügen</span>
-                        </Button>
-                    </Link>
-                </div>
-            </div>
+            <ModuleActionBanner
+                icon={Truck}
+                title="Lieferanten"
+                ctaLabel="Hinzufügen"
+                ctaHref={`/${projektId}/lieferanten/erfassen`}
+                ctaIcon={Plus}
+                onSearch={setSearchTerm}
+                searchPlaceholder="Lieferant suchen..."
+            />
 
             {error && (
                 <div className="p-4 bg-red-50 text-red-600 rounded-md border border-red-200 mx-2">

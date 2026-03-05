@@ -5,7 +5,7 @@ import { useProjekt } from '@/lib/context/ProjektContext';
 import { MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export function ProjectBanner() {
+export function ProjectBanner({ className }: { className?: string }) {
     const { activeProjekt } = useProjekt();
 
     const [imageError, setImageError] = React.useState(false);
@@ -23,7 +23,10 @@ export function ProjectBanner() {
     const projectImageUrl = getProjectImage(activeProjekt.imageUrl);
 
     return (
-        <div className="bg-slate-950 text-white border-none rounded-lg px-0 py-0 flex flex-col md:flex-row justify-between items-stretch shadow-md gap-4 mb-6 overflow-hidden min-h-[72px]">
+        <div className={cn(
+            "bg-slate-950 text-white border-none rounded-lg px-0 py-0 flex flex-col md:flex-row justify-between items-stretch shadow-md gap-4 overflow-hidden min-h-[58px]",
+            className
+        )}>
             <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
                 {/* Project Image */}
                 <div className="w-[72px] h-[72px] shrink-0 bg-slate-900 flex items-center justify-center border-r border-white/10 overflow-hidden relative">

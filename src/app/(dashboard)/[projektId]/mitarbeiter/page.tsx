@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmployeeService } from '@/lib/services/employeeService';
 import { Mitarbeiter } from '@/types';
-import { Plus, User, Mail, Shield, Eye, Edit, Trash2 } from 'lucide-react';
+import { Plus, User, Users, Mail, Shield, Eye, Edit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 
 export default function MitarbeiterListPage() {
     const { projektId } = useParams() as { projektId: string };
@@ -61,30 +62,15 @@ export default function MitarbeiterListPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-extrabold text-primary tracking-tight">Mitarbeiter</h1>
-                    <p className="text-muted-foreground font-medium mt-1">Teammitglieder, die diesem Projekt zugewiesen sind.</p>
-                </div>
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="relative w-full md:w-72">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <input
-                            type="text"
-                            placeholder="Mitarbeiter suchen..."
-                            className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 transition-all"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <Link href={`/${projektId}/mitarbeiter/erfassen`}>
-                        <Button className="font-bold shadow-lg shadow-primary/20 whitespace-nowrap">
-                            <Plus className="h-5 w-5 mr-2" />
-                            Hinzufügen
-                        </Button>
-                    </Link>
-                </div>
-            </div>
+            <ModuleActionBanner
+                icon={Users}
+                title="Mitarbeiter"
+                onSearch={setSearchTerm}
+                searchPlaceholder="Mitarbeiter suchen..."
+                ctaLabel="Hinzufügen"
+                ctaHref={`/${projektId}/mitarbeiter/erfassen`}
+                ctaIcon={Plus}
+            />
 
             <Card className="overflow-hidden border-none shadow-xl bg-card/50 backdrop-blur-sm">
                 <CardContent className="p-0">

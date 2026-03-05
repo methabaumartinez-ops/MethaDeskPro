@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 
 const KATEGORIE_LABELS: Record<string, string> = {
     scherenbuehne: 'Scherenbühne',
@@ -172,19 +173,15 @@ export default function FuhrparkPage() {
         <div className="flex flex-col h-full -mt-6"> {/* Full height container to manage sticky better */}
             {/* --- FIXED/STICKY HEADER SECTION --- */}
             <div className="sticky top-0 z-50 bg-background pt-6 pb-2 space-y-6 shadow-sm border-b -mx-6 px-6">
-                {/* Title and Action Button */}
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h1 className="text-3xl font-extrabold text-primary tracking-tight">Fuhrpark</h1>
-                        <p className="text-sm font-medium text-muted-foreground mt-1">Bühnen und Baumaschinen – Verwaltung und Disposition.</p>
-                    </div>
-                    <Link href={`/${projektId}/fuhrpark/erfassen`}>
-                        <Button className="font-bold shadow-lg shadow-[#FF6B35]/20 bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white">
-                            <Plus className="h-5 w-5 mr-2" />
-                            Neue Maschine
-                        </Button>
-                    </Link>
-                </div>
+                <ModuleActionBanner
+                    icon={Car}
+                    title="Fuhrpark"
+                    ctaLabel="Neue Maschine"
+                    ctaHref={`/${projektId}/fuhrpark/erfassen`}
+                    ctaIcon={Plus}
+                    onSearch={activeTab === 'fahrzeuge' ? setSearchTerm : undefined}
+                    searchPlaceholder="Suchen nach Bezeichnung oder Inventarnummer..."
+                />
 
                 {/* Stats Cards Row (Horizontal Scroll on Mobile) */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 overflow-x-auto pb-2 scrollbar-hide">
@@ -255,18 +252,6 @@ export default function FuhrparkPage() {
                                 Reservierungen ({reservierungen.length})
                             </TabsTrigger>
                         </TabsList>
-
-                        {activeTab === 'fahrzeuge' && (
-                            <div className="relative w-full md:w-72">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    placeholder="Suchen nach Bezeichnung oder Inventarnummer..."
-                                    className="pl-10 rounded-xl h-11 border-[#FF6B35]/10 bg-white"
-                                    value={searchTerm}
-                                    onChange={e => setSearchTerm(e.target.value)}
-                                />
-                            </div>
-                        )}
                     </div>
 
                     {activeTab === 'fahrzeuge' && (

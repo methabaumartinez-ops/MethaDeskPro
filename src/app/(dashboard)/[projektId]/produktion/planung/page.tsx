@@ -1,0 +1,371 @@
+'use client';
+
+import React, { useState, useEffect, useMemo } from 'react';
+import { useParams } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Select } from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
+import { SubsystemService } from '@/lib/services/subsystemService';
+import { EmployeeService } from '@/lib/services/employeeService';
+import { Teilsystem, Mitarbeiter } from '@/types';
+import { cn } from '@/lib/utils';
+import { Loader2, Save, Layers } from 'lucide-react';
+import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+
+// Toast fallback removed in favor of ConfirmDialog state below
+
+function getISOWeek(dateStr: string | null | undefined): number | string {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return '-';
+    const target = new Date(date.valueOf());
+    const dayNr = (date.getDay() + 6) % 7;
+    target.setDate(target.getDate() - dayNr + 3);
+    const firstThursday = target.valueOf();
+    target.setMonth(0, 1);
+    if (target.getDay() !== 4) {
+        target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+    }
+    return 1 + Math.ceil((firstThursday - target.valueOf()) / 604800000);
+}
+
+function formatDate(dateStr: string | null | undefined) {
+    if (!dateStr) return '-';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '-';
+    return d.toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+export default function BauleitungPlannerPage() {
+    const { projektId } = useParams() as { projektId: string };
+    const [items, setItems] = useState<Teilsystem[]>([]);
+    const [employees, setEmployees] = useState<Mitarbeiter[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState('planner');
+
+    // Detail widget state
+    const [editStatus, setEditStatus] = useState<string>('');
+    const [editOpenedBy, setEditOpenedBy] = useState<string>('');
+    const [isSaving, setIsSaving] = useState(false);
+
+    // Dialog state
+    const [dialogConfig, setDialogConfig] = useState<{
+        isOpen: boolean;
+        title: string;
+        description: string;
+        variant: 'success' | 'danger' | 'warning' | 'info';
+    }>({
+        isOpen: false,
+        title: '',
+        description: '',
+        variant: 'info'
+    });
+
+    const showMsg = (title: string, description: string, variant: 'success' | 'danger' | 'warning' | 'info' = 'info') => {
+        setDialogConfig({ isOpen: true, title, description, variant });
+    };
+
+    useEffect(() => {
+        loadData();
+    }, [projektId]);
+
+    const loadData = async () => {
+        setLoading(true);
+        try {
+            // Fetch TS for 'Planung'
+            const tsData = await SubsystemService.getTeilsysteme(projektId, 'Planung');
+            const empData = await EmployeeService.getMitarbeiter();
+
+            // Map legacy statuses for UI representation in Planner
+            const mappedTsData = tsData.map(ts => {
+                let s: string = ts.status || 'offen';
+                if (s === 'in_produktion') s = 'in_arbeit';
+                else if (s === 'verbaut') s = 'fertig';
+                else if (!['offen', 'in_arbeit', 'fertig'].includes(s)) s = 'offen';
+                return { ...ts, status: s as any };
+            });
+
+            // Filter employees explicitly to "Planner" (Planung) department only
+            const plannerEmps = empData.filter(e => {
+                const abt = (e as any).abteilung?.toLowerCase() || (e as any).department?.toLowerCase() || '';
+                return ['planung', 'planer'].includes(abt);
+            });
+            setEmployees(plannerEmps.length > 0 ? plannerEmps : empData);
+
+            // Sort TS by abgabePlaner ASC (nulls at bottom)
+            const sorted = mappedTsData.sort((a, b) => {
+                if (!a.abgabePlaner && !b.abgabePlaner) return 0;
+                if (!a.abgabePlaner) return 1;
+                if (!b.abgabePlaner) return -1;
+                return new Date(a.abgabePlaner).getTime() - new Date(b.abgabePlaner).getTime();
+            });
+
+            setItems(sorted);
+
+            // Auto-select first if none selected
+            if (sorted.length > 0) {
+                // If we already had a selection, try to keep it, else pick the first
+                setSelectedId(prev => {
+                    const stillExists = sorted.find(s => s.id === prev);
+                    if (stillExists) {
+                        return stillExists.id;
+                    }
+                    return sorted[0].id;
+                });
+            } else {
+                setSelectedId(null);
+            }
+        } catch (error) {
+            console.error("Failed to load planner data", error);
+            showMsg("Fehler", "Fehler beim Laden der Daten", "danger");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Keep edit state in sync when selection changes
+    const selectedTs = useMemo(() => items.find(i => i.id === selectedId), [items, selectedId]);
+
+    useEffect(() => {
+        if (selectedTs) {
+            setEditStatus(selectedTs.status || 'offen');
+            setEditOpenedBy(selectedTs.eroeffnetDurch || '');
+        } else {
+            setEditStatus('');
+            setEditOpenedBy('');
+        }
+    }, [selectedTs]);
+
+    const handleSelect = (ts: Teilsystem) => {
+        setSelectedId(ts.id);
+    };
+
+    const handleSave = async () => {
+        if (!selectedId) return;
+        setIsSaving(true);
+        try {
+            await SubsystemService.updateTeilsystem(selectedId, {
+                status: editStatus as any,
+                eroeffnetDurch: editOpenedBy
+            });
+            showMsg("Erfolg", "Erfolgreich gespeichert", "success");
+            await loadData();
+        } catch (error) {
+            console.error("Save error", error);
+            showMsg("Fehler", "Fehler beim Speichern", "danger");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const employeeOptions = employees.map(e => ({
+        value: e.id,
+        label: `${e.vorname} ${e.nachname}`
+    }));
+
+    const getStatusColorClass = (status: string) => {
+        switch (status) {
+            case 'offen': return 'bg-green-100 text-green-800 border-green-300';
+            case 'in_arbeit': return 'bg-blue-100 text-blue-800 border-blue-300';
+            case 'fertig': return 'bg-white text-black border-slate-200';
+            default: return 'bg-white text-black border-slate-200';
+        }
+    };
+
+    return (
+        <div className="flex flex-col h-[calc(100vh-6rem)] overflow-hidden animate-in fade-in duration-500 pb-2 px-1">
+            <ConfirmDialog
+                isOpen={dialogConfig.isOpen}
+                onClose={() => setDialogConfig(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={() => setDialogConfig(prev => ({ ...prev, isOpen: false }))}
+                title={dialogConfig.title}
+                description={dialogConfig.description}
+                variant={dialogConfig.variant}
+                confirmLabel="Verstanden"
+                showCancel={false}
+            />
+
+            <ModuleActionBanner
+                icon={Layers}
+                title="Bauleitung & Planner"
+                ctaLabel="Neue TS erfassen"
+                ctaHref={`/${projektId}/teilsysteme/erfassen`}
+            />
+
+            <Tabs className="w-full flex flex-col flex-1 overflow-hidden">
+                <TabsList className="mb-4 shrink-0 self-start">
+                    <TabsTrigger active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} className="font-bold text-sm h-11 px-8 rounded-xl">Planner</TabsTrigger>
+                    <TabsTrigger active={activeTab === 'ubersicht'} onClick={() => setActiveTab('ubersicht')} className="font-bold text-sm h-11 px-8 rounded-xl">Übersicht</TabsTrigger>
+                </TabsList>
+
+                <TabsContent active={activeTab === 'planner'} className="mt-0 flex-1 overflow-hidden">
+                    {loading && items.length === 0 ? (
+                        <Card className="border-2 rounded-2xl">
+                            <CardContent className="py-32 flex flex-col items-center justify-center space-y-4">
+                                <Loader2 className="h-12 w-12 animate-spin text-orange-500" />
+                                <p className="text-sm font-black text-muted-foreground uppercase tracking-widest">Laden...</p>
+                            </CardContent>
+                        </Card>
+                    ) : items.length === 0 ? (
+                        <Card className="border-2 border-dashed rounded-2xl">
+                            <CardContent className="py-32 text-center flex flex-col items-center">
+                                <div className="p-6 bg-muted/30 rounded-full mb-6">
+                                    <Layers className="h-16 w-16 text-muted-foreground/20" />
+                                </div>
+                                <h3 className="text-xl font-black text-foreground tracking-tight">Keine Teilsysteme</h3>
+                                <p className="text-sm text-muted-foreground mt-2 font-medium">Es wurden keine geplanten Systeme für diese Abteilung gefunden.</p>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-6 h-full min-h-0">
+                            {/* Left: Table Area */}
+                            <Card className="flex flex-col shadow-xl border-2 rounded-2xl overflow-hidden min-h-0">
+                                <div className="flex-1 overflow-y-auto">
+                                    <Table>
+                                        <TableHeader className="sticky top-0 bg-muted/95 backdrop-blur-md z-20 shadow-sm border-b-2">
+                                            <TableRow className="hover:bg-transparent">
+                                                <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 border-l border-t border-b bg-muted/95">KS</TableHead>
+                                                <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 w-24 border-t border-b bg-muted/95">TS Nummer</TableHead>
+                                                <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 border-t border-b bg-muted/95">Name</TableHead>
+                                                <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 border-t border-b bg-muted/95">Abgabe Plan</TableHead>
+                                                <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 w-12 text-center border-r border-t border-b bg-muted/95">KW</TableHead>
+                                                <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 border-t border-b bg-muted/95">Liefertermin</TableHead>
+                                                <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 w-12 text-center border-r border-t border-b bg-muted/95">KW</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody className="z-0 relative">
+                                            {items.map(ts => {
+                                                const isSelected = ts.id === selectedId;
+                                                return (
+                                                    <TableRow
+                                                        key={ts.id}
+                                                        onClick={() => handleSelect(ts)}
+                                                        className={cn(
+                                                            "cursor-pointer transition-all border-b",
+                                                            isSelected ? "bg-orange-50/50 hover:bg-orange-50/80" : "hover:bg-accent/50"
+                                                        )}
+                                                    >
+                                                        <TableCell className={cn("font-medium py-2.5 border-l-4", isSelected ? "border-l-orange-500" : "border-l-transparent")}>
+                                                            <div className="text-xs truncate max-w-[80px]">{ts.ks || '-'}</div>
+                                                        </TableCell>
+                                                        <TableCell className="py-2.5">
+                                                            <Badge variant="outline" className={cn("font-bold text-xs truncate max-w-[100px]", isSelected ? "border-orange-500 text-orange-700 bg-orange-100/50" : "bg-white")}>
+                                                                {ts.teilsystemNummer || '-'}
+                                                            </Badge>
+                                                        </TableCell>
+                                                        <TableCell className="py-2.5">
+                                                            <div className="font-bold text-sm truncate max-w-[160px]">{ts.name}</div>
+                                                        </TableCell>
+                                                        <TableCell className="py-2.5 text-sm">{formatDate(ts.abgabePlaner)}</TableCell>
+                                                        <TableCell className="py-2.5 text-center border-r bg-muted/10 font-mono text-xs font-bold text-muted-foreground">{getISOWeek(ts.abgabePlaner)}</TableCell>
+                                                        <TableCell className="py-2.5 text-sm">{formatDate(ts.lieferfrist)}</TableCell>
+                                                        <TableCell className="py-2.5 text-center bg-muted/10 font-mono text-xs font-bold text-muted-foreground border-r">{getISOWeek(ts.lieferfrist)}</TableCell>
+                                                    </TableRow>
+                                                );
+                                            })}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </Card>
+
+                            {/* Right: Detail Widget (420px fixed) */}
+                            <Card className="flex flex-col shadow-xl border-2 rounded-2xl relative overflow-hidden h-fit max-h-full min-h-0">
+                                {selectedTs ? (
+                                    <>
+                                        <div className="h-1.5 w-full bg-orange-500" />
+                                        <CardHeader className="border-b bg-muted/10 pb-5">
+                                            <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-1 block">DETAILANSICHT</span>
+                                            <CardTitle className="text-xl font-black flex items-center gap-2">
+                                                {selectedTs.teilsystemNummer && (
+                                                    <Badge variant="outline" className="border-orange-500 text-orange-700 bg-orange-100/50 text-sm hidden sm:flex">{selectedTs.teilsystemNummer}</Badge>
+                                                )}
+                                                <span className="truncate">{selectedTs.name}</span>
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="flex-1 p-6 space-y-6 overflow-y-auto">
+
+                                            <div className="space-y-2.5">
+                                                <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">TS Status</label>
+                                                <Select
+                                                    value={editStatus}
+                                                    onChange={(e) => setEditStatus(e.target.value)}
+                                                    className={cn(
+                                                        "font-bold h-12 rounded-xl border-2 focus:ring-orange-500 outline-none transition-colors",
+                                                        getStatusColorClass(editStatus)
+                                                    )}
+                                                    options={[
+                                                        { label: 'Offen', value: 'offen' },
+                                                        { label: 'In Arbeit', value: 'in_arbeit' },
+                                                        { label: 'Fertig', value: 'fertig' }
+                                                    ]}
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2.5 pt-2">
+                                                {/* Label logic is inside SearchableSelect, we use a span equivalent here to style it the same */}
+                                                <div>
+                                                    <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">ERÖFFNET DURCH</span>
+                                                </div>
+                                                <SearchableSelect
+                                                    label=""
+                                                    options={employeeOptions}
+                                                    value={editOpenedBy}
+                                                    onChange={setEditOpenedBy}
+                                                    placeholder="Mitarbeiter suchen..."
+                                                    className="font-bold h-12 rounded-xl border-2 focus:ring-orange-500 hover:border-accent-foreground/50 bg-white transition-colors"
+                                                    variant="neutral"
+                                                />
+                                            </div>
+
+                                        </CardContent>
+                                        <div className="p-5 border-t bg-muted/10 flex justify-end shrink-0">
+                                            <Button
+                                                onClick={handleSave}
+                                                disabled={isSaving}
+                                                className="font-black text-xs uppercase bg-orange-600 hover:bg-orange-700 text-white h-12 shadow-md shadow-orange-500/20 rounded-xl px-8 flex items-center gap-2 transition-all hover:scale-105 active:scale-95 w-full sm:w-auto"
+                                            >
+                                                {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                                                Speichern
+                                            </Button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="h-full flex flex-col items-center justify-center text-muted-foreground p-8 text-center">
+                                        <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                                            <Layers className="h-8 w-8 text-muted-foreground/50" />
+                                        </div>
+                                        <p className="font-bold text-lg text-foreground">Keine Auswahl</p>
+                                        <p className="text-sm font-medium mt-1">Bitte wählen Sie ein Teilsystem aus der linken Liste, um Details anzuzeigen.</p>
+                                    </div>
+                                )}
+                            </Card>
+                        </div>
+                    )}
+                </TabsContent>
+
+                <TabsContent active={activeTab === 'ubersicht'} className="mt-0 flex-1 overflow-hidden">
+                    <Card className="border-2 border-dashed rounded-2xl h-full">
+                        <CardContent className="py-32 text-center flex flex-col items-center">
+                            <div className="w-20 h-20 rounded-2xl bg-muted/50 flex items-center justify-center mb-6 border-2 border-slate-200">
+                                <Layers className="h-10 w-10 text-muted-foreground/50" />
+                            </div>
+                            <h3 className="text-2xl font-black text-foreground tracking-tight mb-2">Übersicht</h3>
+                            <p className="text-sm text-muted-foreground font-medium max-w-sm">
+                                Dieser Bereich befindet sich im Aufbau. Zukünftige Analyse- und Dashboard-Elemente für die Bauleitung werden hier angezeigt.
+                            </p>
+                            <Button variant="outline" className="mt-8 font-black text-xs uppercase rounded-xl h-11 px-6 border-2" disabled>
+                                Demnächst verfügbar
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
+        </div>
+    );
+}
