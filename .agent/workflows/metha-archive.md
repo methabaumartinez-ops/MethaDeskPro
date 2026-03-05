@@ -1,48 +1,15 @@
 ---
-description: Archive-first delete + Gelöscht grayscale + Restore + Hard-delete advanced gating
+description: Universal Archive-First Delete Workflow (Repo-Agnostic) — Locate → Patch → Validate
 ---
 
-Title
-Global Slash Workflow Trigger: Bind “/++” to Universal Archive-First Delete Workflow
+# Universal Archive-First Delete Workflow (Repo-Agnostic) — Locate → Patch → Validate
 
-Context
-You want a reusable workflow (repo-agnostic) to be available in ALL projects, and you want it to trigger specifically when typing “/++” in Antigravity.
+### Inputs
 
-Task
-Create a global slash command that:
+- **Target Item(s):** [INSERT TARGET(S) HERE]
+- **Target Context/Type:** [e.g., UI Button, API Route, Database Field]
 
-- Trigger: /++
-- Expands to the “Universal Archive-First Delete Workflow (Repo-Agnostic) — Locate → Patch → Validate”
-- Works across all repositories/projects.
-- Is optimized for token efficiency (strict scoping, two-pass execution, diff-only outputs).
-
-Requirements
-
-1) Command Definition
-
-- Name: Universal Archive-First Delete
-- Trigger: /++
-- Visibility: Global (available in all projects/workspaces)
-- Insertion mode: Insert template into prompt composer (not execute immediately unless Antigravity supports it)
-- Ensure the slash trigger includes both characters: “/++” (not just “/”)
-
-1) Template Content
-When /++ is invoked, insert EXACTLY the following template (verbatim), with an “Inputs” block that the user edits:
-
-[PASTE TEMPLATE]
-Universal Archive-First Delete Workflow (Repo-Agnostic) — Locate → Patch → Validate
-(Include the full workflow template with:
-
-- Inputs
-- Scope Rules
-- PASS 1 Locate & Trace
-- PASS 2 Apply Patch
-- Output Format
-- Stop Conditions
-- NZT-48 Toggle
-- Validation/Self-check)
-
-1) Token Optimization Defaults
+### Scope Rules
 
 - Enforce: Open max 8 files, ask before >12
 - Enforce: Search only entry strings
@@ -50,30 +17,29 @@ Universal Archive-First Delete Workflow (Repo-Agnostic) — Locate → Patch →
 - Enforce: No alternatives unless asked
 - Enforce: Stop after PASS 1 if semantics unclear
 
-1) Validation
+### PASS 1 Locate & Trace
 
-- Confirm typing “/++” shows the command in the slash palette.
-- Confirm selecting it inserts the workflow text.
-- Confirm it is available in a new/unrelated project without reconfiguration.
+1. **Identify Entry Points:** Search for EXACT strings related to the Target Item(s).
+2. **Trace Dependencies:** Map out where these items are used, imported, or exported.
+3. **Stop & Review:** If there is any ambiguity or if the scope seems larger than expected, STOP and ask the user for clarification before proceeding to Pass 2.
 
-Constraints
+### PASS 2 Apply Patch
 
-- Do not store project-specific paths inside the global template.
-- Do not include any secrets or environment variables in templates.
-- Keep the workflow usable across frameworks (Next.js, React, backend repos) by relying on search-based discovery.
+1. **Archive/Soft-Delete Priority:** If deleting records or removing functionality, prefer soft-deletes (e.g., adding `isArchived`, `deletedAt`) over hard SQL/DB deletes.
+2. **Remove UI/Code Traces:** Remove the target item from UI components, API payloads, or processing logic.
+3. **Diff-Only Output:** Apply changes using tools (like `replace_file_content` or `multi_replace_file_content`) efficiently.
 
-Output Format
+### Output Format
 
-1) Exact steps to add a global slash command in Antigravity (Settings path + UI actions).
-2) The exact /++ command metadata to enter (Name, Trigger, Scope, Description).
-3) The final template text to paste as the command body.
-4) Quick test checklist to verify it works in all projects.
+- Brief summary of files changed.
+- If user review is needed, provide exact file paths.
 
-NZT-48 Toggle
+### NZT-48 Toggle
+
 NZT-48: ON
 
-Validation / Self-Check
+### Validation / Self-Check
 
-- /++ appears as a selectable command.
-- It inserts the workflow verbatim.
-- It is global across projects.
+- Did we remove the entry points without breaking the build?
+- Did we respect the archive/soft-delete rule?
+- (Self-Correction): If a required change breaks a hard dependency, revert and warn the user.

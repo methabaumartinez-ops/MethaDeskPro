@@ -15,7 +15,7 @@ import { ProjectService } from '@/lib/services/projectService';
 import { LagerortBadge } from '@/components/shared/LagerortBadge';
 import DokumentePanel from '@/components/shared/DokumentePanel';
 import { TrackingTimeline } from '@/components/shared/TrackingTimeline';
-import { useSearchParams, useParams, useRouter } from 'next/navigation';
+import { useSearchParams, useParams, useRouter, usePathname } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { usePermissions } from '@/lib/hooks/usePermissions';
@@ -30,6 +30,7 @@ export default function PositionDetailPage() {
     const id = params.id;
     const [projektId, setProjektId] = useState<string>((params.projektId || '') as string);
     const searchParams = useSearchParams();
+    const pathname = usePathname();
     const { can, role } = usePermissions();
     const isReadOnly = searchParams.get('mode') === 'readOnly' || !can('update');
     const [position, setPosition] = useState<Position | null>(null);
@@ -93,14 +94,12 @@ export default function PositionDetailPage() {
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-10">
             {/* Header / Navigation Section */}
-            <div className="flex justify-between items-center mb-6 px-2">
+            <div className="flex justify-between items-center -mt-2 mb-2 px-2">
                 <div className="flex items-center gap-4">
-                    <Link href={`/${projektId}/teilsysteme/${position.teilsystemId}`}>
-                        <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
-                            <ArrowLeft className="h-4 w-4" />
-                            Zurück
-                        </Button>
-                    </Link>
+                    <Button onClick={() => router.back()} className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                        <ArrowLeft className="h-4 w-4" />
+                        Zurück
+                    </Button>
                 </div>
 
                 {!isReadOnly && (

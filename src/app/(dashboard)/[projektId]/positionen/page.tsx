@@ -2,7 +2,7 @@
 import { showAlert } from '@/lib/alert';
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,6 +17,14 @@ import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 export default function PositionenListPage() {
     const { projektId } = useParams() as { projektId: string };
     const router = useRouter();
+    const pathname = usePathname();
+    const searchParamsParams = useSearchParams();
+
+    let fromParam = '';
+    if (pathname.includes('/produktion/avor')) fromParam = 'from=avor';
+    else if (pathname.includes('/produktion/planung')) fromParam = 'from=planner';
+    else if (pathname.includes('/produktion/einkauf')) fromParam = 'from=einkauf';
+    else if (pathname.includes('/ausfuehrung')) fromParam = 'from=ausfuehrung';
     const [items, setItems] = useState<Position[]>([]);
     const [teilsysteme, setTeilsysteme] = useState<Record<string, Teilsystem>>({});
     const [search, setSearch] = useState('');
@@ -62,7 +70,7 @@ export default function PositionenListPage() {
                 icon={ListTodo}
                 title="Positionen"
                 items={autocompleteItems}
-                onSelect={(id) => router.push(`/${projektId}/positionen/${id}`)}
+                onSelect={(id) => router.push(`/${projektId}/positionen/${id}${fromParam ? `?${fromParam}` : ''}`)}
                 onSearch={(q) => setSearch(q)}
                 searchPlaceholder="Nach Bezeichnung o. Teilsystem suchen..."
                 ctaLabel="Position erfassen"
@@ -94,7 +102,7 @@ export default function PositionenListPage() {
                                         <TableCell className="font-bold text-foreground">{item.name}</TableCell>
                                         <TableCell className="font-medium text-primary">
                                             {teilsysteme[item.teilsystemId] ? (
-                                                <Link href={`/${projektId}/teilsysteme/${item.teilsystemId}`} className="hover:underline">
+                                                <Link href={`/${projektId}/teilsysteme/${item.teilsystemId}${fromParam ? `?${fromParam}` : ''}`} className="hover:underline">
                                                     {teilsysteme[item.teilsystemId].teilsystemNummer} - {teilsysteme[item.teilsystemId].name}
                                                 </Link>
                                             ) : '—'}
@@ -106,7 +114,7 @@ export default function PositionenListPage() {
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-1">
-                                                <Link href={`/${projektId}/positionen/${item.id}`}>
+                                                <Link href={`/${projektId}/positionen/${item.id}${fromParam ? `?${fromParam}` : ''}`}>
                                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-muted hover:shadow-sm">
                                                         <Eye className="h-4 w-4" />
                                                     </Button>

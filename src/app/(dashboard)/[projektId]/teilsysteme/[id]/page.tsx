@@ -2,7 +2,7 @@
 import { showAlert } from '@/lib/alert';
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams, useRouter } from 'next/navigation';
+import { useParams, useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared/StatusBadge';
@@ -37,9 +37,17 @@ export default function TeilsystemDetailPage() {
     const params = useParams();
     const router = useRouter();
     const searchParams = useSearchParams();
+    const from = searchParams.get('from');
 
     // Fallback if projektId is missing from params (Public Share view)
     const [projektId, setProjektId] = useState<string>((params?.projektId || '') as string);
+
+    const handleBack = () => {
+        if (from === 'avor') router.push(`/${projektId}/produktion/avor`);
+        else if (from === 'planner' || from === 'planung') router.push(`/${projektId}/produktion/planung`);
+        else if (from === 'einkauf') router.push(`/${projektId}/produktion/einkauf`);
+        else router.back();
+    };
     const id = params?.id as string;
     const { can, role } = usePermissions();
     const isReadOnly = searchParams.get('mode') === 'readOnly' || !can('update');
@@ -137,18 +145,16 @@ export default function TeilsystemDetailPage() {
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-10">
             {/* Header / Navigation Section */}
-            <div className="flex justify-between items-center mb-6 px-2">
+            <div className="flex justify-between items-center -mt-2 mb-2 px-2">
                 <div className="flex items-center gap-4">
-                    <Link href={`/${projektId}/teilsysteme`}>
-                        <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
-                            <ArrowLeft className="h-4 w-4" />
-                            Zurück
-                        </Button>
-                    </Link>
+                    <Button onClick={handleBack} className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                        <ArrowLeft className="h-4 w-4" />
+                        Zurück
+                    </Button>
                 </div>
 
                 {!isReadOnly && (
-                    <Link href={`/${projektId}/teilsysteme/${item.id}/edit`}>
+                    <Link href={`/${projektId}/teilsysteme/${item.id}/edit${from ? `?from=${from}` : ''}`}>
                         <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
                             <Edit className="h-4 w-4" />
                             <span>Bearbeiten</span>
@@ -310,7 +316,7 @@ export default function TeilsystemDetailPage() {
                 <Card className="shadow-lg border-2 border-orange-600/30 rounded-3xl overflow-hidden bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl">
                     <CardContent className="p-4 flex flex-col gap-3 items-center justify-center h-full">
                         {canViewKosten && (
-                            <Link href={`/${projektId}/kosten?ts=${id}`} className="w-full max-w-[240px]">
+                            <Link href={`/${projektId}/kosten?ts=${id}${from ? `&from=${from}` : ''}`} className="w-full max-w-[240px]">
                                 <Button className="w-full h-10 border-2 border-green-400 bg-green-50/50 hover:bg-green-100/70 dark:bg-green-900/20 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center justify-center gap-2.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
                                     <div className="p-1 bg-white dark:bg-slate-800 rounded-full shadow-sm">
                                         <Briefcase className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
@@ -353,7 +359,7 @@ export default function TeilsystemDetailPage() {
                                 Positionen
                             </CardTitle>
                             {(!isReadOnly && can('create')) && (
-                                <Link href={`/${projektId}/teilsysteme/${id}/positionen/erfassen`}>
+                                <Link href={`/${projektId}/teilsysteme/${id}/positionen/erfassen${from ? `?from=${from}` : ''}`}>
                                     <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white font-bold h-7 px-3 rounded-full shadow-md flex items-center gap-1.5 transition-all hover:scale-105 text-[10px]">
                                         <Plus className="h-3 w-3" />
                                         <span>Add</span>
@@ -374,7 +380,7 @@ export default function TeilsystemDetailPage() {
                                         </TableHeader>
                                         <TableBody>
                                             {positionen.map((pos) => (
-                                                <TableRow key={pos.id} className="group hover:bg-muted/50 transition-colors cursor-pointer border-b border-border/50" onClick={() => router.push(`/${projektId}/positionen/${pos.id}`)}>
+                                                <TableRow key={pos.id} className="group hover:bg-muted/50 transition-colors cursor-pointer border-b border-border/50" onClick={() => router.push(`/${projektId}/positionen/${pos.id}${from ? `?from=${from}` : ''}`)}>
                                                     <TableCell className="font-black text-primary py-3 pl-4 text-[10px]">{pos.posNummer || '—'}</TableCell>
                                                     <TableCell className="py-3">
                                                         <span className="font-bold text-foreground text-[11px] block truncate max-w-[120px]">{pos.name}</span>

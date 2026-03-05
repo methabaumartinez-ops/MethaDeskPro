@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,6 +15,14 @@ import Link from 'next/link';
 export default function AbteilungPage() {
     const { projektId, abteilung: abteilungSlug } = useParams() as { projektId: string; abteilung: string };
     const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    let fromParam = '';
+    if (pathname.includes('/produktion/avor')) fromParam = '?from=avor';
+    else if (pathname.includes('/produktion/planung')) fromParam = '?from=planner';
+    else if (pathname.includes('/produktion/einkauf')) fromParam = '?from=einkauf';
+    else if (pathname.includes('/ausfuehrung')) fromParam = '?from=ausfuehrung';
 
     const [items, setItems] = useState<Teilsystem[]>([]);
     const [project, setProject] = useState<Projekt | null>(null);
@@ -65,7 +73,7 @@ export default function AbteilungPage() {
                 icon={Layers}
                 title={abteilungName}
                 items={autocompleteItems}
-                onSelect={(id) => router.push(`/${projektId}/teilsysteme/${id}`)}
+                onSelect={(id) => router.push(`/${projektId}/teilsysteme/${id}${fromParam}`)}
                 onSearch={(q) => setSearch(q)}
                 searchPlaceholder="Suche Nummer oder Name..."
                 ctaLabel="Neu TS erfassen"

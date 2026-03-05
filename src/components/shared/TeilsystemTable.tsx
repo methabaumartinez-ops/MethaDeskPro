@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { Teilsystem } from '@/types';
@@ -32,6 +32,14 @@ export function TeilsystemTable({
     currentAbteilung
 }: TeilsystemTableProps) {
     const router = useRouter();
+    const pathname = usePathname();
+
+    let fromParam = '';
+    if (pathname.includes('/produktion/avor')) fromParam = '?from=avor';
+    else if (pathname.includes('/produktion/planung')) fromParam = '?from=planner';
+    else if (pathname.includes('/produktion/einkauf')) fromParam = '?from=einkauf';
+    else if (pathname.includes('/ausfuehrung')) fromParam = '?from=ausfuehrung';
+
     const [warningOpen, setWarningOpen] = React.useState(false);
 
     // Default numeric sort by teilsystemNummer
@@ -88,7 +96,7 @@ export function TeilsystemTable({
                             <TableRow
                                 key={item.id}
                                 className="group hover:bg-orange-50/30 transition-colors cursor-pointer border-b border-border/50"
-                                onClick={() => router.push(`/${projektId}/teilsysteme/${item.id}`)}
+                                onClick={() => router.push(`/${projektId}/teilsysteme/${item.id}${fromParam}`)}
                             >
                                 <TableCell className="p-4 text-center">
                                     <Badge variant="outline" className="font-black text-orange-700 border-orange-200 bg-orange-50 text-xs py-1 px-3">

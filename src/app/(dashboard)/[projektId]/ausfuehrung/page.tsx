@@ -2,7 +2,7 @@
 import { showAlert } from '@/lib/alert';
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useParams, useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useProjekt } from '@/lib/context/ProjektContext';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -52,7 +52,13 @@ export default function AusfuehrungPage() {
     const { projektId } = useParams() as { projektId: string };
     const { currentUser, activeProjekt } = useProjekt();
     const router = useRouter();
-    const searchParams = useSearchParams();
+    const pathname = usePathname();
+
+    let fromParam = '';
+    if (pathname.includes('/produktion/avor')) fromParam = '?from=avor';
+    else if (pathname.includes('/produktion/planung')) fromParam = '?from=planner';
+    else if (pathname.includes('/produktion/einkauf')) fromParam = '?from=einkauf';
+    else if (pathname.includes('/ausfuehrung')) fromParam = '?from=ausfuehrung';
 
     // Data States
     const [subsystems, setSubsystems] = useState<Teilsystem[]>([]);
@@ -117,13 +123,14 @@ export default function AusfuehrungPage() {
                 setMitarbeiter(mits);
 
                 // Handle tab parameter
-                const tab = searchParams.get('tab');
+                const urlParams = new URLSearchParams(window.location.search);
+                const tab = urlParams.get('tab');
                 if (tab) {
                     setActiveTab(tab);
                 }
 
                 // Check for edit parameter in URL
-                const editId = searchParams.get('edit');
+                const editId = urlParams.get('edit');
                 if (editId) {
                     const orderToEdit = best.find(b => b.id === editId);
                     if (orderToEdit) {
@@ -138,7 +145,7 @@ export default function AusfuehrungPage() {
             }
         };
         loadData();
-    }, [projektId, searchParams]);
+    }, [projektId]);
 
     // Filters
     const filteredSubsystems = subsystems.filter(item => {
@@ -461,7 +468,7 @@ export default function AusfuehrungPage() {
                                                         <TableRow
                                                             key={item.id}
                                                             className="group hover:bg-orange-50/30 transition-colors cursor-pointer border-b border-border/50"
-                                                            onClick={() => router.push(`/${projektId}/teilsysteme/${item.id}?mode=readOnly`)}
+                                                            onClick={() => router.push(`/${projektId}/teilsysteme/${item.id}${fromParam ? fromParam + '&' : '?'}mode=readOnly`)}
                                                         >
                                                             <TableCell className="p-4 text-center">
                                                                 <Badge variant="outline" className="font-black text-orange-700 border-orange-200 bg-orange-50 text-xs py-1 px-3">

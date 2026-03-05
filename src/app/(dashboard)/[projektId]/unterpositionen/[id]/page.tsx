@@ -95,7 +95,7 @@ export default function UnterpositionDetailPage() {
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-10">
             {/* Header / Navigation Section */}
-            <div className="flex justify-between items-center mb-6 px-2">
+            <div className="flex justify-between items-center -mt-2 mb-2 px-2">
                 <div className="flex items-center gap-4">
                     <Link href={`/${projektId}/positionen/${unterposition.positionId}`}>
                         <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">

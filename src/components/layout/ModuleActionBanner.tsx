@@ -153,8 +153,8 @@ export function ModuleActionBanner({
 
             {/* Center: autocomplete search */}
             <div className="flex-1 flex items-center px-5 py-3 relative" ref={containerRef}>
-                <div className="relative w-full">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 pointer-events-none" />
+                <div className="relative w-full max-w-[320px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
                     <input
                         ref={inputRef}
                         type="text"
@@ -168,7 +168,7 @@ export function ModuleActionBanner({
                         onKeyDown={handleKeyDown}
                         onFocus={() => suggestions.length > 0 && setOpen(true)}
                         placeholder={searchPlaceholder}
-                        className="w-full h-9 bg-white/10 border border-white/10 rounded-lg pl-9 pr-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/40 transition-colors"
+                        className="w-full h-9 bg-white border border-slate-200 rounded-lg pl-9 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors shadow-inner"
                         autoComplete="off"
                     />
 

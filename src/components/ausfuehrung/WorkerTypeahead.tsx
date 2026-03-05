@@ -106,7 +106,7 @@ export function WorkerTypeahead({
                             placeholder="Suchen..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="h-8 text-sm"
+                            className="w-full h-8 bg-white border border-slate-200 rounded-lg px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors shadow-inner"
                         />
                     </div>
                     <div className="max-h-60 overflow-y-auto p-1">

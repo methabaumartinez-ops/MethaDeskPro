@@ -144,11 +144,12 @@ export default function GlobalEinkaufPage() {
                 <Tabs className="w-full">
                     <CardHeader className="border-b border-border/50 bg-muted/20 py-4 pb-0">
                         <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-4">
-                            <div className="relative w-full md:w-96">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input
+                            <div className="relative w-full max-w-[320px]">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                <input
+                                    type="text"
                                     placeholder="Suchen..."
-                                    className="pl-10 bg-background border-input focus-visible:ring-primary/20"
+                                    className="w-full h-9 bg-white border border-slate-200 rounded-lg pl-9 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors shadow-inner"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                 />

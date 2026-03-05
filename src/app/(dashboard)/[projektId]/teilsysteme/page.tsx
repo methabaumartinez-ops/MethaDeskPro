@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { ProjectService } from '@/lib/services/projectService';
@@ -14,6 +14,14 @@ import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 export default function TeilsystemeListPage() {
     const { projektId } = useParams() as { projektId: string };
     const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    let fromParam = '';
+    if (pathname.includes('/produktion/avor')) fromParam = '?from=avor';
+    else if (pathname.includes('/produktion/planung')) fromParam = '?from=planner';
+    else if (pathname.includes('/produktion/einkauf')) fromParam = '?from=einkauf';
+    else if (pathname.includes('/ausfuehrung')) fromParam = '?from=ausfuehrung';
     const [items, setItems] = useState<Teilsystem[]>([]);
     const [project, setProject] = useState<Projekt | null>(null);
     const [search, setSearch] = useState('');
@@ -55,7 +63,7 @@ export default function TeilsystemeListPage() {
                 icon={Layers}
                 title="Teilsysteme u. BKP"
                 items={autocompleteItems}
-                onSelect={(id) => router.push(`/${projektId}/teilsysteme/${id}`)}
+                onSelect={(id) => router.push(`/${projektId}/teilsysteme/${id}${fromParam}`)}
                 onSearch={(q) => setSearch(q)}
                 searchPlaceholder="Suche nach Nummer o. Name..."
                 ctaLabel="Neu TS erfassen"

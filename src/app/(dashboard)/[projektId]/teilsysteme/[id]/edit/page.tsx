@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -89,6 +89,8 @@ export default function TeilsystemEditPage() {
     const projektId = params?.projektId as string;
     const id = params?.id as string;
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const from = searchParams.get('from');
     const [loading, setLoading] = useState(true);
     const [mitarbeiter, setMitarbeiter] = useState<any[]>([]);
     const [loadingMitarbeiter, setLoadingMitarbeiter] = useState(true);
@@ -372,7 +374,7 @@ export default function TeilsystemEditPage() {
                 setExtracting(false);
             }
 
-            router.push(`/${projektId}/teilsysteme/${id}`);
+            router.push(`/${projektId}/teilsysteme/${id}${from ? `?from=${from}` : ''}`);
         } catch (error: any) {
             console.error("Failed to update teilsystem:", error);
             alert(`Fehler beim Speichern des Teilsystems:\n\n${error?.message || String(error)}`);
@@ -425,7 +427,7 @@ export default function TeilsystemEditPage() {
 
     return (
         <div className="w-full space-y-6 pb-8">
-            <Link href={`/${projektId}/teilsysteme/${id}`} className="inline-flex items-center text-sm font-bold text-muted-foreground hover:text-primary transition-colors">
+            <Link href={`/${projektId}/teilsysteme/${id}${from ? `?from=${from}` : ''}`} className="inline-flex items-center text-sm font-bold text-muted-foreground hover:text-primary transition-colors">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Zurück al Teilsystem
             </Link>
@@ -595,12 +597,12 @@ export default function TeilsystemEditPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-3">
                                         <div className="relative">
-                                            <div className="relative">
-                                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                            <div className="relative w-full max-w-[320px]">
+                                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                                                 <input
                                                     type="text"
                                                     placeholder="Lieferant suchen..."
-                                                    className="w-full h-11 pl-10 pr-4 rounded-xl border-2 border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold placeholder:font-normal"
+                                                    className="w-full h-9 bg-white border border-slate-200 rounded-lg pl-9 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors shadow-inner"
                                                     value={lieferantenSearch}
                                                     onChange={(e) => {
                                                         setLieferantenSearch(e.target.value);
