@@ -5,6 +5,19 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
+    Activity,
+    PenTool,
+    ClipboardList,
+    ShoppingCart,
+    Wrench,
+    Box,
+    DollarSign,
+    Table,
+    Package,
+    MapPin,
+    QrCode,
+    Briefcase,
+    Factory,
     Layers,
     LayoutDashboard,
     Warehouse,
@@ -59,21 +72,23 @@ export function Sidebar({ projektId, className }: { projektId: string; className
                 {
                     title: 'Bauleitung',
                     href: `/${projektId}/produktion/bauleitung`,
+                    icon: Briefcase,
                     subItems: [
-                        { title: 'Analyse', href: `/${projektId}/analyse` },
+                        { title: 'Analyse', href: `/${projektId}/analyse`, icon: Activity },
                     ]
                 },
                 {
                     title: 'Produktion',
                     href: `/${projektId}/teilsysteme`,
+                    icon: Factory,
                     subItems: [
-                        { title: 'Planer', href: `/${projektId}/produktion/planung` },
-                        { title: 'AVOR', href: `/${projektId}/produktion/avor` },
-                        { title: 'Einkauf', href: `/${projektId}/produktion/einkauf` },
-                        { title: 'Schlosserei', href: `/${projektId}/produktion/schlosserei` },
-                        { title: 'Blechabteilung', href: `/${projektId}/produktion/blech` },
-                        { title: 'Kosten', href: `/${projektId}/kosten`, permission: 'viewKosten' },
-                        { title: 'Tabellen', href: `/${projektId}/tabellen`, permission: 'read' },
+                        { title: 'Planer', href: `/${projektId}/produktion/planung`, icon: PenTool },
+                        { title: 'AVOR', href: `/${projektId}/produktion/avor`, icon: ClipboardList },
+                        { title: 'Einkauf', href: `/${projektId}/produktion/einkauf`, icon: ShoppingCart },
+                        { title: 'Schlosserei', href: `/${projektId}/produktion/schlosserei`, icon: Wrench },
+                        { title: 'Blechabteilung', href: `/${projektId}/produktion/blech`, icon: Box },
+                        { title: 'Kosten', href: `/${projektId}/kosten`, permission: 'viewKosten', icon: DollarSign },
+                        { title: 'Tabellen', href: `/${projektId}/tabellen`, permission: 'read', icon: Table },
                     ]
                 },
                 {
@@ -87,9 +102,9 @@ export function Sidebar({ projektId, className }: { projektId: string; className
             title: 'Werkhof',
             icon: Warehouse,
             subItems: [
-                { title: 'Bestellungen', href: `/${projektId}/werkhof` },
-                { title: 'Lagerort', href: `/${projektId}/lagerorte` },
-                { title: 'QR Scan', href: `/${projektId}/lager-scan` },
+                { title: 'Bestellungen', href: `/${projektId}/werkhof`, icon: Package },
+                { title: 'Lagerort', href: `/${projektId}/lagerorte`, icon: MapPin },
+                { title: 'QR Scan', href: `/${projektId}/lager-scan`, icon: QrCode },
             ]
         },
         { title: 'Fuhrpark', href: `/fuhrpark`, icon: Car, permission: 'viewKosten' },
@@ -192,7 +207,7 @@ function NavItem({
                 depth > 0 ? 'py-1.5 font-medium' : ''
             )}
         >
-            {Icon && <Icon className={cn('h-4 w-4 shrink-0', isActive && !hasSubItems ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-foreground')} />}
+            {Icon && <Icon className={cn('shrink-0', depth === 0 ? 'h-4 w-4' : 'h-3.5 w-3.5', isActive && !hasSubItems ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-foreground')} />}
             {!Icon && depth > 0 && <div className="w-1" />}
             <span className="flex-1 truncate">{item.title === 'Ausfuehrung' ? 'Ausführung' : item.title}</span>
             {hasSubItems && (

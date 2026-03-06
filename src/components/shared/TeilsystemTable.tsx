@@ -84,7 +84,7 @@ export function TeilsystemTable({
                         <TableHead className="w-20 px-4 py-4 font-black text-foreground text-center text-[10px] uppercase tracking-wider">System-Nr.</TableHead>
                         <TableHead className="w-24 px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">KS</TableHead>
                         <TableHead className="min-w-[200px] px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Bezeichnung</TableHead>
-                        <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Termine</TableHead>
+                        <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Montage</TableHead>
                         {showAbteilung && <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Abteilung</TableHead>}
                         <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider w-40">Status</TableHead>
                         <TableHead className="w-10 px-4 py-4"></TableHead>
@@ -106,7 +106,7 @@ export function TeilsystemTable({
                                     </Badge>
                                 </TableCell>
                                 <TableCell className="p-4 font-black text-muted-foreground text-xs whitespace-nowrap">
-                                    {item.ks === '1' ? '1 Baumeister' : item.ks === '2' ? '2 Produktion' : item.ks === '3' ? '3 Extern' : (item.ks || '1')}
+                                    {item.ks === '1' ? 'Baumeister' : item.ks === '2' ? 'Produktion' : item.ks === '3' ? 'Extern' : String(item.ks || '').replace(/^\d+\s*/, '').trim() || '—'}
                                 </TableCell>
                                 <TableCell className="p-4">
                                     <div className="flex flex-col">
@@ -117,16 +117,7 @@ export function TeilsystemTable({
                                     </div>
                                 </TableCell>
                                 <TableCell className="p-4">
-                                    <div className="flex flex-col gap-1">
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="text-[9px] font-black uppercase text-muted-foreground/60 w-12">Montage:</span>
-                                            <span className="text-[10px] font-black text-orange-600">{item.montagetermin || '—'}</span>
-                                        </div>
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="text-[9px] font-black uppercase text-muted-foreground/60 w-12">Von:</span>
-                                            <span className="text-[10px] font-bold text-foreground">{item.eroeffnetDurch || 'Moritz'}</span>
-                                        </div>
-                                    </div>
+                                    <span className="text-xs font-black text-slate-700">{item.montagetermin || '—'}</span>
                                 </TableCell>
                                 {showAbteilung && (
                                     <TableCell className="p-4" onClick={(e) => e.stopPropagation()}>

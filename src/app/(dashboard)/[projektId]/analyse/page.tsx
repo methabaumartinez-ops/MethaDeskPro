@@ -440,12 +440,12 @@ export default function AnalysePage() {
                     <Card className="border-none shadow-sm bg-white rounded-[2rem] group hover:shadow-md transition-all">
                         <CardContent className="p-6">
                             <div className="flex justify-between items-start mb-4">
-                                <div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600">
+                                <div className="p-3 rounded-2xl bg-blue-50 text-blue-600">
                                     <Hammer size={24} strokeWidth={2.5} />
                                 </div>
-                                <Badge className="bg-emerald-100 text-emerald-700 border-none font-black text-[9px] uppercase">Maschinen</Badge>
+                                <Badge className="bg-blue-100 text-blue-700 border-none font-black text-[9px] uppercase">Fuhrpark</Badge>
                             </div>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Maquinaria / Geräte</p>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Maschinen / Geräte</p>
                             <div className="flex items-baseline gap-2">
                                 <h3 className="text-3xl font-black text-slate-800 tracking-tighter">
                                     {fahrzeuge.filter(f => !['pkw', 'lkw', 'transporter'].includes(f.kategorie as any)).length}
@@ -454,7 +454,7 @@ export default function AnalysePage() {
                             </div>
                             <div className="mt-4 pt-4 border-t border-slate-50 flex justify-between text-[10px] font-black uppercase tracking-widest">
                                 <span className="text-slate-400">Verfügbar:</span>
-                                <span className="text-emerald-600">{fahrzeuge.filter(f => f.status === 'verfuegbar' && !['pkw', 'lkw', 'transporter'].includes(f.kategorie as any)).length}</span>
+                                <span className="text-blue-600">{fahrzeuge.filter(f => f.status === 'verfuegbar' && !['pkw', 'lkw', 'transporter'].includes(f.kategorie as any)).length}</span>
                             </div>
                         </CardContent>
                     </Card>
@@ -466,7 +466,7 @@ export default function AnalysePage() {
                                 <div className="p-3 rounded-2xl bg-amber-50 text-amber-600">
                                     <Package size={24} strokeWidth={2.5} />
                                 </div>
-                                <Badge className="bg-amber-100 text-amber-700 border-none font-black text-[9px] uppercase">Bestand</Badge>
+                                <Badge className="bg-amber-100 text-amber-700 border-none font-black text-[9px] uppercase">Werkhof</Badge>
                             </div>
                             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Materialien / Lager</p>
                             <div className="flex items-baseline gap-2">
@@ -491,7 +491,7 @@ export default function AnalysePage() {
                                 </div>
                                 <Badge className="bg-blue-100 text-blue-700 border-none font-black text-[9px] uppercase">Fuhrpark</Badge>
                             </div>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Fahrzeuge / Fleet</p>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Fahrzeuge / Flotte</p>
                             <div className="flex items-baseline gap-2">
                                 <h3 className="text-3xl font-black text-slate-800 tracking-tighter">
                                     {fahrzeuge.filter(f => ['pkw', 'lkw', 'transporter'].includes(f.kategorie as any) || !f.kategorie).length}

@@ -32,7 +32,7 @@ export interface User {
 export const ABTEILUNGEN_CONFIG = [
   { id: 'planung', name: 'Planung', color: 'info' },
   { id: 'einkauf', name: 'Einkauf', color: 'secondary' },
-  { id: 'avor', name: 'AVOR', color: 'violet' },
+  { id: 'avor', name: 'AVOR', color: 'info' },
   { id: 'schlosserei', name: 'Schlosserei', color: 'gray' },
   { id: 'blech', name: 'Blechabteilung', color: 'orange' },
   { id: 'werkhof', name: 'Werkhof', color: 'info' },
