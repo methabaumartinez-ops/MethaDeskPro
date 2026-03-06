@@ -71,6 +71,10 @@ export default function ProjektePage() {
 
     const handleSelect = (p: Projekt) => {
         setActiveProjekt(p);
+        // Signal the sidebar to start with only "Projekte" expanded
+        if (typeof window !== 'undefined') {
+            sessionStorage.setItem('fromProjectSelection', '1');
+        }
         router.push(`/${p.id}`);
     };
 

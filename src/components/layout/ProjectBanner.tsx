@@ -24,58 +24,55 @@ export function ProjectBanner({ className }: { className?: string }) {
 
     return (
         <div className={cn(
-            "bg-slate-950 text-white border-none rounded-lg px-0 py-0 flex flex-col md:flex-row justify-between items-stretch shadow-md gap-0 md:gap-4 overflow-hidden min-h-[58px]",
-            "lg:pl-[1cm]", // Align internal content with main content below
+            "bg-slate-900 border border-slate-800 text-slate-100 rounded-2xl flex items-center shadow-inner overflow-hidden h-9 w-full max-w-2xl",
             className
         )}>
-            <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
-                {/* Project Image */}
-                <div className="w-[72px] h-[72px] shrink-0 bg-slate-900 flex items-center justify-center border-r border-white/10 overflow-hidden relative">
-                    {projectImageUrl && !imageError ? (
-                        <img
-                            src={projectImageUrl}
-                            alt={activeProjekt.projektname}
-                            className="w-full h-full object-cover"
-                            onError={() => setImageError(true)}
-                        />
-                    ) : (
-                        <div className="text-white/20 font-black text-xl italic uppercase tracking-tighter select-none flex items-center justify-center w-full h-full">
-                            {activeProjekt.projektname?.substring(0, 1)}<span className="text-primary">{activeProjekt.projektname?.substring(1, 2)}</span>
-                        </div>
-                    )}
-                </div>
+            {/* Left Edge: Small Image */}
+            <div className="h-9 w-9 shrink-0 bg-slate-950 flex items-center justify-center relative border-r border-slate-800">
+                {projectImageUrl && !imageError ? (
+                    <img
+                        src={projectImageUrl}
+                        alt={activeProjekt.projektname}
+                        className="w-full h-full object-cover"
+                        onError={() => setImageError(true)}
+                    />
+                ) : (
+                    <div className="text-white/40 font-black text-xs italic uppercase tracking-tighter select-none">
+                        {activeProjekt.projektname?.substring(0, 1)}<span className="text-primary">{activeProjekt.projektname?.substring(1, 2)}</span>
+                    </div>
+                )}
+            </div>
 
-                <div className="flex flex-col md:flex-row md:items-baseline gap-2 md:gap-6 px-4 md:px-0 py-3 md:py-0">
-                    <div>
-                        <div className="text-[9px] font-bold text-primary uppercase tracking-wider">Projekt</div>
-                        <div className="text-xl font-black text-white">{activeProjekt.projektname}</div>
-                    </div>
-                    <div className="text-xs text-slate-400 flex gap-4 items-baseline">
-                        <MapPin className="h-3 w-3 mr-1 inline-block" />
-                        <span>{activeProjekt.plz} {activeProjekt.ort}</span>
-                    </div>
+            {/* Core Info */}
+            <div className="flex items-center gap-3 px-3 flex-1 min-w-0">
+                <span className="font-bold text-sm truncate text-white" title={activeProjekt.projektname}>
+                    {activeProjekt.projektname}
+                </span>
+                <div className="hidden sm:flex items-center text-[10px] text-slate-400 gap-1 shrink-0">
+                    <MapPin className="h-3 w-3" />
+                    <span className="truncate max-w-[120px]" title={`${activeProjekt.plz} ${activeProjekt.ort}`}>
+                        {activeProjekt.ort}
+                    </span>
                 </div>
             </div>
-            <div className="flex flex-wrap gap-8 text-xs px-4 md:px-6 py-3 md:py-0 items-center">
-                <div>
-                    <span className="text-primary block text-[9px] uppercase tracking-wider mb-0.5">Kommission</span>
-                    <span className="font-bold text-sm block font-mono">#{activeProjekt.projektnummer}</span>
+
+            {/* Metadata Badges - Scrollable or hidden on very small screens */}
+            <div className="hidden md:flex items-center gap-4 px-4 text-[10px] border-l border-slate-800 bg-slate-950/30 h-full">
+                <div className="flex gap-1 items-center" title={`Kommission: ${activeProjekt.projektnummer}`}>
+                    <span className="text-primary font-medium tracking-wider uppercase">Komm.</span>
+                    <span className="font-mono text-slate-200">#{activeProjekt.projektnummer}</span>
                 </div>
-                <div>
-                    <span className="text-primary block text-[9px] uppercase tracking-wider mb-0.5">Bauleiter</span>
-                    <span className="font-bold text-sm block">{activeProjekt.bauleiter || 'n/a'}</span>
+                <div className="flex gap-1 items-center" title={`Bauleiter: ${activeProjekt.bauleiter}`}>
+                    <span className="text-primary font-medium tracking-wider uppercase">BL</span>
+                    <span className="text-slate-200 max-w-[80px] truncate">{activeProjekt.bauleiter || 'n/a'}</span>
                 </div>
-                <div>
-                    <span className="text-primary block text-[9px] uppercase tracking-wider mb-0.5">Polier</span>
-                    <span className="font-bold text-sm block">{activeProjekt.polier || 'n/a'}</span>
+                <div className="flex gap-1 items-center" title={`Polier: ${activeProjekt.polier}`}>
+                    <span className="text-primary font-medium tracking-wider uppercase">POL</span>
+                    <span className="text-slate-200 max-w-[80px] truncate">{activeProjekt.polier || 'n/a'}</span>
                 </div>
-                <div>
-                    <span className="text-primary block text-[9px] uppercase tracking-wider mb-0.5">Projektleiter</span>
-                    <span className="font-bold text-sm block">{activeProjekt.projektleiter || 'n/a'}</span>
-                </div>
-                <div>
-                    <span className="text-primary block text-[9px] uppercase tracking-wider mb-0.5">BIM Konst.</span>
-                    <span className="font-bold text-sm block">{activeProjekt.bimKonstrukteur || 'n/a'}</span>
+                <div className="hidden lg:flex gap-1 items-center" title={`Projektleiter: ${activeProjekt.projektleiter}`}>
+                    <span className="text-primary font-medium tracking-wider uppercase">PL</span>
+                    <span className="text-slate-200 max-w-[80px] truncate">{activeProjekt.projektleiter || 'n/a'}</span>
                 </div>
             </div>
         </div>

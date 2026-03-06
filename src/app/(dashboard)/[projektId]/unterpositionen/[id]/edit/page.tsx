@@ -1,3 +1,4 @@
+'use client';
 import { toast } from '@/lib/toast';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 

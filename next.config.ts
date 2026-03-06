@@ -2,7 +2,13 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  output: "standalone",
+  // output: "standalone" only for production Docker builds.
+  // In dev mode this generates incompatible cache artifacts that cause
+  // vendor-chunk 404s and ERR_CONNECTION_REFUSED after hot reloads.
+  ...(process.env.NEXT_OUTPUT_STANDALONE === '1' ? { output: 'standalone' } : {}),
+  experimental: {
+    webpackBuildWorker: false,
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 // @ts-expect-error ai/react subpath export — resolve issue with bundler moduleResolution
@@ -13,6 +13,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { useChatContext } from '@/lib/context/ChatContext';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -25,9 +26,9 @@ export const ChatAssistant = ({
     buttonLabel?: string;
     isHeaderMode?: boolean;
 }) => {
-    const [isOpen, setIsOpen] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
     const { projektId } = useParams() as { projektId?: string };
+    const { isSupportChatOpen, isMethabotOpen, openMethabot, closeMethabot } = useChatContext();
 
     const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
         api: '/api/chat',
@@ -53,40 +54,43 @@ export const ChatAssistant = ({
         }
     }, [messages, isLoading]);
 
+    // Strict exclusivity: fully hide when support chat is active (after all hooks)
+    if (isSupportChatOpen) return null;
+
     return (
         <div className={cn(
             "z-50 flex flex-col",
             isSidebarMode ? "" : "fixed bottom-6 right-6 items-end"
         )}>
             {/* Chat Window */}
-            {isOpen && (
+            {isMethabotOpen && (
                 <div className={cn(
                     "mb-4 w-[380px] h-[550px] animate-in slide-in-from-bottom-5 duration-300",
                     isSidebarMode ? "fixed left-[260px] bottom-4 z-50 shadow-2xl" : "",
                     isHeaderMode ? "fixed right-6 bottom-4 z-50 shadow-2xl" : ""
                 )}>
-                    <Card className="h-full flex flex-col shadow-2xl border-2 border-slate-200 bg-white dark:bg-slate-950 overflow-hidden rounded-[2.5rem]">
-                        <CardHeader className="bg-primary p-4 flex flex-row items-center justify-between space-y-0">
-                            <div className="flex items-center gap-3">
-                                <div className="bg-white/20 p-2 rounded-xl flex items-center justify-center">
-                                    <AnimatedRobot className="h-8 w-8" isWaving={isOpen} isThinking={isLoading} />
+                        <Card className="h-[550px] flex flex-col shadow-2xl border-2 border-slate-200 bg-white dark:bg-slate-950 overflow-hidden rounded-[2.5rem]">
+                            <CardHeader className="bg-primary p-4 flex flex-row items-center justify-between space-y-0 shrink-0">
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-white/20 p-2 rounded-xl flex items-center justify-center">
+                                        <AnimatedRobot className="h-8 w-8" isWaving={isMethabotOpen} isThinking={isLoading} />
+                                    </div>
+                                    <div className="text-white">
+                                        <CardTitle className="text-base font-black">METHAbot</CardTitle>
+                                    </div>
                                 </div>
-                                <div className="text-white">
-                                    <CardTitle className="text-base font-black">METHAbot</CardTitle>
-                                </div>
-                            </div>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-white hover:bg-white/10 h-8 w-8 rounded-full"
-                                onClick={() => setIsOpen(false)}
-                            >
-                                <X className="h-4 w-4" />
-                            </Button>
-                        </CardHeader>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-white hover:bg-white/10 h-8 w-8 rounded-full"
+                                    onClick={() => closeMethabot()}
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </CardHeader>
 
-                        <CardContent ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth bg-slate-50/30 dark:bg-slate-900/10">
-                            {messages?.map((msg) => (
+                            <CardContent ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-4 scroll-smooth bg-slate-50/30 dark:bg-slate-900/10">
+                                {messages?.map((msg) => (
                                 <div
                                     key={msg.id}
                                     className={cn(
@@ -125,7 +129,7 @@ export const ChatAssistant = ({
                             )}
                         </CardContent>
 
-                        <CardFooter className="p-4 border-t dark:border-slate-800 bg-white dark:bg-slate-950 flex flex-col gap-3">
+                        <CardFooter className="p-4 border-t dark:border-slate-800 bg-white dark:bg-slate-950 flex flex-col gap-3 shrink-0">
                             <form
                                 className="flex w-full gap-2 items-center"
                                 onSubmit={handleSubmit}
@@ -160,18 +164,18 @@ export const ChatAssistant = ({
 
             {/* Trigger Button */}
             <Button
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => isMethabotOpen ? closeMethabot() : openMethabot()}
                 className={cn(
                     "rounded-full shadow-2xl transition-all duration-500 flex items-center justify-center p-0 overflow-hidden",
-                    isOpen ? "h-14 w-14 bg-slate-900 hover:bg-slate-800 rotate-90" : "h-14 w-14 bg-white hover:bg-slate-50 border-2 border-primary hover:scale-110 shadow-lg",
+                    isMethabotOpen ? "h-14 w-14 bg-slate-900 hover:bg-slate-800 rotate-90" : "h-14 w-14 bg-white hover:bg-slate-50 border-2 border-primary hover:scale-110 shadow-lg",
                     isSidebarMode ? "h-10 w-10 border-none bg-transparent hover:bg-white/10" : "fixed bottom-6 right-6"
                 )}
             >
-                {isOpen ? (
+                {isMethabotOpen ? (
                     <X className="h-6 w-6 text-white" />
                 ) : (
                     <div className="relative h-full w-full flex items-center justify-center bg-white">
-                        <AnimatedRobot className="h-10 w-10 transition-transform hover:scale-110" isWaving={!isOpen} />
+                        <AnimatedRobot className="h-10 w-10 transition-transform hover:scale-110" isWaving={!isMethabotOpen} />
                         <div className="absolute top-2 right-2 h-2.5 w-2.5 bg-white rounded-full flex items-center justify-center z-10 shadow-sm border border-slate-100">
                             <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-ping" />
                         </div>

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { DatabaseService } from '@/lib/services/db';
-import { listFilesByParent, deleteFileFromDrive } from '@/lib/services/googleDriveService';
+import { listFolderFilesRecursive, deleteFileFromDrive } from '@/lib/services/googleDriveService';
 import { cookies } from 'next/headers';
 import { getUserFromToken } from '@/lib/services/authService';
 
@@ -31,13 +31,13 @@ export async function POST(req: Request) {
             if (!project.driveFolderId) continue;
 
             // 2. Find the IFC subfolder (04_IFC)
-            const filesInProject = await listFilesByParent(project.driveFolderId);
+            const filesInProject = await listFolderFilesRecursive(project.driveFolderId);
             const ifcSubfolder = filesInProject.find(f => f.name === '04_IFC' && f.mimeType === 'application/vnd.google-apps.folder');
 
             if (!ifcSubfolder) continue;
 
             // 3. List all files in 04_IFC
-            const ifcFiles = await listFilesByParent(ifcSubfolder.id);
+            const ifcFiles = await listFolderFilesRecursive(ifcSubfolder.id);
 
             // 4. Get all Teilsysteme for this project to find used IFC URLs
             const teilsysteme = await DatabaseService.list<any>('teilsysteme', { filter: { must: [{ key: 'projektId', match: { value: project.id } }] } });

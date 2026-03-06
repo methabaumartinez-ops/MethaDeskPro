@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircleQuestion, X, Send, Bot, User, Loader2, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useChatContext } from '@/lib/context/ChatContext';
 
 interface Message {
     id: string;
@@ -29,12 +30,16 @@ export function SupportChat() {
     const [loading, setLoading] = useState(false);
     const [hasUnread, setHasUnread] = useState(false);
     const bottomRef = useRef<HTMLDivElement>(null);
+    const { openSupport, closeSupport } = useChatContext();
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (isOpen) {
+            openSupport();
             setHasUnread(false);
             setTimeout(() => inputRef.current?.focus(), 100);
+        } else {
+            closeSupport();
         }
     }, [isOpen]);
 
@@ -197,7 +202,7 @@ export function SupportChat() {
                     </div>
 
                     {/* Messages */}
-                    <div className="flex-1 h-[340px] overflow-y-auto p-4 space-y-3 bg-slate-50 dark:bg-slate-900/50">
+                    <div className="flex-1 h-[340px] overflow-y-auto overscroll-contain p-4 space-y-3 bg-slate-50 dark:bg-slate-900/50">
                         {messages.map((msg) => (
                             <div
                                 key={msg.id}

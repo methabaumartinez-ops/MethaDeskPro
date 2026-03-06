@@ -24,8 +24,7 @@ export function Header({ onMenuClick, hideProjectInfo = false, projectBanner }: 
     return (
         <header className="fixed top-0 z-50 w-full border-b bg-white dark:bg-slate-950 transition-colors shadow-sm">
             <div className={cn(
-                'flex items-center px-4 sm:px-0 sm:pr-6',
-                showBanner ? 'py-2 gap-3 lg:gap-0' : 'h-14 gap-3 lg:gap-0 lg:px-0'
+                'relative flex items-center px-4 sm:px-0 sm:pr-6 h-14 lg:gap-0 lg:px-0'
             )}>
                 {/* Left section: exactly matches Sidebar width (w-64 = 256px) on lg screens */}
                 <div className={cn(
@@ -37,7 +36,7 @@ export function Header({ onMenuClick, hideProjectInfo = false, projectBanner }: 
                     <Button variant="ghost" size="icon" className="lg:hidden shrink-0" onClick={onMenuClick}>
                         <Menu className="h-6 w-6" />
                     </Button>
-
+                    
                     {/* Logo */}
                     <span
                         className="hidden sm:block text-xl font-bold tracking-tight text-foreground cursor-pointer select-none shrink-0"
@@ -48,18 +47,18 @@ export function Header({ onMenuClick, hideProjectInfo = false, projectBanner }: 
                     </span>
                 </div>
 
-                {/* Banner wrapper: spans full available space */}
-                {showBanner && (
-                    <div className="flex-1 min-w-0">
-                        {projectBanner}
+                {/* Center: Centered Project Banner Area (Absolute) */}
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center justify-center pointer-events-none z-10 w-full max-w-[30%] lg:max-w-[45%] xl:max-w-[60%]">
+                    <div className="pointer-events-auto flex items-center justify-center w-full">
+                        {showBanner && projectBanner}
                     </div>
-                )}
+                </div>
 
-                {/* If no banner, spacer pushes user actions right */}
-                {!showBanner && <div className="flex-1" />}
+                {/* Middleware Spacer: takes up available space to push profile to the right */}
+                <div className="flex-1" />
 
                 {/* Right: user + support + logout */}
-                <div className="flex items-center gap-3 shrink-0 lg:pr-[1cm]">
+                <div className="flex items-center gap-3 shrink-0 lg:pr-[1cm] relative z-20">
                     {currentUser && (
                         <div
                             className="flex items-center gap-3 pr-2 border-r h-8 cursor-pointer hover:opacity-80 transition-opacity"

@@ -1,4 +1,4 @@
-import { showAlert } from '@/lib/alert';
+'use client';
 import { toast } from '@/lib/toast';
 
 import React, { useState, useEffect } from 'react';

@@ -10,6 +10,7 @@ import { useParams, useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 import { ChatAssistant } from '@/components/shared/ChatAssistant';
+import { ChatProvider } from '@/lib/context/ChatContext';
 
 export default function DashboardLayout({
     children,
@@ -62,17 +63,16 @@ export default function DashboardLayout({
         pathname?.includes('/fuhrpark') ||
         pathname?.includes('/tabellen');
 
-    // Header height:
-    // Global pages: h-14 = 3.5rem (56px)
-    // Project pages: single-row banner header ≈ py-2 + 58px banner + py-2 + 1px border ≈ 80px = 5rem
-    const headerOffset = isGlobalPage ? '3.5rem' : '5rem';
+    // Header height is strictly 3.5rem (56px) universally
+    const headerOffset = '3.5rem';
 
     return (
+        <ChatProvider>
         <div className="min-h-screen bg-background transition-colors">
             <Header
                 onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 hideProjectInfo={isGlobalPage}
-                projectBanner={!isGlobalPage ? <ProjectBanner className="rounded-none shadow-none" /> : undefined}
+                projectBanner={!isGlobalPage ? <ProjectBanner /> : undefined}
             />
 
             <div className="flex" style={{ paddingTop: headerOffset }}>
@@ -120,5 +120,6 @@ export default function DashboardLayout({
                 <ChatAssistant />
             )}
         </div>
+        </ChatProvider>
     );
 }

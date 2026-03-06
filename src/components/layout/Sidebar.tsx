@@ -5,14 +5,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
-    BarChart3,
     Layers,
-    ListTodo,
     LayoutDashboard,
     Warehouse,
     Hammer,
     Car,
-    DollarSign,
     Sparkles,
     ChevronDown,
     ChevronRight,
@@ -29,9 +26,22 @@ type MenuItem = {
     subItems?: MenuItem[];
 };
 
-export function Sidebar({ projektId, className, forceProjectSelection = false }: { projektId: string; className?: string; forceProjectSelection?: boolean }) {
+export function Sidebar({ projektId, className }: { projektId: string; className?: string; forceProjectSelection?: boolean }) {
     const pathname = usePathname();
     const { can } = usePermissions();
+
+    // Detect entry from project selection page and collapse all groups except "Projekte"
+    const [forceOnlyProjekte, setForceOnlyProjekte] = React.useState(false);
+
+    React.useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const flag = sessionStorage.getItem('fromProjectSelection');
+            if (flag) {
+                setForceOnlyProjekte(true);
+                sessionStorage.removeItem('fromProjectSelection');
+            }
+        }
+    }, []);
 
     const menuItems: MenuItem[] = [
         {
@@ -47,26 +57,30 @@ export function Sidebar({ projektId, className, forceProjectSelection = false }:
             icon: Layers,
             subItems: [
                 {
+                    title: 'Bauleitung',
+                    href: `/${projektId}/produktion/bauleitung`,
+                    subItems: [
+                        { title: 'Analyse', href: `/${projektId}/analyse` },
+                    ]
+                },
+                {
                     title: 'Produktion',
                     href: `/${projektId}/teilsysteme`,
                     subItems: [
-                        { title: 'Bauleitung & Planner', href: `/${projektId}/produktion/planung` },
+                        { title: 'Planer', href: `/${projektId}/produktion/planung` },
                         { title: 'AVOR', href: `/${projektId}/produktion/avor` },
                         { title: 'Einkauf', href: `/${projektId}/produktion/einkauf` },
                         { title: 'Schlosserei', href: `/${projektId}/produktion/schlosserei` },
                         { title: 'Blechabteilung', href: `/${projektId}/produktion/blech` },
                         { title: 'Kosten', href: `/${projektId}/kosten`, permission: 'viewKosten' },
                         { title: 'Tabellen', href: `/${projektId}/tabellen`, permission: 'read' },
-                        { title: 'Analyse', href: `/${projektId}/analyse` },
                     ]
                 },
                 {
-                    title: 'Baumeister',
+                    title: 'Ausfuehrung',
                     href: `/${projektId}/ausfuehrung`,
-                    subItems: [
-                        { title: 'Ausführung', href: `/${projektId}/ausfuehrung` },
-                    ]
-                }
+                    icon: Hammer,
+                },
             ]
         },
         { title: 'Werkhof', href: `/${projektId}/werkhof`, icon: Warehouse },
@@ -88,7 +102,13 @@ export function Sidebar({ projektId, className, forceProjectSelection = false }:
         <aside className={cn("relative flex flex-col h-[calc(100vh-5rem)] w-64 border-r bg-white dark:bg-slate-950 dark:border-slate-800 transition-colors", className)}>
             <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-1 pb-40">
                 {allowedItems.map((item) => (
-                    <NavItem key={item.title} item={item} pathname={pathname} depth={0} />
+                    <NavItem
+                        key={item.title}
+                        item={item}
+                        pathname={pathname}
+                        depth={0}
+                        forceOnlyProjekte={forceOnlyProjekte}
+                    />
                 ))}
             </div>
 
@@ -97,7 +117,7 @@ export function Sidebar({ projektId, className, forceProjectSelection = false }:
                     <Signature />
                     <div className="flex flex-col items-end gap-0.5 opacity-60">
                         <p className="text-[8px] font-bold uppercase text-muted-foreground/60 tracking-widest leading-none">Version</p>
-                        <p className="text-[9px] font-extrabold text-foreground/70">v1.3.0-PRO</p>
+                        <p className="text-[9px] font-extrabold text-foreground/70">v1.0.6-BETA</p>
                     </div>
                 </div>
             </div>
@@ -105,7 +125,17 @@ export function Sidebar({ projektId, className, forceProjectSelection = false }:
     );
 }
 
-function NavItem({ item, pathname, depth }: { item: MenuItem; pathname: string; depth: number }) {
+function NavItem({
+    item,
+    pathname,
+    depth,
+    forceOnlyProjekte,
+}: {
+    item: MenuItem;
+    pathname: string;
+    depth: number;
+    forceOnlyProjekte?: boolean;
+}) {
     const hasSubItems = item.subItems && item.subItems.length > 0;
 
     // Check if any subitem is active
@@ -116,11 +146,24 @@ function NavItem({ item, pathname, depth }: { item: MenuItem; pathname: string; 
     };
 
     const isActive = item.href ? pathname === item.href : isAnySubActive(item);
-    const [isOpen, setIsOpen] = React.useState(isActive || isAnySubActive(item));
+
+    // When entering from project selection, only "Projekte" starts open at depth 0
+    const computeInitialOpen = () => {
+        if (forceOnlyProjekte && depth === 0) {
+            return item.title === 'Projekte';
+        }
+        // "Produktion" should be closed by default on initial load
+        if (item.title === 'Produktion') {
+            return false;
+        }
+        return isActive || isAnySubActive(item);
+    };
+
+    const [isOpen, setIsOpen] = React.useState(computeInitialOpen);
 
     // Update expansion if pathname changes to a child
     React.useEffect(() => {
-        if (isAnySubActive(item)) {
+        if (isAnySubActive(item) && item.title !== 'Produktion') {
             setIsOpen(true);
         }
     }, [pathname]);
@@ -141,7 +184,7 @@ function NavItem({ item, pathname, depth }: { item: MenuItem; pathname: string; 
         >
             {Icon && <Icon className={cn('h-4 w-4 shrink-0', isActive && !hasSubItems ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-foreground')} />}
             {!Icon && depth > 0 && <div className="w-1" />}
-            <span className="flex-1 truncate">{item.title}</span>
+            <span className="flex-1 truncate">{item.title === 'Ausfuehrung' ? 'Ausführung' : item.title}</span>
             {hasSubItems && (
                 isOpen ? <ChevronDown className="h-3.5 w-3.5 opacity-50" /> : <ChevronRight className="h-3.5 w-3.5 opacity-50" />
             )}
@@ -161,7 +204,13 @@ function NavItem({ item, pathname, depth }: { item: MenuItem; pathname: string; 
                     {isOpen && (
                         <div className={cn("ml-4 mt-1 flex flex-col gap-1 border-l pl-2 animate-in slide-in-from-left-2")}>
                             {item.subItems?.map(sub => (
-                                <NavItem key={sub.title} item={sub} pathname={pathname} depth={depth + 1} />
+                                <NavItem
+                                    key={sub.title}
+                                    item={sub}
+                                    pathname={pathname}
+                                    depth={depth + 1}
+                                    forceOnlyProjekte={forceOnlyProjekte}
+                                />
                             ))}
                         </div>
                     )}
@@ -173,7 +222,13 @@ function NavItem({ item, pathname, depth }: { item: MenuItem; pathname: string; 
                     {isOpen && (
                         <div className={cn("ml-4 mt-1 flex flex-col gap-1 border-l pl-2 animate-in slide-in-from-left-2", depth === 0 ? "ml-6" : "")}>
                             {item.subItems?.map(sub => (
-                                <NavItem key={sub.title} item={sub} pathname={pathname} depth={depth + 1} />
+                                <NavItem
+                                    key={sub.title}
+                                    item={sub}
+                                    pathname={pathname}
+                                    depth={depth + 1}
+                                    forceOnlyProjekte={forceOnlyProjekte}
+                                />
                             ))}
                         </div>
                     )}

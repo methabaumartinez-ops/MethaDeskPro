@@ -147,10 +147,13 @@ export function ModuleActionBanner({
     const hasCta = ctaLabel && (ctaHref || ctaOnClick);
 
     return (
-        <div className={cn(
-            "bg-slate-950 text-white flex flex-col md:flex-row items-stretch shadow-md gap-0 mb-8 overflow-visible min-h-[72px] relative",
-            "-mx-[1cm] w-[calc(100%+2cm)] rounded-none border-b border-white/10"
-        )}>
+        <div 
+            className={cn(
+                "bg-slate-950 text-white flex flex-col md:flex-row items-stretch shadow-md gap-0 mb-6 overflow-visible md:h-[54px] min-h-[54px] relative",
+                "w-full rounded-2xl border border-white/10"
+            )}
+            style={{ marginTop: 'calc(-1cm + 10px)' }}
+        >
             {/* Left section prefix: Back Button + Vertical Divider */}
             {showBackButton && (
                 <div className="flex items-center pl-4 lg:pl-6">
@@ -161,8 +164,8 @@ export function ModuleActionBanner({
 
             {/* Content Left: icon + title */}
             <div className={cn(
-                "flex items-center gap-4 px-5 py-3 shrink-0",
-                !showBackButton && "lg:pl-[1cm]"
+                "flex items-center gap-4 px-5 py-2 md:py-0 shrink-0 h-full",
+                !showBackButton && "lg:pl-6"
             )}>
                 <div className="p-2 bg-white/10 rounded-lg shrink-0">
                     <Icon className="h-5 w-5 text-primary" />
@@ -179,7 +182,7 @@ export function ModuleActionBanner({
             <div className="hidden md:block w-px bg-white/10 my-3" />
 
             {/* Center: Content Slot (Search or Custom Children) */}
-            <div className="flex-1 flex items-center px-5 py-3 relative" ref={containerRef}>
+            <div className="flex-1 flex items-center px-5 py-2 md:py-0 relative h-full" ref={containerRef}>
                 {onSearch ? (
                     <div className="relative w-full max-w-[320px]">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
@@ -242,7 +245,7 @@ export function ModuleActionBanner({
             </div>
 
             {/* Right Slot: CTA Actions */}
-            <div className="flex items-center px-5 py-3 gap-3 md:gap-5 lg:pr-[1cm]">
+            <div className="flex items-center px-5 py-2 md:py-0 gap-3 md:gap-5 lg:pr-6 h-full">
                 {onSearch && children}
                 {hasCta && (
                     <>
