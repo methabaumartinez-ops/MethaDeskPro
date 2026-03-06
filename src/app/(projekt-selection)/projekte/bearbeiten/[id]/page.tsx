@@ -1,5 +1,5 @@
 'use client';
-import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
 
 import React from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -227,11 +227,11 @@ export default function ProjektBearbeitenPage() {
                 infoBlattUrl: infoBlattUrl,
                 infoBlattName: infoBlattName,
             });
-            showAlert('Projekt erfolgreich aktualisiert');
+            toast.success('Projekt erfolgreich aktualisiert');
             router.push('/projekte');
         } catch (error: any) {
             console.error('Failed to update project:', error);
-            showAlert(`Fehler: ${error.message}`);
+            toast.error(`Fehler: ${error.message}`);
         }
     };
 
@@ -240,18 +240,14 @@ export default function ProjektBearbeitenPage() {
         setIsArchiving(true);
         try {
             await ProjectService.archiveProjekt(id);
-            showAlert({
-                title: 'Projekt archiviert',
-                message: 'Das Projekt wurde erfolgreich archiviert und als ZIP gesichert.',
-                variant: 'success',
+            toast.success('Projekt archiviert', { 
+                title: 'Erfolg'
             });
             router.push('/projekte');
         } catch (error: any) {
             console.error('Failed to archive project:', error);
-            showAlert({
-                title: 'Archivierung fehlgeschlagen',
-                message: error.message || 'Unbekannter Fehler bei der Archivierung.',
-                variant: 'danger',
+            toast.error('Archivierung fehlgeschlagen', { 
+                title: 'Fehler'
             });
         } finally {
             setIsArchiving(false);
@@ -279,18 +275,14 @@ export default function ProjektBearbeitenPage() {
             a.remove();
             URL.revokeObjectURL(url);
 
-            showAlert({
-                title: 'Projekt gelöscht',
-                message: 'Das Projekt wurde exportiert und dauerhaft gelöscht.',
-                variant: 'success',
+            toast.success('Projekt gelöscht', { 
+                title: 'Erfolg'
             });
             router.push('/projekte');
         } catch (error: any) {
             console.error('Failed to export/delete project:', error);
-            showAlert({
-                title: 'Löschen fehlgeschlagen',
-                message: error instanceof Error ? error.message : String(error),
-                variant: 'danger',
+            toast.error('Löschen fehlgeschlagen', { 
+                title: 'Fehler' 
             });
         } finally {
             setIsDeleting(false);

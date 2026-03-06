@@ -1,5 +1,5 @@
 'use client';
-import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -34,10 +34,10 @@ export default function TaskDetailPage() {
     useEffect(() => {
         const loadTaskData = async () => {
             try {
-                const fetchedTasks = await TaskService.getTasks(projektId);
+                const fetchedTasks = await TaskService.getTasks({ projektId });
                 const currentTask = fetchedTasks.find(t => t.id === id);
                 if (!currentTask) {
-                    showAlert('Aufgabe nicht gefunden');
+                    toast.error('Aufgabe nicht gefunden');
                     return router.push(`/${projektId}/ausfuehrung?tab=teams_aufgaben`);
                 }
                 setTask(currentTask);
@@ -141,11 +141,11 @@ export default function TaskDetailPage() {
             setTask({ ...task, costLogged: true, status: 'Abgerechnet' });
             setShowAbrechnung(false);
 
-            showAlert('Stunden erfolgreich erfasst.');
+            toast.success('Stunden erfolgreich erfasst.');
 
         } catch (err) {
             console.error(err);
-            showAlert('Fehler bei der Kostenerfassung');
+            toast.error('Fehler bei der Kostenerfassung');
         } finally {
             setLoading(false);
         }

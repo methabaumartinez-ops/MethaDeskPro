@@ -1,5 +1,5 @@
 'use client';
-import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
 
 import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -72,7 +72,7 @@ export default function CreateLieferantPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.name) {
-            showAlert('Bitte Firmenname eingeben');
+            toast.error('Bitte Firmenname eingeben');
             return;
         }
 
@@ -82,10 +82,11 @@ export default function CreateLieferantPage() {
                 ...formData,
                 kategorie: 'Unternehmer'
             });
+            toast.success("Eintrag gespeichert");
             router.push(`/${projektId}/produktion/lieferanten`);
         } catch (error) {
             console.error('Error creating supplier:', error);
-            showAlert('Fehler beim Speichern');
+            toast.error('Fehler beim Speichern');
         } finally {
             setLoading(false);
         }

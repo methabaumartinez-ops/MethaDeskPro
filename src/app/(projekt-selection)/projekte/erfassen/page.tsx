@@ -1,5 +1,5 @@
-﻿'use client';
-import { showAlert } from '@/lib/alert';
+'use client';
+import { toast } from '@/lib/toast';
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
@@ -166,11 +166,13 @@ export default function ProjektErfassenPage() {
                 }
             }
 
-            showAlert('Projekt erfolgreich erstellt');
+            toast.success('Projekt erfolgreich erstellt');
             router.push('/projekte');
         } catch (error: any) {
             console.error('Failed to create project:', error);
-            showAlert(`Fehler beim Erstellen des Projekts: ${error.message || JSON.stringify(error)}`);
+            toast.error('Fehler beim Erstellen des Projekts', { 
+                title: 'Fehler'
+            });
         }
     };
 

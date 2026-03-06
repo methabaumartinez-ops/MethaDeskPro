@@ -1,5 +1,5 @@
-'use client';
-import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
@@ -29,6 +29,7 @@ export default function PositionenListPage() {
     const [teilsysteme, setTeilsysteme] = useState<Record<string, Teilsystem>>({});
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
+    const [posToDelete, setPosToDelete] = useState<Position | null>(null);
 
     useEffect(() => {
         const load = async () => {
@@ -128,17 +129,7 @@ export default function PositionenListPage() {
                                                     variant="ghost"
                                                     size="icon"
                                                     className="h-8 w-8 text-muted-foreground/50 hover:text-red-600 hover:bg-red-50 hover:shadow-sm"
-                                                    onClick={async () => {
-                                                        if (confirm(`Sind Sie sicher, dass Sie "${item.name}" löschen möchten?`)) {
-                                                            try {
-                                                                await PositionService.deletePosition(item.id);
-                                                                setItems(prev => prev.filter(i => i.id !== item.id));
-                                                            } catch (error) {
-                                                                console.error("Failed to delete", error);
-                                                                showAlert("Fehler beim Löschen");
-                                                            }
-                                                        }
-                                                    }}
+                                                    onClick={() => setPosToDelete(item)}
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
@@ -156,6 +147,27 @@ export default function PositionenListPage() {
                     )}
                 </CardContent>
             </Card>
+            <ConfirmDialog
+                isOpen={!!posToDelete}
+                onClose={() => setPosToDelete(null)}
+                onConfirm={async () => {
+                    if (!posToDelete) return;
+                    try {
+                        await PositionService.deletePosition(posToDelete.id);
+                        setItems(prev => prev.filter(i => i.id !== posToDelete.id));
+                        toast.success("Position gelöscht");
+                    } catch (error) {
+                        console.error("Failed to delete", error);
+                        toast.error("Fehler beim Löschen");
+                    } finally {
+                        setPosToDelete(null);
+                    }
+                }}
+                title="Position löschen"
+                description={`Sind Sie sicher, dass Sie "${posToDelete?.name}" permanent löschen möchten?`}
+                confirmLabel="Löschen"
+                variant="danger"
+            />
         </div>
     );
 }

@@ -1,5 +1,6 @@
-'use client';
 import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -39,6 +40,7 @@ export default function LagerorteSeite() {
     const [uploading, setUploading] = useState(false);
 
     const [form, setForm] = useState({ bezeichnung: '', beschreibung: '', bereich: '', planUrl: '' });
+    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
     useEffect(() => { loadLagerorte(); }, [projektId]);
 
@@ -69,7 +71,7 @@ export default function LagerorteSeite() {
                     );
                 } catch (err) {
                     console.error('File upload failed:', err);
-                    showAlert('Fehler beim Hochladen der Datei.');
+                    toast.error('Fehler beim Hochladen der Datei.');
                     return;
                 } finally {
                     setUploading(false);
@@ -85,16 +87,28 @@ export default function LagerorteSeite() {
             setSelectedFile(null);
             setShowForm(false);
             setEditingId(null);
+            toast.success(editingId ? 'Lagerort aktualisiert' : 'Lagerort erstellt');
             await loadLagerorte();
         } finally {
             setSaving(false);
         }
     }
 
-    async function handleDelete(id: string) {
-        if (!confirm('Lagerort wirklich löschen?')) return;
-        await LagerortService.deleteLagerort(id);
-        await loadLagerorte();
+    async function handleDeleteConfirmed() {
+        if (!confirmDeleteId) return;
+        try {
+            await LagerortService.deleteLagerort(confirmDeleteId);
+            toast.success('Lagerort gelöscht');
+            await loadLagerorte();
+        } catch (err) {
+            toast.error('Fehler beim Löschen');
+        } finally {
+            setConfirmDeleteId(null);
+        }
+    }
+
+    function handleDeleteClick(id: string) {
+        setConfirmDeleteId(id);
     }
 
     function startEdit(l: Lagerort) {
@@ -365,7 +379,7 @@ export default function LagerorteSeite() {
                                             }).catch(console.error);
                                         } else {
                                             navigator.clipboard.writeText(window.location.href);
-                                            showAlert('Link kopiert!');
+                                            toast.info('Link kopiert!');
                                         }
                                     }}
                                 >
@@ -473,7 +487,7 @@ export default function LagerorteSeite() {
                                                 variant="ghost"
                                                 size="icon"
                                                 className="h-9 w-9 text-muted-foreground/40 hover:text-red-600 hover:bg-red-50 rounded-xl"
-                                                onClick={() => handleDelete(l.id)}
+                                                onClick={() => handleDeleteClick(l.id)}
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
@@ -485,6 +499,16 @@ export default function LagerorteSeite() {
                     })}
                 </div>
             )}
+            {/* Confirmation Dialog */}
+            <ConfirmDialog
+                isOpen={!!confirmDeleteId}
+                onClose={() => setConfirmDeleteId(null)}
+                onConfirm={handleDeleteConfirmed}
+                title="Lagerort löschen"
+                description="Sind Sie sicher, dass Sie diesen Lagerort permanent löschen möchten? Alle verknüpften Daten gehen verloren."
+                confirmLabel="Löschen"
+                variant="danger"
+            />
         </div>
     );
 }

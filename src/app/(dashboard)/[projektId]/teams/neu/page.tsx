@@ -1,5 +1,5 @@
 'use client';
-import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -58,8 +58,8 @@ export default function TeamCreatePage() {
     };
 
     const handleSave = async () => {
-        if (!name.trim()) return showAlert('Bitte Teamnamen eingeben');
-        if (selectedMembers.length === 0) return showAlert('Bitte wählen Sie mindestens ein Mitglied aus.');
+        if (!name.trim()) return toast.error('Bitte Teamnamen eingeben');
+        if (selectedMembers.length === 0) return toast.error('Bitte wählen Sie mindestens ein Mitglied aus.');
 
         setLoading(true);
         try {
@@ -81,10 +81,11 @@ export default function TeamCreatePage() {
             // those updates should be routed to the mitarbeiter collection. 
             // In MethaDesk, Stundensatz is a property of Mitarbeiter.
 
+            toast.success("Team erstellt");
             router.push(`/${projektId}/ausfuehrung?tab=teams_aufgaben`);
         } catch (error) {
             console.error(error);
-            showAlert('Fehler beim Speichern des Teams');
+            toast.error('Fehler beim Speichern des Teams');
         } finally {
             setLoading(false);
         }

@@ -1,5 +1,5 @@
 'use client';
-import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
 
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -52,10 +52,11 @@ export default function MitarbeiterErfassenPage() {
             };
 
             await EmployeeService.createMitarbeiter(newItem);
+            toast.success("Mitarbeiter hinzugefügt");
             router.push(`/${projektId}/mitarbeiter`);
         } catch (error) {
             console.error("Failed to create employee", error);
-            showAlert("Fehler beim Speichern");
+            toast.error("Fehler beim Speichern");
         }
     };
 

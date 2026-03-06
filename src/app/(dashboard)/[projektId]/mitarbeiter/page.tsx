@@ -1,5 +1,6 @@
-'use client';
 import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
@@ -17,6 +18,7 @@ export default function MitarbeiterListPage() {
     const [items, setItems] = useState<Mitarbeiter[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [itemToDelete, setItemToDelete] = useState<Mitarbeiter | null>(null);
 
     useEffect(() => {
         const loadData = async () => {
@@ -38,15 +40,17 @@ export default function MitarbeiterListPage() {
         loadData();
     }, []);
 
-    const handleDelete = async (item: Mitarbeiter) => {
-        if (confirm(`Sind Sie sicher, dass Sie "${item.vorname} ${item.nachname}" löschen möchten?`)) {
-            try {
-                await EmployeeService.deleteMitarbeiter(item.id);
-                setItems(prev => prev.filter(i => i.id !== item.id));
-            } catch (error) {
-                console.error("Failed to delete", error);
-                showAlert("Fehler beim Löschen");
-            }
+    const handleDeleteConfirmed = async () => {
+        if (!itemToDelete) return;
+        try {
+            await EmployeeService.deleteMitarbeiter(itemToDelete.id);
+            setItems(prev => prev.filter(i => i.id !== itemToDelete.id));
+            toast.success("Mitarbeiter gelöscht");
+        } catch (error) {
+            console.error("Failed to delete", error);
+            toast.error("Fehler beim Löschen");
+        } finally {
+            setItemToDelete(null);
         }
     };
 
@@ -144,7 +148,7 @@ export default function MitarbeiterListPage() {
                                                             variant="ghost"
                                                             size="icon"
                                                             className="h-9 w-9 text-muted-foreground/30 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
-                                                            onClick={() => handleDelete(item)}
+                                                            onClick={() => setItemToDelete(item)}
                                                         >
                                                             <Trash2 className="h-4 w-4" />
                                                         </Button>
@@ -159,6 +163,15 @@ export default function MitarbeiterListPage() {
                     )}
                 </CardContent>
             </Card>
+            <ConfirmDialog
+                isOpen={!!itemToDelete}
+                onClose={() => setItemToDelete(null)}
+                onConfirm={handleDeleteConfirmed}
+                title="Mitarbeiter löschen"
+                description={`Sind Sie sicher, dass Sie "${itemToDelete?.vorname} ${itemToDelete?.nachname}" permanent löschen möchten?`}
+                confirmLabel="Löschen"
+                variant="danger"
+            />
         </div>
     );
 }

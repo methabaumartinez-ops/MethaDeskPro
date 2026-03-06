@@ -1,5 +1,5 @@
 'use client';
-import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
 
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -44,10 +44,11 @@ export default function MitarbeiterEditPage() {
         e.preventDefault();
         try {
             await EmployeeService.updateMitarbeiter(id, formData);
+            toast.success("Mitarbeiter aktualisiert");
             router.push(`/${projektId}/mitarbeiter/${id}`);
         } catch (error) {
             console.error("Failed to update employee", error);
-            showAlert("Fehler beim Speichern");
+            toast.error("Fehler beim Speichern");
         }
     };
 

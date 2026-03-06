@@ -1,5 +1,5 @@
 'use client';
-import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -77,10 +77,11 @@ export default function UnterpositionErfassenPage() {
                 planStatus: data.planStatus as any,
                 beschichtung: data.beschichtung as any,
             });
+            toast.success("Unterposition erstellt");
             router.push(`/${projektId}/positionen/${positionId}`);
         } catch (error) {
             console.error('Error creating sub-position:', error);
-            showAlert('Fehler beim Speichern der Unterposition.');
+            toast.error('Fehler beim Speichern der Unterposition.');
         }
     };
 

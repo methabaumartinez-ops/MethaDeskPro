@@ -554,6 +554,7 @@ export interface Team {
   abteilung?: Abteilung | string;
   color?: string;
   description?: string;
+  members?: string[];
   createdAt?: string;
 }
 

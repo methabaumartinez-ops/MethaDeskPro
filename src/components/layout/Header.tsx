@@ -48,9 +48,9 @@ export function Header({ onMenuClick, hideProjectInfo = false, projectBanner }: 
                     </span>
                 </div>
 
-                {/* Banner wrapper: aligned to main content start (p-[1cm] from main layout) */}
+                {/* Banner wrapper: spans full available space */}
                 {showBanner && (
-                    <div className="flex-1 min-w-0 lg:pl-[1cm] pr-6 lg:pr-20">
+                    <div className="flex-1 min-w-0">
                         {projectBanner}
                     </div>
                 )}

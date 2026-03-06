@@ -1,5 +1,5 @@
-﻿'use client';
-import { showAlert } from '@/lib/alert';
+'use client';
+import { toast } from '@/lib/toast';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
@@ -111,7 +111,7 @@ export default function FuhrparkPage() {
             setConfirmAction(null);
         } catch (error) {
             console.error("Failed to delete", error);
-            showAlert("Fehler beim Löschen");
+            toast.error("Fehler beim Löschen");
         }
     };
 
@@ -143,7 +143,7 @@ export default function FuhrparkPage() {
             setShowReservierungModal(false);
         } catch (err) {
             console.error(err);
-            showAlert('Fehler beim Speichern der Reservierung.');
+            toast.error('Fehler beim Speichern der Reservierung.');
         }
     };
 

@@ -1,5 +1,5 @@
 'use client';
-import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams, usePathname } from 'next/navigation';
@@ -203,7 +203,7 @@ export default function AusfuehrungPage() {
             setModalOpen(false);
         } catch (err) {
             console.error(err);
-            showAlert('Fehler beim Speichern der Reservierung');
+            toast.error('Fehler beim Speichern der Reservierung');
         }
     };
 
@@ -244,7 +244,7 @@ export default function AusfuehrungPage() {
             setNewOrderItems(updated);
         } catch (err) {
             console.error("Upload error", err);
-            showAlert('Fehler beim Hochladen des Bildes');
+            toast.error('Fehler beim Hochladen des Bildes');
         }
     };
 
@@ -281,10 +281,10 @@ export default function AusfuehrungPage() {
     };
 
     const handleSubmitOrder = async () => {
-        if (!newContainerBez.trim()) return showAlert("Bitte Containerbezeichnung eingeben.");
+        if (!newContainerBez.trim()) return toast.error("Bitte Containerbezeichnung eingeben.");
 
         const validItems = newOrderItems.filter(item => item.name.trim() !== '' && item.menge.trim() !== '');
-        if (validItems.length === 0) return showAlert("Bitte mindestens ein Material hinzufügen.");
+        if (validItems.length === 0) return toast.error("Bitte mindestens ein Material hinzufügen.");
 
         try {
             const items = validItems.map((item, idx) => ({
@@ -514,7 +514,7 @@ export default function AusfuehrungPage() {
                                                                                     setSubsystems(prev => prev.map(s => s.id === item.id ? { ...s, status: newStatus } : s));
                                                                                 } catch (err) {
                                                                                     console.error("Failed to update status", err);
-                                                                                    showAlert("Fehler beim Aktualisieren des Status");
+                                                                                    toast.error("Fehler beim Aktualisieren des Status");
                                                                                 }
                                                                             }}
                                                                         >
@@ -1038,7 +1038,7 @@ export default function AusfuehrungPage() {
                                                                                     setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: newStatus, projektId } : t));
                                                                                 } catch (err) {
                                                                                     console.error("Failed to update status", err);
-                                                                                    showAlert("Fehler beim Aktualisieren");
+                                                                                    toast.error("Fehler beim Aktualisieren");
                                                                                 }
                                                                             }}
                                                                         >

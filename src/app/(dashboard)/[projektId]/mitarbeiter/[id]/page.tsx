@@ -1,5 +1,5 @@
-'use client';
-import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -15,6 +15,7 @@ export default function MitarbeiterDetailPage() {
     const router = useRouter();
     const goBack = useSmartBack(`/${projektId}/mitarbeiter`);
     const [mitarbeiter, setMitarbeiter] = React.useState<any>(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
 
     React.useEffect(() => {
         const loadMitarbeiter = async () => {
@@ -102,23 +103,33 @@ export default function MitarbeiterDetailPage() {
                         <Button
                             variant="outline"
                             className="w-full font-bold text-red-600 hover:bg-red-50"
-                            onClick={async () => {
-                                if (confirm(`Sind Sie sicher, dass Sie "${mitarbeiter.vorname} ${mitarbeiter.nachname}" löschen möchten?`)) {
-                                    try {
-                                        await EmployeeService.deleteMitarbeiter(id);
-                                        router.push(`/${projektId}/mitarbeiter`);
-                                    } catch (error) {
-                                        console.error("Failed to delete", error);
-                                        showAlert("Fehler beim Löschen");
-                                    }
-                                }
-                            }}
+                            onClick={() => setShowDeleteConfirm(true)}
                         >
                             Löschen
                         </Button>
                     </CardContent>
                 </Card>
             </div>
+            <ConfirmDialog
+                isOpen={showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(false)}
+                onConfirm={async () => {
+                    try {
+                        await EmployeeService.deleteMitarbeiter(id);
+                        toast.success("Mitarbeiter gelöscht");
+                        router.push(`/${projektId}/mitarbeiter`);
+                    } catch (error) {
+                        console.error("Failed to delete", error);
+                        toast.error("Fehler beim Löschen");
+                    } finally {
+                        setShowDeleteConfirm(false);
+                    }
+                }}
+                title="Mitarbeiter löschen"
+                description={`Sind Sie sicher, dass Sie "${mitarbeiter?.vorname} ${mitarbeiter?.nachname}" permanent löschen möchten?`}
+                confirmLabel="Löschen"
+                variant="danger"
+            />
         </div>
     );
 }

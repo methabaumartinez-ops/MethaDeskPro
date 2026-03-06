@@ -1,5 +1,5 @@
-'use client';
 import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useRouter, usePathname } from 'next/navigation';
@@ -520,9 +520,13 @@ export default function TeilsystemDetailPage() {
                     try {
                         await PositionService.deletePosition(posToDelete.id);
                         setPositionen(prev => prev.filter(p => p.id !== posToDelete.id));
+                        toast.success("Position gelöscht");
                     } catch (error) {
                         console.error("Failed to delete position:", error);
-                        showAlert("Fehler beim Löschen der Position.");
+                        toast.error("Fehler beim Löschen");
+                    } finally {
+                        setConfirmOpen(false);
+                        setPosToDelete(null);
                     }
                 }}
                 variant="danger"

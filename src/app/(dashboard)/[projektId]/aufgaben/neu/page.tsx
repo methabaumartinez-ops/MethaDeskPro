@@ -1,16 +1,15 @@
 'use client';
-import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { CheckSquare, Save, ArrowLeft, Plus, MessageSquare, Trash2, CalendarPlus } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { CheckSquare, Save, ArrowLeft, Plus, MessageSquare, Trash2 } from 'lucide-react';
 import { TaskService } from '@/lib/services/taskService';
 import { TeamService } from '@/lib/services/teamService';
-import { Team, TaskPriority, TaskStatus, Subtask } from '@/types';
+import { Team, TaskPriority, TaskStatus } from '@/types';
 import Link from 'next/link';
 import { useSmartBack } from '@/lib/navigation/useSmartBack';
 
@@ -59,7 +58,7 @@ export default function TaskCreatePage() {
     };
 
     const handleSave = async () => {
-        if (!title.trim()) return showAlert('Bitte Aufgabentitel eingeben');
+        if (!title.trim()) return toast.error('Bitte Aufgabentitel eingeben');
 
         setLoading(true);
         try {
@@ -85,10 +84,11 @@ export default function TaskCreatePage() {
                 });
             }
 
+            toast.success("Aufgabe erstellt");
             router.push(`/${projektId}/ausfuehrung?tab=teams_aufgaben`);
         } catch (error) {
             console.error(error);
-            showAlert('Fehler beim Erstellen der Aufgabe');
+            toast.error('Fehler beim Erstellen der Aufgabe');
         } finally {
             setLoading(false);
         }

@@ -1,5 +1,5 @@
 'use client';
-import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -57,7 +57,7 @@ export default function PositionErfassenPage() {
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             console.log("File selected:", e.target.files[0].name);
-            showAlert(`Datei "${e.target.files[0].name}" zum Upload bereit.`);
+            toast.info(`Datei "${e.target.files[0].name}" zum Upload bereit.`);
         }
     };
 
@@ -77,10 +77,11 @@ export default function PositionErfassenPage() {
     const onSubmit = async (data: PositionValues) => {
         try {
             await PositionService.createPosition(data as any);
+            toast.success("Position erstellt");
             router.push(`/${projektId}/teilsysteme/${teilsystemId}`);
         } catch (error) {
             console.error("Error creating position:", error);
-            showAlert("Fehler beim Speichern der Position.");
+            toast.error("Fehler beim Speichern der Position.");
         }
     };
 
@@ -100,7 +101,7 @@ export default function PositionErfassenPage() {
         setDragActive(false);
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
             console.log("File dropped:", e.dataTransfer.files[0].name);
-            showAlert(`Datei "${e.dataTransfer.files[0].name}" zum Upload bereit.`);
+            toast.info(`Datei "${e.dataTransfer.files[0].name}" zum Upload bereit.`);
         }
     };
 

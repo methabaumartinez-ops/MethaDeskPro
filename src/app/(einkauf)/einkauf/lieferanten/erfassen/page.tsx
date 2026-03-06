@@ -1,5 +1,5 @@
-﻿'use client';
-import { showAlert } from '@/lib/alert';
+'use client';
+import { toast } from '@/lib/toast';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -32,15 +32,16 @@ export default function CreateLieferantPage() {
         setLoading(true);
         try {
             if (!formData.name) {
-                showAlert('Bitte geben Sie einen Namen ein.');
+                toast.error('Bitte geben Sie einen Namen ein.');
                 return;
             }
 
             await SupplierService.createLieferant(formData);
+            toast.success('Lieferant erfolgreich erstellt');
             router.push('/einkauf?tab=lieferanten');
         } catch (error) {
             console.error('Failed to create supplier:', error);
-            showAlert('Fehler beim Erstellen des Lieferanten.');
+            toast.error('Fehler beim Erstellen des Lieferanten.');
         } finally {
             setLoading(false);
         }

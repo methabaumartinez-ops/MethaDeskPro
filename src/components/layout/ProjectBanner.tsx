@@ -24,7 +24,8 @@ export function ProjectBanner({ className }: { className?: string }) {
 
     return (
         <div className={cn(
-            "bg-slate-950 text-white border-none rounded-lg px-0 py-0 flex flex-col md:flex-row justify-between items-stretch shadow-md gap-4 overflow-hidden min-h-[58px]",
+            "bg-slate-950 text-white border-none rounded-lg px-0 py-0 flex flex-col md:flex-row justify-between items-stretch shadow-md gap-0 md:gap-4 overflow-hidden min-h-[58px]",
+            "lg:pl-[1cm]", // Align internal content with main content below
             className
         )}>
             <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">

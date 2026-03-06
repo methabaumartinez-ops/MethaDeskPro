@@ -1,5 +1,5 @@
-'use client';
-import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -68,6 +68,7 @@ export default function UnterpositionEditPage() {
     const [uploadingDocs, setUploadingDocs] = useState(false);
     const docInputRef = React.useRef<HTMLInputElement>(null);
     const [previewDoc, setPreviewDoc] = useState<{ url: string, title: string } | null>(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const loadDokumente = async () => {
         try {
@@ -226,22 +227,24 @@ export default function UnterpositionEditPage() {
                 ifcUrl: uploadedIfcUrl,
                 ifcFileName: selectedFileName || undefined
             });
+            toast.success('Änderungen gespeichert');
             router.push(`/${projektId}/unterpositionen/${id}`);
         } catch (error) {
             console.error('Failed to update unterposition', error);
-            showAlert('Fehler beim Speichern');
+            toast.error('Fehler beim Speichern');
         }
     };
 
-    const handleDelete = async () => {
-        if (!confirm(`Sind Sie sicher, dass Sie diese Unterposition permanent löschen möchten?`)) return;
-
+    const handleDeleteConfirmed = async () => {
         try {
             await SubPositionService.deleteUnterposition(id);
+            toast.success("Unterposition gelöscht");
             router.push(`/${projektId}/positionen/${unterposition?.positionId || ''}`);
         } catch (error) {
             console.error("Failed to delete", error);
-            showAlert("Fehler beim Löschen");
+            toast.error("Fehler beim Löschen");
+        } finally {
+            setShowDeleteConfirm(false);
         }
     };
 
@@ -462,7 +465,7 @@ export default function UnterpositionEditPage() {
                         type="button"
                         variant="danger"
                         className="font-bold h-10 px-6 flex items-center gap-2"
-                        onClick={handleDelete}
+                        onClick={() => setShowDeleteConfirm(true)}
                     >
                         <Trash2 className="h-4 w-4" />
                         Unterpos. löschen
@@ -489,6 +492,16 @@ export default function UnterpositionEditPage() {
                 onClose={() => setPreviewDoc(null)}
                 url={previewDoc?.url || ''}
                 title={previewDoc?.title || ''}
+            />
+
+            <ConfirmDialog
+                isOpen={showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(false)}
+                onConfirm={handleDeleteConfirmed}
+                title="Unterposition löschen"
+                description={`Sind Sie sicher, dass Sie diese Unterposition ("${unterposition?.name}") permanent löschen möchten?`}
+                confirmLabel="Löschen"
+                variant="danger"
             />
         </div>
     );

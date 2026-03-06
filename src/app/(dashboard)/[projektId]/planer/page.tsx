@@ -1,5 +1,5 @@
 'use client';
-import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
@@ -86,7 +86,7 @@ export default function PlannerPage() {
         } catch (error) {
             console.error("Upload failed:", error);
             const message = error instanceof Error ? error.message : "Upload fehlgeschlagen";
-            showAlert(`Upload fehlgeschlagen: ${message}`);
+            toast.error(`Upload fehlgeschlagen: ${message}`);
         } finally {
             setUploading(false);
             setDragActive(null);
@@ -153,7 +153,7 @@ export default function PlannerPage() {
                 icon={Calendar}
                 title="Planer"
                 ctaLabel="Exportieren"
-                ctaOnClick={() => showAlert('Export gestartet...')}
+                ctaOnClick={() => toast.info('Export gestartet...')}
                 ctaIcon={Download}
                 onSearch={setSearch}
             />
@@ -271,7 +271,7 @@ export default function PlannerPage() {
                                                 className="shrink-0 font-bold"
                                                 onClick={() => {
                                                     navigator.clipboard.writeText(selectedItem.wemaLink || '');
-                                                    showAlert('Pfad kopiert!');
+                                                    toast.success('Pfad kopiert!');
                                                 }}
                                             >
                                                 <Copy className="h-4 w-4 mr-2" />

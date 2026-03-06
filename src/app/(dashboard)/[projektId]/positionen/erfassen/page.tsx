@@ -1,5 +1,5 @@
 'use client';
-import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
@@ -93,10 +93,11 @@ export default function PositionErfassenPage() {
                 beschichtung: data.beschichtung as any,
             };
             await PositionService.createPosition(newItem);
+            toast.success("Position erstellt");
             router.push(`/${projektId}/teilsysteme/${teilsystemId}`);
         } catch (error) {
             console.error('Failed to create position', error);
-            showAlert('Fehler beim Speichern');
+            toast.error('Fehler beim Speichern');
         }
     };
 

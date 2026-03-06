@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ProjektProvider } from "@/lib/context/ProjektContext";
 import { AlertProvider } from "@/components/shared/AlertProvider";
+import { ToastProvider } from "@/components/shared/ToastProvider";
 import { ChatAssistant } from "@/components/shared/ChatAssistant";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -22,7 +23,9 @@ export default function RootLayout({
       <body className="antialiased">
         <ProjektProvider>
           <AlertProvider>
-            {children}
+            <ToastProvider>
+              {children}
+            </ToastProvider>
           </AlertProvider>
         </ProjektProvider>
       </body>

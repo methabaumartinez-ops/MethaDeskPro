@@ -1,5 +1,5 @@
-﻿'use client';
-import { showAlert } from '@/lib/alert';
+'use client';
+import { toast } from '@/lib/toast';
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { useProjekt } from '@/lib/context/ProjektContext';
@@ -324,8 +324,9 @@ export default function ProjektePage() {
                                                         setDeletedProjekte(prev => prev.filter(x => x.id !== p.id));
                                                         // Refresh active list
                                                         loadProjekte();
+                                                        toast.success('Projekt wiederhergestellt');
                                                     } catch (err: any) {
-                                                        showAlert({ title: 'Fehler', message: err.message || 'Wiederherstellung fehlgeschlagen.', variant: 'danger' });
+                                                        toast.error(err.message || 'Wiederherstellung fehlgeschlagen.', { title: 'Fehler' });
                                                     }
                                                 }}
                                             >

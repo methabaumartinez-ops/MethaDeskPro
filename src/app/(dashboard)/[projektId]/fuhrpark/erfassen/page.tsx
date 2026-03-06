@@ -1,5 +1,5 @@
 'use client';
-import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
 
 import React, { useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -86,7 +86,7 @@ export default function FahrzeugErfassenPage() {
             update('manualUrl', url);
         } catch (error) {
             console.error("Upload failed", error);
-            showAlert("Upload fehlgeschlagen");
+            toast.error("Upload fehlgeschlagen");
         } finally {
             setUploading(false);
         }
@@ -124,10 +124,11 @@ export default function FahrzeugErfassenPage() {
 
         try {
             await FleetService.createFahrzeug(newFahrzeug);
+            toast.success("Maschine gespeichert");
             router.push(`/${projektId}/fuhrpark`);
         } catch (error) {
             console.error("Failed to create vehicle", error);
-            showAlert("Fehler beim Speichern");
+            toast.error("Fehler beim Speichern");
         }
     };
 

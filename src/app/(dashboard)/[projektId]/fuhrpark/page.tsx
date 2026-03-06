@@ -1,5 +1,6 @@
-'use client';
 import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
@@ -55,6 +56,8 @@ export default function FuhrparkPage() {
     const [selectedKategorie, setSelectedKategorie] = useState('Alle');
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedFahrzeug, setSelectedFahrzeug] = useState<Fahrzeug | undefined>();
+    const [confirmDeleteFzId, setConfirmDeleteFzId] = useState<string | null>(null);
+    const [confirmDeleteResId, setConfirmDeleteResId] = useState<string | null>(null);
 
     useEffect(() => {
         const loadData = async () => {
@@ -76,49 +79,38 @@ export default function FuhrparkPage() {
         loadData();
     }, []);
 
-    const handleDeleteFahrzeug = async (id: string) => {
-        if (!confirm('Sind Sie sicher, dass Sie dieses Fahrzeug löschen möchten?')) return;
+    const handleDeleteFzConfirmed = async () => {
+        if (!confirmDeleteFzId) return;
         try {
-            await FleetService.deleteFahrzeug(id);
-            setFahrzeuge(prev => prev.filter(f => f.id !== id));
+            await FleetService.deleteFahrzeug(confirmDeleteFzId);
+            setFahrzeuge(prev => prev.filter(f => f.id !== confirmDeleteFzId));
 
-            // Also cleanup related reservations (optional but good practice)
-            const relatedRes = reservierungen.filter(r => r.fahrzeugId === id);
+            // Also cleanup related reservations
+            const relatedRes = reservierungen.filter(r => r.fahrzeugId === confirmDeleteFzId);
             for (const r of relatedRes) {
                 await FleetService.deleteReservierung(r.id);
             }
-            setReservierungen(prev => prev.filter(r => r.fahrzeugId !== id));
-
+            setReservierungen(prev => prev.filter(r => r.fahrzeugId !== confirmDeleteFzId));
+            toast.success("Fahrzeug gelöscht");
         } catch (error) {
             console.error("Failed to delete vehicle", error);
-            showAlert("Fehler beim Löschen des Fahrzeugs");
+            toast.error("Fehler beim Löschen");
+        } finally {
+            setConfirmDeleteFzId(null);
         }
     };
 
-    const handleDeleteReservierung = async (id: string) => {
-        if (!confirm('Reservierung wirklich löschen?')) return;
+    const handleDeleteResConfirmed = async () => {
+        if (!confirmDeleteResId) return;
         try {
-            await FleetService.deleteReservierung(id);
-            const deletedRes = reservierungen.find(r => r.id === id);
-            setReservierungen(prev => prev.filter(r => r.id !== id));
-
-            // If deleting a reservation,- [x] Create project deletion functionality <!-- id: 28 -->
-            // - [x] Add delete button to project cards <!-- id: 29 -->
-            // - [x] Implement confirmation dialog <!-- id: 30 -->
-            // - [x] Implement deletion logic in `ProjectService` <!-- id: 31 -->
-
-            // Check if vehicle needs status update to 'verfuegbar'
-            if (deletedRes) {
-                const fzId = deletedRes.fahrzeugId;
-                const otherRes = reservierungen.filter(r => r.id !== id && r.fahrzeugId === fzId);
-                // Logic: if no other *active* reservation, set to available?
-                // active means today is within from-to.
-                // This logic is complex. For now, user manages status manually or via add reservation.
-            }
-
+            await FleetService.deleteReservierung(confirmDeleteResId);
+            setReservierungen(prev => prev.filter(r => r.id !== confirmDeleteResId));
+            toast.success("Reservierung gelöscht");
         } catch (error) {
             console.error("Failed to delete reservation", error);
-            showAlert("Fehler beim Löschen der Reservierung");
+            toast.error("Fehler beim Löschen");
+        } finally {
+            setConfirmDeleteResId(null);
         }
     };
 
@@ -138,9 +130,10 @@ export default function FuhrparkPage() {
                 await FleetService.updateFahrzeug(vehicle.id, { status: 'reserviert' });
                 setFahrzeuge(prev => prev.map(f => f.id === vehicle.id ? updatedVehicle : f));
             }
+            toast.success('Reservierung gespeichert');
         } catch (err) {
             console.error(err);
-            showAlert('Fehler beim Speichern der Reservierung: ' + (err instanceof Error ? err.message : 'Unbekannter Fehler'));
+            toast.error('Fehler beim Speichern: ' + (err instanceof Error ? err.message : 'Unbekannter Fehler'));
         }
     };
 
@@ -404,7 +397,7 @@ export default function FuhrparkPage() {
                                                                 variant="ghost"
                                                                 size="icon"
                                                                 className="h-8 w-8 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full"
-                                                                onClick={() => handleDeleteFahrzeug(item.id)}
+                                                                onClick={() => setConfirmDeleteFzId(item.id)}
                                                             >
                                                                 <Trash2 className="h-4 w-4" />
                                                             </Button>
@@ -463,7 +456,7 @@ export default function FuhrparkPage() {
                                                             variant="ghost"
                                                             size="icon"
                                                             className="h-8 w-8 text-slate-300 hover:text-red-500"
-                                                            onClick={() => handleDeleteReservierung(res.id)}
+                                                            onClick={() => setConfirmDeleteResId(res.id)}
                                                         >
                                                             <Trash2 className="h-4 w-4" />
                                                         </Button>
@@ -486,6 +479,27 @@ export default function FuhrparkPage() {
                 onSave={handleSaveReservierung}
                 fahrzeug={selectedFahrzeug}
                 projektId={projektId}
+            />
+ 
+            {/* Confirmation Dialogs */}
+            <ConfirmDialog
+                isOpen={!!confirmDeleteFzId}
+                onClose={() => setConfirmDeleteFzId(null)}
+                onConfirm={handleDeleteFzConfirmed}
+                title="Fahrzeug löschen"
+                description="Sind Sie sicher, dass Sie dieses Fahrzeug permanent löschen möchten? Alle Reservierungen gehen verloren."
+                confirmLabel="Löschen"
+                variant="danger"
+            />
+
+            <ConfirmDialog
+                isOpen={!!confirmDeleteResId}
+                onClose={() => setConfirmDeleteResId(null)}
+                onConfirm={handleDeleteResConfirmed}
+                title="Reservierung löschen"
+                description="Möchten Sie diese Reservierung wirklich entfernen?"
+                confirmLabel="Löschen"
+                variant="danger"
             />
         </div>
     );

@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { toast } from '@/lib/toast';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -112,6 +114,7 @@ export default function TeilsystemEditPage() {
     const [uploadingDocs, setUploadingDocs] = useState(false);
     const docInputRef = React.useRef<HTMLInputElement>(null);
     const [previewDoc, setPreviewDoc] = useState<{ url: string, title: string } | null>(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const loadDokumente = async () => {
         try {
@@ -374,22 +377,24 @@ export default function TeilsystemEditPage() {
                 setExtracting(false);
             }
 
+            toast.success('Änderungen gespeichert');
             router.push(`/${projektId}/teilsysteme/${id}${from ? `?from=${from}` : ''}`);
         } catch (error: any) {
             console.error("Failed to update teilsystem:", error);
-            alert(`Fehler beim Speichern des Teilsystems:\n\n${error?.message || String(error)}`);
+            toast.error(`Fehler beim Speichern des Teilsystems: ${error?.message || String(error)}`);
         }
     };
 
-    const handleDelete = async () => {
-        if (!confirm(`Sind Sie sicher, dass Sie dieses Teilsystem permanent löschen möchten?`)) return;
-
+    const handleDeleteConfirmed = async () => {
         try {
             await SubsystemService.deleteTeilsystem(id);
+            toast.success("Teilsystem gelöscht");
             router.push(`/${projektId}`);
         } catch (error) {
             console.error("Failed to delete", error);
-            alert("Fehler beim Löschen des Teilsystems");
+            toast.error("Fehler beim Löschen des Teilsystems");
+        } finally {
+            setShowDeleteConfirm(false);
         }
     };
 
@@ -816,7 +821,7 @@ export default function TeilsystemEditPage() {
                         type="button"
                         variant="danger"
                         className="font-bold h-10 px-6 flex items-center gap-2"
-                        onClick={handleDelete}
+                        onClick={() => setShowDeleteConfirm(true)}
                     >
                         <Trash2 className="h-4 w-4" />
                         Teilsystem löschen
@@ -874,6 +879,15 @@ export default function TeilsystemEditPage() {
                 onClose={() => setPreviewDoc(null)}
                 url={previewDoc?.url || ''}
                 title={previewDoc?.title || ''}
+            />
+            <ConfirmDialog
+                isOpen={showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(false)}
+                onConfirm={handleDeleteConfirmed}
+                title="Teilsystem löschen"
+                description={`Sind Sie sicher, dass Sie dieses Teilsystem ("${teilsystem?.name}") permanent löschen möchten?`}
+                confirmLabel="Löschen"
+                variant="danger"
             />
         </div >
     );

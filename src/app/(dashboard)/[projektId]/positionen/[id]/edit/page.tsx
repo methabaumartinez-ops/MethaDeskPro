@@ -1,5 +1,5 @@
-'use client';
-
+import { toast } from '@/lib/toast';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -70,6 +70,7 @@ export default function PositionEditPage() {
     const [uploadingDocs, setUploadingDocs] = useState(false);
     const docInputRef = React.useRef<HTMLInputElement>(null);
     const [previewDoc, setPreviewDoc] = useState<{ url: string, title: string } | null>(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const loadDokumente = async () => {
         try {
@@ -233,18 +234,18 @@ export default function PositionEditPage() {
                 ifcUrl: uploadedIfcUrl,
                 ifcFileName: selectedFileName || undefined
             });
+            toast.success('Änderungen gespeichert');
             router.replace(`/${projektId}/positionen/${id}`);
         } catch (error: any) {
             console.error("Failed to update position:", error);
-            alert(`Fehler beim Speichern:\n\n${error?.message || String(error)}`);
+            toast.error(`Fehler beim Speichern: ${error?.message || String(error)}`);
         }
     };
 
-    const handleDelete = async () => {
-        if (!confirm(`Sind Sie sicher, dass Sie diese Position permanent löschen möchten?`)) return;
-
+    const handleDeleteConfirmed = async () => {
         try {
             await PositionService.deletePosition(id);
+            toast.success("Position gelöscht");
             const tsId = position?.teilsystemId;
             if (tsId) {
                 router.replace(`/${projektId}/teilsysteme/${tsId}`);
@@ -253,7 +254,9 @@ export default function PositionEditPage() {
             }
         } catch (error) {
             console.error("Failed to delete", error);
-            alert("Fehler beim Löschen");
+            toast.error("Fehler beim Löschen");
+        } finally {
+            setShowDeleteConfirm(false);
         }
     };
 
@@ -485,7 +488,7 @@ export default function PositionEditPage() {
                         type="button"
                         variant="danger"
                         className="font-bold h-10 px-6 flex items-center gap-2"
-                        onClick={handleDelete}
+                        onClick={() => setShowDeleteConfirm(true)}
                     >
                         <Trash2 className="h-4 w-4" />
                         Position löschen
@@ -512,6 +515,15 @@ export default function PositionEditPage() {
                 onClose={() => setPreviewDoc(null)}
                 url={previewDoc?.url || ''}
                 title={previewDoc?.title || ''}
+            />
+            <ConfirmDialog
+                isOpen={showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(false)}
+                onConfirm={handleDeleteConfirmed}
+                title="Position löschen"
+                description={`Sind Sie sicher, dass Sie diese Position ("${position?.name}") permanent löschen möchten?`}
+                confirmLabel="Löschen"
+                variant="danger"
             />
         </div>
     );

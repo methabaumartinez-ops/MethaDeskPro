@@ -1,5 +1,5 @@
-'use client';
-import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
@@ -28,6 +28,7 @@ export default function MaterialListPage() {
     const [items, setItems] = useState<Material[]>([]);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
+    const [itemToDelete, setItemToDelete] = useState<Material | null>(null);
 
     useEffect(() => {
         const load = async () => {
@@ -43,15 +44,17 @@ export default function MaterialListPage() {
         load();
     }, []);
 
-    const handleDelete = async (item: Material) => {
-        if (confirm(`Sind Sie sicher, dass Sie "${item.name}" löschen möchten?`)) {
-            try {
-                await MaterialService.deleteMaterial(item.id);
-                setItems(prev => prev.filter(i => i.id !== item.id));
-            } catch (error) {
-                console.error("Failed to delete", error);
-                showAlert("Fehler beim Löschen");
-            }
+    const handleDeleteConfirmed = async () => {
+        if (!itemToDelete) return;
+        try {
+            await MaterialService.deleteMaterial(itemToDelete.id);
+            setItems(prev => prev.filter(i => i.id !== itemToDelete.id));
+            toast.success('Material gelöscht');
+        } catch (error) {
+            console.error("Failed to delete", error);
+            toast.error("Fehler beim Löschen");
+        } finally {
+            setItemToDelete(null);
         }
     };
 
@@ -122,7 +125,7 @@ export default function MaterialListPage() {
                                                     variant="ghost"
                                                     size="icon"
                                                     className="h-8 w-8 text-muted-foreground/50 hover:text-red-600 hover:bg-red-50 hover:shadow-sm"
-                                                    onClick={() => handleDelete(item)}
+                                                    onClick={() => setItemToDelete(item)}
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
@@ -140,6 +143,15 @@ export default function MaterialListPage() {
                     )}
                 </CardContent>
             </Card>
+            <ConfirmDialog
+                isOpen={!!itemToDelete}
+                onClose={() => setItemToDelete(null)}
+                onConfirm={handleDeleteConfirmed}
+                title="Material löschen"
+                description={`Sind Sie sicher, dass Sie "${itemToDelete?.name}" permanent löschen möchten?`}
+                confirmLabel="Löschen"
+                variant="danger"
+            />
         </div>
     );
 }

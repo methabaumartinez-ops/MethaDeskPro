@@ -1,5 +1,5 @@
 'use client';
-import { showAlert } from '@/lib/alert';
+import { toast } from '@/lib/toast';
 
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -48,10 +48,11 @@ export default function MaterialErfassenPage() {
             };
 
             await MaterialService.createMaterial(newItem);
+            toast.success("Material erstellt");
             router.push(`/${projektId}/material`);
         } catch (error) {
             console.error("Failed to create material", error);
-            showAlert("Fehler beim Speichern");
+            toast.error("Fehler beim Speichern");
         }
     };
 
