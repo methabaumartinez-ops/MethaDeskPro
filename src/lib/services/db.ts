@@ -107,6 +107,7 @@ export class DatabaseService {
         }
 
         await this.ensureCollection(collectionName);
+        await this.ensureCollection(collectionName);
 
         try {
             console.log(`[DatabaseService] Qdrant list: ${collectionName} with filter:`, JSON.stringify(filter, null, 2));
@@ -274,6 +275,7 @@ export class DatabaseService {
             }
             return;
         }
+        await this.ensureCollection(collectionName);
 
         try {
             await qdrantClient.delete(collectionName, {
@@ -300,6 +302,9 @@ export class DatabaseService {
             }
             return;
         }
+
+        await this.ensureCollection(collectionName);
+
         try {
             await qdrantClient.delete(collectionName, {
                 points: [this.ensureQdrantId(id)]

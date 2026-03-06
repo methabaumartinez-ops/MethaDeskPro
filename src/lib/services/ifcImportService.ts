@@ -4,6 +4,7 @@ import { IfcAPI } from 'web-ifc';
 import path from 'path';
 import crypto from 'crypto';
 import { Teilsystem, ItemStatus } from '@/types';
+import { DatabaseService } from '@/lib/services/db';
 const METHABAU_PSET_NAME = 'METHABAU Teilsystem';
 
 export interface IFCImportResult {

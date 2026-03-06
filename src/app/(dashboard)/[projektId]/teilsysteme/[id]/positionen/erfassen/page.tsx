@@ -19,6 +19,7 @@ import { PositionService } from '@/lib/services/positionService';
 import { LagerortService } from '@/lib/services/lagerortService';
 import { LagerortSelect } from '@/components/shared/LagerortSelect';
 import { Position, Teilsystem, Lagerort } from '@/types';
+import { POS_ALLOWED_STATUSES, STATUS_UI_CONFIG } from '@/lib/config/statusConfig';
 
 const positionSchema = z.object({
     posNummer: z.string().min(1, 'Positionsnummer ist erforderlich'),
@@ -164,7 +165,12 @@ export default function PositionErfassenPage() {
                                         <Input label="Einheit" placeholder="Stk, m, m2" {...register('einheit')} error={errors.einheit?.message} />
                                     </div>
                                     <div className="grid grid-cols-2 gap-6">
-                                        <Select label="Status" options={[{ label: 'Offen', value: 'offen' }, { label: 'Bestellt', value: 'bestellt' }]} {...register('status')} error={errors.status?.message} />
+                                        <Select 
+                                            label="Status" 
+                                            options={POS_ALLOWED_STATUSES.map(st => ({ label: STATUS_UI_CONFIG[st].label, value: STATUS_UI_CONFIG[st].value }))} 
+                                            {...register('status')} 
+                                            error={errors.status?.message} 
+                                        />
                                         <LagerortSelect
                                             projektId={projektId}
                                             lagerorte={lagerorte}

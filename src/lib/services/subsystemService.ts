@@ -1,5 +1,6 @@
 import { Teilsystem, Position } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
+import { STATUS_DEFAULTS } from '@/lib/config/statusConfig';
 
 export const SubsystemService = {
     async getTeilsysteme(projektId?: string, abteilungId?: string): Promise<Teilsystem[]> {
@@ -30,7 +31,14 @@ export const SubsystemService = {
     },
 
     async createTeilsystem(item: Partial<Teilsystem>): Promise<Teilsystem> {
-        const payload = { ...item, id: item.id || uuidv4() };
+        // Enforce centralized defaults
+        const defaultAbteilung = STATUS_DEFAULTS.TEILSYSTEM.abteilung(item.abteilung) as any;
+        const payload = { 
+            ...item, 
+            id: item.id || uuidv4(),
+            status: item.status || STATUS_DEFAULTS.TEILSYSTEM.status,
+            abteilung: defaultAbteilung
+        };
         const res = await fetch('/api/teilsysteme', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

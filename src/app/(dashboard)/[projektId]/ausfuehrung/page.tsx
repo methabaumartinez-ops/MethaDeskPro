@@ -25,6 +25,7 @@ import Link from 'next/link';
 import { BestellService } from '@/lib/services/bestellService';
 import { MaterialBestellung, BestellungItem, FahrzeugReservierung, ABTEILUNGEN_CONFIG } from '@/types';
 import { Badge } from '@/components/ui/badge';
+import { AbteilungBadge } from '@/components/shared/AbteilungBadge';
 import { ReservierungModal } from '@/components/shared/ReservierungModal';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 const KATEGORIE_LABELS: Record<string, string> = {
@@ -485,9 +486,7 @@ export default function AusfuehrungPage() {
                                                                 </div>
                                                             </TableCell>
                                                             <TableCell className="p-4">
-                                                                <Badge variant={(ABTEILUNGEN_CONFIG.find(a => a.name === item.abteilung)?.color as any) || 'info'} className="font-bold text-[10px] uppercase">
-                                                                    {item.abteilung || '—'}
-                                                                </Badge>
+                                                                <AbteilungBadge abteilung={item.abteilung} />
                                                             </TableCell>
                                                             <TableCell className="p-4">
                                                                 <div className="flex flex-col gap-1">

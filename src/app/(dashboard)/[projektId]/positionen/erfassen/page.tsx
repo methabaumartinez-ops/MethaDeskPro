@@ -16,6 +16,7 @@ import { ProjectService } from '@/lib/services/projectService';
 import { LagerortService } from '@/lib/services/lagerortService';
 import { LagerortSelect } from '@/components/shared/LagerortSelect';
 import { Position, Teilsystem, Projekt, Lagerort, Beschichtung, PlanStatus } from '@/types';
+import { POS_ALLOWED_STATUSES, STATUS_UI_CONFIG } from '@/lib/config/statusConfig';
 import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
 
@@ -170,13 +171,10 @@ export default function PositionErfassenPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <Select
                                     label="Status *"
-                                    options={[
-                                        { value: 'offen', label: 'Offen' },
-                                        { value: 'bestellt', label: 'Bestellt' },
-                                        { value: 'in_produktion', label: 'In Produktion' },
-                                        { value: 'verbaut', label: 'Verbaut' },
-                                        { value: 'abgeschlossen', label: 'Abgeschlossen' },
-                                    ]}
+                                    options={POS_ALLOWED_STATUSES.map(st => ({
+                                        value: STATUS_UI_CONFIG[st].value,
+                                        label: STATUS_UI_CONFIG[st].label
+                                    }))}
                                     {...register('status')}
                                     error={errors.status?.message}
                                 />

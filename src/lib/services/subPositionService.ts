@@ -1,4 +1,5 @@
 import { Unterposition } from '@/types';
+import { STATUS_DEFAULTS } from '@/lib/config/statusConfig';
 export const SubPositionService = {
     async getUnterpositionen(positionId?: string): Promise<Unterposition[]> {
         const url = positionId ? `/api/data/unterpositionen?positionId=${positionId}` : '/api/data/unterpositionen';
@@ -15,10 +16,15 @@ export const SubPositionService = {
     },
 
     async createUnterposition(subPosition: Partial<Unterposition>): Promise<Unterposition> {
+        const payload = {
+            ...subPosition,
+            status: subPosition.status || STATUS_DEFAULTS.UNTERPOSITION.status,
+            abteilung: STATUS_DEFAULTS.UNTERPOSITION.abteilung as any
+        };
         const res = await fetch('/api/data/unterpositionen', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(subPosition)
+                        body: JSON.stringify(payload)
                     });
                     if (!res.ok) throw new Error('Failed to create sub-position');
                     return await res.json();

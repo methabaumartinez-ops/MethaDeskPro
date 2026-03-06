@@ -54,8 +54,8 @@ export const ITEM_STATUS_OPTIONS = [
   { label: 'Nachbearbeitung', value: 'geaendert' },
 ];
 
-export type Abteilung = typeof ABTEILUNGEN_CONFIG[number]['name'];
-export type AbteilungId = typeof ABTEILUNGEN_CONFIG[number]['id'];
+export type Abteilung = typeof ABTEILUNGEN_CONFIG[number]['name'] | 'Sin Abteilung';
+export type AbteilungId = typeof ABTEILUNGEN_CONFIG[number]['id'] | 'sin_abteilung';
 
 export type Beschichtung =
   | 'feuerverzinkt'
@@ -113,12 +113,14 @@ export interface Projekt {
 
 export type ItemStatus =
   | 'offen'
-  | 'in_produktion'
+  | 'in_arbeit' // REPLACING in_produktion
+  | 'in_produktion' // LEGACY (for backward comp)
   | 'bestellt'
   | 'fertig'
   | 'geliefert'
   | 'verbaut'
-  | 'geaendert'
+  | 'nachbearbeitung' // REPLACING geaendert
+  | 'geaendert' // LEGACY
   | 'abgeschlossen';
 
 // ============================================================

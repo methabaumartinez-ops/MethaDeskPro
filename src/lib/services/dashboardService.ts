@@ -18,7 +18,7 @@ export const DashboardService = {
         const res = await fetch('/api/dashboard-requests', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
+                        body: JSON.stringify(request)
                     });
                     if (!res.ok) throw new Error('Failed to save dashboard request');
                     return await res.json();
@@ -35,7 +35,7 @@ export const DashboardService = {
         const res = await fetch(`/api/dashboard-requests/${log.requestId}/log`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
+                        body: JSON.stringify(log)
                     });
                     if (!res.ok) throw new Error('Failed to save conversation log');
                     return await res.json();

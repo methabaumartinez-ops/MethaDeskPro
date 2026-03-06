@@ -1,6 +1,7 @@
 import { SubPositionService } from './subPositionService';
 import { MaterialService } from './materialService';
 import { Position } from '@/types';
+import { STATUS_DEFAULTS } from '@/lib/config/statusConfig';
 
 export const PositionService = {
     async getPositionen(): Promise<Position[]> {
@@ -22,10 +23,15 @@ export const PositionService = {
                     return await res.json();
     },
     async createPosition(position: Partial<Position>): Promise<Position> {
+        const payload = {
+            ...position,
+            status: position.status || STATUS_DEFAULTS.POSITION.status,
+            abteilung: STATUS_DEFAULTS.POSITION.abteilung as any
+        };
         const res = await fetch('/api/data/positionen', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(position)
+                        body: JSON.stringify(payload)
                     });
                     if (!res.ok) throw new Error('Failed to create position');
                     return await res.json();

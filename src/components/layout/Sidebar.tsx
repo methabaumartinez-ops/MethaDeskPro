@@ -83,7 +83,15 @@ export function Sidebar({ projektId, className }: { projektId: string; className
                 },
             ]
         },
-        { title: 'Werkhof', href: `/${projektId}/werkhof`, icon: Warehouse },
+        {
+            title: 'Werkhof',
+            icon: Warehouse,
+            subItems: [
+                { title: 'Bestellungen', href: `/${projektId}/werkhof` },
+                { title: 'Lagerort', href: `/${projektId}/lagerorte` },
+                { title: 'QR Scan', href: `/${projektId}/lager-scan` },
+            ]
+        },
         { title: 'Fuhrpark', href: `/fuhrpark`, icon: Car, permission: 'viewKosten' },
     ];
 
@@ -173,20 +181,33 @@ function NavItem({
     const content = (
         <div
             className={cn(
-                'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-all group cursor-pointer',
+                'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-all group',
+                item.href && !hasSubItems ? 'cursor-pointer' : '',
+                !hasSubItems ? 'cursor-pointer' : '', // If it's a folder, leave cursor default but arrow gets pointer
+                item.href ? 'cursor-pointer' : '', // Link parents get pointer
                 isActive && !hasSubItems
                     ? 'bg-primary text-primary-foreground shadow-sm'
                     : 'text-muted-foreground hover:bg-accent hover:text-foreground dark:text-slate-400 dark:hover:text-slate-100',
                 isActive && hasSubItems ? 'text-foreground font-bold' : '',
                 depth > 0 ? 'py-1.5 font-medium' : ''
             )}
-            onClick={() => hasSubItems && setIsOpen(!isOpen)}
         >
             {Icon && <Icon className={cn('h-4 w-4 shrink-0', isActive && !hasSubItems ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-foreground')} />}
             {!Icon && depth > 0 && <div className="w-1" />}
             <span className="flex-1 truncate">{item.title === 'Ausfuehrung' ? 'Ausführung' : item.title}</span>
             {hasSubItems && (
-                isOpen ? <ChevronDown className="h-3.5 w-3.5 opacity-50" /> : <ChevronRight className="h-3.5 w-3.5 opacity-50" />
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsOpen(!isOpen);
+                    }}
+                    className="p-1.5 -mr-1.5 rounded-md hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-all flex items-center justify-center shadow-sm cursor-pointer"
+                    aria-label={isOpen ? "Menü einklappen" : "Menü ausklappen"}
+                >
+                    {isOpen ? <ChevronDown className="h-3.5 w-3.5 opacity-70" /> : <ChevronRight className="h-3.5 w-3.5 opacity-70" />}
+                </button>
             )}
         </div>
     );

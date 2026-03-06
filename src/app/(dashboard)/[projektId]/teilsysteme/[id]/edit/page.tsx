@@ -11,6 +11,9 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { useProjekt } from '@/lib/context/ProjektContext';
+import { ABTEILUNGEN_CONFIG } from '@/types';
+import { TS_ALLOWED_STATUSES, STATUS_UI_CONFIG } from '@/lib/config/statusConfig';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { EmployeeService } from '@/lib/services/employeeService';
 import { SupplierService } from '@/lib/services/supplierService';
@@ -18,7 +21,7 @@ import { SubunternehmerService } from '@/lib/services/subunternehmerService';
 import { LagerortService } from '@/lib/services/lagerortService';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { LagerortSelect } from '@/components/shared/LagerortSelect';
-import { Teilsystem, ABTEILUNGEN_CONFIG, Lieferant, Lagerort } from '@/types';
+import { Teilsystem, Lieferant, Lagerort } from '@/types';
 import { ArrowLeft, Save, Calendar as CalendarIcon, UploadCloud, FileType, Truck, X, Search, Plus, Paperclip, FileText, Loader2, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -404,15 +407,10 @@ export default function TeilsystemEditPage() {
         </div>
     );
 
-    const statusOptions = [
-        { label: 'Offen', value: 'offen' },
-        { label: 'In Produktion', value: 'in_produktion' },
-        { label: 'Bestellt', value: 'bestellt' },
-        { label: 'Fertig', value: 'fertig' },
-        { label: 'Geliefert', value: 'geliefert' },
-        { label: 'Verbaut', value: 'verbaut' },
-        { label: 'Abgeschlossen', value: 'abgeschlossen' },
-    ];
+    const statusOptions = TS_ALLOWED_STATUSES.map(st => ({
+        label: STATUS_UI_CONFIG[st].label,
+        value: STATUS_UI_CONFIG[st].value
+    }));
 
     const planStatusOptions = [
         { label: 'Offen', value: 'offen' },

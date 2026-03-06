@@ -15,6 +15,7 @@ import { LagerortService } from '@/lib/services/lagerortService';
 import { LagerortSelect } from '@/components/shared/LagerortSelect';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { Position, Teilsystem, Lagerort, Beschichtung, PlanStatus, ABTEILUNGEN_CONFIG } from '@/types';
+import { POS_ALLOWED_STATUSES, STATUS_UI_CONFIG } from '@/lib/config/statusConfig';
 import { ArrowLeft, Save, UploadCloud, FileType, Paperclip, FileText, Loader2, X, Search, Plus, Loader, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useSmartBack } from '@/lib/navigation/useSmartBack';
@@ -312,15 +313,10 @@ export default function PositionEditPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <Select
                                     label="Status *"
-                                    options={[
-                                        { value: 'offen', label: 'Offen' },
-                                        { value: 'bestellt', label: 'Bestellt' },
-                                        { value: 'in_produktion', label: 'In Produktion' },
-                                        { value: 'fertig', label: 'Fertig' },
-                                        { value: 'geliefert', label: 'Geliefert' },
-                                        { value: 'verbaut', label: 'Verbaut' },
-                                        { value: 'abgeschlossen', label: 'Abgeschlossen' },
-                                    ]}
+                                    options={POS_ALLOWED_STATUSES.map(st => ({
+                                        value: STATUS_UI_CONFIG[st].value,
+                                        label: STATUS_UI_CONFIG[st].label
+                                    }))}
                                     {...register('status')}
                                     error={errors.status?.message}
                                     className="h-11"

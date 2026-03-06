@@ -1,3 +1,5 @@
+import { DatabaseService } from '@/lib/services/db';
+
 export class AIService {
     static async getProjectContext(projektId: string) {
         try {

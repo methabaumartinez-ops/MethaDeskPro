@@ -16,6 +16,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useProjekt } from '@/lib/context/ProjektContext';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
+import { AbteilungBadge } from '@/components/shared/AbteilungBadge';
 
 
 export default function KostenPage() {
@@ -333,7 +334,9 @@ export default function KostenPage() {
                                                     <TableCell className="font-bold text-right text-slate-600 text-xs">
                                                         {s.gesamtpreis ? `${s.gesamtpreis.toFixed(2)} CHF` : '—'}
                                                     </TableCell>
-                                                    <TableCell className="text-muted-foreground text-sm">{s.abteilung || '—'}</TableCell>
+                                                    <TableCell>
+                                                        <AbteilungBadge abteilung={s.abteilung || '—'} />
+                                                    </TableCell>
                                                     <TableCell className="text-muted-foreground text-sm">{s.taetigkeit || '—'}</TableCell>
                                                     <TableCell>
                                                         <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground/50 hover:text-red-600" onClick={() => deleteStunden(s.id)}>

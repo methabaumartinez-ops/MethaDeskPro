@@ -40,7 +40,7 @@ export async function POST(req: Request) {
             const ifcFiles = await listFolderFilesRecursive(ifcSubfolder.id);
 
             // 4. Get all Teilsysteme for this project to find used IFC URLs
-            const teilsysteme = await DatabaseService.list<any>('teilsysteme', { filter: { must: [{ key: 'projektId', match: { value: project.id } }] } });
+            const teilsysteme = await DatabaseService.list<any>('teilsysteme', { must: [{ key: 'projektId', match: { value: project.id } }] });
             const usedFileIds = new Set<string>();
 
             teilsysteme.forEach(ts => {

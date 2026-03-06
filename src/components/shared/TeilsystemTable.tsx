@@ -8,11 +8,13 @@ import { Teilsystem } from '@/types';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
-import { cleanBemerkung } from '@/lib/utils';
 import { Select } from '@/components/ui/select';
 import { ITEM_STATUS_OPTIONS, ABTEILUNGEN_CONFIG, ItemStatus, Abteilung } from '@/types';
+import { cn, cleanBemerkung } from '@/lib/utils';
 import { SubsystemService } from '@/lib/services/subsystemService';
+import { getStatusColorClasses, getAbteilungColorClasses } from '@/lib/config/statusConfig';
 import { AbteilungWarningModal } from './AbteilungWarningModal';
+import { AbteilungBadge } from '@/components/shared/AbteilungBadge';
 
 interface TeilsystemTableProps {
     items: Teilsystem[];
@@ -133,12 +135,10 @@ export function TeilsystemTable({
                                                 value={item.abteilung || 'Schlosserei'}
                                                 onChange={(e) => handleAbteilungChange(item, e.target.value as Abteilung)}
                                                 options={abteilungOptions}
-                                                className="h-9 text-xs font-bold w-full"
+                                                className={cn("h-9 text-xs font-bold w-full", getAbteilungColorClasses(item.abteilung))}
                                             />
                                         ) : (
-                                            <Badge variant={(ABTEILUNGEN_CONFIG.find(a => a.name === item.abteilung)?.color as any) || 'outline'} className="text-[10px] font-bold uppercase tracking-widest border-2">
-                                                {item.abteilung || 'Schlosserei'}
-                                            </Badge>
+                                            <AbteilungBadge abteilung={item.abteilung || 'Schlosserei'} />
                                         )}
                                     </TableCell>
                                 )}
@@ -148,7 +148,7 @@ export function TeilsystemTable({
                                             value={item.status || 'offen'}
                                             onChange={(e) => handleStatusChange(item.id, e.target.value as ItemStatus)}
                                             options={ITEM_STATUS_OPTIONS}
-                                            className="h-9 text-xs font-bold w-full"
+                                            className={cn("h-9 text-xs font-bold w-full", getStatusColorClasses(item.status))}
                                         />
                                     ) : (
                                         <StatusBadge status={item.status || 'offen'} />

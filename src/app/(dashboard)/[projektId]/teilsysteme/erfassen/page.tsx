@@ -23,6 +23,7 @@ import { IfcImportModal, IfcExtractResult } from '@/components/shared/IfcImportM
 
 import { useProjekt } from '@/lib/context/ProjektContext';
 import { ABTEILUNGEN_CONFIG } from '@/types';
+import { TS_ALLOWED_STATUSES, STATUS_UI_CONFIG } from '@/lib/config/statusConfig';
 
 const DateInput = React.forwardRef<HTMLInputElement, { label: string; error?: string; value?: string; onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void } & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'>>(
     ({ label, error, className, ...props }, ref) => (
@@ -343,13 +344,10 @@ export default function TeilsystemErfassenPage() {
         ...mitarbeiter.map(m => ({ label: `${m.vorname} ${m.nachname}`, value: m.id }))
     ];
 
-    const statusOptions = [
-        { label: 'Offen', value: 'offen' },
-        { label: 'In Arbeit', value: 'in arbeit' },
-        { label: 'Bestellt', value: 'bestellt' },
-        { label: 'Verbaut', value: 'verbaut' },
-        { label: 'Abgeschlossen', value: 'abgeschlossen' },
-    ];
+    const statusOptions = TS_ALLOWED_STATUSES.map(st => ({ 
+        label: STATUS_UI_CONFIG[st].label, 
+        value: STATUS_UI_CONFIG[st].value 
+    }));
 
     const planStatusOptions = [
         { label: 'Offen', value: 'offen' },

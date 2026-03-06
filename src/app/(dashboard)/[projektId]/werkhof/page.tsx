@@ -196,6 +196,7 @@ export default function WerkhofPage() {
                                                     StatusBadge={StatusBadge}
                                                     router={router}
                                                     setBestellungen={setBestellungen}
+                                                    projektId={pId}
                                                 />
                                             )) : (
                                                 <div className="col-span-full py-12 flex flex-col items-center justify-center bg-slate-50/50 rounded-[2rem] border-2 border-dashed border-slate-100 italic text-slate-400 font-medium">
@@ -218,6 +219,7 @@ export default function WerkhofPage() {
                                                     StatusBadge={StatusBadge}
                                                     router={router}
                                                     setBestellungen={setBestellungen}
+                                                    projektId={pId}
                                                 />
                                             )) : (
                                                 <div className="col-span-full py-12 flex flex-col items-center justify-center bg-slate-50/50 rounded-[2rem] border-2 border-dashed border-slate-100 italic text-slate-400 font-medium">
@@ -244,7 +246,9 @@ function OrderCard({
     handleUpdateBemerkung,
     StatusBadge,
     router,
-    setBestellungen
+    setBestellungen,
+    projektId,
+    onEdit
 }: {
     bestellung: MaterialBestellung,
     getProjektName: (id: string) => string,
@@ -253,7 +257,9 @@ function OrderCard({
     handleUpdateBemerkung: (bId: string, remark: string) => void,
     StatusBadge: React.FC<{ status: string }>,
     router: any,
-    setBestellungen: React.Dispatch<React.SetStateAction<MaterialBestellung[]>>
+    setBestellungen: React.Dispatch<React.SetStateAction<MaterialBestellung[]>>,
+    projektId: string,
+    onEdit?: () => void,
 }) {
     const progress = (bestellung.items.filter(i => i.vorbereitet).length / bestellung.items.length) * 100;
     const isAllReady = progress === 100;
@@ -292,7 +298,7 @@ function OrderCard({
                             className="h-8 w-8 text-slate-400 hover:text-orange-600 hover:bg-orange-50 border-slate-100 rounded-full shadow-sm"
                             onClick={(e) => {
                                 e.stopPropagation();
-                                router.push(`/${bestellung.projektId}/ausfuehrung?edit=${bestellung.id}`);
+                                if (onEdit) onEdit();
                             }}
                         >
                             <Edit2 className="h-4 w-4" />

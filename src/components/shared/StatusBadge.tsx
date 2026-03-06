@@ -1,6 +1,7 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { ItemStatus, ProjektStatus } from '@/types';
+import { STATUS_UI_CONFIG } from '@/lib/config/statusConfig';
 
 import { cn } from '@/lib/utils';
 
@@ -10,41 +11,33 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
-    const getVariant = (s: string) => {
-        if (!s) return 'outline';
-        switch (s.toLowerCase()) {
-            case 'offen': return 'success';
-            case 'bestellt': return 'warning';
-            case 'in arbeit': return 'info';
-            case 'fertig': return 'success';
-            case 'geliefert': return 'success';
-            case 'verbaut': return 'info';
-            case 'geaendert': return 'warning';
-            case 'abgeschlossen': return 'default';
-            case 'pausiert': return 'error';
-            default: return 'outline';
-        }
-    };
+    if (!status) return null;
 
-    const getDisplayText = (s: string) => {
-        if (!s) return s;
-        switch (s.toLowerCase()) {
-            case 'offen': return 'Offen';
-            case 'in_produktion': return 'In Produktion';
-            case 'bestellt': return 'Bestellt';
-            case 'fertig': return 'Fertig';
-            case 'geliefert': return 'Geliefert';
-            case 'verbaut': return 'Verbaut';
-            case 'geaendert': return 'Nachbearbeitung';
-            case 'abgeschlossen': return 'Abgeschlossen';
-            case 'pausiert': return 'Pausiert';
-            default: return s;
-        }
-    };
+    // Use lowercase to perform dict match
+    const sKey = status.toLowerCase() as ItemStatus;
 
+    // If it's a known ItemStatus mapped in STATUS_UI_CONFIG
+    if (STATUS_UI_CONFIG[sKey]) {
+        const config = STATUS_UI_CONFIG[sKey];
+        return (
+            <Badge variant={config.variant} className={cn("capitalize font-bold", className)}>
+                {config.label}
+            </Badge>
+        );
+    }
+
+    // Fallbacks for unmapped statuses like Project statuses ('in arbeit', 'pausiert')
+    if (status === 'in arbeit') {
+        return <Badge variant="info" className={cn("capitalize font-bold", className)}>In Arbeit</Badge>;
+    }
+    if (status === 'pausiert') {
+        return <Badge variant="error" className={cn("capitalize font-bold", className)}>Pausiert</Badge>;
+    }
+
+    // Default Fallback
     return (
-        <Badge variant={getVariant(status) as any} className={cn("capitalize font-bold", className)}>
-            {getDisplayText(status)}
+        <Badge variant="outline" className={cn("capitalize font-bold", className)}>
+            {status}
         </Badge>
     );
 }
