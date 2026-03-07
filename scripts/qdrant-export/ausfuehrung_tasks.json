@@ -1,0 +1,58 @@
+[
+  {
+    "id": "06b68ea6-23f7-4c4a-8c12-81c7cd760269",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "teamId": "",
+    "sourceTsId": "93b551bc-39b8-45dd-ad9a-fd3585bb93ae",
+    "title": "TS 3299: Stahlbau Massnahme best. Kran EKS",
+    "description": "",
+    "status": "Offen",
+    "priority": "Mittel",
+    "sourceType": "ts"
+  },
+  {
+    "id": "997cdb75-4a81-4afa-8117-a37ec8aba5ed",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "teamId": "",
+    "teilsystemId": "10e7a7a5-d6b9-4df1-9b37-ac33041a256c",
+    "title": "TS 1631: Einlagewinkel",
+    "description": "",
+    "status": "offen",
+    "priority": "mittel",
+    "sourceType": "ts"
+  },
+  {
+    "id": "b026a173-3d8f-4fd7-9764-1f5a55199fff",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "teamId": "",
+    "teilsystemId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+    "title": "TS 2402: Stahlauswechslungen Treppenhaus WT",
+    "description": "",
+    "status": "offen",
+    "priority": "mittel",
+    "sourceType": "ts"
+  },
+  {
+    "id": "bbb3b884-223f-4bd8-9724-e66de8f17330",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "teamId": "",
+    "sourceTsId": "31123b4f-8164-4024-a02a-6b2167b6af24",
+    "title": "TS 2102: Stossverbinder zu Stützwand + Auflager Treppe",
+    "description": "IFC: IFC4 | Units: SI\nSource file: 2102 Stossverbinder zu Stützwand + Auflager Treppe.ifc",
+    "status": "Offen",
+    "priority": "Mittel",
+    "sourceType": "ts"
+  },
+  {
+    "id": "e2d084a8-46a5-48b8-8bc1-9068df0030bd",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "title": "Fundamente Rühlwand",
+    "description": "",
+    "teamId": "339fe09e-9945-401d-88cb-79cfaf341058",
+    "status": "in_arbeit",
+    "priority": "mittel",
+    "createdAt": "2026-03-03T09:54:21.817Z",
+    "updatedAt": "2026-03-03T10:37:36.799Z",
+    "teilsystemId": "93b551bc-39b8-45dd-ad9a-fd3585bb93ae"
+  }
+]

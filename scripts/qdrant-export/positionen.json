@@ -1,0 +1,701 @@
+[
+  {
+    "id": "0890d218-c840-4c34-911a-dcf994fd69c1",
+    "teilsystemId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Schraubanker",
+    "name": "Schraubanker",
+    "beschreibung": "Baugruppe (ID: 9810)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "0cfdb36a-2209-4592-a26d-84a8abfa14b6",
+    "teilsystemId": "e40a08c7-e832-44bc-8e49-2f37d40458bd",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Abkantblech",
+    "name": "Abkantblech",
+    "beschreibung": "Baugruppe (ID: 791)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "12b6a9e0-0268-4df8-8a10-093a62e91c3e",
+    "teilsystemId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Fensterbauschraube",
+    "name": "Fensterbauschraube",
+    "beschreibung": "Baugruppe (ID: 11824)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "132fd0f3-03ff-4231-a5a4-7af3ce619553",
+    "teilsystemId": "e40a08c7-e832-44bc-8e49-2f37d40458bd",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Abkantblech",
+    "name": "Abkantblech",
+    "beschreibung": "Baugruppe (ID: 53)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "2d090535-e591-4189-b5b8-c1436909cd7c",
+    "posNummer": "705",
+    "name": "Lindapter M20",
+    "menge": 10,
+    "einheit": "Stk",
+    "teilsystemId": "93b551bc-39b8-45dd-ad9a-fd3585bb93ae",
+    "status": "geliefert",
+    "planStatus": "fertig",
+    "beschichtung": "",
+    "gewicht": 0,
+    "lagerortId": "",
+    "montagetermin": "",
+    "bemerkung": "",
+    "ifcUrl": ""
+  },
+  {
+    "id": "30cb7c7b-16a7-429c-a086-cd320a265b28",
+    "teilsystemId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Fensterbauschraube",
+    "name": "Fensterbauschraube",
+    "beschreibung": "Baugruppe (ID: 9824)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "351c2e81-5ded-4333-800b-5a11a501d79d",
+    "posNummer": "1601",
+    "name": "101 Stütze",
+    "menge": 2,
+    "einheit": "Stk",
+    "teilsystemId": "93b551bc-39b8-45dd-ad9a-fd3585bb93ae",
+    "status": "geliefert",
+    "planStatus": "fertig",
+    "beschichtung": "unbehandelt",
+    "gewicht": 213,
+    "lagerortId": "a251a0b5-8a91-4788-83da-9e9375e34b8f",
+    "montagetermin": "05.03.26",
+    "bemerkung": "",
+    "ifcUrl": ""
+  },
+  {
+    "id": "3e8ca642-3771-4838-932e-8f28128a5f96",
+    "teilsystemId": "e40a08c7-e832-44bc-8e49-2f37d40458bd",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Abkantblech",
+    "name": "Abkantblech",
+    "beschreibung": "Baugruppe (ID: 925)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "4fd917e7-e975-45ca-8145-7e611e7e59f6",
+    "teilsystemId": "e40a08c7-e832-44bc-8e49-2f37d40458bd",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Abkantblech",
+    "name": "Abkantblech",
+    "beschreibung": "Baugruppe (ID: 657)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "53ca0c75-7e40-448d-9dcb-a87ae0d8b882",
+    "teilsystemId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Abschalung WT",
+    "name": "Abschalung WT",
+    "beschreibung": "Baugruppe (ID: 53)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "563321fc-ac23-4ba3-bb87-012f5eaa9ff4",
+    "teilsystemId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Fensterbauschraube",
+    "name": "Fensterbauschraube",
+    "beschreibung": "Baugruppe (ID: 11804)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "6aa26cfc-8066-44fe-9fd3-54d8c719e48d",
+    "teilsystemId": "e40a08c7-e832-44bc-8e49-2f37d40458bd",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Abkantblech",
+    "name": "Abkantblech",
+    "beschreibung": "Baugruppe (ID: 1068)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "778966e4-d691-4758-9300-4bc298123f9e",
+    "teilsystemId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Fensterbauschraube",
+    "name": "Fensterbauschraube",
+    "beschreibung": "Baugruppe (ID: 11834)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "7b2d0eeb-669e-4dd1-904a-552750fdd29b",
+    "teilsystemId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Schallager",
+    "name": "Schallager",
+    "beschreibung": "Baugruppe (ID: 2928)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "7da30ca9-49ec-41f9-9f9d-97b8519472b3",
+    "teilsystemId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Schallager",
+    "name": "Schallager",
+    "beschreibung": "Baugruppe (ID: 11899)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "82f8c186-8ef2-4954-bb67-9bb4e548a2e9",
+    "teilsystemId": "e40a08c7-e832-44bc-8e49-2f37d40458bd",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Abkantblech",
+    "name": "Abkantblech",
+    "beschreibung": "Baugruppe (ID: 791)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "8e93e1af-7660-418c-87ef-d011d705f3a8",
+    "teilsystemId": "e40a08c7-e832-44bc-8e49-2f37d40458bd",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Abkantblech",
+    "name": "Abkantblech",
+    "beschreibung": "Baugruppe (ID: 53)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "91d32ddc-3289-478b-911a-8f9b119db1e4",
+    "teilsystemId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Fensterbauschraube",
+    "name": "Fensterbauschraube",
+    "beschreibung": "Baugruppe (ID: 11794)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "9dd190e0-a654-40cf-9211-3a2e6f591871",
+    "teilsystemId": "e40a08c7-e832-44bc-8e49-2f37d40458bd",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Abkantblech",
+    "name": "Abkantblech",
+    "beschreibung": "Baugruppe (ID: 1068)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "c61cac4e-f923-43e8-932f-8d16e41faf76",
+    "teilsystemId": "e40a08c7-e832-44bc-8e49-2f37d40458bd",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Abkantblech",
+    "name": "Abkantblech",
+    "beschreibung": "Baugruppe (ID: 925)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "caf26297-08d7-44cf-a84a-405221d243a3",
+    "teilsystemId": "e40a08c7-e832-44bc-8e49-2f37d40458bd",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Abkantblech",
+    "name": "Abkantblech",
+    "beschreibung": "Baugruppe (ID: 1239)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "ce781da1-6374-475f-a632-ba7ad95a9850",
+    "teilsystemId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Schraubanker",
+    "name": "Schraubanker",
+    "beschreibung": "Baugruppe (ID: 2945)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "e15af0e9-d9fc-4a25-8919-b907116f1ffd",
+    "teilsystemId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Fensterbauschraube",
+    "name": "Fensterbauschraube",
+    "beschreibung": "Baugruppe (ID: 11814)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "e1e15ffa-346f-4d79-b85e-1bb91a686bdb",
+    "teilsystemId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Schallager",
+    "name": "Schallager",
+    "beschreibung": "Baugruppe (ID: 2891)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "eeb2279f-fdf4-46c4-a87d-c6afd24c9e1b",
+    "teilsystemId": "e40a08c7-e832-44bc-8e49-2f37d40458bd",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Abkantblech",
+    "name": "Abkantblech",
+    "beschreibung": "Baugruppe (ID: 1453)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "ef77b05f-311c-4167-8ef6-7849f476df8f",
+    "teilsystemId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Schallager",
+    "name": "Schallager",
+    "beschreibung": "Baugruppe (ID: 11881)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "f8198872-6a74-4adc-8ee3-d9cfb72cf5c1",
+    "teilsystemId": "e40a08c7-e832-44bc-8e49-2f37d40458bd",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Abkantblech",
+    "name": "Abkantblech",
+    "beschreibung": "Baugruppe (ID: 657)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "f9bf861e-8fe3-4129-92a3-362ee2454765",
+    "teilsystemId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Fensterbauschraube",
+    "name": "Fensterbauschraube",
+    "beschreibung": "Baugruppe (ID: 11784)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "fbc49730-e58f-4473-aeca-1ffcdea86ac9",
+    "teilsystemId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Fuge",
+    "name": "Fuge",
+    "beschreibung": "Baugruppe (ID: 11844)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "ff00aa18-a1de-49f1-aa2e-8d56a3ee055b",
+    "teilsystemId": "e40a08c7-e832-44bc-8e49-2f37d40458bd",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Abkantblech",
+    "name": "Abkantblech",
+    "beschreibung": "Baugruppe (ID: 1453)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  },
+  {
+    "id": "ff953dae-0fd8-4c3a-8fc8-f552d284a1fc",
+    "teilsystemId": "e40a08c7-e832-44bc-8e49-2f37d40458bd",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "posNummer": "Abkantblech",
+    "name": "Abkantblech",
+    "beschreibung": "Baugruppe (ID: 1239)",
+    "menge": 1,
+    "einheit": "Stk",
+    "status": "offen",
+    "weight": 0,
+    "ifcMeta": {
+      "psets": {},
+      "dimensions": {
+        "length": null,
+        "width": null,
+        "height": null
+      },
+      "ok": null,
+      "uk": null
+    },
+    "groupingMethod": "REAL_PARENT"
+  }
+]

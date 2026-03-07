@@ -1,0 +1,1119 @@
+[
+  {
+    "id": "04b60bae-aabf-4408-98ca-b67e4f63d48e",
+    "vorname": "Thomas",
+    "nachname": "Schaller",
+    "rolle": "Bauleiter",
+    "email": "t.schaller@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Thomas+Schaller&background=random"
+  },
+  {
+    "id": "052c88a1-3a9c-40c5-868e-5b44851ace30",
+    "vorname": "Stefanie",
+    "nachname": "Bula",
+    "rolle": "Fachverantwortliche Projektentwicklung / Bewilligungsverfahren",
+    "email": "s.bula@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Stefanie+Bula&background=random"
+  },
+  {
+    "id": "0556eeeb-77a0-4c55-9258-45fed0cc814d",
+    "vorname": "Sara",
+    "nachname": "Keller",
+    "rolle": "Assistentin Projektleitung",
+    "email": "s.keller@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Sara+Keller&background=random"
+  },
+  {
+    "id": "0568ea22-4bcd-4d18-a6fd-10d03d53f99a",
+    "vorname": "Jakub",
+    "nachname": "Manis",
+    "rolle": "Projektleiter Wohn-/Gewerbebau",
+    "email": "j.manis@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Jakub+Manis&background=random"
+  },
+  {
+    "id": "069ee061-ba9c-46c0-9d5f-6160f5595680",
+    "vorname": "Mirjam",
+    "nachname": "Duenner",
+    "rolle": "Administrative Leiterin S&K Bau/Immo",
+    "email": "m.duenner@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Mirjam+Duenner&background=random"
+  },
+  {
+    "id": "0926fc7c-d97e-4855-820b-13f0f561c491",
+    "vorname": "Gerda",
+    "nachname": "Buergi",
+    "rolle": "Leiterin Immobilienverwaltung",
+    "email": "g.buergi@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Gerda+Buergi&background=random"
+  },
+  {
+    "id": "0a0c4e30-535d-46dc-b614-16abd417950c",
+    "vorname": "Florian",
+    "nachname": "Wohnhaas",
+    "rolle": "Informatiker",
+    "email": "f.wohnhaas@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Florian+Wohnhaas&background=random"
+  },
+  {
+    "id": "0b3dfcdf-adba-4e5c-8815-3fe09fad67f0",
+    "vorname": "Sara",
+    "nachname": "Gmuender",
+    "rolle": "Fachverantwortliche Projektentwicklung",
+    "email": "s.gmuender@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Sara+Gmuender&background=random"
+  },
+  {
+    "id": "0caaa4b4-fdbf-4ac4-b8f9-a88a2c94ed13",
+    "vorname": "Ramon",
+    "nachname": "Bockmuehl",
+    "rolle": "Bauleiter / Kader",
+    "email": "r.bockmuehl@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Ramon+Bockmuehl&background=random"
+  },
+  {
+    "id": "100ba6b3-ea67-47f8-aeca-0b4e79cc8261",
+    "vorname": "Antonio",
+    "nachname": "Grillo",
+    "rolle": "Vorarbeiter Maler",
+    "email": "a.grillo@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Antonio+Grillo&background=random"
+  },
+  {
+    "id": "101c9a93-fd8e-403c-9788-609ad35c23c0",
+    "vorname": "Tanja",
+    "nachname": "Brandenberger",
+    "rolle": "Bauleitung Cleverfit",
+    "email": "t.brandenberger@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Tanja+Brandenberger&background=random"
+  },
+  {
+    "id": "1506293b-c389-4d81-a5fb-619d2d25f758",
+    "vorname": "Yasin",
+    "nachname": "Tuna",
+    "rolle": "Systemadministrator",
+    "email": "y.tuna@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Yasin+Tuna&background=random"
+  },
+  {
+    "id": "1526040e-1ffc-463a-ae9e-1603501b50fe",
+    "vorname": "Fabian",
+    "nachname": "Manser",
+    "rolle": "Lernender Informatiker",
+    "email": "f.manser@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Fabian+Manser&background=random"
+  },
+  {
+    "id": "18cc9384-7910-4e24-b463-c5674f11746a",
+    "vorname": "Aldin",
+    "nachname": "Mehmedagic",
+    "rolle": "Lernender Mediamatiker",
+    "email": "a.mehmedagic@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Aldin+Mehmedagic&background=random"
+  },
+  {
+    "id": "1a429dc0-53a6-4638-af75-dae28690504c",
+    "vorname": "Ildiko",
+    "nachname": "Birclin",
+    "rolle": "Baukostenplanerin",
+    "email": "i.birclin@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Ildiko+Birclin&background=random"
+  },
+  {
+    "id": "1a9fb27d-f9d0-4ab3-982b-369b20fae1f4",
+    "vorname": "Blechwerkstatt",
+    "nachname": "Blechwerkstatt",
+    "rolle": "nan",
+    "email": "blechwerkstatt@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Blechwerkstatt+Blechwerkstatt&background=random"
+  },
+  {
+    "id": "1ad7c811-c277-448f-8b6c-a7ec6393470d",
+    "vorname": "Damara",
+    "nachname": "Ferrise",
+    "rolle": "Assistentin Leitung/ Immobilienbewirtschafterin",
+    "email": "d.ferrise@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Damara+Ferrise&background=random"
+  },
+  {
+    "id": "1af3cd0d-bf33-4b13-b530-84c47b49b7d2",
+    "vorname": "Joel",
+    "nachname": "Brotzge",
+    "rolle": "Immobilienbewirtschafter",
+    "email": "j.brotzge@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Joel+Brotzge&background=random"
+  },
+  {
+    "id": "1af46f41-6913-4671-8ee7-91c00a671ce9",
+    "vorname": "Thomas",
+    "nachname": "Jablinski",
+    "rolle": "Mitarbeiter Service & Technik",
+    "email": "t.jablinski@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Thomas+Jablinski&background=random"
+  },
+  {
+    "id": "1b4169f0-ed0c-400b-8a0a-3cf720e5a4df",
+    "vorname": "Takuya",
+    "nachname": "Suehiro",
+    "rolle": "Ausführungsplaner BIM",
+    "email": "t.suehiro@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Takuya+Suehiro&background=random"
+  },
+  {
+    "id": "1bab09a5-7152-42e3-93b9-7bf6c12d2261",
+    "vorname": "Tobias",
+    "nachname": "Mueller",
+    "rolle": "Head of Legal and Compliance",
+    "email": "t.mueller@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Tobias+Mueller&background=random"
+  },
+  {
+    "id": "1c7dcebe-4550-4a88-b741-4cd612b99ecb",
+    "vorname": "Gerhard",
+    "nachname": "Frick",
+    "rolle": "Projektverantwortlicher BIM Konstrukteur",
+    "email": "g.frick@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Gerhard+Frick&background=random"
+  },
+  {
+    "id": "1d0062a5-6749-4a6f-ae92-a4b5a8211af0",
+    "vorname": "Burak",
+    "nachname": "Eyiden",
+    "rolle": "AVOR Metallbau / Schlosserei",
+    "email": "b.eyiden@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Burak+Eyiden&background=random"
+  },
+  {
+    "id": "2076d3fd-a1ac-41ec-b375-d5b67d44831a",
+    "vorname": "Jochen",
+    "nachname": "Voehringer",
+    "rolle": "techn. Leiter Gewerbebau, Mitglied der Geschäftsbereichsleitung",
+    "email": "j.voehringer@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Jochen+Voehringer&background=random"
+  },
+  {
+    "id": "20eb191a-eeee-4227-a9eb-cb6d59dd1f2c",
+    "vorname": "Nadine",
+    "nachname": "Solenthaler",
+    "rolle": "Fachverantwortliche Projektentwicklung / Bewilligungsverfahren",
+    "email": "n.solenthaler@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Nadine+Solenthaler&background=random"
+  },
+  {
+    "id": "28143c80-8c96-44fe-b6c1-6dc821e3cb6d",
+    "vorname": "Stefan",
+    "nachname": "Signer",
+    "rolle": "Ausführungsplaner Metallbau",
+    "email": "s.signer@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Stefan+Signer&background=random"
+  },
+  {
+    "id": "2952057a-6ed6-47d0-a267-7031e1bfd1d2",
+    "vorname": "Ronja",
+    "nachname": "Kriech",
+    "rolle": "Bauleiterin",
+    "email": "r.kriech@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Ronja+Kriech&background=random"
+  },
+  {
+    "id": "2f6270e6-4c1c-44f4-a94b-47893640640b",
+    "vorname": "Christian",
+    "nachname": "Gustavs",
+    "rolle": "Hochbauzeichner / Projektplaner",
+    "email": "c.gustavs@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Christian+Gustavs&background=random"
+  },
+  {
+    "id": "2f82bfc3-202c-4b52-85b3-22692aeb9459",
+    "vorname": "Personal",
+    "nachname": "Hr",
+    "rolle": "nan",
+    "email": "hr@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Personal+Hr&background=random"
+  },
+  {
+    "id": "319989c1-60bb-477d-aa4e-e6b7f762eee9",
+    "vorname": "Sanursan",
+    "nachname": "Atputharajah",
+    "rolle": "Informatiker",
+    "email": "s.atputharajah@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Sanursan+Atputharajah&background=random"
+  },
+  {
+    "id": "32b25ba3-2aca-41f0-a3c5-57a185d9674b",
+    "vorname": "Siro",
+    "nachname": "Egli",
+    "rolle": "Informatiker",
+    "email": "s.egli@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Siro+Egli&background=random"
+  },
+  {
+    "id": "378cb33f-7bd5-4af2-afc2-61b2f390fd37",
+    "vorname": "Karin",
+    "nachname": "Sennhauser",
+    "rolle": "Teamleiterin Haustechnik",
+    "email": "k.sennhauser@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Karin+Sennhauser&background=random"
+  },
+  {
+    "id": "39abb20c-41fd-4888-a04a-3e2a1b05405a",
+    "vorname": "Michael",
+    "nachname": "Steinacher",
+    "rolle": "Projektverantwortlicher BIM Konstrukteur",
+    "email": "m.steinacher@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Michael+Steinacher&background=random"
+  },
+  {
+    "id": "39e99974-e225-4b2a-8278-a8d2fea5db20",
+    "vorname": "Michael",
+    "nachname": "Schneider",
+    "rolle": "CFO",
+    "email": "m.schneider@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Michael+Schneider&background=random"
+  },
+  {
+    "id": "3a1cb639-f121-4fae-b8f9-78d840e24431",
+    "vorname": "Alexander",
+    "nachname": "Hikade",
+    "rolle": "Gewerbebau Polier",
+    "email": "a.hikade@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Alexander+Hikade&background=random"
+  },
+  {
+    "id": "3b0031e8-8aab-4a54-899d-3117e4ec5481",
+    "vorname": "Marco",
+    "nachname": "Schuessler",
+    "rolle": "Devisierung",
+    "email": "m.schuessler@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Marco+Schuessler&background=random"
+  },
+  {
+    "id": "3d0a0e00-3755-463a-9ef7-314e81ff074e",
+    "vorname": "Stefan",
+    "nachname": "Risch",
+    "rolle": "Kalkulator / Kostenplaner",
+    "email": "s.risch@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Stefan+Risch&background=random"
+  },
+  {
+    "id": "40b068a1-946e-4498-b858-696ca930e6b0",
+    "vorname": "Judith",
+    "nachname": "Grosseaschoff",
+    "rolle": "Bauleiterin",
+    "email": "j.grosseaschoff@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Judith+Grosseaschoff&background=random"
+  },
+  {
+    "id": "40d00308-17a5-4d1a-a5d5-f8af44cf19c9",
+    "vorname": "Nicole",
+    "nachname": "Wahlen",
+    "rolle": "Sekretariat und Empfang",
+    "email": "n.wahlen@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Nicole+Wahlen&background=random"
+  },
+  {
+    "id": "48ff4ab9-c9f4-4e30-b3c1-b4af276e45b0",
+    "vorname": "Roland",
+    "nachname": "Gruetter",
+    "rolle": "Hauswart",
+    "email": "r.gruetter@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Roland+Gruetter&background=random"
+  },
+  {
+    "id": "4a139e9f-ef62-43a6-b7f7-481a480e3ecf",
+    "vorname": "Martin",
+    "nachname": "Richtfeld",
+    "rolle": "Projektleiter Gewerbebau",
+    "email": "m.richtfeld@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Martin+Richtfeld&background=random"
+  },
+  {
+    "id": "4f76ae7d-c9cd-4fa6-9844-e27756f2b9ac",
+    "vorname": "Fatih",
+    "nachname": "Aktepe",
+    "rolle": "IT-Administrator",
+    "email": "f.aktepe@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Fatih+Aktepe&background=random"
+  },
+  {
+    "id": "4fbd244a-b226-4b41-9057-880cd5427f4e",
+    "vorname": "Sascha",
+    "nachname": "Weber",
+    "rolle": "Projektverantwortlicher BIM Konstrukteur",
+    "email": "s.weber@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Sascha+Weber&background=random"
+  },
+  {
+    "id": "544838dd-9c63-45f9-b8b9-1a15e0604826",
+    "vorname": "Fabiano",
+    "nachname": "Pompadur",
+    "rolle": "Projektleiter Lüftung",
+    "email": "f.pompadur@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Fabiano+Pompadur&background=random"
+  },
+  {
+    "id": "549ed68f-ddae-4760-9165-6842e77aeb36",
+    "vorname": "Jörg",
+    "nachname": "Mathis",
+    "rolle": "Geschäftsbereichsleitung Totalunternehmung",
+    "email": "j.mathis@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Jörg+Mathis&background=random"
+  },
+  {
+    "id": "57ac10ab-4e80-4bdd-96f5-283014107c26",
+    "vorname": "Daniel",
+    "nachname": "Hungerbuehler",
+    "rolle": "Payroll Specialist",
+    "email": "d.hungerbuehler@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Daniel+Hungerbuehler&background=random"
+  },
+  {
+    "id": "57d9562a-9ba6-4884-8d7a-e880f27c5d57",
+    "vorname": "Mark",
+    "nachname": "Fleming",
+    "rolle": "Leiter Controlling / Kader",
+    "email": "m.fleming@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Mark+Fleming&background=random"
+  },
+  {
+    "id": "58b79d9b-f3f3-4a03-8f72-b59c514a2470",
+    "vorname": "Stefan",
+    "nachname": "Forster",
+    "rolle": "techn. Leiter Wohnbau, Mitglied der Geschäftsbereichsleitung",
+    "email": "s.forster@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Stefan+Forster&background=random"
+  },
+  {
+    "id": "5990b98e-5aee-4ff4-ba31-7ede59f75532",
+    "vorname": "Alper",
+    "nachname": "Yildirim",
+    "rolle": "Technischer Assistent Bauleitung",
+    "email": "a.yildirim@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Alper+Yildirim&background=random"
+  },
+  {
+    "id": "5a5bdaee-233e-4c9c-a056-6d069c664f2e",
+    "vorname": "Senad",
+    "nachname": "Muhedinovic",
+    "rolle": "Mitarbeiter Service & Technik",
+    "email": "s.muhedinovic@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Senad+Muhedinovic&background=random"
+  },
+  {
+    "id": "629b9c41-d243-40f0-9b26-53556875c0c7",
+    "vorname": "Jan",
+    "nachname": "Joos",
+    "rolle": "Praktikant Projektentwicklung",
+    "email": "j.joos@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Jan+Joos&background=random"
+  },
+  {
+    "id": "6604b402-770b-49e8-97a6-ef1d594493ba",
+    "vorname": "nan",
+    "nachname": "Stefanovic",
+    "rolle": "Leiter Einkauf / Kader",
+    "email": "s.stefanovic@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=nan+Stefanovic&background=random"
+  },
+  {
+    "id": "68f1af34-11cb-4ccc-9259-566a79018606",
+    "vorname": "Gianluca",
+    "nachname": "Barbieri",
+    "rolle": "Mitarbeiter Werkhof / Stv. Leiter Werkhof / Magazin",
+    "email": "g.barbieri@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Gianluca+Barbieri&background=random"
+  },
+  {
+    "id": "6a362a5c-7ef8-48fd-b1a7-e2e98a233efa",
+    "vorname": "Roland",
+    "nachname": "Stark",
+    "rolle": "Leiter Service und Kundenarbeiten / Stv. GBL Service und Kundenarbeiten/Mitglied der Geschäftsbereichsleitung",
+    "email": "r.stark@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Roland+Stark&background=random"
+  },
+  {
+    "id": "6c308575-e3a7-4090-9231-29ef07f97664",
+    "vorname": "Vadim",
+    "nachname": "Zutter",
+    "rolle": "Lernender KV",
+    "email": "v.zutter@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Vadim+Zutter&background=random"
+  },
+  {
+    "id": "6ee678f4-a9b8-4f77-85d9-4daddfad368a",
+    "vorname": "Driton",
+    "nachname": "Memeti",
+    "rolle": "Polier Hochbau",
+    "email": "d.memeti@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Driton+Memeti&background=random"
+  },
+  {
+    "id": "707b447b-105d-406d-a857-71bc7b23a89f",
+    "vorname": "Colin",
+    "nachname": "Woodtli",
+    "rolle": "Polier Hochbau / Gewerbebau",
+    "email": "c.woodtli@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Colin+Woodtli&background=random"
+  },
+  {
+    "id": "736899df-4fd7-4423-a25a-c98822b0409d",
+    "vorname": "Tenhar",
+    "nachname": "Abazi",
+    "rolle": "Vorarbeiter Hochbau",
+    "email": "t.abazi@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Tenhar+Abazi&background=random"
+  },
+  {
+    "id": "74e925cc-5d35-4597-afaf-02da26ca2172",
+    "vorname": "Schlosserei",
+    "nachname": "Schlosserei",
+    "rolle": "nan",
+    "email": "schlosserei@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Schlosserei+Schlosserei&background=random"
+  },
+  {
+    "id": "7883d24e-4cfb-4dd4-8802-4bacbff4ac37",
+    "vorname": "Patrick",
+    "nachname": "Delloca",
+    "rolle": "Leiter Werkhof",
+    "email": "p.delloca@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Patrick+Delloca&background=random"
+  },
+  {
+    "id": "7d363d67-6e6a-47d2-b685-f4a0fb9ef0bd",
+    "vorname": "Regula",
+    "nachname": "Gallmann",
+    "rolle": "Assistenz Immobilienverwaltung / Sekretariat",
+    "email": "r.gallmann@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Regula+Gallmann&background=random"
+  },
+  {
+    "id": "81672fa8-ca04-4d43-bc3b-74700e8f3c0c",
+    "vorname": "Felix",
+    "nachname": "Indergand",
+    "rolle": "Hochbau Polier",
+    "email": "f.indergand@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Felix+Indergand&background=random"
+  },
+  {
+    "id": "82245d56-7907-41b5-9829-76e25e2f149c",
+    "vorname": "Dashmir",
+    "nachname": "Emini",
+    "rolle": "Fachplaner Haustechnik",
+    "email": "d.emini@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Dashmir+Emini&background=random"
+  },
+  {
+    "id": "8296abbc-6e5e-4cbc-aeca-13c0ba657940",
+    "vorname": "Sekretariat",
+    "nachname": "Sekretariat",
+    "rolle": "nan",
+    "email": "sekretariat@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Sekretariat+Sekretariat&background=random"
+  },
+  {
+    "id": "86900307-fc67-42cb-9b5e-0640720df248",
+    "vorname": "Enrico",
+    "nachname": "Hansel",
+    "rolle": "Projektverantwortliche BIM Konstrukteur",
+    "email": "e.hansel@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Enrico+Hansel&background=random"
+  },
+  {
+    "id": "8794a015-d0b4-442e-9a70-05902db3b30a",
+    "vorname": "Andreas",
+    "nachname": "Bruderer",
+    "rolle": "Leiter Fuhrpark / Wartung",
+    "email": "a.bruderer@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Andreas+Bruderer&background=random"
+  },
+  {
+    "id": "8a41179f-716e-4565-9247-24c01ad92b81",
+    "vorname": "Nicole",
+    "nachname": "Pfister",
+    "rolle": "Liegenschaftsbuchhalterin",
+    "email": "n.pfister@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Nicole+Pfister&background=random"
+  },
+  {
+    "id": "8b6ab9f1-ae41-4579-9849-6bc98ebf137e",
+    "vorname": "Matthew",
+    "nachname": "Dean",
+    "rolle": "Projektleiter",
+    "email": "m.dean@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Matthew+Dean&background=random"
+  },
+  {
+    "id": "8b927180-65ef-4c38-95f6-aff661772a19",
+    "vorname": "Daniel",
+    "nachname": "Schumacher",
+    "rolle": "Brandschutzexperte VKF / Kader",
+    "email": "d.schumacher@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Daniel+Schumacher&background=random"
+  },
+  {
+    "id": "8e977bc7-d56f-4240-ba3a-3d0b04749e5c",
+    "vorname": "Markus",
+    "nachname": "Fitzi",
+    "rolle": "Organisatorischer Leiter Bau",
+    "email": "m.fitzi@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Markus+Fitzi&background=random"
+  },
+  {
+    "id": "8fb0ee43-93ce-48e8-9132-18746798f716",
+    "vorname": "Cornelia",
+    "nachname": "Wallner",
+    "rolle": "Juristin M.A. HSG",
+    "email": "c.wallner@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Cornelia+Wallner&background=random"
+  },
+  {
+    "id": "91fa16b3-a532-4422-83bf-5cae47399c80",
+    "vorname": "Nazife",
+    "nachname": "Useini",
+    "rolle": "HR - Assistentin",
+    "email": "n.useini@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Nazife+Useini&background=random"
+  },
+  {
+    "id": "93928158-9e15-4515-8b17-ce6266637b67",
+    "vorname": "Sebastian",
+    "nachname": "Wallmann",
+    "rolle": "Technischer Einkäufer",
+    "email": "s.wallmann@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Sebastian+Wallmann&background=random"
+  },
+  {
+    "id": "94631129-5b90-4d41-a4c2-10c807e68916",
+    "vorname": "Christiane",
+    "nachname": "Hever",
+    "rolle": "Assistentin Projektleitung",
+    "email": "c.hever@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Christiane+Hever&background=random"
+  },
+  {
+    "id": "95ee73fe-3cd2-46fc-898a-96d77dc24fe1",
+    "vorname": "Marco",
+    "nachname": "Andermatt",
+    "rolle": "Leiter Projekt- und Ausführungsplanung",
+    "email": "m.andermatt@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Marco+Andermatt&background=random"
+  },
+  {
+    "id": "99c379d9-23cd-4940-8f13-ab6dc6ddd8bb",
+    "vorname": "Karin",
+    "nachname": "Dadamo",
+    "rolle": "Technische Assistentin Ausführung",
+    "email": "k.dadamo@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Karin+Dadamo&background=random"
+  },
+  {
+    "id": "9b9e1cab-a322-47cf-9acc-6195c7fba0c7",
+    "vorname": "Vanessa",
+    "nachname": "Wienrich",
+    "rolle": "Immobilienbewirtschafterin",
+    "email": "v.wienrich@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Vanessa+Wienrich&background=random"
+  },
+  {
+    "id": "9cc80139-3452-4331-98c4-f0635ba87383",
+    "vorname": "Simon",
+    "nachname": "Kruese",
+    "rolle": "Assistentin Service & Kundendienst",
+    "email": "s.kruese@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Simon+Kruese&background=random"
+  },
+  {
+    "id": "9d936a7d-9d00-4d3f-ade4-55f17553a678",
+    "vorname": "Alain",
+    "nachname": "Bruhin",
+    "rolle": "Projektplaner",
+    "email": "a.bruhin@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Alain+Bruhin&background=random"
+  },
+  {
+    "id": "9f2d38fd-efbc-4e7a-8bd9-9ffd8d72b81d",
+    "vorname": "Francisco Jose",
+    "nachname": "Martinez Sanchez",
+    "email": "f.martinez@methabau.ch",
+    "department": "Montage",
+    "rolle": "admin",
+    "role": "admin"
+  },
+  {
+    "id": "9f786ca6-5897-45a7-9f35-72cc4ca6ca80",
+    "vorname": "Christian",
+    "nachname": "Hendel",
+    "rolle": "Baubuchhaltung / Rechnungswesen",
+    "email": "c.hendel@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Christian+Hendel&background=random"
+  },
+  {
+    "id": "a24c9b46-8ee8-4594-a0c4-d6704a95dfa1",
+    "vorname": "Nilgün",
+    "nachname": "Kuscu",
+    "rolle": "Architektin Projektplanung",
+    "email": "n.kuscu@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Nilgün+Kuscu&background=random"
+  },
+  {
+    "id": "a2549547-3287-48af-9178-3683df3f7dd6",
+    "vorname": "Lars",
+    "nachname": "Wiederkehr",
+    "rolle": "Immobilienbewirtschafter",
+    "email": "l.wiederkehr@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Lars+Wiederkehr&background=random"
+  },
+  {
+    "id": "a549b0a7-9f89-4864-8889-758d449189bb",
+    "vorname": "Sabrina",
+    "nachname": "Luetkens",
+    "rolle": "Projektleiterin / QM",
+    "email": "s.luetkens@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Sabrina+Luetkens&background=random"
+  },
+  {
+    "id": "a6294d03-cecd-4f82-9f19-e3d98ce069e9",
+    "vorname": "Andreas",
+    "nachname": "Linder",
+    "rolle": "AVOR Produktion / Ausführung",
+    "email": "a.linder@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Andreas+Linder&background=random"
+  },
+  {
+    "id": "a9d93223-5e3d-477c-9a39-b2f1a2415567",
+    "vorname": "Saskia",
+    "nachname": "Krucker",
+    "rolle": "Mitarbeiterin Administration Projektentwicklung",
+    "email": "s.krucker@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Saskia+Krucker&background=random"
+  },
+  {
+    "id": "a9ebb5b4-f606-42f3-be61-f0202196c851",
+    "vorname": "Patrick",
+    "nachname": "Oberwiler",
+    "rolle": "Projektverantwortlicher BIM Konstrukteur / Stv. GBL Planung Ausführung",
+    "email": "p.oberwiler@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Patrick+Oberwiler&background=random"
+  },
+  {
+    "id": "aa9aeb78-3624-4c46-a8f9-f7f47929ee21",
+    "vorname": "Karol",
+    "nachname": "Tendera",
+    "rolle": "Monteur Stahlbau",
+    "email": "k.tendera@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Karol+Tendera&background=random"
+  },
+  {
+    "id": "ae9c01cb-ef9f-40a8-aaf2-5a2e5d9ff16f",
+    "vorname": "Andrej",
+    "nachname": "Binz",
+    "rolle": "Projektverantwortlicher BIM Konstrukteur",
+    "email": "a.binz@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Andrej+Binz&background=random"
+  },
+  {
+    "id": "b0480890-9864-4910-bbf1-ed36267a7ccb",
+    "vorname": "Lisa",
+    "nachname": "Blenk",
+    "rolle": "Bauleiterin",
+    "email": "l.blenk@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Lisa+Blenk&background=random"
+  },
+  {
+    "id": "b266fd3b-510d-4ebd-88c9-42dce1311cc2",
+    "vorname": "Sükran",
+    "nachname": "Oezdere",
+    "rolle": "Architektin Projektplanung / Teamleiterin Wohnbau",
+    "email": "s.oezdere@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Sükran+Oezdere&background=random"
+  },
+  {
+    "id": "b91e95e1-9cea-40aa-a3f6-7fbc15938b7e",
+    "vorname": "Arben",
+    "nachname": "Mustafa",
+    "rolle": "Mitarbeiter Service & Technik",
+    "email": "a.mustafa@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Arben+Mustafa&background=random"
+  },
+  {
+    "id": "b94e5869-988d-4185-b790-d0de5fcd28fa",
+    "vorname": "Luana",
+    "nachname": "Cavallaro",
+    "rolle": "Zeichnerin Fachrichtung Architektur EFZ",
+    "email": "l.cavallaro@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Luana+Cavallaro&background=random"
+  },
+  {
+    "id": "baf36696-931c-4844-9ed6-4a13f2e6af85",
+    "vorname": "Elisabeth",
+    "nachname": "Hunziker",
+    "rolle": "Assistentin Service & Kundendienst",
+    "email": "e.hunziker@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Elisabeth+Hunziker&background=random"
+  },
+  {
+    "id": "c0c3be0c-569a-4d79-a2dd-5a31bdb7ec94",
+    "vorname": "Reto",
+    "nachname": "Huerst",
+    "rolle": "Ausführungsplaner BIM",
+    "email": "r.huerst@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Reto+Huerst&background=random"
+  },
+  {
+    "id": "c4136218-653c-4ffe-88ef-63deb94da505",
+    "vorname": "Felix",
+    "nachname": "Stoerchli",
+    "rolle": "Senior Bauleiter / Dipl. Bauführer",
+    "email": "f.stoerchli@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Felix+Stoerchli&background=random"
+  },
+  {
+    "id": "c4cd51ad-cae8-4b45-940a-cebf40488344",
+    "vorname": "Devran",
+    "nachname": "Altun",
+    "rolle": "Lernender KV",
+    "email": "d.altun@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Devran+Altun&background=random"
+  },
+  {
+    "id": "c66303c0-bf12-4500-ae67-80e14fc57b22",
+    "vorname": "Lazar",
+    "nachname": "Lukic",
+    "rolle": "Ausführungsplaner BIM",
+    "email": "l.lukic@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Lazar+Lukic&background=random"
+  },
+  {
+    "id": "cbb41d5a-ea0f-4811-ba92-639c360f34b5",
+    "vorname": "Michael",
+    "nachname": "Grob",
+    "rolle": "Bauleiter",
+    "email": "m.grob@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Michael+Grob&background=random"
+  },
+  {
+    "id": "d0df53e2-c4f6-4aab-aba2-746d02e2dd4e",
+    "vorname": "Piotr",
+    "nachname": "Jablonski",
+    "rolle": "Mitarbeiter Service & Technik",
+    "email": "p.jablonski@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Piotr+Jablonski&background=random"
+  },
+  {
+    "id": "d3633494-ab70-47d1-bce4-cd03508b058e",
+    "vorname": "Cristian",
+    "nachname": "Grillo",
+    "rolle": "Maler S&K",
+    "email": "c.grillo@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Cristian+Grillo&background=random"
+  },
+  {
+    "id": "d4aee357-5d04-4572-893d-d0b1b81aaa3d",
+    "vorname": "Konrad",
+    "nachname": "Cichon",
+    "rolle": "Monteur Metallbau",
+    "email": "k.cichon@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Konrad+Cichon&background=random"
+  },
+  {
+    "id": "d77d500c-92e4-4241-9884-6f49edfc1aca",
+    "vorname": "Moritz",
+    "nachname": "Munz",
+    "rolle": "Projektverantwortlicher BIM Konstrukteur",
+    "email": "m.munz@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Moritz+Munz&background=random"
+  },
+  {
+    "id": "d7b113c0-7925-4660-94f8-b444aa184f8b",
+    "vorname": "Shirin",
+    "nachname": "Beutler",
+    "rolle": "Hochbauzeichnerin / Projektplanerin",
+    "email": "s.beutler@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Shirin+Beutler&background=random"
+  },
+  {
+    "id": "db54f195-fd45-4143-b137-9ccef12c0c91",
+    "vorname": "Hans",
+    "nachname": "Gantenbein",
+    "rolle": "Leiter Blechbearbeitung/Stv. Produktionsleiter",
+    "email": "h.gantenbein@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Hans+Gantenbein&background=random"
+  },
+  {
+    "id": "dcd5ad10-01ba-407a-aab3-c6609e322959",
+    "vorname": "Sandra",
+    "nachname": "Schmid",
+    "rolle": "Fachfrau Finanz- und Rechnungswesen",
+    "email": "sa.schmid@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Sandra+Schmid&background=random"
+  },
+  {
+    "id": "de05ade5-a882-41d2-b82c-e3ad8decae2a",
+    "vorname": "Mohsen",
+    "nachname": "Babakhani",
+    "rolle": "Heizungsplaner",
+    "email": "m.babakhani@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Mohsen+Babakhani&background=random"
+  },
+  {
+    "id": "dfc9fe1c-694c-4fc4-b250-f07abd90c69c",
+    "vorname": "Sarah",
+    "nachname": "Hintner",
+    "rolle": "Assistentin Service & Kundendienst",
+    "email": "s.hintner@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Sarah+Hintner&background=random"
+  },
+  {
+    "id": "e7cd9e3b-611b-4afa-8996-1337bad1d2b0",
+    "vorname": "Leonardo",
+    "nachname": "Battaglia",
+    "rolle": "Fachplaner Sanitär",
+    "email": "l.battaglia@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Leonardo+Battaglia&background=random"
+  },
+  {
+    "id": "e8a5eb8a-98b3-4172-9210-5b3c497da4d5",
+    "vorname": "Michael",
+    "nachname": "Scheiwiller",
+    "rolle": "Leiter Projektentwicklung / Auftragsgewinnung Mitglied der Gruppenleitung / Mitglied des Verwaltungsrates",
+    "email": "m.scheiwiller@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Michael+Scheiwiller&background=random"
+  },
+  {
+    "id": "e950b50f-d837-4a67-8d98-02a27747b7b6",
+    "vorname": "Erika",
+    "nachname": "Constant",
+    "rolle": "Ausführungsplaner BIM",
+    "email": "e.constant@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Erika+Constant&background=random"
+  },
+  {
+    "id": "ea866947-5fb3-4733-81c8-3950983c6115",
+    "vorname": "Carmen",
+    "nachname": "Kirchner",
+    "rolle": "Sekretariat und Empfang",
+    "email": "c.kirchner@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Carmen+Kirchner&background=random"
+  },
+  {
+    "id": "eababcd1-9991-41a7-b2b9-3ca52f0a8a32",
+    "vorname": "Uwe",
+    "nachname": "Hendel",
+    "rolle": "Assistent / Standortleiter Amriswil",
+    "email": "u.hendel@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Uwe+Hendel&background=random"
+  },
+  {
+    "id": "eb8b5fc9-e3cc-48be-97e6-293002ab8c51",
+    "vorname": "Jürg",
+    "nachname": "Wagner",
+    "rolle": "Geschäftsbereichsleiter Bau/Produktion und Service/Kundenarbeiten",
+    "email": "j.wagner@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Jürg+Wagner&background=random"
+  },
+  {
+    "id": "ed6402aa-1e88-4478-ab8e-72d663d8aa5d",
+    "vorname": "Mariana",
+    "nachname": "Felhauer",
+    "rolle": "Allrounderin",
+    "email": "m.felhauer@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Mariana+Felhauer&background=random"
+  },
+  {
+    "id": "f3b43803-6e61-46bb-ab6b-9fb717bb861d",
+    "vorname": "Maria",
+    "nachname": "Lutz",
+    "rolle": "Assistentin Geschäftsbereichsleiter Bau / Produktion / Service & Kundenarbeiten",
+    "email": "m.lutz@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Maria+Lutz&background=random"
+  },
+  {
+    "id": "f4326777-5401-409b-9b93-013b8a719def",
+    "vorname": "Jaroslav",
+    "nachname": "Semjan",
+    "rolle": "Bauarbeiter A",
+    "email": "j.semjan@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Jaroslav+Semjan&background=random"
+  },
+  {
+    "id": "f57e7a57-4057-499c-ae62-6d3c928a215a",
+    "vorname": "Peter",
+    "nachname": "Hary",
+    "rolle": "Teamleiter BIM Konstrukteur Metallbau",
+    "email": "p.hary@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Peter+Hary&background=random"
+  },
+  {
+    "id": "f746577e-280a-4457-b3cd-a45239f14c46",
+    "vorname": "IT",
+    "nachname": "Itsupport",
+    "rolle": "nan",
+    "email": "itsupport@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=IT+Itsupport&background=random"
+  },
+  {
+    "id": "f767e15d-f1d1-426a-9f15-d5637b0281a9",
+    "vorname": "Daniel",
+    "nachname": "Iten",
+    "rolle": "Teamleiter Projektplanung",
+    "email": "d.iten@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Daniel+Iten&background=random"
+  },
+  {
+    "id": "f818fed0-8058-467b-b918-81bd36fe520c",
+    "vorname": "Markus",
+    "nachname": "Hauser",
+    "rolle": "Projektleiter Metallbau / Kader",
+    "email": "m.hauser@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Markus+Hauser&background=random"
+  },
+  {
+    "id": "fb995930-91bd-4cc1-a050-987efa0c633d",
+    "vorname": "Mario",
+    "nachname": "Brkljaca",
+    "rolle": "Mitarbeiter Service & Technik",
+    "email": "m.brkljaca@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Mario+Brkljaca&background=random"
+  },
+  {
+    "id": "fbbdb2b8-df05-4cbe-82c0-68e9a077baf8",
+    "vorname": "Balázs",
+    "nachname": "Barna",
+    "rolle": "Ausführungsplaner BIM",
+    "email": "b.barna@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Balázs+Barna&background=random"
+  },
+  {
+    "id": "fe105053-c06f-4a69-8287-93c107a75e4f",
+    "vorname": "Adrian",
+    "nachname": "Sennhauser",
+    "rolle": "Bauleiter Service und Kundendienst",
+    "email": "a.sennhauser@methabau.ch",
+    "abteilung": "METHABAU",
+    "image": "https://ui-avatars.com/api/?name=Adrian+Sennhauser&background=random",
+    "stundensatz": 48
+  }
+]

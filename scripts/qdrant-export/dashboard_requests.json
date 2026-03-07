@@ -1,0 +1,30 @@
+[
+  {
+    "id": "5343d7f8-8195-4d92-a01d-cc04f70d32b3",
+    "userId": "00000000-0000-0000-0000-000000000001",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "title": "Feedback / Beta-Anfrage",
+    "description": "hola",
+    "status": "pending",
+    "requirements": {
+      "initialRequest": "hola",
+      "widgetType": "Beta Feedback"
+    },
+    "createdAt": "2026-03-04T13:00:21.491Z",
+    "updatedAt": "2026-03-04T13:00:21.537Z"
+  },
+  {
+    "id": "b8f34041-c6ed-43ee-a501-02d7f3e93b2d",
+    "userId": "00000000-0000-0000-0000-000000000001",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "title": "Feedback / Beta-Anfrage",
+    "description": "quiero un widget con la lista de las maquinas del proyecto gaz beringen",
+    "status": "pending",
+    "requirements": {
+      "initialRequest": "quiero un widget con la lista de las maquinas del proyecto gaz beringen",
+      "widgetType": "Beta Feedback"
+    },
+    "createdAt": "2026-02-28T21:01:16.517Z",
+    "updatedAt": "2026-02-28T21:01:16.530Z"
+  }
+]

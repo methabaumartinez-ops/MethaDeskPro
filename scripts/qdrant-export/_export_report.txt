@@ -1,0 +1,10 @@
+Qdrant Export Report
+Date: 2026-03-07T18:23:00.503Z
+Source: https://methadesk-qdrant.ph2gu6.easypanel.host/
+Total Records: 0
+
+Per Collection:
+
+Orphan Detection:
+
+[OK] No orphaned records detected.

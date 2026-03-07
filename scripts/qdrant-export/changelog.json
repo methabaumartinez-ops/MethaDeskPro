@@ -1,0 +1,68 @@
+[
+  {
+    "id": "472d6d01-e907-4197-afca-07c12705038c",
+    "entityType": "teilsystem",
+    "entityId": "93b551bc-39b8-45dd-ad9a-fd3585bb93ae",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "changedAt": "2026-03-07T16:23:40.884Z",
+    "changedBy": "Admin Methabau",
+    "changedByEmail": "admin@methabau.ch",
+    "changedFields": [
+      {
+        "field": "planStatus",
+        "label": "Plan-Status",
+        "before": "fertig",
+        "after": "offen"
+      }
+    ],
+    "summary": "Plan-Status: fertig → offen"
+  },
+  {
+    "id": "5eb0a123-01b7-451d-9d2a-ab19419a4ab6",
+    "entityType": "teilsystem",
+    "entityId": "4a5c913b-2d1f-4c76-b6aa-c20635f49877",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "changedAt": "2026-03-07T17:00:33.408Z",
+    "changedBy": "Admin Methabau",
+    "changedByEmail": "admin@methabau.ch",
+    "changedFields": [
+      {
+        "field": "status",
+        "label": "Status",
+        "before": "offen",
+        "after": "nachbearbeitung"
+      },
+      {
+        "field": "planStatus",
+        "label": "Plan-Status",
+        "before": "offen",
+        "after": "fertig"
+      },
+      {
+        "field": "lagerortId",
+        "label": "Lagerort",
+        "before": null,
+        "after": ""
+      }
+    ],
+    "summary": "Status: offen → nachbearbeitung, Plan-Status: offen → fertig, Lagerort: — → "
+  },
+  {
+    "id": "896a27e5-2b8d-41f9-938d-a3f4367b3eef",
+    "entityType": "teilsystem",
+    "entityId": "31123b4f-8164-4024-a02a-6b2167b6af24",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "changedAt": "2026-03-07T17:08:30.622Z",
+    "changedBy": "Admin Methabau",
+    "changedByEmail": "admin@methabau.ch",
+    "changedFields": [
+      {
+        "field": "status",
+        "label": "Status",
+        "before": "offen",
+        "after": "fertig"
+      }
+    ],
+    "summary": "Status: offen → fertig"
+  }
+]

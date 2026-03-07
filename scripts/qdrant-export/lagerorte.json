@@ -1,0 +1,45 @@
+[
+  {
+    "id": "a251a0b5-8a91-4788-83da-9e9375e34b8f",
+    "bezeichnung": "Werkzeuchkonteiner N° 56",
+    "beschreibung": "",
+    "bereich": "Baustelle",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "qrCode": "LAGERORT:a251a0b5-8a91-4788-83da-9e9375e34b8f",
+    "createdAt": "2026-02-25T14:48:17.143Z",
+    "updatedAt": "2026-03-01T15:44:59.184Z",
+    "planUrl": "https://drive.google.com/file/d/1IYotJOhtUXAlt0rWHaOhcFOMEzhmdMD0/view?usp=drive_link"
+  },
+  {
+    "id": "c7558ef6-6a76-4c76-8c88-80c5f8161dac",
+    "bezeichnung": "BFU",
+    "beschreibung": "",
+    "bereich": "Extern",
+    "planUrl": "",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "qrCode": "LAGERORT:c7558ef6-6a76-4c76-8c88-80c5f8161dac",
+    "createdAt": "2026-03-01T22:07:35.470Z"
+  },
+  {
+    "id": "c857f1dc-c7ff-4383-b826-52d071ad17b8",
+    "bezeichnung": "Lagerplatz Neustrasse",
+    "beschreibung": "",
+    "bereich": "Baustelle",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "qrCode": "LAGERORT:c857f1dc-c7ff-4383-b826-52d071ad17b8",
+    "createdAt": "2026-02-27T22:10:41.107Z",
+    "planUrl": "https://drive.google.com/file/d/1IYotJOhtUXAlt0rWHaOhcFOMEzhmdMD0/view?usp=drive_link",
+    "updatedAt": "2026-03-01T15:44:26.903Z"
+  },
+  {
+    "id": "d1792b36-69e8-4986-bb63-1a86f92bcd8e",
+    "bezeichnung": "Korridor 3 Regal 1",
+    "beschreibung": "",
+    "bereich": "Werkhof",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "qrCode": "LAGERORT:d1792b36-69e8-4986-bb63-1a86f92bcd8e",
+    "createdAt": "2026-02-28T18:40:48.773Z",
+    "planUrl": "",
+    "updatedAt": "2026-03-01T15:44:14.382Z"
+  }
+]

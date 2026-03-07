@@ -2,10 +2,15 @@ import 'server-only';
 import { qdrantClient } from '@/lib/qdrant/client';
 import { v4 as uuidv4 } from 'uuid';
 import { mockStore } from '@/lib/mock/store';
+import { SupabaseDatabaseService } from '@/lib/services/supabaseDb';
 
 export class DatabaseService {
     // Flag to toggle between mock data and real Qdrant DB
     private static useMock = false; // Set to false to use real Qdrant DB
+
+    // Feature flag: when true, delegates ALL operations to Supabase instead of Qdrant
+    // Set USE_SUPABASE=true in .env to activate the migration
+    private static useSupabase = process.env.USE_SUPABASE === 'true';
 
     /**
      * Helper to ensure ID is a valid Qdrant ID (UUID)
@@ -56,6 +61,7 @@ export class DatabaseService {
      * List items from a collection
      */
     static async list<T>(collectionName: string, filter?: any): Promise<T[]> {
+        if (this.useSupabase) return SupabaseDatabaseService.list<T>(collectionName, filter);
         if (this.useMock) {
             console.log(`[DatabaseService] Mock list: ${collectionName}`, filter);
             let result: any[] = [];
@@ -144,6 +150,7 @@ export class DatabaseService {
      * Get a single item by ID
      */
     static async get<T>(collectionName: string, id: string): Promise<T | null> {
+        if (this.useSupabase) return SupabaseDatabaseService.get<T>(collectionName, id);
         if (this.useMock) {
             const all = await this.list<T>(collectionName);
             return (all as any[]).find(item => item.id === id) || null;
@@ -175,6 +182,7 @@ export class DatabaseService {
      * Create or Update an item
      */
     static async upsert<T extends { id?: string }>(collectionName: string, item: T): Promise<T> {
+        if (this.useSupabase) return SupabaseDatabaseService.upsert<T>(collectionName, item);
         if (this.useMock) {
             const id = item.id || uuidv4();
             const newItem = { ...item, id };
@@ -252,6 +260,7 @@ export class DatabaseService {
      * Delete multiple items by filter
      */
     static async deleteByFilter(collectionName: string, filter: any): Promise<void> {
+        if (this.useSupabase) return SupabaseDatabaseService.deleteByFilter(collectionName, filter);
         if (this.useMock) {
             console.log(`[DatabaseService] Mock deleteByFilter ${collectionName}:`, filter);
             // Mock implementation: filter and remove
@@ -291,6 +300,7 @@ export class DatabaseService {
      * Delete an item
      */
     static async delete(collectionName: string, id: string): Promise<void> {
+        if (this.useSupabase) return SupabaseDatabaseService.delete(collectionName, id);
         if (this.useMock) {
             const items = await this.list<any>(collectionName);
             const filtered = items.filter(i => i.id !== id);

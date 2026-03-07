@@ -1,0 +1,20 @@
+[
+  {
+    "id": "339fe09e-9945-401d-88cb-79cfaf341058",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "name": "Alpha",
+    "description": "",
+    "abteilung": "",
+    "color": "#f97316",
+    "members": [],
+    "updatedAt": "2026-03-03T09:54:43.742Z"
+  },
+  {
+    "id": "cdb24c50-7402-4a75-ba52-d135c04353ae",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "name": "Beta",
+    "description": "",
+    "abteilung": "Montage",
+    "color": "#2415f9"
+  }
+]

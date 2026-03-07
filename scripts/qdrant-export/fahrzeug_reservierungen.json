@@ -1,0 +1,21 @@
+[
+  {
+    "id": "c6f93b0c-9ea5-4d25-bfff-4251fa617de9",
+    "fahrzeugId": "03a40ed1-4867-47d0-a514-37481d696a42",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "baustelle": "GAZ Beringen",
+    "reserviertAb": "2026-03-02",
+    "reserviertBis": "2026-03-06",
+    "reserviertDurch": "Francisco Jose Martinez Sanchez"
+  },
+  {
+    "id": "ecef75df-8dad-40c9-ad87-7e84fb9b3991",
+    "fahrzeugId": "8c644706-43cd-44ee-8c87-5cd601cc1688",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "projektName": "1000222 – GAZ Beringen",
+    "baustelle": "GAZ Beringen",
+    "reserviertAb": "2026-03-09",
+    "reserviertBis": "2026-03-27",
+    "reserviertDurch": "Francisco Jose Martinez Sanchez"
+  }
+]

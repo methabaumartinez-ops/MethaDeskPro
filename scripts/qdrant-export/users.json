@@ -1,0 +1,46 @@
+[
+  {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "vorname": "Admin",
+    "nachname": "Methabau",
+    "email": "admin@methabau.ch",
+    "passwordHash": "c1c1e644fec6c4e042a80c144b093a98:a0dc87bbe7cf04da88a3c02f3ebc5723413c887bb6f91b38b692b329d2d221947f8dcd995a8fdbe3e5a26c5efe9b20bf46d8e0e52b8d37a283a42bb553af8427",
+    "department": "IT / Management",
+    "role": "admin",
+    "createdAt": "2026-02-18T09:32:04.945Z",
+    "confirmed": true
+  },
+  {
+    "id": "e968d27c-67ef-4ded-b9b3-27c8ec6e722c",
+    "vorname": "J.",
+    "nachname": "Wagner",
+    "email": "j.wagner@methabau.ch",
+    "department": "Management",
+    "role": "admin",
+    "passwordHash": "00000000000000000000000000000000:510c749b88d3c1a5dc2d171b17851ef7b3ad2a526ca12fe8d4784776cf7b8ecd5f5b4b74543f2ed79b9acb4bb40c3463399d0363083024c384eff3a29f3ce14a",
+    "confirmed": true,
+    "createdAt": "2026-02-19T11:27:20.758Z"
+  },
+  {
+    "id": "eb75bd47-6bbc-4348-8831-d075280bf461",
+    "vorname": "J.",
+    "nachname": "Mathis",
+    "email": "j.mathis@methabau.ch",
+    "department": "Management",
+    "role": "admin",
+    "passwordHash": "00000000000000000000000000000000:510c749b88d3c1a5dc2d171b17851ef7b3ad2a526ca12fe8d4784776cf7b8ecd5f5b4b74543f2ed79b9acb4bb40c3463399d0363083024c384eff3a29f3ce14a",
+    "confirmed": true,
+    "createdAt": "2026-02-19T11:26:26.304Z"
+  },
+  {
+    "id": "fcc1be4c-67b0-4176-8beb-48c1bdf76d73",
+    "vorname": "M.",
+    "nachname": "Fitzi",
+    "email": "m.fitzi@methabau.ch",
+    "department": "Management",
+    "role": "admin",
+    "passwordHash": "00000000000000000000000000000000:510c749b88d3c1a5dc2d171b17851ef7b3ad2a526ca12fe8d4784776cf7b8ecd5f5b4b74543f2ed79b9acb4bb40c3463399d0363083024c384eff3a29f3ce14a",
+    "confirmed": true,
+    "createdAt": "2026-02-19T11:27:20.870Z"
+  }
+]

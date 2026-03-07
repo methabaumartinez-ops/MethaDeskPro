@@ -1,0 +1,47 @@
+[
+  {
+    "id": "4f067a36-471c-401e-bcbc-3c2d78368160",
+    "taskId": "e2d084a8-46a5-48b8-8bc1-9068df0030bd",
+    "title": "Vorbereitung",
+    "orderIndex": 0,
+    "status": "fertig",
+    "createdAt": "2026-03-03T09:54:21.919Z",
+    "updatedAt": "2026-03-03T10:37:52.113Z"
+  },
+  {
+    "id": "594a9738-61f4-411d-a890-998a8d710426",
+    "taskId": "e2d084a8-46a5-48b8-8bc1-9068df0030bd",
+    "title": "Schalen",
+    "orderIndex": 1,
+    "status": "offen",
+    "createdAt": "2026-03-03T09:54:22.233Z",
+    "updatedAt": "2026-03-03T09:54:22.233Z"
+  },
+  {
+    "id": "908aa782-5d3d-4825-b89b-ff766e03685f",
+    "taskId": "e2d084a8-46a5-48b8-8bc1-9068df0030bd",
+    "title": "Betonieren",
+    "orderIndex": 3,
+    "status": "offen",
+    "createdAt": "2026-03-03T09:54:22.331Z",
+    "updatedAt": "2026-03-03T09:54:22.331Z"
+  },
+  {
+    "id": "9bdf51bb-d798-47e3-b4e7-8acd87a53231",
+    "taskId": "e2d084a8-46a5-48b8-8bc1-9068df0030bd",
+    "title": "Armieren",
+    "orderIndex": 2,
+    "status": "offen",
+    "createdAt": "2026-03-03T09:54:22.281Z",
+    "updatedAt": "2026-03-03T09:54:22.281Z"
+  },
+  {
+    "id": "f452feaf-184d-4a71-b3e4-c0693b4bc499",
+    "taskId": "e2d084a8-46a5-48b8-8bc1-9068df0030bd",
+    "title": "Auschalen",
+    "orderIndex": 4,
+    "status": "offen",
+    "createdAt": "2026-03-03T09:54:22.378Z",
+    "updatedAt": "2026-03-03T09:54:22.378Z"
+  }
+]

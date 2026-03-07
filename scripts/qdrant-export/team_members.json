@@ -1,0 +1,26 @@
+[
+  {
+    "id": "479e96b8-2c9b-4d24-a69f-0ad24106f843",
+    "teamId": "339fe09e-9945-401d-88cb-79cfaf341058",
+    "mitarbeiterId": "100ba6b3-ea67-47f8-aeca-0b4e79cc8261",
+    "role": "Vorarbeiter"
+  },
+  {
+    "id": "60b3c857-af76-469d-bcc8-8427c76d68fd",
+    "teamId": "339fe09e-9945-401d-88cb-79cfaf341058",
+    "mitarbeiterId": "04b60bae-aabf-4408-98ca-b67e4f63d48e",
+    "role": "Mitglied"
+  },
+  {
+    "id": "65b49dc4-4742-4572-9dd0-85c9f1fdf474",
+    "teamId": "cdb24c50-7402-4a75-ba52-d135c04353ae",
+    "mitarbeiterId": "1af46f41-6913-4671-8ee7-91c00a671ce9",
+    "role": "Mitglied"
+  },
+  {
+    "id": "726ff4fd-3d59-43c4-a312-d86df1ce1220",
+    "teamId": "cdb24c50-7402-4a75-ba52-d135c04353ae",
+    "mitarbeiterId": "68f1af34-11cb-4ccc-9259-566a79018606",
+    "role": "Mitglied"
+  }
+]

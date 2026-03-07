@@ -1,0 +1,112 @@
+[
+  {
+    "id": "443b7b3c-2e8c-483e-8c8a-57088caed569",
+    "entityType": "teilsystem",
+    "entityId": "3b3ab4dd-b243-4a77-b814-7befa68fe03e",
+    "nachLagerortId": "a251a0b5-8a91-4788-83da-9e9375e34b8f",
+    "typ": "einlagerung",
+    "durchgefuehrtVon": "00000000-0000-0000-0000-000000000001",
+    "durchgefuehrtVonName": "Admin Methabau",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "zeitpunkt": "2026-02-28T22:00:58.073Z"
+  },
+  {
+    "id": "50486839-fff3-4387-8879-030971f1bcca",
+    "entityType": "teilsystem",
+    "entityId": "10e7a7a5-d6b9-4df1-9b37-ac33041a256c",
+    "nachLagerortId": "c7558ef6-6a76-4c76-8c88-80c5f8161dac",
+    "typ": "einlagerung",
+    "durchgefuehrtVon": "00000000-0000-0000-0000-000000000001",
+    "durchgefuehrtVonName": "Admin Methabau",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "zeitpunkt": "2026-03-03T13:00:02.272Z"
+  },
+  {
+    "id": "6670ed02-f1ea-4156-b333-7e712f643df4",
+    "entityType": "teilsystem",
+    "entityId": "3b3ab4dd-b243-4a77-b814-7befa68fe03e",
+    "nachLagerortId": "d1792b36-69e8-4986-bb63-1a86f92bcd8e",
+    "typ": "auslagerung",
+    "durchgefuehrtVon": "00000000-0000-0000-0000-000000000001",
+    "durchgefuehrtVonName": "Admin Methabau",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "zeitpunkt": "2026-02-28T22:03:39.315Z"
+  },
+  {
+    "id": "7c98116c-a4ec-4bdf-aec9-7a68224a99b7",
+    "entityType": "teilsystem",
+    "entityId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+    "nachLagerortId": "d1792b36-69e8-4986-bb63-1a86f92bcd8e",
+    "typ": "einlagerung",
+    "durchgefuehrtVon": "00000000-0000-0000-0000-000000000001",
+    "durchgefuehrtVonName": "Admin Methabau",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "zeitpunkt": "2026-03-06T13:11:37.649Z"
+  },
+  {
+    "id": "8575154a-d106-4d5d-a879-478a08e60d60",
+    "entityType": "teilsystem",
+    "entityId": "93b551bc-39b8-45dd-ad9a-fd3585bb93ae",
+    "nachLagerortId": "d1792b36-69e8-4986-bb63-1a86f92bcd8e",
+    "typ": "einlagerung",
+    "durchgefuehrtVon": "00000000-0000-0000-0000-000000000001",
+    "durchgefuehrtVonName": "Admin Methabau",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "zeitpunkt": "2026-03-01T15:59:24.245Z"
+  },
+  {
+    "id": "aba13f89-b0e8-47c7-a55f-92461eeb9f49",
+    "entityType": "teilsystem",
+    "entityId": "4ad9f143-41e1-4e1e-8513-eb3d1f24e274",
+    "nachLagerortId": "d1792b36-69e8-4986-bb63-1a86f92bcd8e",
+    "typ": "einlagerung",
+    "durchgefuehrtVon": "00000000-0000-0000-0000-000000000001",
+    "durchgefuehrtVonName": "Admin Methabau",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "zeitpunkt": "2026-02-28T22:02:16.910Z"
+  },
+  {
+    "id": "b1d3a3d6-b9ba-49d3-97f4-0e224a190f58",
+    "entityType": "position",
+    "entityId": "0a1ba519-1093-44e4-9b27-6dc4b4ce4f9a",
+    "nachLagerortId": "d1792b36-69e8-4986-bb63-1a86f92bcd8e",
+    "typ": "einlagerung",
+    "durchgefuehrtVon": "00000000-0000-0000-0000-000000000001",
+    "durchgefuehrtVonName": "Admin Methabau",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "zeitpunkt": "2026-03-01T12:23:15.236Z"
+  },
+  {
+    "id": "d52d5b93-e953-4465-92b3-4676f81ad7d4",
+    "entityType": "teilsystem",
+    "entityId": "10e7a7a5-d6b9-4df1-9b37-ac33041a256c",
+    "nachLagerortId": "c857f1dc-c7ff-4383-b826-52d071ad17b8",
+    "typ": "einlagerung",
+    "durchgefuehrtVon": "00000000-0000-0000-0000-000000000001",
+    "durchgefuehrtVonName": "Admin Methabau",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "zeitpunkt": "2026-02-28T23:53:42.301Z"
+  },
+  {
+    "id": "dd62f17e-8623-4abe-a139-50b7765f6863",
+    "entityType": "teilsystem",
+    "entityId": "10e7a7a5-d6b9-4df1-9b37-ac33041a256c",
+    "nachLagerortId": "a251a0b5-8a91-4788-83da-9e9375e34b8f",
+    "typ": "einlagerung",
+    "durchgefuehrtVon": "00000000-0000-0000-0000-000000000001",
+    "durchgefuehrtVonName": "Admin Methabau",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "zeitpunkt": "2026-03-03T12:13:16.294Z"
+  },
+  {
+    "id": "f4e5adc0-907a-4a5c-8020-f79d1756080a",
+    "entityType": "teilsystem",
+    "entityId": "10e7a7a5-d6b9-4df1-9b37-ac33041a256c",
+    "nachLagerortId": "c857f1dc-c7ff-4383-b826-52d071ad17b8",
+    "typ": "einlagerung",
+    "durchgefuehrtVon": "00000000-0000-0000-0000-000000000001",
+    "durchgefuehrtVonName": "Admin Methabau",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "zeitpunkt": "2026-03-03T12:02:47.029Z"
+  }
+]

@@ -1,0 +1,159 @@
+[
+  {
+    "id": "1134963e-8927-45c8-b259-3b4f3c846c86",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "title": "1631 - Einlagewinkel",
+    "status": "Offen",
+    "sourceType": "ts",
+    "sourceTsId": "10e7a7a5-d6b9-4df1-9b37-ac33041a256c",
+    "priority": "Mittel",
+    "createdAt": "2026-03-03T06:29:45.572Z",
+    "updatedAt": "2026-03-03T06:29:45.572Z"
+  },
+  {
+    "0": {
+      "id": "224ddca9-a73d-4640-9bf3-566eb179e02e",
+      "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+      "title": "TS 2402 - Stahlauswechslungen Treppenhaus WT",
+      "status": "Blockiert",
+      "sourceType": "ts",
+      "sourceTsId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+      "priority": "Mittel",
+      "createdAt": "2026-03-01T20:30:32.546Z",
+      "updatedAt": "2026-03-01T22:24:37.439Z",
+      "description": "Teilsystem ist nicht mehr Abteilung Bau."
+    },
+    "id": "186f0141-1423-495a-a20f-ab5e26c58b30",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "status": "Erledigt",
+    "updatedAt": "2026-03-01T22:27:27.994Z"
+  },
+  {
+    "id": "224ddca9-a73d-4640-9bf3-566eb179e02e",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "title": "TS 2402 - Stahlauswechslungen Treppenhaus WT",
+    "status": "Blockiert",
+    "sourceType": "ts",
+    "sourceTsId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+    "priority": "Mittel",
+    "createdAt": "2026-03-01T20:30:32.546Z",
+    "updatedAt": "2026-03-01T22:24:37.439Z",
+    "description": "Teilsystem ist nicht mehr Abteilung Bau."
+  },
+  {
+    "id": "623e77ac-9405-4e72-84d7-a15d79440ddd",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "title": "TS 1121 - 1121 Trägeraufsatz Rühlwand",
+    "status": "Blockiert",
+    "sourceType": "ts",
+    "sourceTsId": "151fd895-557a-4036-a034-3cec9b785308",
+    "priority": "Mittel",
+    "createdAt": "2026-03-01T20:30:32.190Z",
+    "updatedAt": "2026-03-02T06:24:07.668Z",
+    "description": "Teilsystem ist nicht mehr Abteilung Bau."
+  },
+  {
+    "0": {
+      "id": "623e77ac-9405-4e72-84d7-a15d79440ddd",
+      "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+      "title": "TS 1121 - 1121 Trägeraufsatz Rühlwand",
+      "status": "Offen",
+      "sourceType": "ts",
+      "sourceTsId": "151fd895-557a-4036-a034-3cec9b785308",
+      "priority": "Mittel",
+      "createdAt": "2026-03-01T20:30:32.190Z",
+      "updatedAt": "2026-03-01T20:30:32.190Z"
+    },
+    "id": "7181abbb-efa0-49c1-9f02-a1e64d6bd940",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "status": "In Arbeit",
+    "updatedAt": "2026-03-01T21:28:18.831Z"
+  },
+  {
+    "0": {
+      "id": "224ddca9-a73d-4640-9bf3-566eb179e02e",
+      "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+      "title": "TS 2402 - Stahlauswechslungen Treppenhaus WT",
+      "status": "Offen",
+      "sourceType": "ts",
+      "sourceTsId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+      "priority": "Mittel",
+      "createdAt": "2026-03-01T20:30:32.546Z",
+      "updatedAt": "2026-03-01T20:30:32.546Z"
+    },
+    "id": "944b28b9-d8e5-4d68-a080-dd915934d80a",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "status": "Blockiert",
+    "updatedAt": "2026-03-01T21:28:05.364Z"
+  },
+  {
+    "0": {
+      "0": {
+        "id": "224ddca9-a73d-4640-9bf3-566eb179e02e",
+        "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+        "title": "TS 2402 - Stahlauswechslungen Treppenhaus WT",
+        "status": "Blockiert",
+        "sourceType": "ts",
+        "sourceTsId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+        "priority": "Mittel",
+        "createdAt": "2026-03-01T20:30:32.546Z",
+        "updatedAt": "2026-03-01T22:24:37.439Z",
+        "description": "Teilsystem ist nicht mehr Abteilung Bau."
+      },
+      "id": "d8027269-2386-42e8-8a71-e9db16db209a",
+      "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+      "status": "Offen",
+      "updatedAt": "2026-03-01T22:26:26.776Z"
+    },
+    "id": "a9b0e537-870a-4d18-924e-3ca6466c867b",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "status": "Erledigt",
+    "updatedAt": "2026-03-01T22:27:51.626Z"
+  },
+  {
+    "id": "b905f242-0c6c-4543-9a2f-4577b7895eef",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "title": "TS 3299 - Stahlbau Massnahme best. Kran EKS",
+    "status": "Offen",
+    "sourceType": "ts",
+    "sourceTsId": "93b551bc-39b8-45dd-ad9a-fd3585bb93ae",
+    "priority": "Mittel",
+    "createdAt": "2026-03-01T20:30:32.770Z",
+    "updatedAt": "2026-03-01T20:30:32.770Z"
+  },
+  {
+    "0": {
+      "id": "224ddca9-a73d-4640-9bf3-566eb179e02e",
+      "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+      "title": "TS 2402 - Stahlauswechslungen Treppenhaus WT",
+      "status": "Blockiert",
+      "sourceType": "ts",
+      "sourceTsId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+      "priority": "Mittel",
+      "createdAt": "2026-03-01T20:30:32.546Z",
+      "updatedAt": "2026-03-01T22:24:37.439Z",
+      "description": "Teilsystem ist nicht mehr Abteilung Bau."
+    },
+    "id": "d8027269-2386-42e8-8a71-e9db16db209a",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "status": "Offen",
+    "updatedAt": "2026-03-01T22:26:26.776Z"
+  },
+  {
+    "0": {
+      "id": "224ddca9-a73d-4640-9bf3-566eb179e02e",
+      "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+      "title": "TS 2402 - Stahlauswechslungen Treppenhaus WT",
+      "status": "Offen",
+      "sourceType": "ts",
+      "sourceTsId": "6a4632ae-7b10-4510-a1b0-a86e4106d9df",
+      "priority": "Mittel",
+      "createdAt": "2026-03-01T20:30:32.546Z",
+      "updatedAt": "2026-03-01T20:30:32.546Z"
+    },
+    "id": "eff126ae-1160-456e-a381-1f4d747f532b",
+    "projektId": "29ff60bc-8e31-4085-b77a-01fe273d56e0",
+    "status": "Erledigt",
+    "updatedAt": "2026-03-01T21:28:08.797Z"
+  }
+]

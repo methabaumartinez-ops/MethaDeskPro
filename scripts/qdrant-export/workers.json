@@ -1,0 +1,38 @@
+[
+  {
+    "id": "119524e7-9a09-4c93-9991-145f629c9ad1",
+    "fullName": "Anna Schmidt",
+    "active": true,
+    "role": "Bauleiter"
+  },
+  {
+    "id": "3c671967-c08f-40e9-820f-52f0cac7329b",
+    "fullName": "Lukas Weber",
+    "active": false,
+    "role": "Praktikant"
+  },
+  {
+    "id": "54d76dc8-b839-462a-9b5c-13e750dc02ca",
+    "fullName": "Peter Müller",
+    "active": true,
+    "role": "Baufacharbeiter"
+  },
+  {
+    "id": "a1e3b172-ddcf-469e-899c-a3f81d4af9b3",
+    "fullName": "Julia Wagner",
+    "active": true,
+    "role": "Baufacharbeiter"
+  },
+  {
+    "id": "aca55cbc-cbc4-4882-ba90-bd076bfa8b9f",
+    "fullName": "Simon Keller",
+    "active": true,
+    "role": "Kranführer"
+  },
+  {
+    "id": "f9c6c934-fb7f-4300-9bf9-1955c28c264f",
+    "fullName": "Hans Meier",
+    "active": true,
+    "role": "Polier"
+  }
+]
