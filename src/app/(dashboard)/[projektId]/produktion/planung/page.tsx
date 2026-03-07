@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { Loader2, Save, Layers } from 'lucide-react';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { SplitLayout, SplitLayoutList, SplitLayoutDetail } from '@/components/layout/SplitLayout';
 
 function getISOWeek(dateStr: string | null | undefined): number | string {
     if (!dateStr) return '-';
@@ -201,20 +202,19 @@ export default function PlanerPage() {
                     </CardContent>
                 </Card>
             ) : (
-                <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-6">
+                <SplitLayout>
                     {/* Left: Table */}
-                    <Card className="shadow-xl border-2 rounded-2xl overflow-hidden">
-                        <div className="overflow-y-auto">
+                    <SplitLayoutList>
                             <Table>
                                 <TableHeader className="sticky top-0 bg-muted/95 backdrop-blur-md z-20 shadow-sm border-b-2">
                                     <TableRow className="hover:bg-transparent">
-                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 border-l border-t border-b bg-muted/95">KS</TableHead>
-                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 w-24 border-t border-b bg-muted/95">TS Nummer</TableHead>
-                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 border-t border-b bg-muted/95">Name</TableHead>
-                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 border-t border-b bg-muted/95">Abgabe Plan</TableHead>
-                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 w-12 text-center border-r border-t border-b bg-muted/95">KW</TableHead>
-                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 border-t border-b bg-muted/95">Liefertermin</TableHead>
-                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 w-12 text-center border-r border-t border-b bg-muted/95">KW</TableHead>
+                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 bg-muted/95">KS</TableHead>
+                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 w-24 bg-muted/95">TS Nummer</TableHead>
+                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 bg-muted/95">Name</TableHead>
+                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 bg-muted/95">Abgabe Plan</TableHead>
+                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 w-12 text-center bg-muted/95">KW</TableHead>
+                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 bg-muted/95">Liefertermin</TableHead>
+                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 w-12 text-center bg-muted/95">KW</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -229,7 +229,7 @@ export default function PlanerPage() {
                                                     isSelected ? 'bg-orange-50/50 hover:bg-orange-50/80' : 'hover:bg-accent/50'
                                                 )}
                                             >
-                                                <TableCell className={cn('font-medium py-2.5 border-l-4', isSelected ? 'border-l-orange-500' : 'border-l-transparent')}>
+                                                <TableCell className={cn('font-medium py-2.5', isSelected ? 'border-l-4 border-l-orange-500 bg-orange-50/50' : 'border-l-4 border-l-transparent')}>
                                                     <div className="text-xs truncate max-w-[80px]">{ts.ks || '-'}</div>
                                                 </TableCell>
                                                 <TableCell className="py-2.5">
@@ -249,12 +249,11 @@ export default function PlanerPage() {
                                     })}
                                 </TableBody>
                             </Table>
-                        </div>
-                    </Card>
+                    </SplitLayoutList>
 
                     {/* Right: Detail Widget */}
-                    <Card className="flex flex-col shadow-xl border-2 rounded-2xl relative overflow-hidden h-fit">
-                        {selectedTs ? (
+                    <SplitLayoutDetail isEmpty={!selectedTs}>
+                        {selectedTs && (
                             <>
                                 <div className="h-1.5 w-full bg-orange-500" />
                                 <CardHeader className="border-b bg-muted/10 pb-5">
@@ -311,17 +310,9 @@ export default function PlanerPage() {
                                     </Button>
                                 </div>
                             </>
-                        ) : (
-                            <div className="h-full flex flex-col items-center justify-center text-muted-foreground p-8 text-center min-h-[300px]">
-                                <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-                                    <Layers className="h-8 w-8 text-muted-foreground/50" />
-                                </div>
-                                <p className="font-bold text-lg text-foreground">Keine Auswahl</p>
-                                <p className="text-sm font-medium mt-1">Bitte wählen Sie ein Teilsystem aus der linken Liste, um Details anzuzeigen.</p>
-                            </div>
                         )}
-                    </Card>
-                </div>
+                    </SplitLayoutDetail>
+                </SplitLayout>
             )}
         </div>
     );

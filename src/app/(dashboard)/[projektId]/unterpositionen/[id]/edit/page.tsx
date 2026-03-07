@@ -263,7 +263,7 @@ export default function UnterpositionEditPage() {
             </Link>
 
             <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Unterposition bearbeiten</h1>
+                <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Unt.Pos bearbeiten</h1>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -272,12 +272,12 @@ export default function UnterpositionEditPage() {
                     <Card className="lg:col-span-3 shadow-xl border-none">
                         <CardHeader className="bg-muted/30 border-b py-3">
                             <CardTitle className="text-base font-black uppercase tracking-wider text-muted-foreground">
-                                Unterpositions-Informationen
+                                Unt.Pos-Informationen
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-6 space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <Input label="Pos-Nr. *" {...register('posNummer')} error={errors.posNummer?.message} className="h-11 font-bold" />
+                                <Input label="Unt.Pos *" {...register('posNummer')} error={errors.posNummer?.message} className="h-11 font-bold" />
                                 <div className="md:col-span-3">
                                     <Input label="Bezeichnung *" {...register('name')} error={errors.name?.message} className="h-11 font-bold" />
                                 </div>
@@ -469,7 +469,7 @@ export default function UnterpositionEditPage() {
                         onClick={() => setShowDeleteConfirm(true)}
                     >
                         <Trash2 className="h-4 w-4" />
-                        Unterpos. löschen
+                        Unt.Pos löschen
                     </Button>
 
                     <div className="flex gap-3">

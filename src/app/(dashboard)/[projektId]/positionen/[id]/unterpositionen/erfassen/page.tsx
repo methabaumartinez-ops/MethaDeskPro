@@ -103,7 +103,11 @@ export default function UnterpositionErfassenPage() {
 
             {/* Context Header */}
             <div className="bg-card p-6 rounded-2xl shadow-sm border-2 border-border">
-                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">NEUE UNTERPOSITION ZUORDNEN</span>
+                <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em]">Position</span>
+                    <ArrowLeft className="h-3 w-3 text-muted-foreground/30 rotate-180" />
+                    <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">NEUE UNT.POS ZUORDNEN</span>
+                </div>
                 <div className="flex items-baseline gap-2 mt-1">
                     <span className="text-3xl font-black text-foreground tracking-tight">{position?.posNummer || '—'}</span>
                     <span className="text-3xl font-black text-foreground tracking-tight">{position?.name}</span>
@@ -114,7 +118,7 @@ export default function UnterpositionErfassenPage() {
                 <Card className="border-2 border-border shadow-sm">
                     <CardHeader className="border-b bg-muted/30 py-3 px-6">
                         <CardTitle className="text-sm font-black uppercase tracking-wider text-muted-foreground">
-                            Unterpositions-Details
+                            Unt.Pos-Details
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-6 space-y-5">
@@ -123,7 +127,7 @@ export default function UnterpositionErfassenPage() {
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div>
                                 <Input
-                                    label="Pos-Nr. *"
+                                    label="Unt.Pos *"
                                     placeholder="z.B. 10.1.1"
                                     {...register('posNummer')}
                                     error={errors.posNummer?.message}
@@ -197,7 +201,7 @@ export default function UnterpositionErfassenPage() {
                         </Link>
                         <Button type="submit" className="font-bold gap-2 min-w-[180px]" disabled={isSubmitting}>
                             <Save className="h-4 w-4" />
-                            {isSubmitting ? 'Speichert...' : 'Unterposition speichern'}
+                            {isSubmitting ? 'Speichert...' : 'Unt.Pos speichern'}
                         </Button>
                     </CardFooter>
                 </Card>

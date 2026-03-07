@@ -132,7 +132,7 @@ export default function UnterpositionDetailPage() {
                             </Badge>
                         )}
                     </div>
-                    <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em]">UNTERPOSITION</span>
+                    <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em]">UNT.POS</span>
                     <div className="flex flex-col md:flex-row items-center md:items-baseline gap-1 md:gap-3">
                         <span className="text-3xl font-black text-foreground tracking-tight select-none">{unterposition.posNummer || '—'}</span>
                         <h1 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">{unterposition.name}</h1>
