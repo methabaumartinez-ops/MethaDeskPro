@@ -24,11 +24,11 @@ export function ProjectBanner({ className }: { className?: string }) {
 
     return (
         <div className={cn(
-            "bg-slate-900 border border-slate-800 text-slate-100 rounded-2xl flex items-center shadow-inner overflow-hidden h-9 w-full max-w-2xl",
+            "bg-slate-950 border border-white/10 text-slate-100 rounded-2xl flex items-center shadow-inner overflow-hidden h-10 w-full max-w-4xl",
             className
         )}>
             {/* Left Edge: Small Image */}
-            <div className="h-9 w-9 shrink-0 bg-slate-950 flex items-center justify-center relative border-r border-slate-800">
+            <div className="h-10 w-10 shrink-0 bg-black flex items-center justify-center relative border-r border-white/10">
                 {projectImageUrl && !imageError ? (
                     <img
                         src={projectImageUrl}
@@ -57,7 +57,7 @@ export function ProjectBanner({ className }: { className?: string }) {
             </div>
 
             {/* Metadata Badges - Scrollable or hidden on very small screens */}
-            <div className="hidden md:flex items-center gap-4 px-4 text-[10px] border-l border-slate-800 bg-slate-950/30 h-full">
+            <div className="hidden md:flex items-center gap-4 px-4 text-[10px] border-l border-white/10 bg-white/5 h-full">
                 <div className="flex gap-1 items-center" title={`Kommission: ${activeProjekt.projektnummer}`}>
                     <span className="text-primary font-medium tracking-wider uppercase">Komm.</span>
                     <span className="font-mono text-slate-200">#{activeProjekt.projektnummer}</span>

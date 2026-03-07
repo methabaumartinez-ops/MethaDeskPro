@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Position, Unterposition, Teilsystem, Lagerort } from '@/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Edit, Plus, FileSpreadsheet, ListTodo, Printer, Share2, ShieldCheck, X, Download, MapPin } from 'lucide-react';
+import { ArrowLeft, Edit, Plus, FileSpreadsheet, ListTodo, Printer, Share2, ShieldCheck, X, Download, MapPin, BadgeDollarSign } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { cn, getAppUrl } from '@/lib/utils';
 import Link from 'next/link';
@@ -96,7 +96,7 @@ export default function PositionDetailPage() {
             {/* Header / Navigation Section */}
             <div className="flex justify-between items-center -mt-2 mb-2 px-2">
                 <div className="flex items-center gap-4">
-                    <Button onClick={() => router.back()} className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                    <Button onClick={() => router.back()} className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
                         <ArrowLeft className="h-4 w-4" />
                         Zurück
                     </Button>
@@ -104,7 +104,7 @@ export default function PositionDetailPage() {
 
                 {!isReadOnly && (
                     <Link href={`/${projektId}/positionen/${position.id}/edit`}>
-                        <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                        <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
                             <Edit className="h-4 w-4" />
                             <span>Bearbeiten</span>
                         </Button>
@@ -227,9 +227,9 @@ export default function PositionDetailPage() {
                     <CardContent className="p-4 flex flex-col gap-3 items-center justify-center h-full">
                         {can('viewKosten') && (
                             <Link href={`/${projektId}/kosten?pos=${id}`} className="w-full max-w-[240px]">
-                                <Button className="w-full h-10 border-2 border-green-400 bg-green-50/50 hover:bg-green-100/70 dark:bg-green-900/20 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center justify-center gap-2.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
+                                <Button className="w-full h-10 border-2 border-green-400 bg-green-50/50 hover:bg-green-100/70 dark:bg-green-900/20 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 font-black uppercase text-[10px] tracking-widest rounded-lg flex items-center justify-center gap-2.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
                                     <div className="p-1 bg-white dark:bg-slate-800 rounded-full shadow-sm">
-                                        <FileSpreadsheet className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                                        <BadgeDollarSign className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
                                     </div>
                                     <span>Kosten erfassen</span>
                                 </Button>
@@ -267,7 +267,7 @@ export default function PositionDetailPage() {
                     </CardTitle>
                     {(!isReadOnly && can('create')) && (
                         <Link href={`/${projektId}/positionen/${id}/unterpositionen/erfassen`}>
-                            <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white font-bold h-9 px-6 rounded-full shadow-md flex items-center gap-2 transition-all hover:scale-105">
+                            <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white font-bold h-9 px-6 rounded-lg shadow-md flex items-center gap-2 transition-all hover:scale-105">
                                 <Plus className="h-4 w-4" />
                                 <span>Hinzufügen</span>
                             </Button>

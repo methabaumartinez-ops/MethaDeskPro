@@ -132,7 +132,7 @@ export default function ProjektePage() {
                             className={cn(
                                 "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all",
                                 viewMode === 'aktiv'
-                                    ? "bg-white dark:bg-card text-orange-600 shadow-sm"
+                                    ? "bg-white dark:bg-card text-orange-500 shadow-sm"
                                     : "text-muted-foreground hover:text-foreground"
                             )}
                         >
@@ -166,14 +166,14 @@ export default function ProjektePage() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {projekte.map((p) => (
                                 <Card key={p.id} className={cn(
-                                    "group border-2 border-orange-500 transition-all hover:shadow-xl hover:-translate-y-1 duration-300 overflow-hidden relative bg-white dark:bg-card",
+                                    "group border-2 border-orange-500/10 transition-all hover:shadow-xl hover:-translate-y-1 duration-300 overflow-hidden relative bg-white dark:bg-card",
                                     archivingId === p.id && "opacity-60 pointer-events-none"
                                 )}>
                                     {/* Archiving spinner overlay */}
                                     {archivingId === p.id && (
                                         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/80 dark:bg-card/80 backdrop-blur-sm rounded-xl gap-2">
-                                            <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
-                                            <span className="text-xs font-black text-orange-600 uppercase tracking-widest">Archivierung läuft...</span>
+                                            <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+                                            <span className="text-xs font-black text-orange-500 uppercase tracking-widest">Archivierung läuft...</span>
                                         </div>
                                     )}
 
@@ -207,7 +207,7 @@ export default function ProjektePage() {
 
                                     <CardHeader className="pb-2 pt-4 relative">
                                         <div className="flex justify-between items-start mb-1">
-                                            <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-md border border-primary/20">
+                                            <span className="text-[10px] font-bold text-orange-500 bg-orange-50 dark:bg-orange-500/10 px-1.5 py-0.5 rounded-md border border-orange-500/20">
                                                 {p.projektnummer}
                                             </span>
                                         </div>
@@ -228,7 +228,7 @@ export default function ProjektePage() {
                                     <CardFooter className="pt-0 pb-4 flex flex-col gap-2">
                                         <Button
                                             onClick={() => handleSelect(p)}
-                                            className="w-full h-9 text-sm font-bold transition-all hover:bg-orange-600 hover:text-white"
+                                            className="w-full h-9 text-sm font-bold transition-all hover:bg-orange-500 hover:text-white"
                                             variant="secondary"
                                         >
                                             Projekt öffnen
@@ -238,7 +238,7 @@ export default function ProjektePage() {
                                         {p.infoBlattUrl && (
                                             <Button
                                                 variant="secondary"
-                                                className="w-full h-9 text-sm font-bold transition-all hover:bg-orange-600 hover:text-white group"
+                                                className="w-full h-9 text-sm font-bold transition-all hover:bg-orange-500 hover:text-white group"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     setPreviewUrl(p.infoBlattUrl!);

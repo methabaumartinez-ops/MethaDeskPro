@@ -5,7 +5,7 @@ import { useParams, useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Layers, Save } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, isMontageterminProvisional } from '@/lib/utils';
 import { Teilsystem, Projekt, ABTEILUNGEN_CONFIG, ITEM_STATUS_OPTIONS, ItemStatus, Abteilung } from '@/types';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
@@ -165,7 +165,7 @@ export default function AbteilungPage() {
                                                 <div className="font-bold text-sm truncate max-w-[160px]">{item.name}</div>
                                                 {item.bemerkung && <div className="text-[10px] text-muted-foreground truncate max-w-[160px] italic mt-0.5">{item.bemerkung}</div>}
                                             </TableCell>
-                                            <TableCell className="p-4 text-xs font-black text-slate-700">
+                                            <TableCell className={cn("p-4 text-xs font-black", isMontageterminProvisional(item) ? "text-red-600" : "text-slate-700")}>
                                                 {item.montagetermin || '—'}
                                             </TableCell>
                                         </TableRow>

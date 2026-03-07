@@ -72,14 +72,14 @@ export default function LagerortShareView({ id }: { id: string }) {
     }
 
     return (
-        <Card className="border-2 border-orange-100 shadow-xl rounded-[2rem] overflow-hidden max-w-2xl mx-auto">
-            <CardHeader className="bg-orange-50/50 border-b border-orange-100 p-8 text-center pb-12 relative overflow-hidden">
+        <Card className="border-2 border-orange-500/10 shadow-xl rounded-[2rem] overflow-hidden max-w-2xl mx-auto">
+            <CardHeader className="bg-orange-50/30 border-b border-orange-500/10 p-8 text-center pb-12 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 opacity-5">
                     <Package className="w-48 h-48 rotate-12" />
                 </div>
 
-                <div className="inline-flex items-center justify-center p-4 bg-white rounded-2xl shadow-lg ring-4 ring-orange-500/10 mb-6 relative z-10">
-                    <Package className="h-8 w-8 text-orange-600" />
+                <div className="inline-flex items-center justify-center p-4 bg-white rounded-2xl shadow-lg ring-4 ring-orange-500/5 mb-6 relative z-10">
+                    <Package className="h-8 w-8 text-orange-500" />
                 </div>
 
                 <div className="relative z-10">
@@ -87,7 +87,7 @@ export default function LagerortShareView({ id }: { id: string }) {
                         {lagerort.bezeichnung}
                     </CardTitle>
                     {lagerort.bereich && (
-                        <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-orange-200 shadow-sm">
+                        <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-orange-500/10 shadow-sm">
                             <MapPin className="h-4 w-4 text-orange-500" />
                             <span className="text-xs font-black uppercase text-slate-600 tracking-widest">
                                 Bereich: {lagerort.bereich}
@@ -98,7 +98,7 @@ export default function LagerortShareView({ id }: { id: string }) {
             </CardHeader>
             <CardContent className="p-8">
                 {lagerort.beschreibung && (
-                    <div className="mb-8 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="mb-8 p-6 bg-slate-50/50 rounded-2xl border border-slate-100">
                         <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Beschreibung</h3>
                         <p className="text-sm font-medium text-slate-700 leading-relaxed italic">
                             "{lagerort.beschreibung}"
@@ -111,7 +111,7 @@ export default function LagerortShareView({ id }: { id: string }) {
                         href={lagerort.planUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full py-4 border-2 border-orange-500 bg-orange-50/50 hover:bg-orange-100/70 text-orange-700 font-black uppercase text-[12px] tracking-widest rounded-2xl flex items-center justify-center gap-3 transition-all shadow-sm focus:ring-4 focus:ring-orange-500/20"
+                        className="w-full py-4 border-2 border-orange-500/20 bg-orange-50/50 hover:bg-orange-50 text-orange-600 font-black uppercase text-[12px] tracking-widest rounded-2xl flex items-center justify-center gap-3 transition-all shadow-sm focus:ring-4 focus:ring-orange-500/10"
                     >
                         <Map className="h-5 w-5" />
                         Lagerort-Plan ansehen

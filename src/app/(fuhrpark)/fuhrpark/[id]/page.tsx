@@ -14,6 +14,7 @@ import { FleetService } from '@/lib/services/fleetService';
 import { Fahrzeug, FahrzeugKategorie, FahrzeugStatus, FahrzeugReservierung } from '@/types';
 import { ArrowLeft, Save, Edit, Car, CalendarPlus, Trash2, AlertTriangle, Download } from 'lucide-react';
 import Link from 'next/link';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 const KATEGORIE_OPTIONS = [
     { label: 'Scherenbühne', value: 'scherenbuehne' },
@@ -60,6 +61,11 @@ export default function FahrzeugDetailPage() {
     const [form, setForm] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // Confirmation state
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmType, setConfirmType] = useState<'exportDelete' | 'deleteRes'>('exportDelete');
+    const [resToDelete, setResToDelete] = useState<string | null>(null);
 
     const loadData = useCallback(async () => {
         setLoading(true);
@@ -157,9 +163,13 @@ export default function FahrzeugDetailPage() {
         }
     };
 
-    const handleExportAndDelete = async () => {
+    const handleExportAndDeleteClick = () => {
+        setConfirmType('exportDelete');
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmExportAndDelete = async () => {
         if (!fahrzeug) return;
-        if (!confirm('Möchten Sie dieses Fahrzeug wirklich exportieren und löschen?')) return;
 
         // Export as JSON
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fahrzeug, null, 2));
@@ -178,18 +188,29 @@ export default function FahrzeugDetailPage() {
         } catch (err) {
             console.error('Error deleting vehicle:', err);
             toast.error('Fehler beim Löschen des Fahrzeugs.');
+        } finally {
+            setConfirmOpen(false);
         }
     };
 
-    const handleDeleteReservierung = async (resId: string) => {
-        if (!confirm('Reservierung wirklich löschen?')) return;
+    const handleDeleteReservierungClick = (resId: string) => {
+        setResToDelete(resId);
+        setConfirmType('deleteRes');
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDeleteRes = async () => {
+        if (!resToDelete) return;
         try {
-            await FleetService.deleteReservierung(resId);
-            setReservierungen(prev => prev.filter(r => r.id !== resId));
+            await FleetService.deleteReservierung(resToDelete);
+            setReservierungen(prev => prev.filter(r => r.id !== resToDelete));
             toast.success('Reservierung gelöscht');
         } catch (err) {
             console.error('Error deleting reservation:', err);
             toast.error('Fehler beim Löschen der Reservierung.');
+        } finally {
+            setConfirmOpen(false);
+            setResToDelete(null);
         }
     };
 
@@ -503,7 +524,7 @@ export default function FahrzeugDetailPage() {
                                             <Button
                                                 variant="ghost" size="icon"
                                                 className="h-8 w-8 text-muted-foreground/50 hover:text-red-600 hover:bg-red-50"
-                                                onClick={() => handleDeleteReservierung(res.id)}
+                                                onClick={() => handleDeleteReservierungClick(res.id)}
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
@@ -522,6 +543,20 @@ export default function FahrzeugDetailPage() {
                 onClose={() => setModalOpen(false)}
                 onSave={handleSaveReservierung}
                 fahrzeug={fahrzeug}
+            />
+
+            {/* Confirmation Dialog */}
+            <ConfirmDialog
+                isOpen={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                onConfirm={confirmType === 'exportDelete' ? handleConfirmExportAndDelete : handleConfirmDeleteRes}
+                title={confirmType === 'exportDelete' ? "Exportieren & Löschen?" : "Reservierung löschen?"}
+                description={confirmType === 'exportDelete'
+                    ? "Möchten Sie dieses Fahrzeug wirklich exportieren (als JSON) und dann unwiderruflich aus der Datenbank löschen?"
+                    : "Möchten Sie diese Reservierung wirklich löschen?"}
+                variant="danger"
+                confirmLabel={confirmType === 'exportDelete' ? "Export/Löschen" : "Löschen"}
+                cancelLabel="Abbrechen"
             />
         </div>
     );

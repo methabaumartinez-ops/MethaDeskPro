@@ -14,7 +14,7 @@ export const badgeVariants = {
     info: 'border-transparent bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
     secondary: 'border-transparent bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100',
     gray: 'border-transparent bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
-    orange: 'border-transparent bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
+    orange: 'border-transparent bg-orange-100 text-orange-800 dark:bg-orange-500/30 dark:text-orange-400',
     teal: 'border-transparent bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400',
     violet: 'border-transparent bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400',
 };

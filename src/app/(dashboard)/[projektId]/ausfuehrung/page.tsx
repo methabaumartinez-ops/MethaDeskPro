@@ -15,12 +15,12 @@ import { FleetService } from '@/lib/services/fleetService';
 import { TeamService } from '@/lib/services/teamService';
 import { TaskService } from '@/lib/services/taskService';
 import { Teilsystem, Fahrzeug, Team, TeamMember, Task, Subtask, Mitarbeiter } from '@/types';
+import { cn, isMontageterminProvisional } from '@/lib/utils';
 import {
     Search, Filter, Layers, Link as LinkIcon,
     Car, HardHat, Package, Truck, Plus, CheckCircle2, Clock, Inbox, Trash2, Send, Edit2, MessageSquare,
     Eye, CalendarPlus, Wrench, Camera, ArrowLeft, Users, CheckSquare, UserPlus
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { BestellService } from '@/lib/services/bestellService';
 import { MaterialBestellung, BestellungItem, FahrzeugReservierung, ABTEILUNGEN_CONFIG } from '@/types';
@@ -492,7 +492,7 @@ export default function AusfuehrungPage() {
                                                                 <div className="flex flex-col gap-1">
                                                                     <div className="flex items-center gap-1.5">
                                                                         <span className="text-[9px] font-black uppercase text-muted-foreground/60 w-12">Montage:</span>
-                                                                        <span className="text-[10px] font-black text-orange-600">{item.montagetermin || '—'}</span>
+                                                                        <span className={cn("text-[10px] font-black", isMontageterminProvisional(item) ? "text-red-600" : "text-orange-600")}>{item.montagetermin || '—'}</span>
                                                                     </div>
                                                                     <div className="flex items-center gap-1.5">
                                                                         <span className="text-[9px] font-black uppercase text-muted-foreground/60 w-12">Von:</span>

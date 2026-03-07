@@ -168,10 +168,10 @@ export function ModuleActionBanner({
                 !showBackButton && "lg:pl-6"
             )}>
                 <div className="p-2 bg-white/10 rounded-lg shrink-0">
-                    <Icon className="h-5 w-5 text-primary" />
+                    <Icon className="h-5 w-5 text-orange-500" />
                 </div>
                 <div>
-                    <div className="text-[9px] font-bold text-primary uppercase tracking-wider">
+                    <div className="text-[9px] font-bold text-orange-500 uppercase tracking-wider">
                         Modul
                     </div>
                     <div className="text-base font-black text-white leading-tight">{title}</div>
@@ -199,7 +199,7 @@ export function ModuleActionBanner({
                             onKeyDown={handleKeyDown}
                             onFocus={() => suggestions.length > 0 && setOpen(true)}
                             placeholder={searchPlaceholder}
-                            className="w-full h-9 bg-white border border-slate-200 rounded-lg pl-9 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors shadow-inner"
+                            className="w-full h-9 bg-white border border-slate-200 rounded-lg pl-9 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-colors shadow-inner"
                             autoComplete="off"
                         />
 
@@ -221,7 +221,7 @@ export function ModuleActionBanner({
                                         className={cn(
                                             'flex flex-col px-4 py-2.5 cursor-pointer transition-colors text-sm',
                                             idx === activeIndex
-                                                ? 'bg-primary/20 text-white'
+                                                ? 'bg-orange-500/20 text-white'
                                                 : 'text-white/80 hover:bg-white/10'
                                         )}
                                         onMouseDown={(e) => {
@@ -254,7 +254,7 @@ export function ModuleActionBanner({
                             <Link href={ctaHref}>
                                 <Button
                                     size="sm"
-                                    className="h-9 px-5 bg-primary hover:bg-primary/90 text-white font-black text-xs uppercase tracking-widest rounded-lg gap-2 shadow-lg shadow-primary/30 transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
+                                    className="h-9 px-5 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs uppercase tracking-widest rounded-lg gap-2 shadow-lg shadow-orange-500/30 transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
                                 >
                                     <CtaIcon className="h-4 w-4" />
                                     {ctaLabel}
@@ -264,7 +264,7 @@ export function ModuleActionBanner({
                             <Button
                                 size="sm"
                                 onClick={ctaOnClick}
-                                className="h-9 px-5 bg-primary hover:bg-primary/90 text-white font-black text-xs uppercase tracking-widest rounded-lg gap-2 shadow-lg shadow-primary/30 transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
+                                className="h-9 px-5 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs uppercase tracking-widest rounded-lg gap-2 shadow-lg shadow-orange-500/30 transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
                             >
                                 <CtaIcon className="h-4 w-4" />
                                 {ctaLabel}

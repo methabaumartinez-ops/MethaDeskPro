@@ -10,7 +10,7 @@ export function Signature() {
             rel="noopener noreferrer"
             className="flex items-center gap-2 group hover:opacity-80 transition-all py-1.5 px-3 rounded-xl bg-white/50 backdrop-blur-sm border border-slate-200/50 shadow-sm w-fit"
         >
-            <span className="text-[10px] font-black uppercase tracking-wider text-[#FF6B35]/80 whitespace-nowrap">
+            <span className="text-[10px] font-black uppercase tracking-wider text-primary/80 whitespace-nowrap">
                 Powered by
             </span>
             <div className="relative w-6 h-6 rounded-md overflow-hidden border border-slate-200 shadow-sm bg-white shrink-0">

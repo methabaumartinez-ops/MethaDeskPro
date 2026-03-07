@@ -4,7 +4,7 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
@@ -15,10 +15,13 @@ import { SubPositionService } from '@/lib/services/subPositionService';
 import { LagerortService } from '@/lib/services/lagerortService';
 import { LagerortSelect } from '@/components/shared/LagerortSelect';
 import { Unterposition, Lagerort, Beschichtung, PlanStatus, ABTEILUNGEN_CONFIG } from '@/types';
+import { POS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses } from '@/lib/config/statusConfig';
 import { ArrowLeft, Save, UploadCloud, FileType, Paperclip, FileText, Loader2, X, Search, Plus, Loader, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { ProjectService } from '@/lib/services/projectService';
+import { SupplierService } from '@/lib/services/supplierService';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
 import { Badge } from '@/components/ui/badge';
 
@@ -40,10 +43,11 @@ const unterpositionSchema = z.object({
     menge: z.coerce.number().min(0.01),
     einheit: z.string().min(1, 'Einheit ist erforderlich'),
     status: z.string().min(1, 'Status ist erforderlich'),
-    planStatus: z.string().optional(),
+    planStatus: z.string().min(1, 'Plan Status ist erforderlich'),
     beschichtung: z.string().optional(),
     gewicht: z.coerce.number().optional(),
     lagerortId: z.string().optional(),
+    lieferantId: z.string().optional(),
     bemerkung: z.string().optional(),
     ifcUrl: z.string().optional(),
 });
@@ -57,7 +61,7 @@ export default function UnterpositionEditPage() {
     const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
     const [unterposition, setUnterposition] = useState<Unterposition | null>(null);
 
-    const { register, handleSubmit, formState: { errors, isSubmitting }, reset, watch, setValue } = useForm<UnterpositionValues>({
+    const { register, handleSubmit, formState: { errors, isSubmitting }, reset, watch, setValue, control } = useForm<UnterpositionValues>({
         resolver: zodResolver(unterpositionSchema),
     });
 
@@ -70,6 +74,7 @@ export default function UnterpositionEditPage() {
     const docInputRef = React.useRef<HTMLInputElement>(null);
     const [previewDoc, setPreviewDoc] = useState<{ url: string, title: string } | null>(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [allLieferanten, setAllLieferanten] = useState<any[]>([]);
 
     const loadDokumente = async () => {
         try {
@@ -83,10 +88,12 @@ export default function UnterpositionEditPage() {
     useEffect(() => {
         const load = async () => {
             try {
-                const [data, lo] = await Promise.all([
+                const [data, lo, lieferantenData] = await Promise.all([
                     SubPositionService.getUnterpositionById(id),
                     LagerortService.getLagerorte(projektId),
+                    SupplierService.getLieferanten(),
                 ]);
+                setAllLieferanten(Array.isArray(lieferantenData) ? lieferantenData : []);
                 if (data) {
                     setUnterposition(data);
                     reset({
@@ -95,10 +102,11 @@ export default function UnterpositionEditPage() {
                         menge: data.menge,
                         einheit: data.einheit,
                         status: data.status as any,
-                        planStatus: data.planStatus || '',
+                        planStatus: data.planStatus || 'offen',
                         beschichtung: data.beschichtung || '',
                         gewicht: data.gewicht,
                         lagerortId: data.lagerortId || '',
+                        lieferantId: data.lieferantId || '',
                         bemerkung: data.bemerkung || '',
                         ifcUrl: data.ifcUrl || '',
                     } as any);
@@ -289,7 +297,7 @@ export default function UnterpositionEditPage() {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <Select
-                                    label="Status *"
+                                    label="Pos Status *"
                                     options={[
                                         { value: 'offen', label: 'Offen' },
                                         { value: 'bestellt', label: 'Bestellt' },
@@ -301,16 +309,14 @@ export default function UnterpositionEditPage() {
                                     ]}
                                     {...register('status')}
                                     error={errors.status?.message}
-                                    className="h-11"
+                                    className={cn('h-11 font-bold', getStatusColorClasses(watch('status')))}
                                 />
                                 <Select
-                                    label="Plan-Status"
-                                    options={[
-                                        { value: '', label: '— Kein Plan-Status —' },
-                                        ...PLAN_STATUS.map(p => ({ value: p.value, label: p.label }))
-                                    ]}
+                                    label="Plan Status *"
+                                    options={PLAN_STATUS.map(p => ({ value: p.value, label: p.label }))}
                                     {...register('planStatus')}
-                                    className="h-11"
+                                    error={errors.planStatus?.message}
+                                    className={cn('h-11 font-bold', getStatusColorClasses(watch('planStatus')))}
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
@@ -329,6 +335,24 @@ export default function UnterpositionEditPage() {
                                     onLagerortAdded={(newLagerort) => setLagerorte(prev => [...prev, newLagerort])}
                                     {...register('lagerortId')}
                                     className="h-11"
+                                />
+                            </div>
+                            <div>
+                                <Controller
+                                    name="lieferantId"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <SearchableSelect
+                                            label="Lieferant"
+                                            placeholder="Lieferant suchen..."
+                                            options={[
+                                                { label: 'Kein Lieferant', value: '' },
+                                                ...allLieferanten.map(l => ({ label: l.name, value: l.id }))
+                                            ]}
+                                            value={field.value || ''}
+                                            onChange={field.onChange}
+                                        />
+                                    )}
                                 />
                             </div>
                             <div className="space-y-1.5">

@@ -3,32 +3,52 @@ import { toast } from '@/lib/toast';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { mockStore } from '@/lib/mock/store';
-import { ArrowLeft, UploadCloud, FileType } from 'lucide-react';
+import { ArrowLeft, Save, ClipboardList, ListTodo, PlusCircle, UploadCloud } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { PositionService } from '@/lib/services/positionService';
 import { LagerortService } from '@/lib/services/lagerortService';
 import { LagerortSelect } from '@/components/shared/LagerortSelect';
-import { Position, Teilsystem, Lagerort } from '@/types';
-import { POS_ALLOWED_STATUSES, STATUS_UI_CONFIG } from '@/lib/config/statusConfig';
+import { Position, Teilsystem, Lagerort, PlanStatus, Beschichtung } from '@/types';
+import { POS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses } from '@/lib/config/statusConfig';
+import { ProvisionalDateInput } from '@/components/ui/provisional-date-input';
+
+const BESCHICHTUNGEN: Beschichtung[] = [
+    'feuerverzinkt', 'pulverbeschichtet', 'nasslackiert', 'eloxiert', 'kunststoffbeschichtet', 'unbehandelt', 'andere'
+];
+
+const PLAN_STATUS: { value: PlanStatus; label: string }[] = [
+    { value: 'offen', label: 'Offen' },
+    { value: 'in_bearbeitung', label: 'In Bearbeitung' },
+    { value: 'freigegeben', label: 'Freigegeben' },
+    { value: 'fertig', label: 'Fertig' },
+    { value: 'geaendert', label: 'Geändert' },
+    { value: 'abgeschlossen', label: 'Abgeschlossen' },
+];
 
 const positionSchema = z.object({
-    posNummer: z.string().min(1, 'Positionsnummer ist erforderlich'),
+    posNummer: z.string().optional(),
     name: z.string().min(3, 'Bezeichnung muss mindestens 3 Zeichen lang sein'),
-    menge: z.coerce.number().min(1, 'Menge muss mindestens 1 sein'),
+    menge: z.coerce.number().min(0.01),
     einheit: z.string().min(1, 'Einheit ist erforderlich'),
     teilsystemId: z.string().min(1, 'Teilsystem ist erforderlich'),
     status: z.string().min(1, 'Status ist erforderlich'),
+    planStatus: z.string().optional(),
+    beschichtung: z.string().optional(),
+    gewicht: z.coerce.number().optional(),
     lagerortId: z.string().optional(),
+    montagetermin: z.string().optional(),
+    bemerkung: z.string().optional(),
+    abteilung: z.string().optional(),
 });
 
 type PositionValues = z.infer<typeof positionSchema>;
@@ -48,7 +68,10 @@ export default function PositionErfassenPage() {
                     SubsystemService.getTeilsystemById(teilsystemId),
                     LagerortService.getLagerorte(projektId)
                 ]);
-                if (ts) setTeilsystem(ts);
+                if (ts) {
+                    setTeilsystem(ts);
+                    if (ts.abteilung) setValue('abteilung', ts.abteilung);
+                }
                 setLagerorte(lo);
             }
         };
@@ -65,6 +88,9 @@ export default function PositionErfassenPage() {
     const {
         register,
         handleSubmit,
+        setValue,
+        watch,
+        control,
         formState: { errors, isSubmitting },
     } = useForm<PositionValues>({
         resolver: zodResolver(positionSchema),
@@ -106,33 +132,28 @@ export default function PositionErfassenPage() {
         }
     };
 
-    // @ts-ignore
-    const project = mockStore.getProjekte().find((p: any) => p.id === projektId);
-
     if (!teilsystemId) {
         return <div className="p-10 text-center text-red-500 font-bold">Fehler: Keine Teilsystem-ID angegeben.</div>;
     }
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-12">
-            {/* Project Context Header (Compact) */}
-            {/* Back Button */}
-            <div className="flex justify-end mb-4">
-                <Link href={`/${projektId}/teilsysteme/${teilsystemId}`}>
-                    <Button variant="outline" size="sm" className="bg-muted hover:bg-muted/80 text-foreground font-bold h-9 text-xs">
-                        <ArrowLeft className="h-3 w-3 mr-1" />
-                        Zurück zum Teilsystem
-                    </Button>
-                </Link>
-            </div>
+            <ModuleActionBanner
+                icon={ClipboardList}
+                title="Position erfassen"
+                showBackButton={true}
+                backHref={`/${projektId}/teilsysteme/${teilsystemId}`}
+            />
 
-            {/* Header Card */}
-            <div className="bg-card p-6 rounded-2xl shadow-sm border border-border flex justify-between items-center">
-                <div className="space-y-1">
-                    <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">NEUE POSITION ZUORDNEN</span>
-                    <div className="flex items-baseline gap-2">
-                        <span className="text-3xl font-black text-foreground tracking-tight">{(teilsystem?.teilsystemNummer || teilsystemId || '').replace(/^ts\s?/i, '')}</span>
-                        <span className="text-3xl font-black text-foreground tracking-tight">{teilsystem?.name}</span>
+            {/* Context Header - Secondary info about the Teilsystem */}
+            <div className="bg-white/50 backdrop-blur-sm p-4 rounded-2xl border border-border/60 flex items-center gap-4 px-6 -mt-2">
+                <div className="flex flex-col">
+                    <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em]">Zugeordnetes Teilsystem</span>
+                    <div className="flex items-baseline gap-2 mt-0.5">
+                        <span className="text-xl font-black text-foreground tracking-tight">
+                            {(teilsystem?.teilsystemNummer || teilsystemId || '').replace(/^ts\s?/i, '')}
+                        </span>
+                        <span className="text-xl font-bold text-foreground/80 tracking-tight">{teilsystem?.name}</span>
                     </div>
                 </div>
             </div>
@@ -142,41 +163,121 @@ export default function PositionErfassenPage() {
                     {/* Left Column: Information */}
                     <div className="lg:col-span-3 h-full flex flex-col">
                         <Card className="shadow-sm border-none flex-1">
-                            <CardHeader className="py-3 px-4 bg-muted/30 border-b">
-                                <CardTitle className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                                    <FileType className="h-3.5 w-3.5" />
-                                    Positions Details
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-6 p-6">
+                            <CardContent className="p-6 pt-5">
                                 <input type="hidden" {...register('teilsystemId')} />
+                                <input type="hidden" {...register('abteilung')} />
 
-                                <div className="space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                                        <div className="md:col-span-1">
-                                            <Input label="Pos-Nr." placeholder="e.g. 10.1" {...register('posNummer')} error={errors.posNummer?.message} />
-                                        </div>
-                                        <div className="md:col-span-3">
-                                            <Input label="Bezeichnung" placeholder="z.B. Fensterfront Typ A" {...register('name')} error={errors.name?.message} />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <Input label="Menge" type="number" {...register('menge')} error={errors.menge?.message} />
-                                        <Input label="Einheit" placeholder="Stk, m, m2" {...register('einheit')} error={errors.einheit?.message} />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <Select 
-                                            label="Status" 
-                                            options={POS_ALLOWED_STATUSES.map(st => ({ label: STATUS_UI_CONFIG[st].label, value: STATUS_UI_CONFIG[st].value }))} 
-                                            {...register('status')} 
-                                            error={errors.status?.message} 
+                                <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                                    {/* Row 1: Designation (Wide) */}
+                                    <div className="md:col-span-9">
+                                        <Input
+                                            label="Bezeichnung *"
+                                            placeholder="z.B. Fensterfront Typ A"
+                                            {...register('name')}
+                                            error={errors.name?.message}
                                         />
+                                    </div>
+                                    <div className="md:col-span-3">
+                                        <Input
+                                            label="Pos-Nr."
+                                            placeholder="z.B. 10.1"
+                                            {...register('posNummer')}
+                                            error={errors.posNummer?.message}
+                                        />
+                                    </div>
+
+                                    {/* Row 2: Quantities and Status (Varied) */}
+                                    <div className="md:col-span-2">
+                                        <Input
+                                            label="Menge *"
+                                            type="number"
+                                            step="0.01"
+                                            {...register('menge')}
+                                            error={errors.menge?.message}
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <Input
+                                            label="Einheit"
+                                            placeholder="Stk, m, m²"
+                                            {...register('einheit')}
+                                            error={errors.einheit?.message}
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <Input
+                                            label="Gewicht (kg)"
+                                            type="number"
+                                            step="0.1"
+                                            {...register('gewicht')}
+                                            placeholder="Optional"
+                                        />
+                                    </div>
+                                    <div className="md:col-span-3">
+                                        <Controller
+                                            name="montagetermin"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <ProvisionalDateInput
+                                                    label="Montagetermin"
+                                                    value={field.value || ''}
+                                                    onChange={field.onChange}
+                                                    onBlur={field.onBlur}
+                                                    name={field.name}
+                                                />
+                                            )}
+                                        />
+                                    </div>
+                                    <div className="md:col-span-3">
+                                        <Select
+                                            label="Status *"
+                                            options={POS_ALLOWED_STATUSES.map(st => ({
+                                                value: STATUS_UI_CONFIG[st].value,
+                                                label: STATUS_UI_CONFIG[st].label
+                                            }))}
+                                            {...register('status')}
+                                            error={errors.status?.message}
+                                            className={cn('font-bold', getStatusColorClasses(watch('status')))}
+                                        />
+                                    </div>
+
+                                    {/* Row 3: Plan-Status and Logistics (Medium) */}
+                                    <div className="md:col-span-4">
+                                        <Select
+                                            label="Plan-Status"
+                                            options={[
+                                                { value: '', label: 'Kein Plan-Status' },
+                                                ...PLAN_STATUS.map(p => ({ value: p.value, label: p.label }))
+                                            ]}
+                                            {...register('planStatus')}
+                                        />
+                                    </div>
+                                    <div className="md:col-span-4">
+                                        <Select
+                                            label="Beschichtung"
+                                            options={[
+                                                { value: '', label: 'Keine Beschichtung' },
+                                                ...BESCHICHTUNGEN.map(b => ({ value: b, label: b }))
+                                            ]}
+                                            {...register('beschichtung')}
+                                        />
+                                    </div>
+                                    <div className="md:col-span-4">
                                         <LagerortSelect
                                             projektId={projektId}
                                             lagerorte={lagerorte}
                                             onLagerortAdded={(newLagerort) => setLagerorte(prev => [...prev, newLagerort])}
                                             {...register('lagerortId')}
-                                            error={errors.lagerortId?.message}
+                                        />
+                                    </div>
+
+                                    {/* Row 4: Remarks (Wide) */}
+                                    <div className="md:col-span-12 space-y-1.5">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Bemerkung</label>
+                                        <textarea
+                                            className="flex min-h-[96px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all hover:border-accent-foreground/30 shadow-sm"
+                                            placeholder="Zusätzliche Notizen zur Position..."
+                                            {...register('bemerkung')}
                                         />
                                     </div>
                                 </div>
@@ -205,7 +306,7 @@ export default function PositionErfassenPage() {
                                 onClick={() => fileInputRef.current?.click()}
                             >
                                 <div className="bg-background p-3 rounded-full shadow-sm mb-3">
-                                    <FileType className="h-6 w-6 text-primary" />
+                                    <UploadCloud className="h-6 w-6 text-primary" />
                                 </div>
                                 <h3 className="text-xs font-bold text-foreground mb-1">Dateien hierher ziehen</h3>
                                 <p className="text-[10px] font-medium text-muted-foreground mb-4 text-center">

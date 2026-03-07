@@ -245,7 +245,7 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
                         ))}
                     </div>
                     <Button
-                        className="bg-orange-600 hover:bg-orange-700 text-white font-black rounded-full px-8"
+                        className="bg-orange-500 hover:bg-orange-600 text-white font-black rounded-full px-8"
                         onClick={() => { onImported(); onClose(); }}
                     >
                         Fertig
@@ -571,7 +571,7 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
                         <Button
                             onClick={handleImport}
                             disabled={importing || (selectedPos.length === 0 && selectedUPos.length === 0 && selectedMat.length === 0)}
-                            className="bg-orange-600 hover:bg-orange-700 text-white font-black rounded-2xl h-12 px-10 flex items-center gap-3 shadow-xl shadow-orange-200 transition-all hover:scale-105 active:scale-95"
+                            className="bg-orange-500 hover:bg-orange-600 text-white font-black rounded-2xl h-12 px-10 flex items-center gap-3 shadow-xl shadow-orange-500/20 transition-all hover:scale-105 active:scale-95"
                         >
                             {importing ? (
                                 <><Loader2 className="h-5 w-5 animate-spin" /> <span className="uppercase tracking-[0.2em] text-[10px]">Importiere...</span></>

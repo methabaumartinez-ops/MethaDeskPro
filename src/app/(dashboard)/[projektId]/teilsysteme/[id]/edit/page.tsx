@@ -13,7 +13,8 @@ import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { useProjekt } from '@/lib/context/ProjektContext';
 import { ABTEILUNGEN_CONFIG } from '@/types';
-import { TS_ALLOWED_STATUSES, STATUS_UI_CONFIG } from '@/lib/config/statusConfig';
+import { TS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses, getAbteilungColorClasses } from '@/lib/config/statusConfig';
+import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { EmployeeService } from '@/lib/services/employeeService';
 import { SupplierService } from '@/lib/services/supplierService';
@@ -22,13 +23,14 @@ import { LagerortService } from '@/lib/services/lagerortService';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { LagerortSelect } from '@/components/shared/LagerortSelect';
 import { Teilsystem, Lieferant, Lagerort } from '@/types';
-import { ArrowLeft, Save, Calendar as CalendarIcon, UploadCloud, FileType, Truck, X, Search, Plus, Paperclip, FileText, Loader2, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Calendar as CalendarIcon, UploadCloud, FileType, Truck, X, Search, Plus, Paperclip, FileText, Loader2, Trash2, Edit, ClipboardList } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { ProjectService } from '@/lib/services/projectService';
 import { cn } from '@/lib/utils';
 import { IfcImportModal, IfcExtractResult } from '@/components/shared/IfcImportModal';
 import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
+import { ProvisionalDateInput } from '@/components/ui/provisional-date-input';
 
 const teilsystemSchema = z.object({
     teilsystemNummer: z.string().optional(),
@@ -41,7 +43,7 @@ const teilsystemSchema = z.object({
     montagetermin: z.string().optional(),
     lieferfrist: z.string().optional(),
     abgabePlaner: z.string().optional(),
-    planStatus: z.string().optional(),
+    planStatus: z.string().min(1, 'Plan-Status ist erforderlich'),
     wemaLink: z.string().optional(),
     ifcUrl: z.string().optional(),
     abteilung: z.string().min(1, 'Abteilung ist erforderlich'),
@@ -197,7 +199,7 @@ export default function TeilsystemEditPage() {
                     setValue('wemaLink', item.wemaLink || '');
                     setValue('ifcUrl', item.ifcUrl || '');
                     setValue('abteilung', item.abteilung || '');
-                    setValue('status', item.status);
+                    setValue('status', item.status || 'offen');
                     setValue('lagerortId', item.lagerortId || '');
                     setValue('lieferantenIds', item.lieferantenIds || []);
                     setValue('subunternehmerId', item.subunternehmerId || '');
@@ -345,6 +347,8 @@ export default function TeilsystemEditPage() {
                 projektId, // Add project id to avoid disappearing from lists
                 eroeffnetAm: isoToGermanDate(data.eroeffnetAm),
                 montagetermin: isoToGermanDate(data.montagetermin),
+                // When user explicitly edits montagetermin, mark it as confirmed (not provisional anymore)
+                montageterminProvisional: data.montagetermin ? false : undefined,
                 lieferfrist: isoToGermanDate(data.lieferfrist),
                 abgabePlaner: isoToGermanDate(data.abgabePlaner),
                 abteilung: data.abteilung as any,
@@ -429,44 +433,46 @@ export default function TeilsystemEditPage() {
 
 
     return (
-        <div className="w-full space-y-6 pb-8">
-            <Link href={`/${projektId}/teilsysteme/${id}${from ? `?from=${from}` : ''}`} className="inline-flex items-center text-sm font-bold text-muted-foreground hover:text-primary transition-colors">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Zurück al Teilsystem
-            </Link>
-
-            <div className="flex justify-start items-center gap-4">
-                <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Teilsystem bearbeiten</h1>
+        <div className="w-full space-y-6 animate-in fade-in duration-500 pb-12">
+            <ModuleActionBanner
+                icon={Edit}
+                title="Teilsystem bearbeiten"
+                showBackButton={true}
+                backHref={`/${projektId}/teilsysteme/${id}${from ? `?from=${from}` : ''}`}
+            >
                 {teilsystem && (
-                    <div className="flex items-baseline gap-2 bg-primary/5 px-4 py-2 rounded-xl border border-primary/20 shadow-sm">
-                        <span className="text-xl font-black text-primary drop-shadow-sm">TS{teilsystem.teilsystemNummer}</span>
-                        <span className="text-lg font-bold text-muted-foreground truncate max-w-[400px]">{teilsystem.name}</span>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-sm font-black text-white/90">TS{teilsystem.teilsystemNummer}</span>
+                        <span className="text-sm font-semibold text-white/50 truncate max-w-[300px]">{teilsystem.name}</span>
                     </div>
                 )}
-            </div>
+            </ModuleActionBanner>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
                     {/* Left Column: Form Data */}
                     <Card className="lg:col-span-3 shadow-xl border-none">
-                        <CardHeader className="bg-muted/30 border-b py-3">
-                            <CardTitle className="text-base">Teilsystem-Informationen</CardTitle>
+                        <CardHeader className="bg-muted/30 border-b border-border py-4 px-6">
+                            <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                                <ClipboardList className="h-5 w-5 text-primary" />
+                                Teilsystem-Informationen
+                            </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-4 space-y-4">
-                            {/* Row 1 */}
-                            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-                                <Input
-                                    label="System-Nummer *"
-                                    placeholder="z.B. 1050"
-                                    className="h-9 md:col-span-1"
-                                    {...register('teilsystemNummer')}
-                                    error={errors.teilsystemNummer?.message}
-                                />
+                        <CardContent className="p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                                {/* Row 1: System Identifiers & Name */}
+                                <div className="md:col-span-2">
+                                    <Input
+                                        label="System-Nummer *"
+                                        placeholder="z.B. 1050"
+                                        {...register('teilsystemNummer')}
+                                        error={errors.teilsystemNummer?.message}
+                                    />
+                                </div>
                                 <div className="md:col-span-1">
                                     <Input
                                         label="KS"
                                         placeholder="1"
-                                        className="h-9"
                                         {...register('ks')}
                                         error={errors.ks?.message}
                                     />
@@ -474,20 +480,23 @@ export default function TeilsystemEditPage() {
                                         {watch('ks') === '1' ? 'Baumeister' : watch('ks') === '2' ? 'Produktion' : watch('ks') === '3' ? 'Extern' : ''}
                                     </p>
                                 </div>
-                                <Input
-                                    label="Bezeichnung *"
-                                    placeholder="z.B. Baukran"
-                                    className="h-9 md:col-span-2"
-                                    {...register('name')}
-                                    error={errors.name?.message}
-                                />
-                                <Select
-                                    label="Abteilung *"
-                                    options={abteilungOptions}
-                                    className="h-9 md:col-span-1"
-                                    {...register('abteilung')}
-                                    error={errors.abteilung?.message}
-                                />
+                                <div className="md:col-span-6">
+                                    <Input
+                                        label="Bezeichnung *"
+                                        placeholder="z.B. Baukran"
+                                        {...register('name')}
+                                        error={errors.name?.message}
+                                    />
+                                </div>
+                                <div className="md:col-span-3">
+                                    <Select
+                                        label="Abteilung *"
+                                        options={abteilungOptions}
+                                        {...register('abteilung')}
+                                        error={errors.abteilung?.message}
+                                        className={cn('font-bold', getAbteilungColorClasses(watch('abteilung')))}
+                                    />
+                                </div>
                             </div>
 
                             {!currentAbteilung && (
@@ -514,59 +523,84 @@ export default function TeilsystemEditPage() {
 
 
 
-                            {/* Row 3: Dates */}
-                            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-                                <DateInput
-                                    label="Eröffnet am"
-                                    className="h-9"
-                                    {...register('eroeffnetAm')}
-                                />
-                                <DateInput
-                                    label="Plan-Abgabe"
-                                    className="h-9"
-                                    {...register('abgabePlaner')}
-                                />
-                                <DateInput
-                                    label="Lieferfrist"
-                                    className="h-9"
-                                    {...register('lieferfrist')}
-                                />
-                                <DateInput
-                                    label="Montagetermin"
-                                    className="h-9"
-                                    {...register('montagetermin')}
-                                />
-                                <Select
-                                    label="Eröffnet durch"
-                                    options={mitarbeiterOptions}
-                                    className="h-9"
-                                    {...register('eroeffnetDurch')}
-                                />
+                            {/* Row 3: Department & Status */}
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-5 mt-2">
+                                <div className="md:col-span-4">
+                                    <Select
+                                        label="TS Status *"
+                                        options={statusOptions}
+                                        {...register('status')}
+                                        error={errors.status?.message}
+                                        className={cn('font-bold', getStatusColorClasses(watch('status')))}
+                                    />
+                                </div>
+                                <div className="md:col-span-4">
+                                    <Select
+                                        label="Plan Status *"
+                                        options={planStatusOptions}
+                                        {...register('planStatus')}
+                                        error={errors.planStatus?.message}
+                                        className={cn('font-bold', getStatusColorClasses(watch('planStatus')))}
+                                    />
+                                </div>
+                                <div className="md:col-span-4">
+                                    <LagerortSelect
+                                        projektId={projektId}
+                                        lagerorte={lagerorte}
+                                        onLagerortAdded={(newLagerort) => setLagerorte(prev => [...prev, newLagerort])}
+                                        {...register('lagerortId')}
+                                        error={errors.lagerortId?.message}
+                                    />
+                                </div>
                             </div>
 
-                            {/* Row 3: Status */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <Select
-                                    label="Plan-Status"
-                                    options={planStatusOptions}
-                                    className="h-9"
-                                    {...register('planStatus')}
-                                />
-                                <Select
-                                    label="Status *"
-                                    options={statusOptions}
-                                    className="h-9"
-                                    {...register('status')}
-                                    error={errors.status?.message}
-                                />
-                                <LagerortSelect
-                                    projektId={projektId}
-                                    lagerorte={lagerorte}
-                                    onLagerortAdded={(newLagerort) => setLagerorte(prev => [...prev, newLagerort])}
-                                    className="h-9"
-                                    {...register('lagerortId')}
-                                    error={errors.lagerortId?.message}
-                                />
+                            {/* Row 4: People */}
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                                <div className="md:col-span-4">
+                                    <Select
+                                        label="Eröffnet durch"
+                                        options={mitarbeiterOptions}
+                                        {...register('eroeffnetDurch')}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Row 5: Dates (compact) */}
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                                <div className="md:col-span-3">
+                                    <DateInput
+                                        label="Eröffnet am"
+                                        {...register('eroeffnetAm')}
+                                    />
+                                </div>
+                                <div className="md:col-span-3">
+                                    <DateInput
+                                        label="Plan-Abgabe"
+                                        {...register('abgabePlaner')}
+                                    />
+                                </div>
+                                <div className="md:col-span-3">
+                                    <DateInput
+                                        label="Liefertermin"
+                                        {...register('lieferfrist')}
+                                    />
+                                </div>
+                                <div className="md:col-span-3">
+                                    <Controller
+                                        control={control}
+                                        name="montagetermin"
+                                        render={({ field }) => (
+                                            <ProvisionalDateInput
+                                                label="Montagetermin"
+                                                provisionalText="Durch Bauleiter"
+                                                value={field.value ?? ''}
+                                                onChange={field.onChange}
+                                                onBlur={field.onBlur}
+                                                name={field.name}
+                                            />
+                                        )}
+                                    />
+                                </div>
                             </div>
 
                             {/* Row 4: Beschreibung & WEMA Link */}

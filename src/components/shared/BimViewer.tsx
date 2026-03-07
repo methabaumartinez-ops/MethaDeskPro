@@ -295,7 +295,7 @@ export function BimViewer({ modelName = 'IFC Modell', modelUrl }: { modelName?: 
                     {measurementDistance !== null && (
                         <div className="bg-white dark:bg-card px-3 py-2 rounded-lg shadow-lg border-2 border-orange-500 flex flex-col items-center gap-1 animate-in slide-in-from-left-4 fade-in">
                             <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-400">Distanz</span>
-                            <span className="font-mono font-black text-orange-600">
+                            <span className="font-mono font-black text-orange-500">
                                 {measurementDistance < 1 ? (measurementDistance * 1000).toFixed(0) + ' mm' : measurementDistance.toFixed(3) + ' m'}
                             </span>
                             <Button variant="ghost" size="sm" className="h-5 text-[10px] w-full mt-1 text-slate-500 hover:text-red-600 p-0" onClick={clearMeasurement}>
@@ -375,7 +375,7 @@ export function BimViewer({ modelName = 'IFC Modell', modelUrl }: { modelName?: 
                         <span>LOD 300</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className={`h-1.5 w-1.5 rounded-full ${loadingStatus && !error ? 'bg-orange-400 animate-pulse' : error ? 'bg-red-500' : modelUrl ? 'bg-green-500' : 'bg-slate-400'}`} />
+                        <div className={`h-1.5 w-1.5 rounded-full ${loadingStatus && !error ? 'bg-orange-500 animate-pulse' : error ? 'bg-red-500' : modelUrl ? 'bg-green-500' : 'bg-slate-400'}`} />
                         <span>{loadingStatus && !error ? 'LADEN' : error ? 'FEHLER' : modelUrl ? 'BEREIT' : 'LEER'}</span>
                     </div>
                 </div>

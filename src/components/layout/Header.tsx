@@ -3,7 +3,7 @@
 import React from 'react';
 import { useProjekt } from '@/lib/context/ProjektContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Menu } from 'lucide-react';
+import { LogOut, User, Menu, LayoutGrid } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { SupportChat } from '@/components/shared/SupportChat';
 import { cn } from '@/lib/utils';
@@ -48,11 +48,23 @@ export function Header({ onMenuClick, hideProjectInfo = false, projectBanner }: 
                 </div>
 
                 {/* Center: Centered Project Banner Area (Absolute) */}
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center justify-center pointer-events-none z-10 w-full max-w-[30%] lg:max-w-[45%] xl:max-w-[60%]">
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center justify-center pointer-events-none z-10 w-full max-w-[40%] lg:max-w-[60%] xl:max-w-[75%]">
                     <div className="pointer-events-auto flex items-center justify-center w-full">
                         {showBanner && projectBanner}
                     </div>
                 </div>
+
+                {/* A Proyectos Button — visible only inside project context */}
+                {showBanner && (
+                    <button
+                        onClick={() => router.push('/projekte')}
+                        className="hidden sm:flex items-center gap-2 px-4 py-2 ml-[1cm] rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black text-[11px] uppercase tracking-widest transition-all shrink-0 shadow-lg shadow-orange-500/20 hover:scale-105 active:scale-95"
+                        title="Zur Projektauswahl"
+                    >
+                        <LayoutGrid className="h-4 w-4" />
+                        Projekte
+                    </button>
+                )}
 
                 {/* Middleware Spacer: takes up available space to push profile to the right */}
                 <div className="flex-1" />

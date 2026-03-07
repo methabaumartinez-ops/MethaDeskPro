@@ -3,7 +3,7 @@ import { toast } from '@/lib/toast';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
@@ -13,12 +13,17 @@ import { Button } from '@/components/ui/button';
 import { PositionService } from '@/lib/services/positionService';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { ProjectService } from '@/lib/services/projectService';
+import { SupplierService } from '@/lib/services/supplierService';
 import { LagerortService } from '@/lib/services/lagerortService';
 import { LagerortSelect } from '@/components/shared/LagerortSelect';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Position, Teilsystem, Projekt, Lagerort, Beschichtung, PlanStatus } from '@/types';
-import { POS_ALLOWED_STATUSES, STATUS_UI_CONFIG } from '@/lib/config/statusConfig';
-import { ArrowLeft, Save } from 'lucide-react';
+import { POS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses } from '@/lib/config/statusConfig';
+import { ArrowLeft, Save, PlusCircle, ListTodo, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
+import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
+import { ProvisionalDateInput } from '@/components/ui/provisional-date-input';
+import { cn } from '@/lib/utils';
 
 const BESCHICHTUNGEN: Beschichtung[] = [
     'feuerverzinkt', 'pulverbeschichtet', 'nasslackiert', 'eloxiert', 'kunststoffbeschichtet', 'unbehandelt', 'andere'
@@ -39,12 +44,14 @@ const positionSchema = z.object({
     einheit: z.string().min(1, 'Einheit ist erforderlich'),
     teilsystemId: z.string().min(1, 'Teilsystem ist erforderlich'),
     status: z.string().min(1, 'Status ist erforderlich'),
-    planStatus: z.string().optional(),
+    planStatus: z.string().min(1, 'Plan Status ist erforderlich'),
     beschichtung: z.string().optional(),
     gewicht: z.coerce.number().optional(),
     lagerortId: z.string().optional(),
+    lieferantId: z.string().optional(),
     montagetermin: z.string().optional(),
     bemerkung: z.string().optional(),
+    abteilung: z.string().optional(),
 });
 
 type PositionValues = z.infer<typeof positionSchema>;
@@ -57,18 +64,22 @@ export default function PositionErfassenPage() {
 
     const [teilsystem, setTeilsystem] = useState<Teilsystem | null>(null);
     const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
+    const [allLieferanten, setAllLieferanten] = useState<any[]>([]);
 
     const {
         register,
         handleSubmit,
+        setValue,
+        watch,
+        control,
         formState: { errors, isSubmitting },
     } = useForm<PositionValues>({
         resolver: zodResolver(positionSchema),
         defaultValues: {
             status: 'offen',
+            planStatus: 'offen',
             einheit: 'Stk',
             teilsystemId: teilsystemId || '',
-            menge: 1,
         }
     });
 
@@ -76,10 +87,17 @@ export default function PositionErfassenPage() {
         const loadContext = async () => {
             if (teilsystemId) {
                 const ts = await SubsystemService.getTeilsystemById(teilsystemId);
-                setTeilsystem(ts);
+                if (ts) {
+                    setTeilsystem(ts);
+                    if (ts.abteilung) setValue('abteilung', ts.abteilung);
+                }
             }
-            const lo = await LagerortService.getLagerorte(projektId);
+            const [lo, lieferantenData] = await Promise.all([
+                LagerortService.getLagerorte(projektId),
+                SupplierService.getLieferanten(),
+            ]);
             setLagerorte(lo);
+            setAllLieferanten(Array.isArray(lieferantenData) ? lieferantenData : []);
         };
         loadContext();
     }, [teilsystemId, projektId]);
@@ -92,6 +110,7 @@ export default function PositionErfassenPage() {
                 status: data.status as any,
                 planStatus: data.planStatus as any,
                 beschichtung: data.beschichtung as any,
+                abteilung: data.abteilung as any,
             };
             await PositionService.createPosition(newItem);
             toast.success("Position erstellt");
@@ -108,23 +127,23 @@ export default function PositionErfassenPage() {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-12">
-            <div className="flex justify-end mb-4">
-                <Link href={`/${projektId}/teilsysteme/${teilsystemId}`}>
-                    <Button variant="outline" size="sm" className="font-bold gap-2 h-9 text-xs">
-                        <ArrowLeft className="h-3 w-3" />
-                        Zurück zum Teilsystem
-                    </Button>
-                </Link>
-            </div>
+            <ModuleActionBanner
+                icon={ClipboardList}
+                title="Position erfassen"
+                showBackButton={true}
+                backHref={`/${projektId}/teilsysteme/${teilsystemId}`}
+            />
 
-            {/* Context Header */}
-            <div className="bg-card p-6 rounded-2xl shadow-sm border-2 border-border">
-                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">NEUE POSITION ZUORDNEN</span>
-                <div className="flex items-baseline gap-2 mt-1">
-                    <span className="text-3xl font-black text-foreground tracking-tight">
-                        {(teilsystem?.teilsystemNummer || teilsystemId || '').replace(/^ts\s?/i, '')}
-                    </span>
-                    <span className="text-3xl font-black text-foreground tracking-tight">{teilsystem?.name}</span>
+            {/* Context Header - Secondary info about the Teilsystem */}
+            <div className="bg-white/50 backdrop-blur-sm p-4 rounded-2xl border border-border/60 flex items-center gap-4 px-6 -mt-2">
+                <div className="flex flex-col">
+                    <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em]">Zugeordnetes Teilsystem</span>
+                    <div className="flex items-baseline gap-2 mt-0.5">
+                        <span className="text-xl font-black text-foreground tracking-tight">
+                            {(teilsystem?.teilsystemNummer || teilsystemId || '').replace(/^ts\s?/i, '')}
+                        </span>
+                        <span className="text-xl font-bold text-foreground/80 tracking-tight">{teilsystem?.name}</span>
+                    </div>
                 </div>
             </div>
 
@@ -132,89 +151,134 @@ export default function PositionErfassenPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Main Form Card */}
                     <Card className="lg:col-span-2 shadow-sm border-2 border-border">
-                        <CardHeader className="border-b bg-muted/30 py-3 px-6">
-                            <CardTitle className="text-sm font-black uppercase tracking-wider text-muted-foreground">
-                                Positions-Informationen
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-6 space-y-5">
+                        <CardContent className="p-6 pt-5">
                             <input type="hidden" {...register('teilsystemId')} />
+                            <input type="hidden" {...register('abteilung')} />
 
-                            <Input
-                                label="Bezeichnung *"
-                                placeholder="z.B. Fensterfront Typ A"
-                                {...register('name')}
-                                error={errors.name?.message}
-                            />
-                            <div className="grid grid-cols-3 gap-4">
-                                <Input
-                                    label="Menge *"
-                                    type="number"
-                                    step="0.01"
-                                    {...register('menge')}
-                                    error={errors.menge?.message}
-                                />
-                                <Input
-                                    label="Einheit"
-                                    placeholder="Stk, m, m²"
-                                    {...register('einheit')}
-                                    error={errors.einheit?.message}
-                                />
-                                <Input
-                                    label="Gewicht (kg)"
-                                    type="number"
-                                    step="0.1"
-                                    {...register('gewicht')}
-                                    placeholder="Optional"
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <Select
-                                    label="Status *"
-                                    options={POS_ALLOWED_STATUSES.map(st => ({
-                                        value: STATUS_UI_CONFIG[st].value,
-                                        label: STATUS_UI_CONFIG[st].label
-                                    }))}
-                                    {...register('status')}
-                                    error={errors.status?.message}
-                                />
-                                <Select
-                                    label="Plan-Status"
-                                    options={[
-                                        { value: '', label: '— Kein Plan-Status —' },
-                                        ...PLAN_STATUS.map(p => ({ value: p.value, label: p.label }))
-                                    ]}
-                                    {...register('planStatus')}
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <Select
-                                    label="Beschichtung"
-                                    options={[
-                                        { value: '', label: '— Keine Beschichtung —' },
-                                        ...BESCHICHTUNGEN.map(b => ({ value: b, label: b }))
-                                    ]}
-                                    {...register('beschichtung')}
-                                />
-                                <LagerortSelect
-                                    projektId={projektId}
-                                    lagerorte={lagerorte}
-                                    onLagerortAdded={(newLagerort) => setLagerorte(prev => [...prev, newLagerort])}
-                                    {...register('lagerortId')}
-                                />
-                            </div>
-                            <Input
-                                label="Montagetermin"
-                                placeholder="z.B. Di 03.02.2026 oder nach Absprache"
-                                {...register('montagetermin')}
-                            />
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-semibold text-foreground ml-1">Bemerkung</label>
-                                <textarea
-                                    className="flex min-h-[72px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all"
-                                    placeholder="Zusätzliche Notizen..."
-                                    {...register('bemerkung')}
-                                />
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                                {/* Row 1: Designation (Wide) */}
+                                <div className="md:col-span-12">
+                                    <Input
+                                        label="Bezeichnung *"
+                                        placeholder="z.B. Fensterfront Typ A"
+                                        {...register('name')}
+                                        error={errors.name?.message}
+                                    />
+                                </div>
+
+                                {/* Row 2: Quantities and Status (Varied) */}
+                                <div className="md:col-span-2">
+                                    <Input
+                                        label="Menge *"
+                                        type="number"
+                                        step="0.01"
+                                        {...register('menge')}
+                                        error={errors.menge?.message}
+                                    />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <Input
+                                        label="Einheit"
+                                        placeholder="Stk, m, m²"
+                                        {...register('einheit')}
+                                        error={errors.einheit?.message}
+                                    />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <Input
+                                        label="Gewicht (kg)"
+                                        type="number"
+                                        step="0.1"
+                                        {...register('gewicht')}
+                                        placeholder="Optional"
+                                    />
+                                </div>
+                                <div className="md:col-span-3">
+                                    <Controller
+                                        name="montagetermin"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <ProvisionalDateInput
+                                                label="Montagetermin"
+                                                value={field.value || ''}
+                                                onChange={field.onChange}
+                                                onBlur={field.onBlur}
+                                                name={field.name}
+                                            />
+                                        )}
+                                    />
+                                </div>
+                                <div className="md:col-span-3">
+                                    <Select
+                                        label="Pos Status *"
+                                        options={POS_ALLOWED_STATUSES.map(st => ({
+                                            value: STATUS_UI_CONFIG[st].value,
+                                            label: STATUS_UI_CONFIG[st].label
+                                        }))}
+                                        {...register('status')}
+                                        error={errors.status?.message}
+                                        className={cn('font-bold', getStatusColorClasses(watch('status')))}
+                                    />
+                                </div>
+
+                                {/* Row 3: Plan-Status and Logistics (Medium) */}
+                                <div className="md:col-span-4">
+                                    <Select
+                                        label="Plan Status *"
+                                        options={PLAN_STATUS.map(p => ({ value: p.value, label: p.label }))}
+                                        {...register('planStatus')}
+                                        error={errors.planStatus?.message}
+                                        className={cn('font-bold', getStatusColorClasses(watch('planStatus')))}
+                                    />
+                                </div>
+                                <div className="md:col-span-4">
+                                    <Select
+                                        label="Beschichtung"
+                                        options={[
+                                            { value: '', label: 'Keine Beschichtung' },
+                                            ...BESCHICHTUNGEN.map(b => ({ value: b, label: b }))
+                                        ]}
+                                        {...register('beschichtung')}
+                                    />
+                                </div>
+                                <div className="md:col-span-4">
+                                    <LagerortSelect
+                                        projektId={projektId}
+                                        lagerorte={lagerorte}
+                                        onLagerortAdded={(newLagerort) => setLagerorte(prev => [...prev, newLagerort])}
+                                        {...register('lagerortId')}
+                                    />
+                                </div>
+
+                                {/* Lieferant */}
+                                <div className="md:col-span-6">
+                                    <Controller
+                                        name="lieferantId"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <SearchableSelect
+                                                label="Lieferant"
+                                                placeholder="Lieferant suchen..."
+                                                options={[
+                                                    { label: 'Kein Lieferant', value: '' },
+                                                    ...allLieferanten.map(l => ({ label: l.name, value: l.id }))
+                                                ]}
+                                                value={field.value || ''}
+                                                onChange={field.onChange}
+                                            />
+                                        )}
+                                    />
+                                </div>
+
+                                {/* Row 4: Remarks (Wide) */}
+                                <div className="md:col-span-12 space-y-1.5">
+                                    <label className="text-sm font-semibold text-foreground ml-1">Bemerkung</label>
+                                    <textarea
+                                        className="flex min-h-[96px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all hover:border-accent-foreground/30 shadow-sm"
+                                        placeholder="Zusätzliche Notizen zur Position..."
+                                        {...register('bemerkung')}
+                                    />
+                                </div>
                             </div>
                         </CardContent>
                         <CardFooter className="border-t bg-muted/20 px-6 py-4 flex justify-end gap-3">

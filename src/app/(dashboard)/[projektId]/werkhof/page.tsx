@@ -400,7 +400,7 @@ function OrderCard({
 
                     {(bestellung.status === 'in_bearbeitung' || bestellung.status === 'bereit') && (
                         <Button
-                            className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-orange-200 rounded-2xl flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:scale-95 disabled:opacity-30 disabled:grayscale disabled:pointer-events-none"
+                            className="w-full h-12 bg-orange-500 hover:bg-orange-600 text-white font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-orange-500/20 rounded-2xl flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:scale-95 disabled:opacity-30 disabled:grayscale disabled:pointer-events-none"
                             onClick={() => handleUpdateStatus(bestellung.id, 'versendet')}
                             disabled={!isAllReady}
                         >

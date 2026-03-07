@@ -19,7 +19,7 @@ const statusConfig: Record<string, { label: string; colorClass: string; icon: Re
     },
     'in_arbeit': {
         label: 'In Arbeit',
-        colorClass: 'bg-orange-100 text-orange-700 border-orange-200',
+        colorClass: 'bg-orange-50 text-orange-600 border-orange-200',
         icon: <Clock className="h-3 w-3" />
     },
     'blockiert': {

@@ -31,7 +31,7 @@ export function DocumentPreviewModal({ isOpen, onClose, url, title }: DocumentPr
                 {/* Header */}
                 <div className="flex items-center justify-between px-8 py-5 border-b border-border/50 shrink-0 bg-white/50 dark:bg-slate-950/50 backdrop-blur-sm">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-orange-600 rounded-2xl shadow-lg ring-4 ring-orange-600/20">
+                        <div className="p-3 bg-orange-500 rounded-2xl shadow-lg ring-4 ring-orange-500/20">
                             <FileText className="h-5 w-5 text-white" />
                         </div>
                         <div>
@@ -77,13 +77,13 @@ export function DocumentPreviewModal({ isOpen, onClose, url, title }: DocumentPr
                         </div>
                     ) : (
                         <div className="flex flex-col items-center justify-center text-center p-12 bg-white dark:bg-slate-950 rounded-3xl border-2 border-border shadow-2xl max-w-sm">
-                            <div className="h-20 w-20 bg-orange-100 rounded-3xl flex items-center justify-center mb-6 shadow-orange-100/50 shadow-xl">
-                                <FileText className="h-10 w-10 text-orange-600" />
+                            <div className="h-20 w-20 bg-orange-50 rounded-3xl flex items-center justify-center mb-6 shadow-orange-500/10 shadow-xl border-2 border-orange-500/10">
+                                <FileText className="h-10 w-10 text-orange-500" />
                             </div>
                             <h4 className="text-lg font-black text-foreground mb-2">Keine Vorschau verfügbar</h4>
                             <p className="text-sm text-muted-foreground font-medium mb-8">Dieser Dateityp kann nicht direkt im Browser angezeigt werden.</p>
-                            <a href={url} target="_blank" rel="noopener noreferrer">
-                                <Button className="bg-orange-600 hover:bg-orange-700 text-white font-black px-8 h-12 rounded-2xl shadow-xl shadow-orange-100 active:scale-95 transition-all">
+                             <a href={url} target="_blank" rel="noopener noreferrer">
+                                <Button className="bg-orange-500 hover:bg-orange-600 text-white font-black px-8 h-12 rounded-2xl shadow-xl shadow-orange-500/20 active:scale-95 transition-all">
                                     Datei extern öffnen
                                 </Button>
                             </a>

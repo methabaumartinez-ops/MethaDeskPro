@@ -5,16 +5,18 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { Teilsystem } from '@/types';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Select } from '@/components/ui/select';
 import { ITEM_STATUS_OPTIONS, ABTEILUNGEN_CONFIG, ItemStatus, Abteilung } from '@/types';
-import { cn, cleanBemerkung } from '@/lib/utils';
+import { cn, cleanBemerkung, isMontageterminProvisional } from '@/lib/utils';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { getStatusColorClasses, getAbteilungColorClasses } from '@/lib/config/statusConfig';
 import { AbteilungWarningModal } from './AbteilungWarningModal';
 import { AbteilungBadge } from '@/components/shared/AbteilungBadge';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { toast } from '@/lib/toast';
 
 interface TeilsystemTableProps {
     items: Teilsystem[];
@@ -43,6 +45,8 @@ export function TeilsystemTable({
     else if (pathname.includes('/ausfuehrung')) fromParam = '?from=ausfuehrung';
 
     const [warningOpen, setWarningOpen] = React.useState(false);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
+    const [itemToDelete, setItemToDelete] = React.useState<Teilsystem | null>(null);
 
     // Default numeric sort by teilsystemNummer
     const sortedItems = [...items].sort((a, b) => {
@@ -74,6 +78,27 @@ export function TeilsystemTable({
         }
     };
 
+    const handleDeleteClick = (e: React.MouseEvent, item: Teilsystem) => {
+        e.stopPropagation();
+        setItemToDelete(item);
+        setDeleteConfirmOpen(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!itemToDelete) return;
+        try {
+            await SubsystemService.deleteTeilsystem(itemToDelete.id);
+            toast.success("Teilsystem gelöscht");
+            if (onRefresh) onRefresh();
+        } catch (error) {
+            console.error("Failed to delete teilsystem", error);
+            toast.error("Fehler beim Löschen");
+        } finally {
+            setDeleteConfirmOpen(false);
+            setItemToDelete(null);
+        }
+    };
+
     const abteilungOptions = ABTEILUNGEN_CONFIG.map(a => ({ label: a.name, value: a.name }));
 
     return (
@@ -97,11 +122,11 @@ export function TeilsystemTable({
                         return (
                             <TableRow
                                 key={item.id}
-                                className="group hover:bg-orange-50/30 transition-colors cursor-pointer border-b border-border/50"
+                                className="group hover:bg-orange-50/50 transition-colors cursor-pointer border-b border-border/50"
                                 onClick={() => router.push(`/${projektId}/teilsysteme/${item.id}${fromParam}`)}
                             >
                                 <TableCell className="p-4 text-center">
-                                    <Badge variant="outline" className="font-black text-orange-700 border-orange-200 bg-orange-50 text-xs py-1 px-3">
+                                    <Badge variant="outline" className="font-black text-orange-600 border-orange-200 bg-orange-50 text-xs py-1 px-3">
                                         {item.teilsystemNummer || '—'}
                                     </Badge>
                                 </TableCell>
@@ -117,7 +142,7 @@ export function TeilsystemTable({
                                     </div>
                                 </TableCell>
                                 <TableCell className="p-4">
-                                    <span className="text-xs font-black text-slate-700">{item.montagetermin || '—'}</span>
+                                <span className={cn("text-xs font-black", isMontageterminProvisional(item) ? "text-red-600" : "text-slate-700")}>{item.montagetermin || '—'}</span>
                                 </TableCell>
                                 {showAbteilung && (
                                     <TableCell className="p-4" onClick={(e) => e.stopPropagation()}>
@@ -146,8 +171,17 @@ export function TeilsystemTable({
                                     )}
                                 </TableCell>
                                 <TableCell className="p-4 text-right">
-                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <ArrowRight className="h-4 w-4 text-orange-400" />
+                                    <div className="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        {canEdit && (
+                                            <button
+                                                onClick={(e) => handleDeleteClick(e, item)}
+                                                className="p-1.5 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors"
+                                                title="Teilsystem löschen"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                        )}
+                                        <ArrowRight className="h-4 w-4 text-orange-500" />
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -158,6 +192,15 @@ export function TeilsystemTable({
             <AbteilungWarningModal
                 isOpen={warningOpen}
                 onClose={() => setWarningOpen(false)}
+            />
+            <ConfirmDialog
+                isOpen={deleteConfirmOpen}
+                onClose={() => setDeleteConfirmOpen(false)}
+                onConfirm={handleDeleteConfirm}
+                title="Teilsystem löschen"
+                description={`Sind Sie sicher, dass Sie das Teilsystem "${itemToDelete?.teilsystemNummer || ''} — ${itemToDelete?.name || ''}" permanent löschen möchten?`}
+                confirmLabel="Löschen"
+                variant="danger"
             />
         </div>
     );

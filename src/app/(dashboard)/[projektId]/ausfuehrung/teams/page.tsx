@@ -61,7 +61,7 @@ export default function TeamsPage({ params }: { params: Promise<{ projektId: str
                 <div>
                     <Button
                         onClick={() => setIsDialogOpen(true)}
-                        className="bg-orange-600 hover:bg-orange-700 font-bold text-white shadow-md shadow-orange-500/20 whitespace-nowrap"
+                        className="bg-orange-500 hover:bg-orange-600 font-bold text-white shadow-md shadow-orange-500/20 whitespace-nowrap"
                     >
                         <Plus className="mr-2 h-4 w-4" /> Team erstellen
                     </Button>

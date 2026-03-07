@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2, ExternalLink, FileText, ChevronUp, ChevronDown, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { toast } from '@/lib/toast';
 
 interface DokumentePanelProps {
     entityId: string;
@@ -21,7 +23,7 @@ const DOKUMENT_TYPEN: { value: DokumentTyp; label: string; icon: string; color: 
     { value: 'PDF', label: 'PDF', icon: '📄', color: 'bg-red-100 text-red-700' },
     { value: 'DXF', label: 'DXF/DWG', icon: '📏', color: 'bg-blue-100 text-blue-700' },
     { value: 'Zeichnung', label: 'Zeichnung/Plan', icon: '📐', color: 'bg-indigo-100 text-indigo-700' },
-    { value: 'Schnittliste', label: 'Schnittliste', icon: '✂️', color: 'bg-orange-100 text-orange-700' },
+    { value: 'Schnittliste', label: 'Schnittliste', icon: '✂️', color: 'bg-orange-50 text-orange-600' },
     { value: 'Auszug', label: 'Auszug', icon: '📋', color: 'bg-yellow-100 text-yellow-700' },
     { value: 'IFC', label: 'IFC', icon: '🏗️', color: 'bg-green-100 text-green-700' },
     { value: 'Lieferschein', label: 'Lieferschein', icon: '📦', color: 'bg-purple-100 text-purple-700' },
@@ -38,6 +40,10 @@ export default function DokumentePanel({ entityId, entityType, projektId, readon
         name: '', typ: 'PDF' as DokumentTyp, url: '', sendeDatum: '', bemerkung: '',
     });
     const [previewDoc, setPreviewDoc] = useState<{ url: string, title: string } | null>(null);
+
+    // Delete confirmation state
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
     useEffect(() => { loadDokumente(); }, [entityId]);
 
@@ -71,10 +77,24 @@ export default function DokumentePanel({ entityId, entityType, projektId, readon
         }
     }
 
-    async function handleDelete(id: string) {
-        if (!confirm('Dokument löschen?')) return;
-        await fetch(`/api/dokumente/${id}`, { method: 'DELETE' });
-        await loadDokumente();
+    async function handleDeleteClick(id: string) {
+        setItemToDelete(id);
+        setConfirmOpen(true);
+    }
+
+    async function handleConfirmDelete() {
+        if (!itemToDelete) return;
+        try {
+            await fetch(`/api/dokumente/${itemToDelete}`, { method: 'DELETE' });
+            toast.success('Dokument gelöscht');
+            await loadDokumente();
+        } catch (error) {
+            console.error('Delete failed:', error);
+            toast.error('Fehler beim Löschen');
+        } finally {
+            setConfirmOpen(false);
+            setItemToDelete(null);
+        }
     }
 
     return (
@@ -180,7 +200,7 @@ export default function DokumentePanel({ entityId, entityType, projektId, readon
                                         variant="ghost"
                                         size="icon"
                                         className="h-7 w-7 text-muted-foreground/40 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                                        onClick={() => handleDelete(d.id)}
+                                        onClick={() => handleDeleteClick(d.id)}
                                     >
                                         <Trash2 className="h-3.5 w-3.5" />
                                     </Button>
@@ -196,6 +216,18 @@ export default function DokumentePanel({ entityId, entityType, projektId, readon
                 onClose={() => setPreviewDoc(null)}
                 url={previewDoc?.url || ''}
                 title={previewDoc?.title || ''}
+            />
+
+            {/* Delete Confirmation */}
+            <ConfirmDialog
+                isOpen={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Dokument löschen?"
+                description="Möchten Sie dieses Dokument wirklich unwiderruflich löschen?"
+                confirmLabel="Löschen"
+                cancelLabel="Abbrechen"
+                variant="danger"
             />
         </div>
     );

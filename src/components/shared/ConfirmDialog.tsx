@@ -38,10 +38,10 @@ export function ConfirmDialog({
             button: "bg-red-600 hover:bg-red-700 shadow-red-200 dark:shadow-red-900/20",
         },
         warning: {
-            icon: <AlertTriangle className="h-10 w-10 text-orange-600" />,
-            iconBg: "bg-orange-100 dark:bg-orange-950/30",
+            icon: <AlertTriangle className="h-10 w-10 text-orange-500" />,
+            iconBg: "bg-orange-50 dark:bg-orange-500/10",
             border: "border-orange-500/20",
-            button: "bg-orange-600 hover:bg-orange-700 shadow-orange-200 dark:shadow-orange-900/20",
+            button: "bg-orange-500 hover:bg-orange-600 shadow-orange-500/20 dark:shadow-orange-900/20",
         },
         success: {
             icon: <CheckCircle className="h-10 w-10 text-green-600" />,

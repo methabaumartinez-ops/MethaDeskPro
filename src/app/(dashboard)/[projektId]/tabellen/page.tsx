@@ -33,6 +33,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { ABTEILUNGEN_CONFIG } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { toast } from '@/lib/toast';
 
 export default function TabellenPage() {
     const { projektId } = useParams() as { projektId: string };
@@ -42,6 +44,10 @@ export default function TabellenPage() {
     const [columns, setColumns] = useState<string[]>([]);
     const [projects, setProjects] = useState<any[]>([]);
     const [selectedProject, setSelectedProject] = useState(projektId);
+
+    // Delete confirmation state
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<{ id: string, table: string } | null>(null);
 
     const tables = [
         { id: 'projekte', label: 'Projekte', icon: LayoutList, description: 'Alle Projekte und deren Status' },
@@ -292,11 +298,8 @@ export default function TabellenPage() {
                         className="h-7 w-7 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
                         onClick={(e) => {
                             e.stopPropagation();
-                            if (confirm('Löschen?')) {
-                                if (activeTable === 'subunternehmer') {
-                                    SubunternehmerService.deleteSubunternehmer(row.id).then(() => window.location.reload());
-                                }
-                            }
+                            setItemToDelete({ id: row.id, table: activeTable });
+                            setConfirmOpen(true);
                         }}
                     >
                         <Trash2 className="h-3 w-3" />
@@ -306,6 +309,26 @@ export default function TabellenPage() {
         }
 
         return String(value);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!itemToDelete) return;
+        try {
+            if (itemToDelete.table === 'subunternehmer') {
+                await SubunternehmerService.deleteSubunternehmer(itemToDelete.id);
+            } else if (itemToDelete.table === 'mitarbeiter') {
+                await EmployeeService.deleteMitarbeiter(itemToDelete.id);
+            }
+            
+            toast.success('Eintrag gelöscht');
+            window.location.reload();
+        } catch (error) {
+            console.error('Delete failed:', error);
+            toast.error('Fehler beim Löschen');
+        } finally {
+            setConfirmOpen(false);
+            setItemToDelete(null);
+        }
     };
 
     const handleExport = () => {
@@ -496,6 +519,17 @@ export default function TabellenPage() {
                     </div>
                 </div>
             </div>
+            {/* Delete Confirmation */}
+            <ConfirmDialog
+                isOpen={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Eintrag löschen?"
+                description="Möchten Sie diesen Eintrag wirklich unwiderruflich löschen?"
+                confirmLabel="Löschen"
+                cancelLabel="Abbrechen"
+                variant="danger"
+            />
         </div>
     );
 }

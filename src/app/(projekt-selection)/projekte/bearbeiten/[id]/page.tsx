@@ -494,7 +494,7 @@ export default function ProjektBearbeitenPage() {
                         <Button
                             type="button"
                             variant="outline"
-                            className="font-bold h-12 px-8 flex items-center gap-2 border-orange-300 text-orange-700 hover:bg-orange-50"
+                            className="font-bold h-12 px-8 flex items-center gap-2 border-orange-500/30 text-orange-600 hover:bg-orange-50"
                             onClick={() => setShowArchiveConfirm(true)}
                             disabled={isArchiving || isSubmitting}
                         >

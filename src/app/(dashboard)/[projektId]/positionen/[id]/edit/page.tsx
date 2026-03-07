@@ -3,7 +3,7 @@ import { toast } from '@/lib/toast';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
@@ -14,15 +14,18 @@ import { PositionService } from '@/lib/services/positionService';
 import { LagerortService } from '@/lib/services/lagerortService';
 import { LagerortSelect } from '@/components/shared/LagerortSelect';
 import { SubsystemService } from '@/lib/services/subsystemService';
+import { SupplierService } from '@/lib/services/supplierService';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Position, Teilsystem, Lagerort, Beschichtung, PlanStatus, ABTEILUNGEN_CONFIG } from '@/types';
-import { POS_ALLOWED_STATUSES, STATUS_UI_CONFIG } from '@/lib/config/statusConfig';
-import { ArrowLeft, Save, UploadCloud, FileType, Paperclip, FileText, Loader2, X, Search, Plus, Loader, Trash2 } from 'lucide-react';
+import { POS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses } from '@/lib/config/statusConfig';
+import { ArrowLeft, Save, UploadCloud, FileType, Paperclip, FileText, Loader2, X, Search, Plus, Loader, Trash2, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 import { useSmartBack } from '@/lib/navigation/useSmartBack';
 import { cn } from '@/lib/utils';
 import { ProjectService } from '@/lib/services/projectService';
 import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
 import { Badge } from '@/components/ui/badge';
+import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 
 const BESCHICHTUNGEN: Beschichtung[] = [
     'feuerverzinkt', 'pulverbeschichtet', 'nasslackiert', 'eloxiert', 'kunststoffbeschichtet', 'unbehandelt', 'andere'
@@ -41,10 +44,11 @@ const positionSchema = z.object({
     menge: z.coerce.number().min(0.01),
     einheit: z.string().min(1, 'Einheit ist erforderlich'),
     status: z.string().min(1, 'Status ist erforderlich'),
-    planStatus: z.string().optional(),
+    planStatus: z.string().min(1, 'Plan Status ist erforderlich'),
     beschichtung: z.string().optional(),
     gewicht: z.coerce.number().optional(),
     lagerortId: z.string().optional(),
+    lieferantId: z.string().optional(),
     montagetermin: z.string().optional(),
     bemerkung: z.string().optional(),
     ifcUrl: z.string().optional(),
@@ -57,10 +61,11 @@ export default function PositionEditPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
+    const [allLieferanten, setAllLieferanten] = useState<any[]>([]);
     const [position, setPosition] = useState<Position | null>(null);
     const [teilsystem, setTeilsystem] = useState<Teilsystem | null>(null);
 
-    const { register, handleSubmit, formState: { errors, isSubmitting }, reset, watch, setValue } = useForm<PositionValues>({
+    const { register, handleSubmit, formState: { errors, isSubmitting }, reset, watch, setValue, control } = useForm<PositionValues>({
         resolver: zodResolver(positionSchema),
     });
 
@@ -86,10 +91,12 @@ export default function PositionEditPage() {
     useEffect(() => {
         const load = async () => {
             try {
-                const [data, lo] = await Promise.all([
+                const [data, lo, lieferantenData] = await Promise.all([
                     PositionService.getPositionById(id),
                     LagerortService.getLagerorte(projektId),
+                    SupplierService.getLieferanten(),
                 ]);
+                setAllLieferanten(Array.isArray(lieferantenData) ? lieferantenData : []);
                 if (data) {
                     setPosition(data);
                     reset({
@@ -97,10 +104,11 @@ export default function PositionEditPage() {
                         menge: data.menge,
                         einheit: data.einheit,
                         status: data.status as any,
-                        planStatus: data.planStatus || '',
+                        planStatus: data.planStatus || 'offen',
                         beschichtung: data.beschichtung || '',
                         gewicht: data.gewicht,
                         lagerortId: data.lagerortId || '',
+                        lieferantId: data.lieferantId || '',
                         montagetermin: data.montagetermin || '',
                         bemerkung: data.bemerkung || '',
                         ifcUrl: data.ifcUrl || '',
@@ -270,92 +278,124 @@ export default function PositionEditPage() {
 
     return (
         <div className="w-full space-y-6 pb-8 animate-in fade-in duration-500">
-            <Link href={`/${projektId}/positionen/${id}`} className="inline-flex items-center text-sm font-bold text-muted-foreground hover:text-primary transition-colors">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Zurück zur Position
-            </Link>
-
-            <div className="flex justify-start items-center gap-4">
-                <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Position bearbeiten</h1>
-                {position && (
-                    <div className="flex items-center gap-3">
-                        {teilsystem && (
-                            <div className="flex items-baseline gap-2 bg-primary/5 px-4 py-2 rounded-xl border border-primary/20 shadow-sm">
-                                <span className="text-xl font-black text-primary drop-shadow-sm">TS{teilsystem.teilsystemNummer}</span>
-                                <span className="text-lg font-bold text-muted-foreground truncate max-w-[200px]">{teilsystem.name}</span>
-                            </div>
-                        )}
-                        <div className="w-px h-8 bg-border" />
-                        <div className="flex items-baseline gap-2 bg-muted/30 px-4 py-2 rounded-xl border border-border shadow-sm">
-                            <span className="text-xl font-black text-foreground/70 tracking-tight">POS</span>
-                            <span className="text-lg font-bold text-muted-foreground truncate max-w-[300px]">{position.name}</span>
+            <ModuleActionBanner
+                icon={ClipboardList}
+                title="Position bearbeiten"
+                showBackButton={true}
+                backHref={`/${projektId}/positionen/${id}`}
+            >
+                <div className="flex items-center gap-3">
+                    {teilsystem && (
+                        <div className="flex items-baseline gap-1.5">
+                            <span className="text-sm font-black text-white/90">TS{teilsystem.teilsystemNummer}</span>
+                            <span className="text-sm font-semibold text-white/50 truncate max-w-[180px]">{teilsystem.name}</span>
                         </div>
-                    </div>
-                )}
-            </div>
+                    )}
+                    {teilsystem && position && <div className="w-px h-4 bg-white/20" />}
+                    {position && (
+                        <span className="text-sm font-semibold text-white/60 truncate max-w-[220px]">{position.name}</span>
+                    )}
+                </div>
+            </ModuleActionBanner>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
                     {/* Left Column: Form Data */}
                     <Card className="lg:col-span-3 shadow-xl border-none">
-                        <CardHeader className="bg-muted/30 border-b py-3">
-                            <CardTitle className="text-base font-black uppercase tracking-wider text-muted-foreground">
+                        <CardHeader className="bg-muted/30 border-b border-border py-4 px-6">
+                            <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                                <ClipboardList className="h-5 w-5 text-primary" />
                                 Positions-Informationen
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-6 space-y-6">
-                            <Input label="Bezeichnung *" {...register('name')} error={errors.name?.message} className="h-11 font-bold" />
-                            <div className="grid grid-cols-3 gap-4">
-                                <Input label="Menge *" type="number" step="0.01" {...register('menge')} error={errors.menge?.message} className="h-11" />
-                                <Input label="Einheit" placeholder="Stk, m, m²" {...register('einheit')} error={errors.einheit?.message} className="h-11" />
-                                <Input label="Gewicht (kg)" type="number" step="0.1" {...register('gewicht')} placeholder="Optional" className="h-11" />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <Select
-                                    label="Status *"
-                                    options={POS_ALLOWED_STATUSES.map(st => ({
-                                        value: STATUS_UI_CONFIG[st].value,
-                                        label: STATUS_UI_CONFIG[st].label
-                                    }))}
-                                    {...register('status')}
-                                    error={errors.status?.message}
-                                    className="h-11"
-                                />
-                                <Select
-                                    label="Plan-Status"
-                                    options={[
-                                        { value: '', label: '— Kein Plan-Status —' },
-                                        ...PLAN_STATUS.map(p => ({ value: p.value, label: p.label }))
-                                    ]}
-                                    {...register('planStatus')}
-                                    className="h-11"
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <Select
-                                    label="Beschichtung"
-                                    options={[
-                                        { value: '', label: '— Keine Beschichtung —' },
-                                        ...BESCHICHTUNGEN.map(b => ({ value: b, label: b }))
-                                    ]}
-                                    {...register('beschichtung')}
-                                    className="h-11"
-                                />
-                                <LagerortSelect
-                                    projektId={projektId}
-                                    lagerorte={lagerorte}
-                                    onLagerortAdded={(newLagerort) => setLagerorte(prev => [...prev, newLagerort])}
-                                    {...register('lagerortId')}
-                                    className="h-11"
-                                />
-                            </div>
-                            <Input label="Montagetermin" placeholder="z.B. nach Absprache" {...register('montagetermin')} className="h-11" />
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-semibold text-foreground ml-1">Bemerkung</label>
-                                <textarea
-                                    className="flex min-h-[100px] w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all hover:border-accent"
-                                    {...register('bemerkung')}
-                                />
+                        <CardContent className="p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                                {/* Row 1: Designation - full width */}
+                                <div className="md:col-span-12">
+                                    <Input label="Bezeichnung *" {...register('name')} error={errors.name?.message} className="font-bold" />
+                                </div>
+
+                                {/* Row 2: Quantities & Status */}
+                                <div className="md:col-span-2">
+                                    <Input label="Menge *" type="number" step="0.01" {...register('menge')} error={errors.menge?.message} />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <Input label="Einheit" placeholder="Stk, m, m²" {...register('einheit')} error={errors.einheit?.message} />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <Input label="Gewicht (kg)" type="number" step="0.1" {...register('gewicht')} placeholder="Optional" />
+                                </div>
+                                <div className="md:col-span-3">
+                                    <Input label="Montagetermin" placeholder="z.B. nach Absprache" {...register('montagetermin')} />
+                                </div>
+                                <div className="md:col-span-3">
+                                    <Select
+                                        label="Pos Status *"
+                                        options={POS_ALLOWED_STATUSES.map(st => ({
+                                            value: STATUS_UI_CONFIG[st].value,
+                                            label: STATUS_UI_CONFIG[st].label
+                                        }))}
+                                        {...register('status')}
+                                        error={errors.status?.message}
+                                        className={cn('font-bold', getStatusColorClasses(watch('status')))}
+                                    />
+                                </div>
+
+                                {/* Row 3: Plan-Status, Beschichtung, Lagerort */}
+                                <div className="md:col-span-4">
+                                    <Select
+                                        label="Plan Status *"
+                                        options={PLAN_STATUS.map(p => ({ value: p.value, label: p.label }))}
+                                        {...register('planStatus')}
+                                        error={errors.planStatus?.message}
+                                        className={cn('font-bold', getStatusColorClasses(watch('planStatus')))}
+                                    />
+                                </div>
+                                <div className="md:col-span-4">
+                                    <Select
+                                        label="Beschichtung"
+                                        options={[
+                                            { value: '', label: 'Keine Beschichtung' },
+                                            ...BESCHICHTUNGEN.map(b => ({ value: b, label: b }))
+                                        ]}
+                                        {...register('beschichtung')}
+                                    />
+                                </div>
+                                <div className="md:col-span-4">
+                                    <LagerortSelect
+                                        projektId={projektId}
+                                        lagerorte={lagerorte}
+                                        onLagerortAdded={(newLagerort) => setLagerorte(prev => [...prev, newLagerort])}
+                                        {...register('lagerortId')}
+                                    />
+                                </div>
+                                <div className="md:col-span-12">
+                                    <Controller
+                                        name="lieferantId"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <SearchableSelect
+                                                label="Lieferant"
+                                                placeholder="Lieferant suchen..."
+                                                options={[
+                                                    { label: 'Kein Lieferant', value: '' },
+                                                    ...allLieferanten.map(l => ({ label: l.name, value: l.id }))
+                                                ]}
+                                                value={field.value || ''}
+                                                onChange={field.onChange}
+                                            />
+                                        )}
+                                    />
+                                </div>
+
+                                {/* Row 4: Remarks - full width */}
+                                <div className="md:col-span-12 space-y-1.5">
+                                    <label className="text-sm font-semibold text-foreground ml-1">Bemerkung</label>
+                                    <textarea
+                                        className="flex min-h-[100px] w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all hover:border-accent"
+                                        {...register('bemerkung')}
+                                    />
+                                </div>
                             </div>
                         </CardContent>
                     </Card>

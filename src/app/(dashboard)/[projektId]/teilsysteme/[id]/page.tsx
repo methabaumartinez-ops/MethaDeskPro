@@ -16,7 +16,7 @@ import { Teilsystem, Position, Projekt, Lagerort, Lieferant, ABTEILUNGEN_CONFIG 
 import {
     ArrowLeft, Edit, ListTodo, Plus, FileText, Truck,
     Calendar, User as UserIcon, Clock, Link as LinkIcon,
-    MapPin, Eye, Trash2, ShieldCheck, Hash, Briefcase, LayoutDashboard, Copy, ExternalLink,
+    MapPin, Eye, Trash2, ShieldCheck, Hash, Briefcase, BadgeDollarSign, LayoutDashboard, Copy, ExternalLink,
     Video, Maximize2, Printer, Share2, UploadCloud, Download, X
 } from 'lucide-react';
 import Link from 'next/link';
@@ -147,19 +147,21 @@ export default function TeilsystemDetailPage() {
             {/* Header / Navigation Section */}
             <div className="flex justify-between items-center -mt-2 mb-2 px-2">
                 <div className="flex items-center gap-4">
-                    <Button onClick={handleBack} className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                    <Button onClick={handleBack} className="h-9 px-6 bg-orange-500 hover:bg-orange-600 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-500/20 rounded-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
                         <ArrowLeft className="h-4 w-4" />
                         Zurück
                     </Button>
                 </div>
 
                 {!isReadOnly && (
-                    <Link href={`/${projektId}/teilsysteme/${item.id}/edit${from ? `?from=${from}` : ''}`}>
-                        <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
-                            <Edit className="h-4 w-4" />
-                            <span>Bearbeiten</span>
-                        </Button>
-                    </Link>
+                    <div className="flex items-center gap-3">
+                        <Link href={`/${projektId}/teilsysteme/${item.id}/edit${from ? `?from=${from}` : ''}`}>
+                            <Button className="h-9 px-6 bg-orange-500 hover:bg-orange-600 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-500/20 rounded-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                                <Edit className="h-4 w-4" />
+                                <span>Bearbeiten</span>
+                            </Button>
+                        </Link>
+                    </div>
                 )}
             </div>
 
@@ -317,9 +319,9 @@ export default function TeilsystemDetailPage() {
                     <CardContent className="p-4 flex flex-col gap-3 items-center justify-center h-full">
                         {canViewKosten && (
                             <Link href={`/${projektId}/kosten?ts=${id}${from ? `&from=${from}` : ''}`} className="w-full max-w-[240px]">
-                                <Button className="w-full h-10 border-2 border-green-400 bg-green-50/50 hover:bg-green-100/70 dark:bg-green-900/20 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center justify-center gap-2.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
+                                <Button className="w-full h-10 border-2 border-green-400 bg-green-50/50 hover:bg-green-100/70 dark:bg-green-900/20 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 font-black uppercase text-[10px] tracking-widest rounded-lg flex items-center justify-center gap-2.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
                                     <div className="p-1 bg-white dark:bg-slate-800 rounded-full shadow-sm">
-                                        <Briefcase className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                                        <BadgeDollarSign className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
                                     </div>
                                     <span>Kosten erfassen</span>
                                 </Button>
@@ -360,7 +362,7 @@ export default function TeilsystemDetailPage() {
                             </CardTitle>
                             {(!isReadOnly && can('create')) && (
                                 <Link href={`/${projektId}/teilsysteme/${id}/positionen/erfassen${from ? `?from=${from}` : ''}`}>
-                                    <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white font-bold h-7 px-3 rounded-full shadow-md flex items-center gap-1.5 transition-all hover:scale-105 text-[10px]">
+                                    <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white font-bold h-7 px-3 rounded-lg shadow-md flex items-center gap-1.5 transition-all hover:scale-105 text-[10px]">
                                         <Plus className="h-3 w-3" />
                                         <span>Add</span>
                                     </Button>
@@ -376,6 +378,7 @@ export default function TeilsystemDetailPage() {
                                                 <TableHead className="pl-4 font-black text-foreground uppercase text-[9px] tracking-widest">Nr.</TableHead>
                                                 <TableHead className="font-black text-foreground uppercase text-[9px] tracking-widest">Name</TableHead>
                                                 <TableHead className="font-black text-foreground uppercase text-[9px] tracking-widest">Status</TableHead>
+                                                <TableHead className="font-black text-foreground uppercase text-[9px] tracking-widest text-right">Actions</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -386,6 +389,20 @@ export default function TeilsystemDetailPage() {
                                                         <span className="font-bold text-foreground text-[11px] block truncate max-w-[120px]">{pos.name}</span>
                                                     </TableCell>
                                                     <TableCell className="py-3"><StatusBadge status={pos.status} className="scale-75 origin-left" /></TableCell>
+                                                    <TableCell className="py-3 text-right">
+                                                        {!isReadOnly && (
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setPosToDelete(pos);
+                                                                    setConfirmOpen(true);
+                                                                }}
+                                                                className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-all"
+                                                            >
+                                                                <Trash2 className="h-3.5 w-3.5" />
+                                                            </button>
+                                                        )}
+                                                    </TableCell>
                                                 </TableRow>
                                             ))}
                                         </TableBody>
@@ -539,6 +556,7 @@ export default function TeilsystemDetailPage() {
                 url={previewDoc?.url || ''}
                 title={previewDoc?.title || ''}
             />
+
         </div>
     );
 }

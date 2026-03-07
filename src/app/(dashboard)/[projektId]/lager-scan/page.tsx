@@ -232,7 +232,7 @@ export default function LagerScanSeite() {
             <div className="flex justify-between items-center mb-6 px-2">
                 <div className="flex items-center gap-6">
                     <Link href={`/${projektId}/lagerorte`}>
-                        <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                        <Button className="h-9 px-6 bg-orange-500 hover:bg-orange-600 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-500/20 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
                             <ArrowLeft className="h-4 w-4" />
                             Zurück
                         </Button>
@@ -407,7 +407,7 @@ export default function LagerScanSeite() {
                                 >
                                     <div className={cn(
                                         "w-28 h-28 rounded-[2rem] flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:-rotate-3 shadow-inner",
-                                        selectionMode === 'manual' ? "bg-orange-600 shadow-orange-900/40" : "bg-orange-500 shadow-orange-700/30"
+                                        selectionMode === 'manual' ? "bg-orange-500 shadow-orange-500/40" : "bg-orange-400 shadow-orange-500/20"
                                     )}>
                                         <img
                                             src="/images/pointing_hand.png"

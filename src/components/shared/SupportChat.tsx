@@ -170,7 +170,7 @@ export function SupportChat() {
             {isOpen && (
                 <div className="fixed bottom-6 right-6 z-[300] w-[380px] max-w-[calc(100vw-1.5rem)] flex flex-col rounded-2xl shadow-2xl border border-border bg-white dark:bg-card overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300">
                     {/* Header */}
-                    <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-primary to-orange-500 text-white">
+                    <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
                         <div className="flex items-center gap-2.5">
                             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 ring-2 ring-white/30">
                                 <Bot className="h-4 w-4" />
@@ -214,7 +214,7 @@ export function SupportChat() {
                                 {/* Avatar */}
                                 <div className={cn(
                                     "flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-white text-[10px] font-black",
-                                    msg.role === 'assistant' ? "bg-gradient-to-br from-primary to-orange-500" : "bg-slate-600"
+                                    msg.role === 'assistant' ? "bg-gradient-to-br from-orange-500 to-orange-600" : "bg-slate-600"
                                 )}>
                                     {msg.role === 'assistant' ? <Bot className="h-3.5 w-3.5" /> : <User className="h-3.5 w-3.5" />}
                                 </div>
@@ -240,7 +240,7 @@ export function SupportChat() {
                         {/* Typing indicator */}
                         {loading && (
                             <div className="flex gap-2 items-end">
-                                <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-orange-500 text-white">
+                                <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-orange-600 text-white">
                                     <Bot className="h-3.5 w-3.5" />
                                 </div>
                                 <div className="bg-white dark:bg-card border border-border rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">

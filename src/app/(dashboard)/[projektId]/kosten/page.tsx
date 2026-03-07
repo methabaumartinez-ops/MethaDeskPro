@@ -11,12 +11,14 @@ import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { EmployeeService } from '@/lib/services/employeeService';
 import { Teilsystem, Mitarbeiter, TsStunden, TsMaterialkosten, Abteilung, ABTEILUNGEN_CONFIG } from '@/types';
-import { Clock, Package2, Plus, Trash2, Download, ChevronDown, ChevronUp, DollarSign } from 'lucide-react';
+import { Clock, Package2, Plus, Trash2, Download, ChevronDown, ChevronUp, DollarSign, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useProjekt } from '@/lib/context/ProjektContext';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 import { AbteilungBadge } from '@/components/shared/AbteilungBadge';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { toast } from '@/lib/toast';
 
 
 export default function KostenPage() {
@@ -36,6 +38,10 @@ export default function KostenPage() {
     const [showStundenForm, setShowStundenForm] = useState(false);
     const [showMaterialForm, setShowMaterialForm] = useState(false);
     const [saving, setSaving] = useState(false);
+    
+    // Delete confirmation state
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<{ id: string, type: 'stunden' | 'material' } | null>(null);
 
     const [stundenForm, setStundenForm] = useState({
         mitarbeiterId: '', datum: new Date().toISOString().split('T')[0],
@@ -136,16 +142,29 @@ export default function KostenPage() {
         }
     }
 
-    async function deleteStunden(id: string) {
-        if (!confirm('Eintrag löschen?')) return;
-        await fetch(`/api/kosten/stunden/${id}`, { method: 'DELETE' });
-        await loadKosten();
+    async function handleDeleteClick(id: string, type: 'stunden' | 'material') {
+        setItemToDelete({ id, type });
+        setConfirmOpen(true);
     }
 
-    async function deleteMaterial(id: string) {
-        if (!confirm('Eintrag löschen?')) return;
-        await fetch(`/api/kosten/material/${id}`, { method: 'DELETE' });
-        await loadKosten();
+    async function handleConfirmDelete() {
+        if (!itemToDelete) return;
+        
+        try {
+            if (itemToDelete.type === 'stunden') {
+                await fetch(`/api/kosten/stunden/${itemToDelete.id}`, { method: 'DELETE' });
+            } else {
+                await fetch(`/api/kosten/material/${itemToDelete.id}`, { method: 'DELETE' });
+            }
+            toast.success('Eintrag gelöscht');
+            await loadKosten();
+        } catch (error) {
+            console.error('Delete failed:', error);
+            toast.error('Fehler beim Löschen');
+        } finally {
+            setConfirmOpen(false);
+            setItemToDelete(null);
+        }
     }
 
     function exportCsv() {
@@ -339,7 +358,7 @@ export default function KostenPage() {
                                                     </TableCell>
                                                     <TableCell className="text-muted-foreground text-sm">{s.taetigkeit || '—'}</TableCell>
                                                     <TableCell>
-                                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground/50 hover:text-red-600" onClick={() => deleteStunden(s.id)}>
+                                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground/50 hover:text-red-600" onClick={() => handleDeleteClick(s.id, 'stunden')}>
                                                             <Trash2 className="h-3.5 w-3.5" />
                                                         </Button>
                                                     </TableCell>
@@ -424,7 +443,7 @@ export default function KostenPage() {
                                                         <TableCell className="text-right font-black text-primary">{gesamt.toFixed(2)} CHF</TableCell>
                                                         <TableCell className="text-muted-foreground text-sm">{m.bestelldatum || '—'}</TableCell>
                                                         <TableCell>
-                                                            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground/50 hover:text-red-600" onClick={() => deleteMaterial(m.id)}>
+                                                            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground/50 hover:text-red-600" onClick={() => handleDeleteClick(m.id, 'material')}>
                                                                 <Trash2 className="h-3.5 w-3.5" />
                                                             </Button>
                                                         </TableCell>
@@ -459,6 +478,17 @@ export default function KostenPage() {
                     </CardContent>
                 </Card>
             )}
+            {/* Delete Confirmation */}
+            <ConfirmDialog
+                isOpen={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Eintrag löschen?"
+                description="Möchten Sie diesen Kosten-Eintrag wirklich unwiderruflich löschen?"
+                confirmLabel="Löschen"
+                cancelLabel="Abbrechen"
+                variant="danger"
+            />
         </div>
     );
 }

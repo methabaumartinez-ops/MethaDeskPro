@@ -21,3 +21,8 @@ export function cleanBemerkung(text?: string): string {
         .join('\n')
         .trim();
 }
+
+/** Returns true when the Montagetermin is still the Bauleiter-provided provisional value (shows red in tables). */
+export function isMontageterminProvisional(item: { montageterminProvisional?: boolean }): boolean {
+    return item.montageterminProvisional === true;
+}

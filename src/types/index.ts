@@ -138,6 +138,7 @@ export interface Teilsystem {
   eroeffnetAm?: string;
   eroeffnetDurch?: string;
   montagetermin?: string;
+  montageterminProvisional?: boolean; // true = Bauleiter default (not yet confirmed), shows red in tables
   lieferfrist?: string;
   abgabePlaner?: string;
   planStatus?: PlanStatus;

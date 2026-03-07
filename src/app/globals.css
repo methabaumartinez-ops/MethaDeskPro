@@ -5,6 +5,19 @@
   --color-primary: #ff6b35;
   --color-primary-foreground: #ffffff;
 
+  /* Official Brand Redefined Scale for automatic normalization */
+  --color-orange-50: #fff5f2;
+  --color-orange-100: #ffe3da;
+  --color-orange-200: #ffccbc;
+  --color-orange-300: #ffa58a;
+  --color-orange-400: #ff895d;
+  --color-orange-500: #ff6b35; /* BRAND BASE */
+  --color-orange-600: #e5602f; /* HOVER */
+  --color-orange-700: #cc562a;
+  --color-orange-800: #b24b25;
+  --color-orange-900: #99411f;
+  --color-orange-950: #662b15;
+
   --color-slate-50: #fcfcfd;
   /* Even lighter */
   --color-slate-100: #f8fafc;

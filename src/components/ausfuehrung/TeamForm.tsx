@@ -135,7 +135,7 @@ export function TeamForm({ projektId, teamToEdit, onSuccess, onCancel }: TeamFor
                 <Button
                     type="submit"
                     disabled={isLoading}
-                    className="bg-orange-600 hover:bg-orange-700 font-bold text-white shadow-md shadow-orange-500/20"
+                    className="bg-orange-500 hover:bg-orange-600 font-bold text-white shadow-md shadow-orange-500/20"
                 >
                     {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                     {isEdit ? 'Aktualisieren' : 'Team Speichern'}

@@ -36,25 +36,25 @@ const VARIANTS = {
         icon: AlertTriangle,
         iconClass: 'text-red-500',
         iconBg: 'bg-red-100 border-red-200',
-        button: 'bg-orange-500 hover:bg-orange-600 shadow-orange-200',
+        button: 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/20',
     },
     warning: {
         icon: AlertTriangle,
         iconClass: 'text-orange-500',
         iconBg: 'bg-orange-100 border-orange-200',
-        button: 'bg-orange-500 hover:bg-orange-600 shadow-orange-200',
+        button: 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/20',
     },
     success: {
         icon: CheckCircle,
         iconClass: 'text-green-500',
         iconBg: 'bg-green-100 border-green-200',
-        button: 'bg-orange-500 hover:bg-orange-600 shadow-orange-200',
+        button: 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/20',
     },
     info: {
         icon: Info,
         iconClass: 'text-blue-500',
         iconBg: 'bg-blue-100 border-blue-200',
-        button: 'bg-orange-500 hover:bg-orange-600 shadow-orange-200',
+        button: 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/20',
     },
 };
 

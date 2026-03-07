@@ -37,6 +37,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ projektId
 
     const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+    const [subtaskToDelete, setSubtaskToDelete] = React.useState<string | null>(null);
 
     const loadData = React.useCallback(async () => {
         try {
@@ -134,10 +135,21 @@ export default function TaskDetailPage({ params }: { params: Promise<{ projektId
         await SubtaskService.reorderSubtasks(id, newSts.map(s => s.id));
     };
 
-    const handleSubtaskDelete = async (stId: string) => {
-        if (!confirm('Unteraufgabe wirklich löschen?')) return;
-        await SubtaskService.deleteSubtask(stId);
-        setSubtasks(prev => prev.filter(s => s.id !== stId));
+    const handleSubtaskDeleteClick = (stId: string) => {
+        setSubtaskToDelete(stId);
+    };
+
+    const handleConfirmSubtaskDelete = async () => {
+        if (!subtaskToDelete) return;
+        try {
+            await SubtaskService.deleteSubtask(subtaskToDelete);
+            setSubtasks(prev => prev.filter(s => s.id !== subtaskToDelete));
+            toast.success('Unteraufgabe gelöscht');
+        } catch (error) {
+            toast.error('Konnte Unteraufgabe it löschen');
+        } finally {
+            setSubtaskToDelete(null);
+        }
     };
 
     const handleAssignWorker = async (subtaskId: string, workerId: string | undefined) => {
@@ -281,7 +293,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ projektId
                         workers={workers}
                         onToggleStatus={handleSubtaskStatus}
                         onReorder={handleReorder}
-                        onDelete={handleSubtaskDelete}
+                        onDelete={handleSubtaskDeleteClick}
                         onAssignWorker={handleAssignWorker}
                         readOnly={task.status === 'fertig'}
                     />
@@ -320,6 +332,18 @@ export default function TaskDetailPage({ params }: { params: Promise<{ projektId
                 variant="danger"
                 cancelLabel="Abbrechen"
                 confirmLabel="Aufgabe löschen"
+            />
+
+            {/* Subtask Delete Confirmation */}
+            <ConfirmDialog
+                isOpen={!!subtaskToDelete}
+                onClose={() => setSubtaskToDelete(null)}
+                onConfirm={handleConfirmSubtaskDelete}
+                title="Unteraufgabe löschen?"
+                description="Möchten Sie diese Unteraufgabe wirklich löschen?"
+                variant="danger"
+                cancelLabel="Abbrechen"
+                confirmLabel="Löschen"
             />
         </div>
     );
