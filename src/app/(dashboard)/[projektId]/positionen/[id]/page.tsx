@@ -8,6 +8,8 @@ import { ArrowLeft, Edit, Plus, FileSpreadsheet, ListTodo, Printer, Share2, Shie
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { cn, getAppUrl } from '@/lib/utils';
 import Link from 'next/link';
+import { ChangeHistoryPanel } from '@/components/shared/ChangeHistoryPanel';
+
 import { QRCodeSVG } from 'qrcode.react';
 import { QRCodeSection } from '@/components/shared/QRCodeSection';
 import { ItemQrModal } from '@/components/shared/ItemQrModal';
@@ -175,17 +177,19 @@ export default function PositionDetailPage() {
                 </div>
             </div>
 
-            {/* TOP ROW: Details, Bemerkung, Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-                {/* 1) Details & Info */}
-                <Card className="shadow-sm border-2 border-border overflow-hidden bg-white dark:bg-card">
+            {/* TOP ROW: 4 cols — shared geometry system (Termine reference) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+
+
+                {/* ─── 1) Details & Info ─── */}
+                <Card className="border-2 border-border shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card flex flex-col">
                     <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
                         <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                             <FileSpreadsheet className="h-3.5 w-3.5" />
                             Details & Info
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-0">
+                    <CardContent className="p-0 flex-1">
                         <div className="divide-y divide-border">
                             <div className="px-4 py-2 flex items-center justify-between hover:bg-muted/5 transition-colors">
                                 <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight">Menge & Einheit</span>
@@ -207,37 +211,42 @@ export default function PositionDetailPage() {
                     </CardContent>
                 </Card>
 
-                {/* 2) Bemerkung */}
-                <Card className="shadow-sm border-2 border-primary/20 bg-orange-50/10 dark:bg-slate-900/50 overflow-hidden flex flex-col">
-                    <CardHeader className="py-2.5 px-4 bg-primary/5 dark:bg-primary/10 border-b border-primary/10">
-                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                {/* ─── 2) Bemerkung ─── */}
+                <Card className="border-2 border-border shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card flex flex-col">
+                    <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                             <ListTodo className="h-3 w-3" />
                             Bemerkung
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-4 flex-1">
-                        <div className="text-[10px] text-muted-foreground leading-relaxed italic whitespace-pre-wrap">
+                    <CardContent className="p-4 flex-1 overflow-hidden">
+                        <div className="text-[10px] text-muted-foreground leading-relaxed italic whitespace-pre-wrap line-clamp-[10]">
                             {position.beschreibung || 'Keine Bemerkung vorhanden.'}
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* 3) Actions Card */}
-                <Card className="shadow-lg border-2 border-orange-600/30 rounded-3xl overflow-hidden bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl">
-                    <CardContent className="p-4 flex flex-col gap-3 items-center justify-center h-full">
-                        {can('viewKosten') && (
-                            <Link href={`/${projektId}/kosten?pos=${id}`} className="w-full max-w-[240px]">
-                                <Button className="w-full h-10 border-2 border-green-400 bg-green-50/50 hover:bg-green-100/70 dark:bg-green-900/20 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 font-black uppercase text-[10px] tracking-widest rounded-lg flex items-center justify-center gap-2.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
-                                    <div className="p-1 bg-white dark:bg-slate-800 rounded-full shadow-sm">
-                                        <BadgeDollarSign className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
-                                    </div>
-                                    <span>Kosten erfassen</span>
-                                </Button>
-                            </Link>
-                        )}
+                {/* ─── 3) Aenderungshistorie ─── */}
+                <ChangeHistoryPanel entityId={id} className="border-2 border-border shadow-sm rounded-xl" />
 
-                        <div className="flex items-center gap-3 w-full max-w-[240px]">
-                            <Link href={`/${projektId}/lager-scan?type=position&id=${id}&action=einlagerung&qr=POSITION:${id}`} className="flex-1">
+                {/* ─── 4) Aktionen ─── */}
+                <Card className="border-2 border-border shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card flex flex-col">
+                    <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Aktionen</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 flex items-center justify-center p-5">
+                        <div className="grid grid-cols-2 gap-3 w-full max-w-[220px]">
+                            {can('viewKosten') && (
+                                <Link href={`/${projektId}/kosten?pos=${id}`} className="col-span-2">
+                                    <Button className="w-full h-10 border-2 border-green-400 bg-green-50/50 hover:bg-green-100/70 dark:bg-green-900/20 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center justify-center gap-2.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
+                                        <div className="p-1 bg-white dark:bg-slate-800 rounded-full shadow-sm">
+                                            <BadgeDollarSign className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                                        </div>
+                                        <span>Kosten erfassen</span>
+                                    </Button>
+                                </Link>
+                            )}
+                            <Link href={`/${projektId}/lager-scan?type=position&id=${id}&action=einlagerung&qr=POSITION:${id}`}>
                                 <Button variant="outline" className="w-full h-10 border-2 border-blue-400 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 text-blue-700 dark:text-blue-400 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
                                     <div className="p-0.5 bg-blue-100 dark:bg-slate-900 rounded-full">
                                         <ArrowLeft className="h-3 w-3 text-blue-600 dark:text-blue-400 rotate-[-90deg]" />
@@ -245,8 +254,8 @@ export default function PositionDetailPage() {
                                     <span>Einlagern</span>
                                 </Button>
                             </Link>
-                            <Link href={`/${projektId}/lager-scan?type=position&id=${id}&action=auslagerung&qr=POSITION:${id}`} className="flex-1">
-                                <Button variant="outline" className="w-full h-10 border-2 border-red-400 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-slate-700 text-red-700 dark:text-red-400 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
+                            <Link href={`/${projektId}/lager-scan?type=position&id=${id}&action=auslagerung&qr=POSITION:${id}`}>
+                                <Button variant="outline" className="w-full h-10 border-2 border-red-400 bg-white dark:bg-slate-808 hover:bg-red-50 dark:hover:bg-slate-700 text-red-700 dark:text-red-400 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
                                     <div className="p-0.5 bg-red-100 dark:bg-slate-900 rounded-full">
                                         <ArrowLeft className="h-3 w-3 text-red-600 dark:text-red-400 rotate-[90deg]" />
                                     </div>
@@ -259,6 +268,7 @@ export default function PositionDetailPage() {
             </div>
 
             {/* Bottom: Unterpositionen (Full Width) */}
+
             <Card className="shadow-lg border-2 border-border overflow-hidden">
                 <CardHeader className="py-4 px-6 bg-muted/30 border-b border-border flex flex-row items-center justify-between">
                     <CardTitle className="text-lg font-black flex items-center gap-3">

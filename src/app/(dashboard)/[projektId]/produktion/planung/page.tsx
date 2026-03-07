@@ -12,7 +12,7 @@ import { SubsystemService } from '@/lib/services/subsystemService';
 import { EmployeeService } from '@/lib/services/employeeService';
 import { Teilsystem, Mitarbeiter } from '@/types';
 import { cn } from '@/lib/utils';
-import { Loader2, Save, Layers } from 'lucide-react';
+import { Loader2, Save, PenTool } from 'lucide-react';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { SplitLayout, SplitLayoutList, SplitLayoutDetail } from '@/components/layout/SplitLayout';
@@ -177,7 +177,7 @@ export default function PlanerPage() {
             />
 
             <ModuleActionBanner
-                icon={Layers}
+                icon={PenTool}
                 title="Planer"
                 backHref={`/${projektId}`}
                 ctaLabel="Neue TS erfassen"
@@ -195,7 +195,7 @@ export default function PlanerPage() {
                 <Card className="border-2 border-dashed rounded-2xl">
                     <CardContent className="py-32 text-center flex flex-col items-center">
                         <div className="p-6 bg-muted/30 rounded-full mb-6">
-                            <Layers className="h-16 w-16 text-muted-foreground/20" />
+                            <PenTool className="h-16 w-16 text-muted-foreground/20" />
                         </div>
                         <h3 className="text-xl font-black text-foreground tracking-tight">Keine Teilsysteme</h3>
                         <p className="text-sm text-muted-foreground mt-2 font-medium">Es wurden keine geplanten Systeme für diese Abteilung gefunden.</p>

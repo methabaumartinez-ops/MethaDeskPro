@@ -42,7 +42,8 @@ export function QRCodeSection({ url, title, subtitle, compact = false }: QRCodeS
                             text-align: center;
                         }
                         .qr-container { padding: 40px; border: 2px solid #000; border-radius: 20px; }
-                        .project-info { font-size: 10px; color: #94748b; margin-bottom: 5px; text-transform: uppercase; }
+                        .project-number { font-size: 10px; font-weight: 400; color: #94a3b8; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 1px; }
+                        .project-name { font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 8px; }
                         h1 { margin-top: 20px; font-size: 24px; }
                         p { color: #666; margin-bottom: 20px; }
                         .url { font-size: 10px; color: #999; margin-top: 20px; }
@@ -50,7 +51,8 @@ export function QRCodeSection({ url, title, subtitle, compact = false }: QRCodeS
                 </head>
                 <body>
                     <div class="qr-container">
-                        ${activeProjekt?.projektnummer && activeProjekt?.projektname ? `<div class="project-info">${activeProjekt.projektnummer} ${activeProjekt.projektname}</div>` : ''}
+                        ${activeProjekt?.projektnummer ? `<div class="project-number">${activeProjekt.projektnummer}</div>` : ''}
+                        ${activeProjekt?.projektname ? `<div class="project-name">${activeProjekt.projektname}</div>` : ''}
                         ${printContent.innerHTML}
                         <h1>${title}</h1>
                         ${subtitle ? `<p>${subtitle}</p>` : ''}

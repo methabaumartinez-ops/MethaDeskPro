@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { Layers, Save } from 'lucide-react';
+import { ClipboardList, ShoppingCart, Wrench, Box, Layers, Save } from 'lucide-react';
 import { cn, isMontageterminProvisional } from '@/lib/utils';
 import { Teilsystem, Projekt, ABTEILUNGEN_CONFIG, ITEM_STATUS_OPTIONS, ItemStatus, Abteilung } from '@/types';
 import { SubsystemService } from '@/lib/services/subsystemService';
@@ -41,6 +41,15 @@ export default function AbteilungPage() {
     // Find department name from slug
     const abteilungConfig = ABTEILUNGEN_CONFIG.find(a => a.id === abteilungSlug);
     const abteilungName = abteilungConfig?.name || abteilungSlug;
+
+    // Icon mapping matching sidebar (Sidebar.tsx)
+    const ABTEILUNG_ICONS: Record<string, React.ElementType> = {
+        avor: ClipboardList,
+        einkauf: ShoppingCart,
+        schlosserei: Wrench,
+        blech: Box,
+    };
+    const AbteilungIcon = ABTEILUNG_ICONS[abteilungSlug] || Layers;
 
     const loadData = async () => {
         setLoading(true);
@@ -113,7 +122,7 @@ export default function AbteilungPage() {
     return (
         <div className="space-y-4 animate-in fade-in duration-500 pb-10">
             <ModuleActionBanner
-                icon={Layers}
+                icon={AbteilungIcon}
                 title={abteilungName}
                 items={autocompleteItems}
                 onSelect={(id) => router.push(`/${projektId}/teilsysteme/${id}${fromParam}`)}
@@ -176,7 +185,7 @@ export default function AbteilungPage() {
                     ) : (
                         <div className="py-32 text-center flex flex-col items-center">
                             <div className="p-6 bg-muted/30 rounded-full mb-6">
-                                <Layers className="h-16 w-16 text-muted-foreground/20" />
+                                <AbteilungIcon className="h-16 w-16 text-muted-foreground/20" />
                             </div>
                             <h3 className="text-xl font-black text-foreground tracking-tight">Keine Teilsysteme in {abteilungName}</h3>
                             <p className="text-sm text-muted-foreground max-w-xs mt-2 font-medium">

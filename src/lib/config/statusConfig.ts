@@ -8,6 +8,7 @@ import { badgeVariants } from '@/components/ui/badge';
 // ============================================================
 
 export const TS_ALLOWED_STATUSES: ItemStatus[] = [
+    'in_planung',
     'offen',
     'in_arbeit',
     'fertig',
@@ -15,6 +16,7 @@ export const TS_ALLOWED_STATUSES: ItemStatus[] = [
 ];
 
 export const POS_ALLOWED_STATUSES: ItemStatus[] = [
+    'in_planung',
     'offen',
     'in_arbeit',
     'bestellt',
@@ -36,26 +38,37 @@ export interface StatusStyle {
 }
 
 export const STATUS_UI_CONFIG: Record<ItemStatus, StatusStyle> = {
-    offen: { value: 'offen', label: 'Offen', variant: 'success' }, // Green
-    in_arbeit: { value: 'in_arbeit', label: 'In Arbeit', variant: 'info' }, // Blue
-    fertig: { value: 'fertig', label: 'Fertig', variant: 'outline' }, // Neutral / No Color
+    in_planung: { value: 'in_planung', label: 'In Planung', variant: 'teal' }, // Planning phase — teal (same as Planung dept)
+    offen:      { value: 'offen',      label: 'Offen',      variant: 'success' }, // Green
+    in_arbeit:  { value: 'in_arbeit',  label: 'In Arbeit',  variant: 'info' },    // Blue
+    fertig:     { value: 'fertig',     label: 'Fertig',     variant: 'outline' }, // Neutral
     nachbearbeitung: { value: 'nachbearbeitung', label: 'Nachbearbeitung', variant: 'error' }, // Red
-    geliefert: { value: 'geliefert', label: 'Geliefert', variant: 'warning' }, // Yellow
-    bestellt: { value: 'bestellt', label: 'Bestellt', variant: 'warning' }, // Yellow
+    geliefert:  { value: 'geliefert',  label: 'Geliefert',  variant: 'warning' }, // Yellow
+    bestellt:   { value: 'bestellt',   label: 'Bestellt',   variant: 'warning' }, // Yellow
     
     // Legacy mapping (to avoid breaking old items not migrated yet)
-    geaendert: { value: 'nachbearbeitung', label: 'Nachbearbeitung', variant: 'error' },
-    in_produktion: { value: 'in_arbeit', label: 'In Arbeit', variant: 'info' },
-    verbaut: { value: 'verbaut', label: 'Verbaut', variant: 'outline' },
-    abgeschlossen: { value: 'abgeschlossen', label: 'Abgeschlossen', variant: 'default' }
+    geaendert:    { value: 'nachbearbeitung', label: 'Nachbearbeitung', variant: 'error' },
+    in_produktion:{ value: 'in_arbeit',       label: 'In Arbeit',       variant: 'info' },
+    verbaut:      { value: 'verbaut',          label: 'Verbaut',         variant: 'outline' },
+    abgeschlossen:{ value: 'abgeschlossen',    label: 'Abgeschlossen',   variant: 'default' }
 };
 
 // ============================================================
 // DEFAULTS & LOGIC
 // ============================================================
 
+/** Roles that trigger In Planung + Planung dept on TS creation */
+export const PLANNER_ROLES = ['planer', 'baufuhrer', 'bauprojektleiter'] as const;
+
 export const STATUS_DEFAULTS = {
     TEILSYSTEM: {
+        /** Returns the correct default status based on the creator's role */
+        getStatus: (creatorRole?: string): ItemStatus =>
+            PLANNER_ROLES.includes(creatorRole as any) ? 'in_planung' : 'offen',
+        /** Returns the correct default abteilung based on the creator's role */
+        getAbteilung: (creatorRole?: string, creatorDepartment?: string): string =>
+            PLANNER_ROLES.includes(creatorRole as any) ? 'Planung' : (creatorDepartment || 'AVOR'),
+        // Legacy static defaults kept for backward compat
         status: 'offen' as ItemStatus,
         abteilung: (creatorDepartment?: string): Abteilung | string => creatorDepartment || 'Bau'
     },
@@ -68,6 +81,7 @@ export const STATUS_DEFAULTS = {
         abteilung: 'Sin Abteilung' as Abteilung | string
     }
 };
+
 
 // ============================================================
 // UI HELPER FUNCTIONS FOR TABLES AND EDITABLE COMPONENTS

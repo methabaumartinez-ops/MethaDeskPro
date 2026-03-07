@@ -23,6 +23,12 @@ export function cleanBemerkung(text?: string): string {
 }
 
 /** Returns true when the Montagetermin is still the Bauleiter-provided provisional value (shows red in tables). */
-export function isMontageterminProvisional(item: { montageterminProvisional?: boolean }): boolean {
-    return item.montageterminProvisional === true;
+export function isMontageterminProvisional(item: { montageterminProvisional?: boolean; montagetermin?: string }): boolean {
+    return item.montageterminProvisional === true || isMontageTerminBauleiter(item.montagetermin);
+}
+
+/** Returns true when the montagetermin text is "Durch den Bauleiter" (case-insensitive). */
+export function isMontageTerminBauleiter(value?: string | null): boolean {
+    if (!value) return false;
+    return value.trim().toLowerCase() === 'durch den bauleiter';
 }

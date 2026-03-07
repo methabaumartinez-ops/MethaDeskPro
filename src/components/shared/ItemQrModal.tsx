@@ -59,7 +59,10 @@ export function ItemQrModal({
         const headerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         headerGroup.setAttribute('transform', `translate(${vbValues[2] / 2}, ${vbValues[1] - 8})`);
         headerGroup.innerHTML = `
-            ${projectNumber && projectName ? `<text x="0" y="-8" font-family="Arial, sans-serif" font-weight="400" font-size="2px" text-anchor="middle" fill="#94a3b8">${projectNumber} ${projectName}</text>` : ''}
+            ${projectNumber || projectName ? `
+                ${projectNumber ? `<text x="0" y="-11" font-family="Arial, sans-serif" font-weight="700" font-size="2.5px" text-anchor="middle" fill="#334155">${projectNumber}</text>` : ''}
+                ${projectName ? `<text x="0" y="-7.5" font-family="Arial, sans-serif" font-weight="900" font-size="2.8px" text-anchor="middle" fill="#0f172a">${projectName}</text>` : ''}
+            ` : ''}
             <text x="0" y="-4" font-family="Arial, sans-serif" font-weight="900" font-size="6px" text-anchor="middle" fill="#0f172a">${subtitle}</text>
             <text x="0" y="0" font-family="Arial, sans-serif" font-weight="700" font-size="3.5px" text-anchor="middle" fill="#64748b">${title}</text>
         `;
@@ -90,40 +93,110 @@ export function ItemQrModal({
         const svgElement = document.querySelector('#item-qr-container svg');
         if (!svgElement) return;
 
-        const printWindow = window.open('', '', 'width=600,height=800');
+        const svgMarkup = svgElement.outerHTML;
+
+        // Build a single label card
+        const labelHtml = `
+            <div class="label">
+                ${projectNumber ? `<div class="proj-num">${projectNumber}</div>` : ''}
+                ${projectName ? `<div class="proj-name">${projectName}</div>` : ''}
+                <div class="number">${subtitle}</div>
+                <div class="name">${title}</div>
+                <div class="qr">${svgMarkup}</div>
+                <div class="brand">
+                    <span class="b-m">METHA</span><span class="b-d">Desk</span><span class="b-p">pro</span>
+                </div>
+                <div class="count">${countLabel}: ${count}</div>
+            </div>
+        `;
+
+        // Repeat 8 times for the grid
+        const labels = Array(8).fill(labelHtml).join('\n');
+
+        const printWindow = window.open('', '', 'width=800,height=1100');
         if (printWindow) {
             printWindow.document.write(`
                 <html>
                     <head>
-                        <title>Print Label</title>
+                        <title>Print Labels</title>
                         <style>
-                            @page { size: auto; margin: 0mm; }
-                            body { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; font-family: sans-serif; background: #fff; }
-                            .label-container { padding: 40px; border: 4px solid #f1f5f9; border-radius: 40px; text-align: center; width: 400px; background: white; }
-                            .number { font-size: 58px; font-weight: 900; color: #0f172a; margin: 0 0 5px 0; letter-spacing: -2px; }
-                            .name { font-size: 32px; font-weight: 700; color: #64748b; margin: 0 0 35px 0; line-height: 1.2; }
-                            .project-info { font-size: 14px; font-weight: 400; color: #94a3b8; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 1px; }
-                            .qr-container { margin-bottom: 35px; }
-                            .qr-container svg { width: 350px; height: 350px; }
-                            .brand { margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 4px; border-top: 2px solid #f8fafc; padding-top: 20px; }
-                            .brand-metha { color: #1e293b; font-weight: 900; font-size: 36px; letter-spacing: -1.5px; }
-                            .brand-desk { color: #F26A21; font-weight: 900; font-size: 36px; letter-spacing: -1.5px; }
-                            .brand-pro { color: #94a3b8; font-weight: 300; font-size: 16px; margin-bottom: 12px; }
-                            .footer-label { font-size: 18px; color: #334155; font-weight: bold; margin: 15px 0 0 0; }
+                            @page { size: A4; margin: 8mm; }
+                            * { box-sizing: border-box; margin: 0; padding: 0; }
+                            html, body { width: 100%; height: 100%; font-family: 'Arial', 'Helvetica', sans-serif; }
+                            body {
+                                display: grid;
+                                grid-template-columns: 1fr 1fr;
+                                grid-template-rows: repeat(4, 1fr);
+                                gap: 4mm;
+                                align-content: stretch;
+                                height: calc(297mm - 16mm);
+                                width: calc(210mm - 16mm);
+                            }
+                            .label {
+                                border: 1.5px solid #e2e8f0;
+                                border-radius: 12px;
+                                padding: 6px 8px 5px;
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                justify-content: center;
+                                text-align: center;
+                                overflow: hidden;
+                                gap: 1px;
+                            }
+                            .proj-num {
+                                font-size: 7px;
+                                font-weight: 700;
+                                color: #334155;
+                                text-transform: uppercase;
+                                letter-spacing: 1px;
+                            }
+                            .proj-name {
+                                font-size: 8.5px;
+                                font-weight: 900;
+                                color: #0f172a;
+                                letter-spacing: 0.3px;
+                                margin-bottom: 1px;
+                            }
+                            .number {
+                                font-size: 18px;
+                                font-weight: 900;
+                                color: #0f172a;
+                                letter-spacing: -0.5px;
+                                line-height: 1.1;
+                            }
+                            .name {
+                                font-size: 10px;
+                                font-weight: 700;
+                                color: #64748b;
+                                line-height: 1.2;
+                                margin-bottom: 2px;
+                                max-width: 100%;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                                white-space: nowrap;
+                            }
+                            .qr { margin: 2px 0; }
+                            .qr svg { width: 110px; height: 110px; }
+                            .brand {
+                                display: flex;
+                                align-items: baseline;
+                                gap: 0px;
+                                margin-top: 1px;
+                            }
+                            .b-m { color: #1e293b; font-weight: 900; font-size: 11px; letter-spacing: -0.5px; }
+                            .b-d { color: #F26A21; font-weight: 900; font-size: 11px; letter-spacing: -0.5px; }
+                            .b-p { color: #94a3b8; font-weight: 300; font-size: 6px; margin-bottom: 3px; }
+                            .count {
+                                font-size: 7px;
+                                color: #334155;
+                                font-weight: 700;
+                            }
                         </style>
                     </head>
                     <body>
-                        <div class="label-container">
-                            ${projectNumber && projectName ? `<div class="project-info">${projectNumber} ${projectName}</div>` : ''}
-                            <div class="number">${subtitle}</div>
-                            <div class="name">${title}</div>
-                            <div class="qr-container">${svgElement.outerHTML}</div>
-                            <div class="brand">
-                                <span class="brand-metha">METHA</span><span class="brand-desk">Desk</span><span class="brand-pro">pro</span>
-                            </div>
-                            <p class="footer-label">${countLabel}: ${count}</p>
-                        </div>
-                        <script>window.onload=()=>{setTimeout(()=>{window.print();window.close();},500);};</script>
+                        ${labels}
+                        <script>window.onload=()=>{setTimeout(()=>{window.print();window.close();},500);};<\/script>
                     </body>
                 </html>
             `);
@@ -151,8 +224,11 @@ export function ItemQrModal({
                 </button>
 
                 <div className="text-center flex flex-col items-center">
-                    {projectNumber && projectName && (
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{projectNumber} {projectName}</span>
+                    {projectNumber && (
+                        <span className="text-xs font-bold text-slate-600 uppercase tracking-[0.2em] mb-0.5">{projectNumber}</span>
+                    )}
+                    {projectName && (
+                        <span className="text-sm font-black text-slate-800 dark:text-slate-200 tracking-tight mb-1">{projectName}</span>
                     )}
                     <span className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter leading-tight">{subtitle}</span>
                     <h2 className="text-xl font-black text-slate-800 dark:text-slate-200 tracking-tight mt-0.5 px-4">{title}</h2>

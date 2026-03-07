@@ -5,6 +5,8 @@ import { getUserFromToken } from '@/lib/services/authService';
 import { ProjectService } from '@/lib/services/projectService';
 import { deleteTeilsystemWithCascade, deletePositionWithCascade } from '@/lib/services/server/deleteHelpers';
 import { requireAuth } from '@/lib/helpers/requireAuth';
+import { ChangelogService, detectChanges, buildSummary } from '@/lib/services/changelogService';
+
 
 const ALLOWED_COLLECTIONS = [
     'projekte', 'teilsysteme', 'positionen', 'unterpositionen',
@@ -34,8 +36,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ collecti
     }
 }
 
+const CHANGELOG_ENTITY_MAP: Record<string, 'teilsystem' | 'position' | 'unterposition'> = {
+    positionen: 'position',
+    unterpositionen: 'unterposition',
+};
+
 export async function PUT(req: Request, { params }: { params: Promise<{ collection: string, id: string }> }) {
-    const { error } = await requireAuth(['admin', 'projektleiter']);
+    const { user, error } = await requireAuth(['admin', 'projektleiter']);
     if (error) return error;
 
     try {
@@ -45,11 +52,29 @@ export async function PUT(req: Request, { params }: { params: Promise<{ collecti
         }
 
         const body = await req.json();
-
-        const existing = await DatabaseService.get(collection, id);
-        const merged = existing ? { ...(existing as Record<string, unknown>), ...body, id } : { ...body, id };
+        const existing = (await DatabaseService.get(collection, id) || {}) as Record<string, unknown>;
+        const merged = { ...existing, ...body, id };
 
         const updated = await DatabaseService.upsert(collection, merged);
+
+        // Record changelog for tracked entity types
+        const entityType = CHANGELOG_ENTITY_MAP[collection];
+        if (user && entityType) {
+            const changes = detectChanges(existing, body as Record<string, unknown>);
+            if (changes.length > 0) {
+                await ChangelogService.createEntry({
+                    entityType,
+                    entityId: id,
+                    projektId: existing.projektId as string | undefined,
+                    changedAt: new Date().toISOString(),
+                    changedBy: `${user.vorname} ${user.nachname}`,
+                    changedByEmail: user.email,
+                    changedFields: changes,
+                    summary: buildSummary(changes),
+                });
+            }
+        }
+
         return NextResponse.json(updated);
     } catch (error) {
         console.error('API Error updating item in collection:', error);
@@ -58,7 +83,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ collecti
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ collection: string, id: string }> }) {
-    const { error } = await requireAuth(['admin', 'projektleiter', 'mitarbeiter']);
+    const { user, error } = await requireAuth(['admin', 'projektleiter', 'mitarbeiter']);
     if (error) return error;
 
     try {
@@ -68,10 +93,29 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ collec
         }
 
         const body = await req.json();
-        const existing = await DatabaseService.get(collection, id);
-        const merged = existing ? { ...(existing as Record<string, unknown>), ...body, id } : { ...body, id };
+        const existing = (await DatabaseService.get(collection, id) || {}) as Record<string, unknown>;
+        const merged = { ...existing, ...body, id };
 
         const updated = await DatabaseService.upsert(collection, merged);
+
+        // Record changelog for tracked entity types
+        const entityType = CHANGELOG_ENTITY_MAP[collection];
+        if (user && entityType) {
+            const changes = detectChanges(existing, body as Record<string, unknown>);
+            if (changes.length > 0) {
+                await ChangelogService.createEntry({
+                    entityType,
+                    entityId: id,
+                    projektId: existing.projektId as string | undefined,
+                    changedAt: new Date().toISOString(),
+                    changedBy: `${user.vorname} ${user.nachname}`,
+                    changedByEmail: user.email,
+                    changedFields: changes,
+                    summary: buildSummary(changes),
+                });
+            }
+        }
+
         return NextResponse.json(updated);
     } catch (error) {
         console.error('API Error patching item in collection:', error);

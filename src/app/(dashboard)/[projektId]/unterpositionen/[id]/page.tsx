@@ -14,6 +14,8 @@ import { ArrowLeft, Edit, FileSpreadsheet, ListTodo, Printer, Share2, ShieldChec
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { cn, getAppUrl } from '@/lib/utils';
 import Link from 'next/link';
+import { ChangeHistoryPanel } from '@/components/shared/ChangeHistoryPanel';
+
 import { QRCodeSVG } from 'qrcode.react';
 import { ItemQrModal } from '@/components/shared/ItemQrModal';
 import { LagerortBadge } from '@/components/shared/LagerortBadge';
@@ -184,16 +186,17 @@ export default function UnterpositionDetailPage() {
                 </div>
             </div>
 
-            {/* TOP ROW: Details & Info, Bemerkung */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 items-stretch">
-                <Card className="shadow-sm border-2 border-border overflow-hidden bg-white dark:bg-card">
+            {/* TOP ROW: 4 cols — shared geometry system (Termine reference) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+
+                <Card className="border-2 border-border shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card flex flex-col">
                     <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
                         <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                             <FileSpreadsheet className="h-3.5 w-3.5" />
                             Details & Info
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-0">
+                    <CardContent className="p-0 flex-1">
                         <div className="divide-y divide-border">
                             <div className="px-4 py-2 flex items-center justify-between hover:bg-muted/5 transition-colors">
                                 <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight">Menge & Einheit</span>
@@ -207,31 +210,38 @@ export default function UnterpositionDetailPage() {
                             )}
                             <div className="px-4 py-2 flex items-center justify-between hover:bg-muted/5 transition-colors">
                                 <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight">IFC Typ</span>
-                                <Badge variant="outline" className="font-bold text-[9px] h-4 bg-blue-50 text-blue-700 border-blue-200">{unterposition.ifcType || 'n/a'}</Badge>
+                                <span className="text-xs font-bold text-foreground">{unterposition.ifcType || 'n/a'}</span>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="shadow-sm border-2 border-primary/20 bg-orange-50/10 dark:bg-slate-900/50 overflow-hidden flex flex-col">
-                    <CardHeader className="py-2.5 px-4 bg-primary/5 dark:bg-primary/10 border-b border-primary/10">
-                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                <Card className="border-2 border-border shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card flex flex-col">
+                    <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                             <ListTodo className="h-3 w-3" />
                             Beschreibung
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-4 flex-1">
-                        <div className="text-[10px] text-muted-foreground leading-relaxed italic whitespace-pre-wrap">
+                    <CardContent className="p-4 flex-1 overflow-hidden">
+                        <div className="text-[10px] text-muted-foreground leading-relaxed italic whitespace-pre-wrap line-clamp-[10]">
                             {unterposition.beschreibung || 'Keine Beschreibung vorhanden.'}
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* 3) Actions Card */}
-                <Card className="shadow-lg border-2 border-orange-600/30 rounded-3xl overflow-hidden bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl">
-                    <CardContent className="p-4 flex flex-col gap-3 items-center justify-center h-full">
-                        <div className="flex items-center gap-3 w-full max-w-[240px]">
-                            <Link href={`/${projektId}/lager-scan?type=unterposition&id=${id}&action=einlagerung&qr=UNTERPOSITION:${id}`} className="flex-1">
+                {/* ─── 3) Aenderungshistorie ─── */}
+                <ChangeHistoryPanel entityId={id} className="border-2 border-border shadow-sm rounded-xl" />
+
+                {/* ─── 4) Aktionen ─── */}
+                <Card className="border-2 border-border shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card flex flex-col">
+                    <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Aktionen</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 flex items-center justify-center p-5">
+                        {/* grid-cols-2: colinear outer edges by grid construction */}
+                        <div className="grid grid-cols-2 gap-3 w-full max-w-[220px]">
+                            <Link href={`/${projektId}/lager-scan?type=unterposition&id=${id}&action=einlagerung&qr=UNTERPOSITION:${id}`}>
                                 <Button variant="outline" className="w-full h-10 border-2 border-blue-400 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 text-blue-700 dark:text-blue-400 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
                                     <div className="p-0.5 bg-blue-100 dark:bg-slate-900 rounded-full">
                                         <ArrowLeft className="h-3 w-3 text-blue-600 dark:text-blue-400 rotate-[-90deg]" />
@@ -239,7 +249,7 @@ export default function UnterpositionDetailPage() {
                                     <span>Einlagern</span>
                                 </Button>
                             </Link>
-                            <Link href={`/${projektId}/lager-scan?type=unterposition&id=${id}&action=auslagerung&qr=UNTERPOSITION:${id}`} className="flex-1">
+                            <Link href={`/${projektId}/lager-scan?type=unterposition&id=${id}&action=auslagerung&qr=UNTERPOSITION:${id}`}>
                                 <Button variant="outline" className="w-full h-10 border-2 border-red-400 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-slate-700 text-red-700 dark:text-red-400 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
                                     <div className="p-0.5 bg-red-100 dark:bg-slate-900 rounded-full">
                                         <ArrowLeft className="h-3 w-3 text-red-600 dark:text-red-400 rotate-[90deg]" />
@@ -251,7 +261,6 @@ export default function UnterpositionDetailPage() {
                     </CardContent>
                 </Card>
             </div>
-
             {/* MAIN CONTENT AREA */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch mt-6">
                 <div className="lg:col-span-5 flex flex-col gap-6">

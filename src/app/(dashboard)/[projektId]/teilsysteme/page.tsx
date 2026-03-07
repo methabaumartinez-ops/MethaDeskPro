@@ -61,7 +61,7 @@ export default function TeilsystemeListPage() {
         <div className="space-y-4 animate-in fade-in duration-500 pb-10">
             <ModuleActionBanner
                 icon={Layers}
-                title="Teilsysteme u. BKP"
+                title="TeilSysteme"
                 items={autocompleteItems}
                 onSelect={(id) => router.push(`/${projektId}/teilsysteme/${id}${fromParam}`)}
                 onSearch={(q) => setSearch(q)}
@@ -81,6 +81,7 @@ export default function TeilsystemeListPage() {
                         <TeilsystemTable
                             items={filteredItems}
                             projektId={projektId}
+                            projekt={project}
                         />
                     ) : (
                         <div className="py-32 text-center flex flex-col items-center">

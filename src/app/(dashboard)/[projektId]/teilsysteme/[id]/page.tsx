@@ -7,12 +7,15 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { BimViewer } from '@/components/shared/BimViewer';
+import { ChangeHistoryPanel } from '@/components/shared/ChangeHistoryPanel';
+
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { ProjectService } from '@/lib/services/projectService';
 import { PositionService } from '@/lib/services/positionService';
 import { LagerortService } from '@/lib/services/lagerortService';
 import { SupplierService } from '@/lib/services/supplierService';
 import { Teilsystem, Position, Projekt, Lagerort, Lieferant, ABTEILUNGEN_CONFIG } from '@/types';
+import { STATUS_UI_CONFIG } from '@/lib/config/statusConfig';
 import {
     ArrowLeft, Edit, ListTodo, Plus, FileText, Truck,
     Calendar, User as UserIcon, Clock, Link as LinkIcon,
@@ -22,7 +25,7 @@ import {
 import Link from 'next/link';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { cn, cleanBemerkung, getAppUrl } from '@/lib/utils';
+import { cn, cleanBemerkung, getAppUrl, isMontageTerminBauleiter } from '@/lib/utils';
 import { QRCodeSVG } from 'qrcode.react';
 
 import { QRCodeSection } from '@/components/shared/QRCodeSection';
@@ -236,100 +239,117 @@ export default function TeilsystemDetailPage() {
                 </div>
             </div>
 
-            {/* NEW ROW: Termine, Bemerkung, Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-                {/* 1) Termine u. Fristen */}
-                <Card className="shadow-sm border-2 border-border overflow-hidden bg-white dark:bg-card">
+            {/* TOP ROW: Termine, Bemerkung, Aenderungshistorie, Aktionen — shared geometry system */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+
+                {/* ─── 1) Termine u. Fristen ─── */}
+                <Card className="border-2 border-border shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card flex flex-col">
                     <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
                         <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Termine u. Fristen</CardTitle>
                     </CardHeader>
-                    <CardContent className="p-5">
-                        <div className="grid grid-cols-3 gap-4">
-                            {[
-                                {
-                                    label: 'Planabgabe',
-                                    value: item.abgabePlaner,
-                                    color: 'text-blue-600',
-                                    status: item.planStatus
-                                },
-                                {
-                                    label: 'Lieferdatum',
-                                    value: item.lieferfrist,
-                                    color: 'text-amber-600',
-                                    status: item.status === 'geliefert' || item.status === 'verbaut' || item.status === 'abgeschlossen' ? 'fertig' : item.status
-                                },
-                                {
-                                    label: 'Montage',
-                                    value: item.montagetermin,
-                                    color: 'text-green-600',
-                                    status: item.status === 'verbaut' || item.status === 'abgeschlossen' ? 'fertig' : item.status
-                                },
-                            ].map((d, i) => {
-                                const getStatusInfo = (s: string | undefined) => {
+                    <CardContent className="p-5 flex-1 flex items-center">
+                        <div className="grid grid-cols-3 gap-3 w-full">
+                            {(() => {
+                                // Derive date text color from status using the centralized config
+                                const getStatusColor = (s: string | undefined): string => {
                                     const val = s?.toLowerCase() || 'offen';
-                                    if (val === 'offen') return { text: 'Offen', cls: 'bg-green-100 text-green-700 border-green-200' };
-                                    if (['in arbeit', 'in_bearbeitung', 'in_produktion', 'bestellt', 'geliefert'].includes(val))
-                                        return { text: 'In Arbeit', cls: 'bg-blue-100 text-blue-700 border-blue-200' };
-                                    if (['fertig', 'verbaut', 'abgeschlossen'].includes(val))
-                                        return { text: 'Fertig', cls: 'bg-slate-100 text-slate-900 border-slate-300 dark:bg-slate-800 dark:text-slate-200' };
-                                    return { text: s, cls: 'bg-muted text-muted-foreground border-border' };
+                                    const cfg = STATUS_UI_CONFIG[val as keyof typeof STATUS_UI_CONFIG];
+                                    if (!cfg) return 'text-muted-foreground/50';
+                                    const variantColorMap: Record<string, string> = {
+                                        success: 'text-green-600 dark:text-green-400',
+                                        info: 'text-blue-600 dark:text-blue-400',
+                                        teal: 'text-teal-600 dark:text-teal-400',
+                                        warning: 'text-amber-600 dark:text-amber-400',
+                                        error: 'text-red-600 dark:text-red-400',
+                                        outline: 'text-slate-500 dark:text-slate-400',
+                                        default: 'text-slate-500 dark:text-slate-400',
+                                    };
+                                    return variantColorMap[cfg.variant] || 'text-muted-foreground/50';
                                 };
-                                const statusInfo = getStatusInfo(d.status);
-
-                                return (
-                                    <div key={i} className="flex flex-col items-center text-center">
-                                        <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight mb-1">{d.label}</span>
-                                        <span className={cn("text-lg font-black tracking-tight leading-none mb-2", d.value ? d.color : "text-muted-foreground/40")}>
-                                            {d.value || '—'}
-                                        </span>
-                                        {d.value ? (
-                                            <div className={cn(
-                                                "px-2 py-0.5 rounded text-[9px] font-black uppercase border leading-tight shadow-sm",
-                                                statusInfo.cls
+                                const getStatusBadge = (s: string | undefined) => {
+                                    const val = s?.toLowerCase() || 'offen';
+                                    const cfg = STATUS_UI_CONFIG[val as keyof typeof STATUS_UI_CONFIG];
+                                    if (!cfg) return { text: s ?? '—', cls: 'bg-muted text-muted-foreground border-border' };
+                                    const variantBadgeMap: Record<string, string> = {
+                                        success: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800',
+                                        info: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800',
+                                        teal: 'bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-900/30 dark:text-teal-400 dark:border-teal-800',
+                                        warning: 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800',
+                                        error: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800',
+                                        outline: 'bg-slate-100 text-slate-600 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600',
+                                        default: 'bg-slate-100 text-slate-600 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600',
+                                    };
+                                    return { text: cfg.label, cls: variantBadgeMap[cfg.variant] || 'bg-muted text-muted-foreground border-border' };
+                                };
+                                const dates = [
+                                    { label: 'Planabgabe', value: item.abgabePlaner, status: item.planStatus },
+                                    { label: 'Lieferdatum', value: item.lieferfrist, status: item.status === 'geliefert' || item.status === 'verbaut' || item.status === 'abgeschlossen' ? 'fertig' : item.status },
+                                    { label: 'Montage', value: item.montagetermin, status: item.status === 'verbaut' || item.status === 'abgeschlossen' ? 'fertig' : item.status },
+                                ];
+                                return dates.map((d, i) => {
+                                    const dateColorCls = getStatusColor(d.status);
+                                    const badge = getStatusBadge(d.status);
+                                    return (
+                                        <div key={i} className="flex flex-col items-center text-center gap-1">
+                                            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight">{d.label}</span>
+                                            <span className={cn("text-sm font-black tracking-tight leading-none", 
+                                                d.label === 'Montage' && isMontageTerminBauleiter(d.value)
+                                                    ? "text-red-600"
+                                                    : d.value ? dateColorCls : "text-muted-foreground/30"
                                             )}>
-                                                {statusInfo.text}
-                                            </div>
-                                        ) : (
-                                            <div className="text-[9px] text-muted-foreground/30 font-bold">—</div>
-                                        )}
-                                    </div>
-                                );
-                            })}
+                                                {d.value || '—'}
+                                            </span>
+                                            {d.value ? (
+                                                <div className={cn("px-1.5 py-0.5 rounded text-[8px] font-black uppercase border leading-tight", badge.cls)}>
+                                                    {badge.text}
+                                                </div>
+                                            ) : (
+                                                <div className="text-[9px] text-muted-foreground/20 font-bold">—</div>
+                                            )}
+                                        </div>
+                                    );
+                                });
+                            })()}
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* 2) Bemerkung */}
-                <Card className="shadow-sm border-2 border-primary/20 bg-orange-50/10 dark:bg-slate-900/50 overflow-hidden flex flex-col">
-                    <CardHeader className="py-2.5 px-4 bg-primary/5 dark:bg-primary/10 border-b border-primary/10">
-                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                {/* ─── 2) Bemerkung ─── */}
+                <Card className="border-2 border-border shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card flex flex-col">
+                    <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                             <ListTodo className="h-3 w-3" />
                             Bemerkung
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-4 flex-1">
-                        <div className="text-[10px] text-muted-foreground leading-relaxed italic whitespace-pre-wrap">
+                    <CardContent className="p-4 flex-1 overflow-hidden">
+                        <div className="text-[10px] text-muted-foreground leading-relaxed italic whitespace-pre-wrap line-clamp-[10]">
                             {cleanBemerkung(item.bemerkung) || 'Keine Bemerkung vorhanden.'}
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* 3) Actions card */}
-                <Card className="shadow-lg border-2 border-orange-600/30 rounded-3xl overflow-hidden bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl">
-                    <CardContent className="p-4 flex flex-col gap-3 items-center justify-center h-full">
-                        {canViewKosten && (
-                            <Link href={`/${projektId}/kosten?ts=${id}${from ? `&from=${from}` : ''}`} className="w-full max-w-[240px]">
-                                <Button className="w-full h-10 border-2 border-green-400 bg-green-50/50 hover:bg-green-100/70 dark:bg-green-900/20 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 font-black uppercase text-[10px] tracking-widest rounded-lg flex items-center justify-center gap-2.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
-                                    <div className="p-1 bg-white dark:bg-slate-800 rounded-full shadow-sm">
-                                        <BadgeDollarSign className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
-                                    </div>
-                                    <span>Kosten erfassen</span>
-                                </Button>
-                            </Link>
-                        )}
+                {/* ─── 3) Aenderungshistorie ─── */}
+                <ChangeHistoryPanel entityId={id} className="border-2 border-border shadow-sm rounded-xl" />
 
-                        <div className="flex items-center gap-3 w-full max-w-[240px]">
-                            <Link href={`/${projektId}/lager-scan?type=teilsystem&id=${id}&action=einlagerung&qr=TEILSYSTEM:${id}`} className="flex-1">
+                {/* ─── 4) Aktionen ─── */}
+                <Card className="border-2 border-border shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card flex flex-col">
+                    <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Aktionen</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 flex items-center justify-center p-5">
+                        <div className="grid grid-cols-2 gap-3 w-full max-w-[220px]">
+                            {canViewKosten && (
+                                <Link href={`/${projektId}/kosten?ts=${id}${from ? `&from=${from}` : ''}`} className="col-span-2">
+                                    <Button className="w-full h-10 border-2 border-green-400 bg-green-50/50 hover:bg-green-100/70 dark:bg-green-900/20 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center justify-center gap-2.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
+                                        <div className="p-1 bg-white dark:bg-slate-800 rounded-full shadow-sm">
+                                            <BadgeDollarSign className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                                        </div>
+                                        <span>Kosten erfassen</span>
+                                    </Button>
+                                </Link>
+                            )}
+                            <Link href={`/${projektId}/lager-scan?type=teilsystem&id=${id}&action=einlagerung&qr=TEILSYSTEM:${id}`}>
                                 <Button variant="outline" className="w-full h-10 border-2 border-blue-400 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 text-blue-700 dark:text-blue-400 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
                                     <div className="p-0.5 bg-blue-100 dark:bg-slate-900 rounded-full">
                                         <ArrowLeft className="h-3 w-3 text-blue-600 dark:text-blue-400 rotate-[-90deg]" />
@@ -337,7 +357,7 @@ export default function TeilsystemDetailPage() {
                                     <span>Einlagern</span>
                                 </Button>
                             </Link>
-                            <Link href={`/${projektId}/lager-scan?type=teilsystem&id=${id}&action=auslagerung&qr=TEILSYSTEM:${id}`} className="flex-1">
+                            <Link href={`/${projektId}/lager-scan?type=teilsystem&id=${id}&action=auslagerung&qr=TEILSYSTEM:${id}`}>
                                 <Button variant="outline" className="w-full h-10 border-2 border-red-400 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-slate-700 text-red-700 dark:text-red-400 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
                                     <div className="p-0.5 bg-red-100 dark:bg-slate-900 rounded-full">
                                         <ArrowLeft className="h-3 w-3 text-red-600 dark:text-red-400 rotate-[90deg]" />
@@ -349,6 +369,7 @@ export default function TeilsystemDetailPage() {
                     </CardContent>
                 </Card>
             </div>
+
 
             {/* MAIN CONTENT AREA: Positions Table (Left) + IFC Viewer (Right) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">

@@ -24,7 +24,8 @@ import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 
 import { useProjekt } from '@/lib/context/ProjektContext';
 import { ABTEILUNGEN_CONFIG } from '@/types';
-import { TS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses, getAbteilungColorClasses } from '@/lib/config/statusConfig';
+import { TS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses, getAbteilungColorClasses, PLANNER_ROLES } from '@/lib/config/statusConfig';
+import { getCreationDefaults } from '@/lib/workflow/workflowEngine';
 import { ProvisionalDateInput } from '@/components/ui/provisional-date-input';
 
 const DateInput = React.forwardRef<HTMLInputElement, { label: string; error?: string; value?: string; onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void } & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'>>(
@@ -148,8 +149,17 @@ export default function TeilsystemErfassenPage() {
     React.useEffect(() => {
         if (currentUser) {
             setValue('eroeffnetDurch', `${currentUser.vorname} ${currentUser.nachname}`);
+
+            // Apply workflow-driven defaults based on creator's role
+            const defaults = getCreationDefaults('TEILSYSTEM', currentUser.role);
+            setValue('status', defaults.status, { shouldDirty: false });
+
+            // Only set abteilung from workflow if not already set by URL param
+            if (!abteilungParam) {
+                setValue('abteilung', defaults.abteilung, { shouldDirty: false });
+            }
         }
-    }, [currentUser, setValue]);
+    }, [currentUser, setValue, abteilungParam]);
 
     // Handle abteilung from URL
     React.useEffect(() => {

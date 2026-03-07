@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
-import { HardHat } from 'lucide-react';
+import { Briefcase } from 'lucide-react';
 
 export default function BauleitungPage() {
     const { projektId } = useParams() as { projektId: string };
@@ -13,7 +13,7 @@ export default function BauleitungPage() {
     return (
         <div className="space-y-4 animate-in fade-in duration-500 pb-10">
             <ModuleActionBanner
-                icon={HardHat}
+                icon={Briefcase}
                 title="Bauleitung"
                 backHref={`/${projektId}`}
             />
@@ -21,7 +21,7 @@ export default function BauleitungPage() {
             <Card className="border-2 border-dashed rounded-2xl">
                 <CardContent className="py-32 text-center flex flex-col items-center">
                     <div className="w-20 h-20 rounded-2xl bg-muted/50 flex items-center justify-center mb-6 border-2 border-slate-200">
-                        <HardHat className="h-10 w-10 text-muted-foreground/50" />
+                        <Briefcase className="h-10 w-10 text-muted-foreground/50" />
                     </div>
                     <h3 className="text-2xl font-black text-foreground tracking-tight mb-2">Bauleitung</h3>
                     <p className="text-sm text-muted-foreground font-medium max-w-sm">

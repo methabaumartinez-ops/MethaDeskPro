@@ -30,17 +30,17 @@ export interface User {
 // ============================================================
 
 export const ABTEILUNGEN_CONFIG = [
-  { id: 'planung', name: 'Planung', color: 'info' },
-  { id: 'einkauf', name: 'Einkauf', color: 'secondary' },
-  { id: 'avor', name: 'AVOR', color: 'info' },
-  { id: 'schlosserei', name: 'Schlosserei', color: 'gray' },
-  { id: 'blech', name: 'Blechabteilung', color: 'orange' },
-  { id: 'werkhof', name: 'Werkhof', color: 'info' },
-  { id: 'montage', name: 'Montage', color: 'success' },
-  { id: 'bau', name: 'Bau', color: 'error' },
-  { id: 'zimmerei', name: 'Zimmerei', color: 'gray' },
-  { id: 'subunternehmer', name: 'Subunternehmer', color: 'violet' },
-  { id: 'unternehmer', name: 'Unternehmer', color: 'violet' },
+  { id: 'planung',        name: 'Planung',         color: 'teal'      },
+  { id: 'einkauf',        name: 'Einkauf',          color: 'warning'   },
+  { id: 'avor',           name: 'AVOR',             color: 'info'      },
+  { id: 'schlosserei',    name: 'Schlosserei',      color: 'gray'      },
+  { id: 'blech',          name: 'Blechabteilung',   color: 'orange'    },
+  { id: 'werkhof',        name: 'Werkhof',          color: 'violet'    },
+  { id: 'montage',        name: 'Montage',          color: 'success'   },
+  { id: 'bau',            name: 'Bau',              color: 'error'     },
+  { id: 'zimmerei',       name: 'Zimmerei',         color: 'secondary' },
+  { id: 'subunternehmer', name: 'Subunternehmer',   color: 'default'   },
+  { id: 'unternehmer',    name: 'Unternehmer',      color: 'outline'   },
 ] as const;
 
 export const ITEM_STATUS_OPTIONS = [
@@ -113,15 +113,17 @@ export interface Projekt {
 
 export type ItemStatus =
   | 'offen'
-  | 'in_arbeit' // REPLACING in_produktion
+  | 'in_planung'   // NEW: TS opened by Planner/Baufuehrer, awaiting AVOR handoff
+  | 'in_arbeit'    // REPLACING in_produktion
   | 'in_produktion' // LEGACY (for backward comp)
   | 'bestellt'
   | 'fertig'
   | 'geliefert'
   | 'verbaut'
   | 'nachbearbeitung' // REPLACING geaendert
-  | 'geaendert' // LEGACY
+  | 'geaendert'    // LEGACY
   | 'abgeschlossen';
+
 
 // ============================================================
 // TEILSYSTEME
