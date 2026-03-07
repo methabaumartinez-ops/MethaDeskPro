@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
+import { ProjectBanner } from '@/components/layout/ProjectBanner';
 import { ProjectService } from '@/lib/services/projectService';
 import { cn } from '@/lib/utils';
-import { Projekt } from '@/types';
 import { Signature } from '@/components/shared/Signature';
 
 export default function EinkaufLayout({
@@ -26,15 +26,24 @@ export default function EinkaufLayout({
         load();
     }, []);
 
+    const headerOffset = '3.5rem';
+
     return (
         <div className="min-h-screen bg-background transition-colors">
-            <Header onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
+            <Header
+                onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                projectBanner={projektId ? <ProjectBanner /> : undefined}
+            />
 
-            <div className="flex pt-16">
-                {projektId && <Sidebar projektId={projektId} className="fixed left-0 top-16 z-30 hidden lg:block" />}
+            <div className="flex" style={{ paddingTop: headerOffset }}>
+                {projektId && (
+                    <div className="fixed left-0 z-30 hidden lg:flex" style={{ top: headerOffset, bottom: 0 }}>
+                        <Sidebar projektId={projektId} className="h-full" />
+                    </div>
+                )}
 
-                <main className="flex-1 lg:ml-64 flex flex-col min-h-[calc(100vh-4rem)] overflow-x-hidden">
-                    <div className="p-4 sm:p-6 lg:p-8 w-full flex-1">
+                <main className="flex-1 lg:ml-64 flex flex-col overflow-x-hidden" style={{ minHeight: `calc(100vh - ${headerOffset})` }}>
+                    <div className="p-[1cm] w-full flex-1">
                         {children}
                     </div>
                 </main>
