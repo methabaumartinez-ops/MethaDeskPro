@@ -1,21 +1,20 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useParams, useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Layers, Search, Filter, ArrowLeft, Plus } from 'lucide-react';
-import { Teilsystem, Projekt, ABTEILUNGEN_CONFIG } from '@/types';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Layers, Save } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Teilsystem, Projekt, ABTEILUNGEN_CONFIG, ITEM_STATUS_OPTIONS, ItemStatus, Abteilung } from '@/types';
 import { SubsystemService } from '@/lib/services/subsystemService';
-import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 import { SplitLayout, SplitLayoutList, SplitLayoutDetail } from '@/components/layout/SplitLayout';
-import { CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select } from '@/components/ui/select';
-import { ITEM_STATUS_OPTIONS, ItemStatus, Abteilung } from '@/types';
+
 import { getStatusColorClasses, getAbteilungColorClasses } from '@/lib/config/statusConfig';
 import { toast } from '@/lib/toast';
 
@@ -23,8 +22,6 @@ export default function AbteilungPage() {
     const { projektId, abteilung: abteilungSlug } = useParams() as { projektId: string; abteilung: string };
     const router = useRouter();
     const pathname = usePathname();
-    const searchParams = useSearchParams();
-
     let fromParam = '';
     if (pathname.includes('/produktion/avor')) fromParam = '?from=avor';
     else if (pathname.includes('/produktion/planung')) fromParam = '?from=planner';
@@ -136,7 +133,7 @@ export default function AbteilungPage() {
                         </div>
                     ) : filteredItems.length > 0 ? (
                         <Table>
-                            <TableHeader className="sticky top-0 bg-muted/95 backdrop-blur-md z-20 shadow-sm border-b-2 border-border">
+                            <TableHeader className="sticky top-0 bg-muted/95 backdrop-blur-md z-20 border-b border-border">
                                 <TableRow className="hover:bg-transparent">
                                     <TableHead className="w-16 px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider bg-muted/95">KS</TableHead>
                                     <TableHead className="w-24 px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider bg-muted/95">TS-Nr.</TableHead>

@@ -13,7 +13,7 @@ export function SplitLayout({ children, className }: { children: React.ReactNode
 
 export function SplitLayoutList({ children, className }: { children: React.ReactNode, className?: string }) {
     return (
-        <Card className={cn("shadow-xl border-2 rounded-2xl overflow-hidden", className)}>
+        <Card className={cn("shadow-sm border-2 rounded-2xl overflow-hidden", className)}>
             <div className="overflow-y-auto max-h-[calc(100vh-14rem)]">
                 {children}
             </div>
@@ -35,7 +35,7 @@ export function SplitLayoutDetail({
     className?: string
 }) {
     return (
-        <Card className={cn("flex flex-col shadow-xl border-2 rounded-2xl relative overflow-hidden h-fit", className)}>
+        <Card className={cn("flex flex-col shadow-sm border-2 rounded-2xl relative overflow-hidden h-fit", className)}>
             {!isEmpty ? (
                 children
             ) : (

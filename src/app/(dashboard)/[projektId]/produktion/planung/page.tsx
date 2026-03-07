@@ -206,7 +206,7 @@ export default function PlanerPage() {
                     {/* Left: Table */}
                     <SplitLayoutList>
                             <Table>
-                                <TableHeader className="sticky top-0 bg-muted/95 backdrop-blur-md z-20 shadow-sm border-b-2">
+                                <TableHeader className="sticky top-0 bg-muted/95 backdrop-blur-md z-20 border-b border-border">
                                     <TableRow className="hover:bg-transparent">
                                         <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 bg-muted/95">KS</TableHead>
                                         <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 w-24 bg-muted/95">TS Nummer</TableHead>
