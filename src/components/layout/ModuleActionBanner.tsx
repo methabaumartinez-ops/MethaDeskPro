@@ -152,7 +152,6 @@ export function ModuleActionBanner({
                 "bg-slate-950 text-white flex flex-col md:flex-row items-stretch shadow-md gap-0 mb-6 overflow-visible md:h-[54px] min-h-[54px] relative",
                 "w-full rounded-2xl border border-white/10"
             )}
-            style={{ marginTop: 'calc(-1cm + 10px)' }}
         >
             {/* Left section prefix: Back Button + Vertical Divider */}
             {showBackButton && (

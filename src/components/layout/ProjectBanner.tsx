@@ -24,7 +24,7 @@ export function ProjectBanner({ className }: { className?: string }) {
 
     return (
         <div className={cn(
-            "bg-slate-950 border border-white/10 text-slate-100 rounded-2xl flex items-center shadow-inner overflow-hidden h-10 w-full max-w-4xl",
+            "bg-slate-950 border border-white/10 text-slate-100 rounded-2xl flex items-center shadow-inner overflow-hidden h-10 w-full min-w-0",
             className
         )}>
             {/* Left Edge: Small Image */}
