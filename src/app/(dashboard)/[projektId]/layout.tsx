@@ -26,24 +26,30 @@ export default function DashboardLayout({
     useEffect(() => {
         const validateProject = async () => {
             if (!loading && !activeProjekt) {
-                // Try to fetch project from Supabase
                 try {
                     const project = await ProjectService.getProjektById(projektId);
                     if (project) {
                         setActiveProjekt(project);
                     } else {
-                        // Project not found, redirect
                         router.push('/projekte');
                     }
-                } catch (error) {
-                    console.error("Failed to validate project:", error);
-                    router.push('/projekte');
+                } catch (error: any) {
+                    // 401 = session expired → go to login
+                    const msg = error?.message || '';
+                    if (msg.includes('401') || msg.includes('Nicht authentifiziert') || msg.includes('session')) {
+                        console.warn('[DashboardLayout] Session expired — redirecting to login');
+                        router.push('/login');
+                    } else {
+                        console.error('Failed to validate project:', error);
+                        router.push('/projekte');
+                    }
                 }
             }
         };
 
         validateProject();
     }, [projektId, activeProjekt, loading, setActiveProjekt, router]);
+
 
     if (loading || !activeProjekt) {
         return (

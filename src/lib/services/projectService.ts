@@ -17,17 +17,24 @@ export const ProjectService = {
         try {
             const res = await fetch(`/api/data/projekte/${id}`);
             if (res.status === 404) return null;
+            if (res.status === 401) {
+                // Session expired — propagate so caller can redirect to login
+                throw new Error('401: Nicht authentifiziert. Bitte melden Sie sich an.');
+            }
             if (!res.ok) {
                 const errorData = await res.json().catch(() => ({ error: 'Unknown API error' }));
                 console.error(`[ProjectService] Failed to fetch project ${id}:`, res.status, errorData);
-                throw new Error(`Failed to fetch project: ${res.status} ${errorData.error || ''}`);
+                return null; // Non-auth errors: degrade gracefully
             }
             return await res.json();
-        } catch (error) {
-            console.warn(`[ProjectService] Could not fetch project ${id} (may be unauthenticated):`, error);
+        } catch (error: any) {
+            // Re-throw auth errors so the layout can redirect to /login
+            if (error?.message?.includes('401')) throw error;
+            console.warn(`[ProjectService] Could not fetch project ${id}:`, error);
             return null;
         }
     },
+
 
     async createProjekt(projekt: Partial<Projekt>): Promise<Projekt> {
         const res = await fetch('/api/projekte', {

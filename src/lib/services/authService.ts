@@ -198,16 +198,20 @@ export interface SafeUser {
     onboardingStatus?: 'pending' | 'completed' | 'skipped';
 }
 
-function toSafeUser(user: StoredUser): SafeUser {
+function toSafeUser(user: StoredUser & Record<string, any>): SafeUser {
+    // Supabase schema uses 'name' (full), legacy uses 'vorname'/'nachname'
+    const vorname = user.vorname || (user.name ? user.name.split(' ')[0] : user.username || '');
+    const nachname = user.nachname || (user.name ? user.name.split(' ').slice(1).join(' ') : '');
+
     return {
         id: user.id,
-        vorname: user.vorname,
-        nachname: user.nachname,
+        vorname,
+        nachname,
         email: user.email,
-        department: user.department,
-        abteilung: user.abteilung,
+        department: user.department || user.abteilung,
+        abteilung: user.abteilung || user.department,
         role: user.role,
-        onboardingStatus: user.onboardingStatus ?? 'pending',
+        onboardingStatus: user.onboardingStatus ?? 'completed',
     };
 }
 
@@ -281,22 +285,28 @@ export async function login(emailStr: string, passwordStr: string): Promise<{ to
     const email = emailStr.trim();
     const password = passwordStr.trim();
     try {
-        await ensureUsersCollection();
-        const users = await DatabaseService.list<StoredUser>(COLLECTION, {
+        // NOTE: ensureUsersCollection() is intentionally NOT called here —
+        // it depends on Qdrant which is not available in production anymore.
+        const users = await DatabaseService.list<StoredUser & Record<string, any>>(COLLECTION, {
             must: [{ key: 'email', match: { value: email } }]
         });
 
         if (users.length === 0) return { error: 'Ungültige Anmeldedaten.' };
 
-        const user = users[0];
+        const user = users[0] as StoredUser & Record<string, any>;
 
-        const valid = await verifyPassword(password, user.passwordHash);
+        // Support both 'passwordHash' field names
+        const hash = user.passwordHash || user.password_hash;
+        if (!hash) return { error: 'Ungültige Anmeldedaten.' };
+
+        const valid = await verifyPassword(password, hash);
         if (!valid) return { error: 'Ungültige Anmeldedaten.' };
 
-        if (user.confirmed === false) {
-            return { error: 'Bitte bestätigen Sie zuerst Ihre E-Mail-Adresse.' };
+        // Support both `confirmed` (legacy) and `aktiv` (Supabase schema)
+        const isActive = user.aktiv !== false && user.confirmed !== false;
+        if (!isActive) {
+            return { error: 'Ihr Konto ist deaktiviert. Bitte kontaktieren Sie den Administrator.' };
         }
-
 
         const safeUser = toSafeUser(user);
         const token = await generateToken({ userId: user.id, email: user.email, role: user.role });
@@ -304,7 +314,7 @@ export async function login(emailStr: string, passwordStr: string): Promise<{ to
         return { token, user: safeUser };
     } catch (error: any) {
         console.error('Login error:', error);
-        if (error.message.includes('JWT_SECRET_MISSING')) {
+        if (error.message?.includes('JWT_SECRET_MISSING')) {
             return { error: 'Konfigurationsfehler: JWT_SECRET fehlt in der Serverumgebung.' };
         }
         return { error: 'Anmeldung fehlgeschlagen.' };
