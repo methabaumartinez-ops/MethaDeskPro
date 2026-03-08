@@ -285,35 +285,52 @@ export async function login(emailStr: string, passwordStr: string): Promise<{ to
     const email = emailStr.trim();
     const password = passwordStr.trim();
     try {
+        console.log(`[Diagnostic] Login intent for email: ${email}`);
+
         // NOTE: ensureUsersCollection() is intentionally NOT called here —
         // it depends on Qdrant which is not available in production anymore.
         const users = await DatabaseService.list<StoredUser & Record<string, any>>(COLLECTION, {
             must: [{ key: 'email', match: { value: email } }]
         });
 
-        if (users.length === 0) return { error: 'Ungültige Anmeldedaten.' };
+        console.log(`[Diagnostic] Users found: ${users.length}`);
+
+        if (users.length === 0) {
+            console.log(`[Diagnostic] Fail: User not found`);
+            return { error: 'Ungültige Anmeldedaten.' };
+        }
 
         const user = users[0] as StoredUser & Record<string, any>;
 
         // Support both 'passwordHash' field names
         const hash = user.passwordHash || user.password_hash;
-        if (!hash) return { error: 'Ungültige Anmeldedaten.' };
+        if (!hash) {
+            console.log(`[Diagnostic] Fail: User found but no passwordHash is set`);
+            return { error: 'Ungültige Anmeldedaten.' };
+        }
 
         const valid = await verifyPassword(password, hash);
-        if (!valid) return { error: 'Ungültige Anmeldedaten.' };
+        console.log(`[Diagnostic] Password verification result: ${valid}`);
+        if (!valid) {
+            console.log(`[Diagnostic] Fail: Invalid password hash`);
+            return { error: 'Ungültige Anmeldedaten.' };
+        }
 
         // Support both `confirmed` (legacy) and `aktiv` (Supabase schema)
         const isActive = user.aktiv !== false && user.confirmed !== false;
+        console.log(`[Diagnostic] User active status: ${isActive} (aktiv=${user.aktiv}, confirmed=${user.confirmed})`);
         if (!isActive) {
+            console.log(`[Diagnostic] Fail: Account is not active`);
             return { error: 'Ihr Konto ist deaktiviert. Bitte kontaktieren Sie den Administrator.' };
         }
 
         const safeUser = toSafeUser(user);
         const token = await generateToken({ userId: user.id, email: user.email, role: user.role });
 
+        console.log(`[Diagnostic] Login successful for ${email}, token generated`);
         return { token, user: safeUser };
     } catch (error: any) {
-        console.error('Login error:', error);
+        console.error('[Diagnostic] Login error catch block executed:', error.message || error);
         if (error.message?.includes('JWT_SECRET_MISSING')) {
             return { error: 'Konfigurationsfehler: JWT_SECRET fehlt in der Serverumgebung.' };
         }

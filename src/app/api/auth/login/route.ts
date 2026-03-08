@@ -23,16 +23,20 @@ export async function POST(req: Request) {
 
         const result = await login(email, password);
         if ('error' in result) {
+            console.log(`[Diagnostic-Route] Login failed for ${email} with error: ${result.error}`);
             return NextResponse.json(
                 { error: result.error },
                 { status: 401 }
             );
         }
 
+        const isProduction = process.env.NODE_ENV === 'production';
+        console.log(`[Diagnostic-Route] Login success for ${email}. Env: NODE_ENV=${process.env.NODE_ENV}. Setting cookie (secure: ${isProduction})`);
+
         const response = NextResponse.json({ user: result.user });
         response.cookies.set('methabau_token', result.token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: isProduction,
             sameSite: 'lax',
             path: '/',
             maxAge: 60 * 60 * 24 * 7, // 7 dias
@@ -40,7 +44,7 @@ export async function POST(req: Request) {
 
         return response;
     } catch (error) {
-        console.error('Login API error:', error);
+        console.error('[Diagnostic-Route] Unexpected Login API error:', error);
         return NextResponse.json(
             { error: 'Anmeldung fehlgeschlagen.' },
             { status: 500 }
