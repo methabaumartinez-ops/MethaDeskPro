@@ -5,86 +5,55 @@ import { createClient } from '@supabase/supabase-js';
 // Supabase Admin Client — Self-Hosted on Easypanel/VPS
 // ============================================================
 //
-// Self-hosted Supabase uses Kong as the API gateway.
-// Kong requires BOTH headers on every request:
-//   - Authorization: Bearer <service_role_key>
-//   - apikey: <service_role_key>         ← REQUIRED by Kong key-auth plugin
+// Architecture: custom auth (JWT + passwordHash in users table).
+// Supabase is used as relational DB only — NOT for auth credentials.
 //
-// Without the 'apikey' header, Kong rejects with:
-//   "Invalid authentication credentials"
+// Kong gateway (self-hosted) requires BOTH headers on every request:
+//   Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>
+//   apikey:        <SUPABASE_SERVICE_ROLE_KEY>
 //
-// SUPABASE_URL:
-//   External: https://methadesk-supabase.ph2gu6.easypanel.host
-//   Internal: http://supabase_kong:8000  (if same Easypanel network)
+// Without 'apikey' header → Kong returns "No API key found in request"
+// With wrong key value    → Kong returns "Invalid authentication credentials"
 //
-// SUPABASE_SERVICE_ROLE_KEY:
-//   The service_role JWT from your Supabase self-hosted stack.
-//   Hardcoded in kong.yml — must match exactly.
+// ── EASYPANEL ENV VARS (app service) ─────────────────────────
+//   SUPABASE_URL=http://methadesk_supabase_kong:8000
+//   SUPABASE_SERVICE_ROLE_KEY=<exact key from kong.yml consumers>
+//   USE_SUPABASE=true
+//
+// The SERVICE_ROLE_KEY must be the EXACT string configured as the
+// consumer credential in the Kong stack — byte-for-byte identical.
 // ============================================================
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-// ── Phase 1 diagnostics (env missing) ────────────────────────
+// ── Startup diagnostics (safe — no secret values logged) ──────
 if (!supabaseUrl) {
     console.error(
-        '[Supabase] PHASE-1: SUPABASE_URL is not set. ' +
-        'Set it in Easypanel env vars for the app service. ' +
-        'External: https://methadesk-supabase.ph2gu6.easypanel.host'
+        '[Supabase] MISSING: SUPABASE_URL not set in Easypanel env vars.\n' +
+        '  → Set it to: http://methadesk_supabase_kong:8000 (internal) or the external Kong URL.'
     );
 } else {
-    console.log(`[Supabase] URL configured: ${supabaseUrl}`);
+    console.log(`[Supabase] URL: ${supabaseUrl}`);
 }
 
 if (!supabaseServiceKey) {
     console.error(
-        '[Supabase] PHASE-1: SUPABASE_SERVICE_ROLE_KEY is not set. ' +
-        'Use the service_role JWT from your Supabase Easypanel stack.'
+        '[Supabase] MISSING: SUPABASE_SERVICE_ROLE_KEY not set in Easypanel env vars.\n' +
+        '  → Must be the exact service_role JWT configured in the Kong consumers.'
     );
 } else {
-    // Log first+last 8 chars only — never log full keys
     const k = supabaseServiceKey;
-    console.log(`[Supabase] Service key present (${k.length} chars): ${k.slice(0, 8)}...${k.slice(-8)}`);
+    // Safe log: length + masked prefix/suffix only
+    console.log(`[Supabase] Service key: ${k.length} chars — ${k.slice(0, 10)}...${k.slice(-6)}`);
 }
-
-// ── Normalize the service key ─────────────────────────────────
-// Kong self-hosted only accepts the SPECIFIC key literal it was configured with.
-// The standard Supabase demo stack configures Kong with the "formatted" (pretty-printed)
-// service_role JWT. If Easypanel is set to the "compact" variant, Kong returns 401.
-//
-// Known accepted key (formatted payload, same signature):
-const KNOWN_FORMATTED_SERVICE_KEY =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9' +
-    '.eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ' +
-    '.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q';
-
-// Compact variant (same claims but condensed — NOT accepted by this Kong instance)
-const COMPACT_SERVICE_KEY =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9' +
-    '.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UtZGVtbyIsImlhdCI6MTY0MTc2OTIwMCwiZXhwIjoxNzk5NTM1NjAwfQ' +
-    '.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q';
-
-function resolveServiceKey(raw: string | undefined): string {
-    if (!raw) return 'missing-key';
-    // If Easypanel was configured with the compact key, swap to the formatted one
-    if (raw.trim() === COMPACT_SERVICE_KEY) {
-        console.warn(
-            '[Supabase] Compact service_role key detected — auto-normalizing to formatted key that Kong accepts.\n' +
-            '  → To fix permanently: update SUPABASE_SERVICE_ROLE_KEY in Easypanel to the formatted key.'
-        );
-        return KNOWN_FORMATTED_SERVICE_KEY;
-    }
-    return raw.trim();
-}
-
-const resolvedServiceKey = resolveServiceKey(supabaseServiceKey);
 
 // ── Create admin client ───────────────────────────────────────
-// Uses resolvedServiceKey which auto-normalizes the compact → formatted key.
-// Kong requires both Authorization: Bearer <key> AND apikey: <key> headers.
+// The key must be set correctly in Easypanel. There is no code-level
+// fallback or normalization — the env var is the single source of truth.
 export const supabaseAdmin = createClient(
     supabaseUrl || 'http://localhost:8000',
-    resolvedServiceKey,
+    supabaseServiceKey || 'missing-key',
     {
         auth: {
             autoRefreshToken: false,
@@ -92,8 +61,8 @@ export const supabaseAdmin = createClient(
         },
         global: {
             headers: {
-                // Required by Kong key-auth plugin on self-hosted Supabase.
-                'apikey': resolvedServiceKey,
+                // Kong key-auth: must match EXACTLY the value in kong.yml consumers
+                'apikey': supabaseServiceKey || 'missing-key',
             },
         },
     }
