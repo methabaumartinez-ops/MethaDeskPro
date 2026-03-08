@@ -14,8 +14,13 @@ export async function GET(request: NextRequest) {
     if (projektId) must.push({ key: 'projektId', match: { value: projektId } });
 
     const filter = must.length > 0 ? { must } : undefined;
-    const material = await DatabaseService.list<TsMaterialkosten>('ts_materialkosten', filter);
-    return NextResponse.json(material);
+    try {
+        const material = await DatabaseService.list<TsMaterialkosten>('ts_materialkosten', filter);
+        return NextResponse.json(material);
+    } catch (err) {
+        console.error('[kosten/material] GET error:', err);
+        return NextResponse.json([], { status: 200 }); // graceful degradation
+    }
 }
 
 export async function POST(request: NextRequest) {

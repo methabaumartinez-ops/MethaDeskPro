@@ -9,6 +9,8 @@ import { SupplierService } from '@/lib/services/supplierService';
 import { Lieferant } from '@/types';
 import { Plus, Truck, Mail, Phone, MapPin, Search, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useSortableTable } from '@/lib/hooks/useSortableTable';
+import { cn } from '@/lib/utils';
 
 export default function ProduktionLieferantenPage() {
     const { projektId } = useParams() as { projektId: string };
@@ -46,6 +48,8 @@ export default function ProduktionLieferantenPage() {
             (item.adresse?.toLowerCase() || '').includes(search)
         );
     });
+
+    const { sortedData: sortedItems, handleSort, getSortIcon, isSortActive } = useSortableTable(filteredItems);
 
     return (
         <div className="flex flex-col h-[calc(100vh-6rem)] space-y-4 max-w-none">
@@ -97,12 +101,24 @@ export default function ProduktionLieferantenPage() {
                             <Table className="border-none rounded-none w-full min-w-full">
                                 <TableHeader>
                                     <TableRow className="hover:bg-transparent border-b border-border/50">
-                                        <TableHead className="font-bold text-foreground py-4 w-20">ID</TableHead>
-                                        <TableHead className="font-bold text-foreground py-4">Firma</TableHead>
-                                        <TableHead className="font-bold text-foreground">Kontaktperson</TableHead>
-                                        <TableHead className="font-bold text-foreground">E-Mail</TableHead>
-                                        <TableHead className="font-bold text-foreground">Telefon</TableHead>
-                                        <TableHead className="font-bold text-foreground">Adresse</TableHead>
+                                        <TableHead className={cn('font-bold py-4 w-20 cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('id') ? 'text-orange-700' : 'text-foreground')} onClick={() => handleSort('id')}>
+                                            ID <span className="text-[9px] opacity-50">{getSortIcon('id')}</span>
+                                        </TableHead>
+                                        <TableHead className={cn('font-bold py-4 cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('name') ? 'text-orange-700' : 'text-foreground')} onClick={() => handleSort('name')}>
+                                            Firma <span className="text-[9px] opacity-50">{getSortIcon('name')}</span>
+                                        </TableHead>
+                                        <TableHead className={cn('font-bold cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('kontakt') ? 'text-orange-700' : 'text-foreground')} onClick={() => handleSort('kontakt')}>
+                                            Kontaktperson <span className="text-[9px] opacity-50">{getSortIcon('kontakt')}</span>
+                                        </TableHead>
+                                        <TableHead className={cn('font-bold cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('email') ? 'text-orange-700' : 'text-foreground')} onClick={() => handleSort('email')}>
+                                            E-Mail <span className="text-[9px] opacity-50">{getSortIcon('email')}</span>
+                                        </TableHead>
+                                        <TableHead className={cn('font-bold cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('telefon') ? 'text-orange-700' : 'text-foreground')} onClick={() => handleSort('telefon')}>
+                                            Telefon <span className="text-[9px] opacity-50">{getSortIcon('telefon')}</span>
+                                        </TableHead>
+                                        <TableHead className={cn('font-bold cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('adresse') ? 'text-orange-700' : 'text-foreground')} onClick={() => handleSort('adresse')}>
+                                            Adresse <span className="text-[9px] opacity-50">{getSortIcon('adresse')}</span>
+                                        </TableHead>
                                         <TableHead className="font-bold text-foreground">Aktionen</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -114,7 +130,7 @@ export default function ProduktionLieferantenPage() {
                                             </TableCell>
                                         </TableRow>
                                     ) : (
-                                        filteredItems.map((item) => (
+                                        sortedItems.map((item) => (
                                             <TableRow key={item.id} className="group hover:bg-muted/50 transition-colors">
                                                 <TableCell className="py-4">
                                                     <span className="font-mono text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">

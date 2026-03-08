@@ -12,6 +12,8 @@ import { Mitarbeiter } from '@/types';
 import { Plus, User, Users, Mail, Shield, Eye, Edit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
+import { useSortableTable } from '@/lib/hooks/useSortableTable';
+import { cn } from '@/lib/utils';
 
 export default function MitarbeiterListPage() {
     const { projektId } = useParams() as { projektId: string };
@@ -64,6 +66,10 @@ export default function MitarbeiterListPage() {
         );
     });
 
+    // Enrich with fullName for sorting
+    const enriched = filteredItems.map(i => ({ ...i, _fullName: `${i.nachname} ${i.vorname}` }));
+    const { sortedData: sortedItems, handleSort, getSortIcon, isSortActive } = useSortableTable(enriched);
+
     return (
         <div className="space-y-6">
             <ModuleActionBanner
@@ -87,10 +93,18 @@ export default function MitarbeiterListPage() {
                             <Table className="border-none rounded-none">
                                 <TableHeader>
                                     <TableRow className="hover:bg-transparent border-b border-border/50">
-                                        <TableHead className="font-bold text-foreground py-4">Mitarbeiter</TableHead>
-                                        <TableHead className="font-bold text-foreground">Rolle</TableHead>
-                                        <TableHead className="font-bold text-foreground">Stundensatz</TableHead>
-                                        <TableHead className="font-bold text-foreground">E-Mail</TableHead>
+                                        <TableHead className={cn('font-bold py-4 cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('_fullName') ? 'text-orange-700' : 'text-foreground')} onClick={() => handleSort('_fullName')}>
+                                            Mitarbeiter <span className="text-[9px] opacity-50">{getSortIcon('_fullName')}</span>
+                                        </TableHead>
+                                        <TableHead className={cn('font-bold cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('rolle') ? 'text-orange-700' : 'text-foreground')} onClick={() => handleSort('rolle')}>
+                                            Rolle <span className="text-[9px] opacity-50">{getSortIcon('rolle')}</span>
+                                        </TableHead>
+                                        <TableHead className={cn('font-bold cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('stundensatz') ? 'text-orange-700' : 'text-foreground')} onClick={() => handleSort('stundensatz')}>
+                                            Stundensatz <span className="text-[9px] opacity-50">{getSortIcon('stundensatz')}</span>
+                                        </TableHead>
+                                        <TableHead className={cn('font-bold cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('email') ? 'text-orange-700' : 'text-foreground')} onClick={() => handleSort('email')}>
+                                            E-Mail <span className="text-[9px] opacity-50">{getSortIcon('email')}</span>
+                                        </TableHead>
                                         <TableHead className="text-right font-bold text-foreground">Aktionen</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -102,7 +116,7 @@ export default function MitarbeiterListPage() {
                                             </TableCell>
                                         </TableRow>
                                     ) : (
-                                        filteredItems.map((item) => (
+                                        sortedItems.map((item) => (
                                             <TableRow key={item.id} className="group hover:bg-muted/50 transition-colors">
                                                 <TableCell className="py-4">
                                                     <div className="flex items-center gap-3">

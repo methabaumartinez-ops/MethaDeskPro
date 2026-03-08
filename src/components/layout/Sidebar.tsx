@@ -12,7 +12,7 @@ import {
     Wrench,
     Box,
     DollarSign,
-    Table,
+    Database,
     Package,
     MapPin,
     QrCode,
@@ -112,7 +112,6 @@ export function Sidebar({ projektId, className }: { projektId: string; className
                         { title: 'Schlosserei',   href: `/${projektId}/produktion/schlosserei`, icon: Wrench,       pageKey: 'schlosserei' as const },
                         { title: 'Blechabteilung',href: `/${projektId}/produktion/blech`,       icon: Box,          pageKey: 'blech' as const },
                         { title: 'Kosten',        href: `/${projektId}/kosten`,                 icon: DollarSign,   pageKey: 'kosten' as const },
-                        { title: 'Tabellen',      href: `/${projektId}/tabellen`,               icon: Table,        pageKey: 'tabellen' as const },
                     ]
                 },
                 {
@@ -132,6 +131,7 @@ export function Sidebar({ projektId, className }: { projektId: string; className
             ]
         },
         { title: 'Fuhrpark', href: `/fuhrpark`, icon: Car },
+        { title: 'DatenBank', href: `/${projektId}/tabellen`, icon: Database },
     ];
 
     const superadminItems: MenuItem[] = isSuperadmin ? [

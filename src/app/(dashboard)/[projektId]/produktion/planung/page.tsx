@@ -16,6 +16,7 @@ import { Loader2, Save, PenTool } from 'lucide-react';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { SplitLayout, SplitLayoutList, SplitLayoutDetail } from '@/components/layout/SplitLayout';
+import { useSortableTable } from '@/lib/hooks/useSortableTable';
 
 function getISOWeek(dateStr: string | null | undefined): number | string {
     if (!dateStr) return '-';
@@ -98,7 +99,6 @@ export default function PlanerPage() {
             });
 
             setItems(sorted);
-
             if (sorted.length > 0) {
                 setSelectedId(prev => {
                     const stillExists = sorted.find(s => s.id === prev);
@@ -153,6 +153,8 @@ export default function PlanerPage() {
         value: e.id,
         label: `${e.vorname} ${e.nachname}`
     }));
+
+    const { sortedData: sortedItems, handleSort, getSortIcon, isSortActive } = useSortableTable(items);
 
     const getStatusColorClass = (status: string) => {
         switch (status) {
@@ -209,16 +211,36 @@ export default function PlanerPage() {
                                 <TableHeader className="sticky top-0 bg-muted/95 backdrop-blur-md z-20 border-b border-border">
                                     <TableRow className="hover:bg-transparent">
                                         <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 bg-muted/95">KS</TableHead>
-                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 w-24 bg-muted/95">TS Nummer</TableHead>
-                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 bg-muted/95">Name</TableHead>
-                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 bg-muted/95">Abgabe Plan</TableHead>
+                                        <TableHead
+                                            className={cn('font-black text-[10px] uppercase tracking-wider h-10 w-24 bg-muted/95 cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('teilsystemNummer') ? 'text-orange-700' : 'text-muted-foreground/80')}
+                                            onClick={() => handleSort('teilsystemNummer')}
+                                        >
+                                            TS Nummer <span className="text-[8px] opacity-60">{getSortIcon('teilsystemNummer')}</span>
+                                        </TableHead>
+                                        <TableHead
+                                            className={cn('font-black text-[10px] uppercase tracking-wider h-10 bg-muted/95 cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('name') ? 'text-orange-700' : 'text-muted-foreground/80')}
+                                            onClick={() => handleSort('name')}
+                                        >
+                                            Name <span className="text-[8px] opacity-60">{getSortIcon('name')}</span>
+                                        </TableHead>
+                                        <TableHead
+                                            className={cn('font-black text-[10px] uppercase tracking-wider h-10 bg-muted/95 cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('abgabePlaner') ? 'text-orange-700' : 'text-muted-foreground/80')}
+                                            onClick={() => handleSort('abgabePlaner')}
+                                        >
+                                            Abgabe Plan <span className="text-[8px] opacity-60">{getSortIcon('abgabePlaner')}</span>
+                                        </TableHead>
                                         <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 w-12 text-center bg-muted/95">KW</TableHead>
-                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 bg-muted/95">Liefertermin</TableHead>
+                                        <TableHead
+                                            className={cn('font-black text-[10px] uppercase tracking-wider h-10 bg-muted/95 cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('lieferfrist') ? 'text-orange-700' : 'text-muted-foreground/80')}
+                                            onClick={() => handleSort('lieferfrist')}
+                                        >
+                                            Liefertermin <span className="text-[8px] opacity-60">{getSortIcon('lieferfrist')}</span>
+                                        </TableHead>
                                         <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 w-12 text-center bg-muted/95">KW</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {items.map(ts => {
+                                    {sortedItems.map(ts => {
                                         const isSelected = ts.id === selectedId;
                                         return (
                                             <TableRow

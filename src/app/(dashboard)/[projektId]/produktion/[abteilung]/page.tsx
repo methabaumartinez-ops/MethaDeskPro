@@ -17,6 +17,7 @@ import { Select } from '@/components/ui/select';
 
 import { getStatusColorClasses, getAbteilungColorClasses } from '@/lib/config/statusConfig';
 import { toast } from '@/lib/toast';
+import { useSortableTable } from '@/lib/hooks/useSortableTable';
 
 export default function AbteilungPage() {
     const { projektId, abteilung: abteilungSlug } = useParams() as { projektId: string; abteilung: string };
@@ -76,14 +77,12 @@ export default function AbteilungPage() {
         loadData();
     }, [projektId, abteilungName]);
 
-    const filteredItems = items.filter(item =>
+    const baseFilteredItems = items.filter(item =>
         (item.teilsystemNummer?.toLowerCase() || '').includes(search.toLowerCase()) ||
         (item.name?.toLowerCase() || '').includes(search.toLowerCase())
-    ).sort((a, b) => {
-        const numA = parseInt(a.teilsystemNummer?.replace(/\D/g, '') || '0', 10);
-        const numB = parseInt(b.teilsystemNummer?.replace(/\D/g, '') || '0', 10);
-        return numA - numB;
-    });
+    );
+
+    const { sortedData: filteredItems, handleSort, getSortIcon, isSortActive } = useSortableTable(baseFilteredItems);
 
     const selectedTs = items.find(i => i.id === selectedId);
 
@@ -144,10 +143,27 @@ export default function AbteilungPage() {
                         <Table>
                             <TableHeader className="sticky top-0 bg-muted/95 backdrop-blur-md z-20 border-b border-border">
                                 <TableRow className="hover:bg-transparent">
-                                    <TableHead className="w-16 px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider bg-muted/95">KS</TableHead>
-                                    <TableHead className="w-24 px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider bg-muted/95">TS-Nr.</TableHead>
-                                    <TableHead className="min-w-[150px] px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider bg-muted/95">Bezeichnung</TableHead>
-                                    <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider bg-muted/95">Montage</TableHead>
+                                    <TableHead className="w-16 px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider bg-muted/95">
+                                        KS
+                                    </TableHead>
+                                    <TableHead
+                                        className={cn('w-24 px-4 py-4 font-black text-[10px] uppercase tracking-wider bg-muted/95 cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('teilsystemNummer') ? 'text-orange-700' : 'text-foreground')}
+                                        onClick={() => handleSort('teilsystemNummer')}
+                                    >
+                                        TS-Nr. <span className="text-[8px] opacity-50">{getSortIcon('teilsystemNummer')}</span>
+                                    </TableHead>
+                                    <TableHead
+                                        className={cn('min-w-[150px] px-4 py-4 font-black text-[10px] uppercase tracking-wider bg-muted/95 cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('name') ? 'text-orange-700' : 'text-foreground')}
+                                        onClick={() => handleSort('name')}
+                                    >
+                                        Bezeichnung <span className="text-[8px] opacity-50">{getSortIcon('name')}</span>
+                                    </TableHead>
+                                    <TableHead
+                                        className={cn('px-4 py-4 font-black text-[10px] uppercase tracking-wider bg-muted/95 cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('montagetermin') ? 'text-orange-700' : 'text-foreground')}
+                                        onClick={() => handleSort('montagetermin')}
+                                    >
+                                        Montage <span className="text-[8px] opacity-50">{getSortIcon('montagetermin')}</span>
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>

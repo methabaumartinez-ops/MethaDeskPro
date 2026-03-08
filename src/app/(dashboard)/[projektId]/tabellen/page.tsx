@@ -45,6 +45,10 @@ export default function TabellenPage() {
     const [projects, setProjects] = useState<any[]>([]);
     const [selectedProject, setSelectedProject] = useState(projektId);
 
+    // Sort state
+    const [sortCol, setSortCol] = useState<string | null>(null);
+    const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+
     // Delete confirmation state
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<{ id: string, table: string } | null>(null);
@@ -254,7 +258,49 @@ export default function TabellenPage() {
         };
 
         loadData();
+        // Reset sort when switching tables
+        setSortCol(null);
+        setSortDir('asc');
     }, [activeTable, selectedProject]);
+
+    // ── Sort logic ─────────────────────────────────────────────────────
+    const handleSort = (col: string) => {
+        if (sortCol === col) {
+            setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortCol(col);
+            setSortDir('asc');
+        }
+    };
+
+    const sortedData = React.useMemo(() => {
+        if (!sortCol) return data;
+        return [...data].sort((a, b) => {
+            let va = a[sortCol];
+            let vb = b[sortCol];
+            // Nulls last
+            if (va == null && vb == null) return 0;
+            if (va == null) return 1;
+            if (vb == null) return -1;
+            // Date detection (ISO strings)
+            const isDate = (v: any) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v);
+            if (isDate(va) && isDate(vb)) {
+                const diff = new Date(va).getTime() - new Date(vb).getTime();
+                return sortDir === 'asc' ? diff : -diff;
+            }
+            // Numeric detection (including "TS-001" style)
+            const numRe = /^\D*(\d+)/;
+            const numA = parseFloat(String(va).replace(',', '.'));
+            const numB = parseFloat(String(vb).replace(',', '.'));
+            if (!isNaN(numA) && !isNaN(numB)) {
+                return sortDir === 'asc' ? numA - numB : numB - numA;
+            }
+            // String fallback
+            const cmp = String(va).localeCompare(String(vb), 'de', { numeric: true, sensitivity: 'base' });
+            return sortDir === 'asc' ? cmp : -cmp;
+        });
+    }, [data, sortCol, sortDir]);
+    // ───────────────────────────────────────────────────────────────────
 
     const router = useRouter();
 
@@ -489,18 +535,38 @@ export default function TabellenPage() {
                                         <Table>
                                             <TableHeader className="bg-orange-50/50">
                                                 <TableRow>
-                                                    {columns.map(col => (
-                                                        <TableHead key={col} className={cn(
-                                                            "font-bold uppercase text-[10px] text-orange-600 whitespace-nowrap",
-                                                            col.toLowerCase() === 'id' ? "text-right" : "text-left"
-                                                        )}>
-                                                            {col}
-                                                        </TableHead>
-                                                    ))}
+                                                    {columns.map(col => {
+                                                        const isActive = sortCol === col;
+                                                        const isId = col.toLowerCase() === 'id';
+                                                        const noSort = col.toLowerCase() === 'aktionen';
+                                                        return (
+                                                            <TableHead
+                                                                key={col}
+                                                                className={cn(
+                                                                    'font-bold uppercase text-[10px] whitespace-nowrap select-none',
+                                                                    isId ? 'text-right' : 'text-left',
+                                                                    isActive ? 'text-orange-700' : 'text-orange-600',
+                                                                    !noSort && 'cursor-pointer hover:text-orange-800 hover:bg-orange-100/50 transition-colors'
+                                                                )}
+                                                                onClick={() => !noSort && handleSort(col)}
+                                                            >
+                                                                <span className="inline-flex items-center gap-1">
+                                                                    {col}
+                                                                    {!noSort && (
+                                                                        <span className="text-[8px] opacity-40 group-hover:opacity-100">
+                                                                            {isActive
+                                                                                ? (sortDir === 'asc' ? '▲' : '▼')
+                                                                                : '⇅'}
+                                                                        </span>
+                                                                    )}
+                                                                </span>
+                                                            </TableHead>
+                                                        );
+                                                    })}
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {data.map((row, i) => (
+                                                {sortedData.map((row, i) => (
                                                     <TableRow key={i} className="hover:bg-slate-50/50">
                                                         {columns.map(col => (
                                                             <TableCell key={`${i}-${col}`} className={cn(

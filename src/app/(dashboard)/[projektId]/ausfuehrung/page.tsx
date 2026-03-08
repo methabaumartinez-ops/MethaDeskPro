@@ -28,6 +28,7 @@ import { Badge } from '@/components/ui/badge';
 import { AbteilungBadge } from '@/components/shared/AbteilungBadge';
 import { ReservierungModal } from '@/components/shared/ReservierungModal';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
+import { useSortableTable } from '@/lib/hooks/useSortableTable';
 const KATEGORIE_LABELS: Record<string, string> = {
     scherenbuehne: 'Scherenbühne',
     teleskopbuehne: 'Teleskopbühne',
@@ -154,20 +155,10 @@ export default function AusfuehrungPage() {
             (item.name?.toLowerCase() || '').includes(search.toLowerCase());
 
         if (activeTab === 'ts_baustelle') {
-            // "TS am Baustelle" defined as those in department 'Bau' OR with status 'geliefert'/'verbaut'
             return matchesSearch && (item.abteilung === 'Bau' || item.status === 'geliefert' || item.status === 'verbaut');
         }
         return matchesSearch;
-    }).sort((a, b) => {
-        const numA = parseInt(a.teilsystemNummer?.replace(/\D/g, '') || '0', 10);
-        const numB = parseInt(b.teilsystemNummer?.replace(/\D/g, '') || '0', 10);
-        return numA - numB;
     });
-
-    const filteredBestellungen = bestellungen.filter(b =>
-        (b.containerBez?.toLowerCase() || '').includes(search.toLowerCase()) ||
-        (b.bestelltVon?.toLowerCase() || '').includes(search.toLowerCase())
-    );
 
     const filteredVehicles = vehicles.filter(veh => {
         const matchesSearch = (veh.bezeichnung?.toLowerCase() || '').includes(search.toLowerCase()) ||
@@ -178,6 +169,14 @@ export default function AusfuehrungPage() {
 
         return matchesSearch && matchesKategorie;
     });
+
+    const { sortedData: sortedSubsystems, handleSort: handleSortTS, getSortIcon: getSortIconTS, isSortActive: isSortActiveTS } = useSortableTable(filteredSubsystems);
+    const { sortedData: sortedVehicles, handleSort: handleSortVeh, getSortIcon: getSortIconVeh, isSortActive: isSortActiveVeh } = useSortableTable(filteredVehicles);
+
+    const filteredBestellungen = bestellungen.filter(b =>
+        (b.containerBez?.toLowerCase() || '').includes(search.toLowerCase()) ||
+        (b.bestelltVon?.toLowerCase() || '').includes(search.toLowerCase())
+    );
 
     const handleAddOrderItem = () => {
         setNewOrderItems([...newOrderItems, { name: '', menge: '', einheit: '', tsnummer: '', bemerkung: '', showBemerkung: false }]);
@@ -453,19 +452,49 @@ export default function AusfuehrungPage() {
                                     {filteredSubsystems.length > 0 ? (
                                         <div className="overflow-x-auto max-w-full">
                                             <Table>
-                                                <TableHeader className="bg-muted/50 sticky top-0 z-10">
+                                        <TableHeader className="bg-muted/50 sticky top-0 z-10">
                                                     <TableRow className="border-b-2 border-border hover:bg-transparent">
-                                                        <TableHead className="w-20 px-4 py-4 font-black text-foreground text-center text-[10px] uppercase tracking-wider">System-Nr.</TableHead>
-                                                        <TableHead className="w-12 px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">KS</TableHead>
-                                                        <TableHead className="min-w-[200px] px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Bezeichnung</TableHead>
-                                                        <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Abteilung</TableHead>
-                                                        <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Termine</TableHead>
-                                                        <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Status</TableHead>
+                                                        <TableHead
+                                                            className={cn('w-20 px-4 py-4 font-black text-center text-[10px] uppercase tracking-wider cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActiveTS('teilsystemNummer') ? 'text-orange-700' : 'text-foreground')}
+                                                            onClick={() => handleSortTS('teilsystemNummer')}
+                                                        >
+                                                            System-Nr. <span className="text-[8px] opacity-50">{getSortIconTS('teilsystemNummer')}</span>
+                                                        </TableHead>
+                                                        <TableHead
+                                                            className={cn('w-12 px-4 py-4 font-black text-[10px] uppercase tracking-wider cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActiveTS('ks') ? 'text-orange-700' : 'text-foreground')}
+                                                            onClick={() => handleSortTS('ks')}
+                                                        >
+                                                            KS <span className="text-[8px] opacity-50">{getSortIconTS('ks')}</span>
+                                                        </TableHead>
+                                                        <TableHead
+                                                            className={cn('min-w-[200px] px-4 py-4 font-black text-[10px] uppercase tracking-wider cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActiveTS('name') ? 'text-orange-700' : 'text-foreground')}
+                                                            onClick={() => handleSortTS('name')}
+                                                        >
+                                                            Bezeichnung <span className="text-[8px] opacity-50">{getSortIconTS('name')}</span>
+                                                        </TableHead>
+                                                        <TableHead
+                                                            className={cn('px-4 py-4 font-black text-[10px] uppercase tracking-wider cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActiveTS('abteilung') ? 'text-orange-700' : 'text-foreground')}
+                                                            onClick={() => handleSortTS('abteilung')}
+                                                        >
+                                                            Abteilung <span className="text-[8px] opacity-50">{getSortIconTS('abteilung')}</span>
+                                                        </TableHead>
+                                                        <TableHead
+                                                            className={cn('px-4 py-4 font-black text-[10px] uppercase tracking-wider cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActiveTS('montagetermin') ? 'text-orange-700' : 'text-foreground')}
+                                                            onClick={() => handleSortTS('montagetermin')}
+                                                        >
+                                                            Termine <span className="text-[8px] opacity-50">{getSortIconTS('montagetermin')}</span>
+                                                        </TableHead>
+                                                        <TableHead
+                                                            className={cn('px-4 py-4 font-black text-[10px] uppercase tracking-wider cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActiveTS('status') ? 'text-orange-700' : 'text-foreground')}
+                                                            onClick={() => handleSortTS('status')}
+                                                        >
+                                                            Status <span className="text-[8px] opacity-50">{getSortIconTS('status')}</span>
+                                                        </TableHead>
                                                         <TableHead className="px-4 py-4 text-right font-black text-foreground text-[10px] uppercase tracking-wider">Aktionen</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
-                                                    {filteredSubsystems.map((item) => (
+                                                    {sortedSubsystems.map((item) => (
                                                         <TableRow
                                                             key={item.id}
                                                             className="group hover:bg-orange-50/30 transition-colors cursor-pointer border-b border-border/50"
@@ -592,18 +621,32 @@ export default function AusfuehrungPage() {
                                             <Table className="border-none">
                                                 <TableHeader>
                                                     <TableRow className="bg-muted/50 hover:bg-muted/50">
-                                                        <TableHead className="h-10 px-4 font-bold text-foreground text-xs">Bezeichnung</TableHead>
-                                                        <TableHead className="h-10 px-4 font-bold text-foreground text-xs">Inv.-Nr.</TableHead>
-                                                        <TableHead className="h-10 px-4 font-bold text-foreground text-xs">Fabrikat / Typ</TableHead>
-                                                        <TableHead className="h-10 px-4 font-bold text-foreground text-xs">Kennz.</TableHead>
-                                                        <TableHead className="h-10 px-4 font-bold text-foreground text-xs">Baujahr</TableHead>
-                                                        <TableHead className="h-10 px-4 font-bold text-foreground text-xs">Geprüft bis</TableHead>
-                                                        <TableHead className="h-10 px-4 font-bold text-foreground text-xs">Status</TableHead>
+                                                        <TableHead className={cn('h-10 px-4 font-bold text-xs cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActiveVeh('bezeichnung') ? 'text-orange-700' : 'text-foreground')} onClick={() => handleSortVeh('bezeichnung')}>
+                                                            Bezeichnung <span className="text-[8px] opacity-50">{getSortIconVeh('bezeichnung')}</span>
+                                                        </TableHead>
+                                                        <TableHead className={cn('h-10 px-4 font-bold text-xs cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActiveVeh('inventarnummer') ? 'text-orange-700' : 'text-foreground')} onClick={() => handleSortVeh('inventarnummer')}>
+                                                            Inv.-Nr. <span className="text-[8px] opacity-50">{getSortIconVeh('inventarnummer')}</span>
+                                                        </TableHead>
+                                                        <TableHead className={cn('h-10 px-4 font-bold text-xs cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActiveVeh('fabrikat') ? 'text-orange-700' : 'text-foreground')} onClick={() => handleSortVeh('fabrikat')}>
+                                                            Fabrikat / Typ <span className="text-[8px] opacity-50">{getSortIconVeh('fabrikat')}</span>
+                                                        </TableHead>
+                                                        <TableHead className={cn('h-10 px-4 font-bold text-xs cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActiveVeh('kennzeichen') ? 'text-orange-700' : 'text-foreground')} onClick={() => handleSortVeh('kennzeichen')}>
+                                                            Kennz. <span className="text-[8px] opacity-50">{getSortIconVeh('kennzeichen')}</span>
+                                                        </TableHead>
+                                                        <TableHead className={cn('h-10 px-4 font-bold text-xs cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActiveVeh('baujahr') ? 'text-orange-700' : 'text-foreground')} onClick={() => handleSortVeh('baujahr')}>
+                                                            Baujahr <span className="text-[8px] opacity-50">{getSortIconVeh('baujahr')}</span>
+                                                        </TableHead>
+                                                        <TableHead className={cn('h-10 px-4 font-bold text-xs cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActiveVeh('geprueftBis') ? 'text-orange-700' : 'text-foreground')} onClick={() => handleSortVeh('geprueftBis')}>
+                                                            Geprüft bis <span className="text-[8px] opacity-50">{getSortIconVeh('geprueftBis')}</span>
+                                                        </TableHead>
+                                                        <TableHead className={cn('h-10 px-4 font-bold text-xs cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActiveVeh('status') ? 'text-orange-700' : 'text-foreground')} onClick={() => handleSortVeh('status')}>
+                                                            Status <span className="text-[8px] opacity-50">{getSortIconVeh('status')}</span>
+                                                        </TableHead>
                                                         <TableHead className="h-10 px-4 font-bold text-foreground text-xs text-right">Aktionen</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
-                                                    {filteredVehicles.map((item) => {
+                                                    {sortedVehicles.map((item) => {
                                                         const statusCfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.verfuegbar;
                                                         return (
                                                             <TableRow

@@ -14,8 +14,13 @@ export async function GET(request: NextRequest) {
     if (projektId) must.push({ key: 'projektId', match: { value: projektId } });
 
     const filter = must.length > 0 ? { must } : undefined;
-    const stunden = await DatabaseService.list<TsStunden>('ts_stunden', filter);
-    return NextResponse.json(stunden);
+    try {
+        const stunden = await DatabaseService.list<TsStunden>('ts_stunden', filter);
+        return NextResponse.json(stunden);
+    } catch (err) {
+        console.error('[kosten/stunden] GET error:', err);
+        return NextResponse.json([], { status: 200 }); // graceful degradation
+    }
 }
 
 export async function POST(request: NextRequest) {
