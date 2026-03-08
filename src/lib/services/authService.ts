@@ -8,7 +8,7 @@ const SALT_LENGTH = 16;
 const ITERATIONS = 600000; // Current recommendation
 const LEGACY_ITERATIONS = 100000; // Previous standard
 const KEY_LENGTH = 64;
-const JWT_EXPIRY_HOURS = 24;
+const JWT_EXPIRY_HOURS = 168; // 7 dias — sesiones largas sin cortes
 
 // ============================================================
 // Password Hashing (PBKDF2 via Web Crypto API)

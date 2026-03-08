@@ -62,8 +62,20 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-white p-4">
-            <Card className="w-full max-w-md shadow-2xl border-none">
+        <div
+            className="flex min-h-screen items-center justify-center p-4 relative overflow-hidden"
+            style={{
+                backgroundImage: "url('/construction_bg.png')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+            }}
+        >
+            {/* Overlay oscuro para legibilidad */}
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
+
+            {/* Card con glassmorphism */}
+            <Card className="relative z-10 w-full max-w-md shadow-2xl border border-white/20 bg-white/85 backdrop-blur-md">
                 <CardHeader className="space-y-4 pt-8 text-center">
                     <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-white text-3xl font-extrabold shadow-lg shadow-primary/20">
                         M
@@ -102,7 +114,7 @@ export default function LoginPage() {
                                         e.stopPropagation();
                                         setShowPassword(!showPassword);
                                     }}
-                                    className="text-slate-400 hover:text-primary transition-colors focus:outline-none flex items-center justify-center w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"
+                                    className="text-slate-400 hover:text-primary transition-colors focus:outline-none flex items-center justify-center w-8 h-8 rounded-full hover:bg-slate-100"
                                     aria-label={showPassword ? "Passwort verbergen" : "Passwort anzeigen"}
                                 >
                                     {showPassword ? <EyeOff className="h-4 w-4 md:h-5 md:w-5" /> : <Eye className="h-4 w-4 md:h-5 md:w-5" />}
@@ -127,11 +139,12 @@ export default function LoginPage() {
                     </div>
                 </CardContent>
             </Card>
-            <div className="fixed bottom-6 left-8 flex items-end justify-between right-8 pointer-events-none">
+
+            <div className="fixed bottom-6 left-8 flex items-end justify-between right-8 pointer-events-none z-20">
                 <div className="pointer-events-auto">
                     <Signature />
                 </div>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider opacity-60">
+                <p className="text-[10px] text-white/60 font-bold uppercase tracking-wider">
                     v1.3
                 </p>
             </div>

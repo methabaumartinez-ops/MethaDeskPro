@@ -85,13 +85,23 @@ export default function DashboardLayout({
                 </div>
 
                 <main
-                    className="flex-1 lg:ml-64 flex flex-col overflow-x-hidden"
-                    style={{ minHeight: `calc(100vh - ${headerOffset})` }}
+                    className="flex-1 lg:ml-64 flex flex-col overflow-x-hidden relative"
+                    style={{
+                        minHeight: `calc(100vh - ${headerOffset})`,
+                        backgroundImage: "url('/construction_bg.png')",
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat',
+                        backgroundAttachment: 'fixed',
+                    }}
                 >
-                    <div className="p-[1cm] w-full flex-1">
+                    {/* Overlay claro para que el contenido sea legible */}
+                    <div className="absolute inset-0 bg-white/80 pointer-events-none" />
+                    <div className="relative z-10 p-[1cm] w-full flex-1">
                         {children}
                     </div>
                 </main>
+
             </div>
 
             {/* Mobile Sidebar Overlay */}

@@ -179,3 +179,32 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   top: 0;
   width: auto;
 }
+
+/* ── Construction background: content zones are opaque white ────────── */
+/* Only the empty gutters between components show the background image.  */
+
+/* Table cells and rows */
+main table,
+main thead,
+main tbody,
+main tfoot,
+main tr,
+main td,
+main th {
+  background-color: var(--card);
+}
+
+/* Cards, panels, and white containers */
+main .card,
+main [data-slot="card"],
+main [class~="bg-white"],
+main [class~="bg-background"],
+main [class~="bg-slate-50"],
+main [class~="bg-muted"],
+main .rounded-xl:not([class*="bg-slate-9"]):not([class*="bg-orange"]):not([class*="bg-primary"]):not([class*="bg-red"]):not([class*="bg-green"]):not([class*="bg-blue"]),
+main .rounded-2xl:not([class*="bg-slate-9"]):not([class*="bg-orange"]):not([class*="bg-primary"]):not([class*="bg-red"]):not([class*="bg-green"]):not([class*="bg-blue"]),
+main .rounded-lg:not([class*="bg-slate-9"]):not([class*="bg-orange"]):not([class*="bg-primary"]):not([class*="bg-red"]):not([class*="bg-green"]):not([class*="bg-blue"]),
+main .overflow-x-auto:not([class*="bg-"]),
+main .overflow-auto:not([class*="bg-"]) {
+  background-color: var(--card);
+}
