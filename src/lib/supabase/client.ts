@@ -2,46 +2,55 @@ import 'server-only';
 import { createClient } from '@supabase/supabase-js';
 
 // ============================================================
-// Supabase Client — Self-Hosted on Easypanel/VPS
+// Supabase Admin Client — Self-Hosted on Easypanel/VPS
 // ============================================================
 //
-// Connection model for self-hosted Supabase:
+// Self-hosted Supabase uses Kong as the API gateway.
+// Kong requires BOTH headers on every request:
+//   - Authorization: Bearer <service_role_key>
+//   - apikey: <service_role_key>         ← REQUIRED by Kong key-auth plugin
+//
+// Without the 'apikey' header, Kong rejects with:
+//   "Invalid authentication credentials"
 //
 // SUPABASE_URL:
-//   - Internal (same VPS/Easypanel): http://<kong-service>:8000
-//     Example: http://supabase-kong:8000
-//   - External (via domain): https://supabase.yourdomain.com
-//   The app uses this to reach the Supabase API (Kong gateway).
+//   External: https://methadesk-supabase.ph2gu6.easypanel.host
+//   Internal: http://supabase_kong:8000  (if same Easypanel network)
 //
 // SUPABASE_SERVICE_ROLE_KEY:
-//   - Self-hosted service_role JWT from your Supabase stack.
-//   - Generated during Supabase self-hosted setup using JWT_SECRET.
-//   - Has full DB access, bypasses RLS.
-//
-// Set these in Easypanel environment variables for the app service.
-// Do NOT hardcode or commit them.
+//   The service_role JWT from your Supabase self-hosted stack.
+//   Hardcoded in kong.yml — must match exactly.
 // ============================================================
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+// ── Phase 1 diagnostics (env missing) ────────────────────────
 if (!supabaseUrl) {
     console.error(
-        '[Supabase] SUPABASE_URL is not set. ' +
-        'For self-hosted Easypanel: use the internal Kong URL (e.g. http://supabase-kong:8000) ' +
-        'or external domain (e.g. https://supabase.yourdomain.com). ' +
-        'Set it in Easypanel environment variables for the app service.'
+        '[Supabase] PHASE-1: SUPABASE_URL is not set. ' +
+        'Set it in Easypanel env vars for the app service. ' +
+        'External: https://methadesk-supabase.ph2gu6.easypanel.host'
     );
+} else {
+    console.log(`[Supabase] URL configured: ${supabaseUrl}`);
 }
 
 if (!supabaseServiceKey) {
-    console.warn(
-        '[Supabase] SUPABASE_SERVICE_ROLE_KEY is not set. ' +
-        'Use the service_role JWT from your self-hosted Supabase stack. ' +
-        'This key is found in your Supabase Easypanel service environment.'
+    console.error(
+        '[Supabase] PHASE-1: SUPABASE_SERVICE_ROLE_KEY is not set. ' +
+        'Use the service_role JWT from your Supabase Easypanel stack.'
     );
+} else {
+    // Log first+last 8 chars only — never log full keys
+    const k = supabaseServiceKey;
+    console.log(`[Supabase] Service key present (${k.length} chars): ${k.slice(0, 8)}...${k.slice(-8)}`);
 }
 
+// ── Create admin client ───────────────────────────────────────
+// Kong self-hosted requires 'apikey' header in addition to Authorization.
+// The supabase-js client sends Authorization automatically from the key arg,
+// but does NOT send 'apikey' unless we add it via global.headers.
 export const supabaseAdmin = createClient(
     supabaseUrl || 'http://localhost:8000',
     supabaseServiceKey || 'missing-key',
@@ -50,6 +59,12 @@ export const supabaseAdmin = createClient(
             autoRefreshToken: false,
             persistSession: false,
         },
-        // Self-hosted does not need custom headers for Supabase Cloud
+        global: {
+            headers: {
+                // Required by Kong key-auth plugin on self-hosted Supabase.
+                // Without this, Kong returns "Invalid authentication credentials".
+                'apikey': supabaseServiceKey || 'missing-key',
+            },
+        },
     }
 );
