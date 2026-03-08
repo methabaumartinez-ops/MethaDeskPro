@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { KeyRound, CheckCircle, XCircle, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { KeyRound, CheckCircle, XCircle, Eye, EyeOff, ShieldCheck, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -24,7 +24,12 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-export default function SetPasswordPage() {
+// ─────────────────────────────────────────────────────────────
+// Inner component — uses useSearchParams(), MUST be inside Suspense
+// Next.js 15: useSearchParams() in client components requires a
+// Suspense boundary above it to prevent blocking prerender.
+// ─────────────────────────────────────────────────────────────
+function SetPasswordForm() {
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
     const router = useRouter();
@@ -39,7 +44,6 @@ export default function SetPasswordPage() {
         resolver: zodResolver(schema),
     });
 
-    // Watch password for live feedback
     const watchedPw = watch('password', '');
     useEffect(() => { setLivePassword(watchedPw || ''); }, [watchedPw]);
 
@@ -121,7 +125,6 @@ export default function SetPasswordPage() {
                             }
                         />
 
-                        {/* Password strength indicator */}
                         {livePassword.length > 0 && (
                             <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 space-y-2">
                                 {PASSWORD_RULES.map((rule) => {
@@ -176,5 +179,21 @@ export default function SetPasswordPage() {
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider opacity-60">v1.4</p>
             </div>
         </div>
+    );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Page export — wraps form in Suspense to satisfy Next.js 15
+// requirement: useSearchParams() must be inside a Suspense boundary
+// ─────────────────────────────────────────────────────────────
+export default function SetPasswordPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex min-h-screen items-center justify-center bg-white">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        }>
+            <SetPasswordForm />
+        </Suspense>
     );
 }
