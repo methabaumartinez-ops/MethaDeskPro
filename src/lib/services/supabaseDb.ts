@@ -118,23 +118,46 @@ export class SupabaseDatabaseService {
         const { data, error } = await query;
 
         if (error) {
-            // Table does not exist — try to create it and retry once
-            const isTableMissing = error.code === '42P01' || error.message?.includes('does not exist') || error.code === 'PGRST106';
+            // ── Auth / credential error — log env diagnostics ───────
+            const isAuthError =
+                error.message?.toLowerCase().includes('invalid authentication') ||
+                error.message?.toLowerCase().includes('unauthorized') ||
+                (error as any).status === 401 ||
+                error.code === 'PGRST301';
+
+            if (isAuthError) {
+                const url = process.env.SUPABASE_URL;
+                const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+                console.error(
+                    `[SupabaseDB] PHASE-2 AUTH FAILURE listing '${tableName}': ${error.message}\n` +
+                    `  → URL: ${url ?? 'MISSING'}\n` +
+                    `  → Key present: ${!!key} (${key?.length ?? 0} chars, prefix: ${key?.slice(0, 12) ?? 'N/A'}...)\n` +
+                    `  → The service_role key in the app env must match the key configured in Kong exactly.\n` +
+                    `  → Run GET /api/debug/supabase for a full connection report.`
+                );
+                throw new Error(`[Supabase auth] Invalid credentials listing ${tableName} — check SUPABASE_SERVICE_ROLE_KEY in Easypanel matches the Kong-configured key.`);
+            }
+
+            // ── Table missing — try to create it and retry once ────
+            const isTableMissing =
+                error.code === '42P01' ||
+                error.message?.includes('does not exist') ||
+                error.code === 'PGRST106';
             if (isTableMissing) {
                 console.warn(`[SupabaseDB] Table '${tableName}' missing — attempting auto-create...`);
                 await this.ensureTable(tableName);
-                // Retry
                 const { data: data2, error: error2 } = await supabaseAdmin.from(tableName).select('*');
                 if (!error2) return (data2 || []) as unknown as T[];
-                // If still failing, return empty array gracefully
                 console.error(`[SupabaseDB] Table '${tableName}' still missing after create attempt. Returning [].`);
                 return [];
             }
-            console.error(`[SupabaseDB] Error listing ${tableName}:`, error.message);
+
+            console.error(`[SupabaseDB] Error listing ${tableName}: [${error.code}] ${error.message}`);
             throw new Error(`Failed to list ${tableName}: ${error.message}`);
         }
 
         return (data || []) as unknown as T[];
+
     }
 
     /**

@@ -47,13 +47,44 @@ if (!supabaseServiceKey) {
     console.log(`[Supabase] Service key present (${k.length} chars): ${k.slice(0, 8)}...${k.slice(-8)}`);
 }
 
+// ── Normalize the service key ─────────────────────────────────
+// Kong self-hosted only accepts the SPECIFIC key literal it was configured with.
+// The standard Supabase demo stack configures Kong with the "formatted" (pretty-printed)
+// service_role JWT. If Easypanel is set to the "compact" variant, Kong returns 401.
+//
+// Known accepted key (formatted payload, same signature):
+const KNOWN_FORMATTED_SERVICE_KEY =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9' +
+    '.eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ' +
+    '.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q';
+
+// Compact variant (same claims but condensed — NOT accepted by this Kong instance)
+const COMPACT_SERVICE_KEY =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9' +
+    '.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UtZGVtbyIsImlhdCI6MTY0MTc2OTIwMCwiZXhwIjoxNzk5NTM1NjAwfQ' +
+    '.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q';
+
+function resolveServiceKey(raw: string | undefined): string {
+    if (!raw) return 'missing-key';
+    // If Easypanel was configured with the compact key, swap to the formatted one
+    if (raw.trim() === COMPACT_SERVICE_KEY) {
+        console.warn(
+            '[Supabase] Compact service_role key detected — auto-normalizing to formatted key that Kong accepts.\n' +
+            '  → To fix permanently: update SUPABASE_SERVICE_ROLE_KEY in Easypanel to the formatted key.'
+        );
+        return KNOWN_FORMATTED_SERVICE_KEY;
+    }
+    return raw.trim();
+}
+
+const resolvedServiceKey = resolveServiceKey(supabaseServiceKey);
+
 // ── Create admin client ───────────────────────────────────────
-// Kong self-hosted requires 'apikey' header in addition to Authorization.
-// The supabase-js client sends Authorization automatically from the key arg,
-// but does NOT send 'apikey' unless we add it via global.headers.
+// Uses resolvedServiceKey which auto-normalizes the compact → formatted key.
+// Kong requires both Authorization: Bearer <key> AND apikey: <key> headers.
 export const supabaseAdmin = createClient(
     supabaseUrl || 'http://localhost:8000',
-    supabaseServiceKey || 'missing-key',
+    resolvedServiceKey,
     {
         auth: {
             autoRefreshToken: false,
@@ -62,8 +93,7 @@ export const supabaseAdmin = createClient(
         global: {
             headers: {
                 // Required by Kong key-auth plugin on self-hosted Supabase.
-                // Without this, Kong returns "Invalid authentication credentials".
-                'apikey': supabaseServiceKey || 'missing-key',
+                'apikey': resolvedServiceKey,
             },
         },
     }

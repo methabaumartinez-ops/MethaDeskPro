@@ -334,7 +334,8 @@ export async function registerUser(data: {
             return { error: 'Nur E-Mail-Adressen von @methabau.ch oder @mansergroup.ch sind erlaubt.' };
         }
 
-        await ensureUsersCollection();
+        // NOTE: ensureUsersCollection() removed — it depends on Qdrant (not available in production).
+        // With USE_SUPABASE=true, the 'users' table already exists in Supabase.
 
         // Check if user exists
         const existing = await DatabaseService.list<StoredUser>(COLLECTION, {
