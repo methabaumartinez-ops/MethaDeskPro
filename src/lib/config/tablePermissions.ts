@@ -20,7 +20,10 @@ export type TableId =
   | 'subunternehmer'
   | 'mitarbeiter'
   | 'fahrzeuge'
-  | 'unternehmer';
+  | 'unternehmer'
+  | 'kosten'
+  | 'lagerort'
+  | 'qr';
 
 export interface TablePerms {
     read:   boolean;
@@ -39,6 +42,9 @@ export const TABLE_LABELS: Record<TableId, string> = {
     mitarbeiter:     'Mitarbeiter',
     fahrzeuge:       'Fahrzeuge',
     unternehmer:     'Unternehmer',
+    kosten:          'Kosten',
+    lagerort:        'Lagerort',
+    qr:              'QR-Codes',
 };
 
 export const ALL_TABLES: TableId[] = Object.keys(TABLE_LABELS) as TableId[];
@@ -59,17 +65,18 @@ const NONE: TablePerms = { read: false, export: false, edit: false, delete: fals
 
 /** Default table permissions per Abteilung */
 export const DEFAULT_TABLE_PERMISSIONS: Record<string, Record<TableId, TablePerms>> = {
-    planung:        { projekte: FULL, teilsysteme: READ_EXPORT, positionen: READ_EXPORT, unterpositionen: READ_EXPORT, lieferanten: READ_ONLY, subunternehmer: READ_ONLY, mitarbeiter: READ_ONLY, fahrzeuge: NONE, unternehmer: READ_ONLY },
-    einkauf:        { projekte: READ_ONLY, teilsysteme: READ_ONLY, positionen: READ_ONLY, unterpositionen: READ_ONLY, lieferanten: FULL, subunternehmer: READ_EXPORT, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: READ_EXPORT },
-    avor:           { projekte: READ_ONLY, teilsysteme: READ_EXPORT, positionen: READ_EXPORT, unterpositionen: READ_EXPORT, lieferanten: READ_ONLY, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE },
-    schlosserei:    { projekte: READ_ONLY, teilsysteme: READ_ONLY, positionen: READ_ONLY, unterpositionen: READ_ONLY, lieferanten: NONE, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE },
-    blech:          { projekte: READ_ONLY, teilsysteme: READ_ONLY, positionen: READ_ONLY, unterpositionen: READ_ONLY, lieferanten: NONE, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE },
-    werkhof:        { projekte: READ_ONLY, teilsysteme: READ_ONLY, positionen: READ_ONLY, unterpositionen: NONE, lieferanten: READ_ONLY, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: FULL, unternehmer: NONE },
-    montage:        { projekte: READ_ONLY, teilsysteme: READ_ONLY, positionen: READ_ONLY, unterpositionen: READ_ONLY, lieferanten: NONE, subunternehmer: READ_ONLY, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE },
-    bau:            { projekte: READ_EXPORT, teilsysteme: READ_EXPORT, positionen: READ_EXPORT, unterpositionen: READ_EXPORT, lieferanten: READ_ONLY, subunternehmer: READ_ONLY, mitarbeiter: NONE, fahrzeuge: READ_ONLY, unternehmer: READ_EXPORT },
-    zimmerei:       { projekte: READ_ONLY, teilsysteme: READ_ONLY, positionen: READ_ONLY, unterpositionen: READ_ONLY, lieferanten: NONE, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE },
-    subunternehmer: { projekte: NONE, teilsysteme: NONE, positionen: NONE, unterpositionen: NONE, lieferanten: NONE, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE },
-    unternehmer:    { projekte: NONE, teilsysteme: NONE, positionen: NONE, unterpositionen: NONE, lieferanten: NONE, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE },
+    projektleiter:  { projekte: FULL, teilsysteme: FULL, positionen: FULL, unterpositionen: FULL, lieferanten: FULL, subunternehmer: FULL, mitarbeiter: FULL, fahrzeuge: FULL, unternehmer: FULL, kosten: FULL, lagerort: FULL, qr: FULL },
+    bauleiter:      { projekte: READ_EXPORT, teilsysteme: READ_EXPORT, positionen: READ_EXPORT, unterpositionen: READ_EXPORT, lieferanten: READ_ONLY, subunternehmer: READ_ONLY, mitarbeiter: NONE, fahrzeuge: READ_ONLY, unternehmer: READ_EXPORT, kosten: FULL, lagerort: FULL, qr: FULL },
+    planung:        { projekte: FULL, teilsysteme: READ_EXPORT, positionen: READ_EXPORT, unterpositionen: READ_EXPORT, lieferanten: READ_ONLY, subunternehmer: READ_ONLY, mitarbeiter: READ_ONLY, fahrzeuge: NONE, unternehmer: READ_ONLY, kosten: FULL, lagerort: FULL, qr: FULL },
+    einkauf:        { projekte: READ_ONLY, teilsysteme: READ_ONLY, positionen: READ_ONLY, unterpositionen: READ_ONLY, lieferanten: FULL, subunternehmer: READ_EXPORT, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: READ_EXPORT, kosten: FULL, lagerort: FULL, qr: FULL },
+    avor:           { projekte: READ_ONLY, teilsysteme: READ_EXPORT, positionen: READ_EXPORT, unterpositionen: READ_EXPORT, lieferanten: READ_ONLY, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE, kosten: FULL, lagerort: FULL, qr: FULL },
+    schlosserei:    { projekte: READ_ONLY, teilsysteme: READ_ONLY, positionen: READ_ONLY, unterpositionen: READ_ONLY, lieferanten: NONE, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE, kosten: FULL, lagerort: FULL, qr: FULL },
+    blech:          { projekte: READ_ONLY, teilsysteme: READ_ONLY, positionen: READ_ONLY, unterpositionen: READ_ONLY, lieferanten: NONE, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE, kosten: FULL, lagerort: FULL, qr: FULL },
+    werkhof:        { projekte: READ_ONLY, teilsysteme: READ_ONLY, positionen: READ_ONLY, unterpositionen: NONE, lieferanten: READ_ONLY, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: FULL, unternehmer: NONE, kosten: FULL, lagerort: FULL, qr: FULL },
+    montage:        { projekte: READ_ONLY, teilsysteme: READ_ONLY, positionen: READ_ONLY, unterpositionen: READ_ONLY, lieferanten: NONE, subunternehmer: READ_ONLY, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE, kosten: FULL, lagerort: FULL, qr: FULL },
+    bau:            { projekte: READ_EXPORT, teilsysteme: READ_EXPORT, positionen: READ_EXPORT, unterpositionen: READ_EXPORT, lieferanten: READ_ONLY, subunternehmer: READ_ONLY, mitarbeiter: NONE, fahrzeuge: READ_ONLY, unternehmer: READ_EXPORT, kosten: FULL, lagerort: FULL, qr: FULL },
+    subunternehmer: { projekte: NONE, teilsysteme: NONE, positionen: NONE, unterpositionen: NONE, lieferanten: NONE, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE, kosten: FULL, lagerort: FULL, qr: FULL },
+    unternehmer:    { projekte: NONE, teilsysteme: NONE, positionen: NONE, unterpositionen: NONE, lieferanten: NONE, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE, kosten: FULL, lagerort: FULL, qr: FULL },
 };
 
 const STORAGE_KEY = 'methabau_table_permissions';

@@ -98,7 +98,7 @@ export default function TabellenPermissionsPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
             {/* Header */}
-            <div className="border-b border-white/10 bg-white/5 backdrop-blur-sm px-8 py-6">
+            <div className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-sm px-8 py-6">
                 <div className="max-w-5xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg shrink-0"
@@ -135,7 +135,7 @@ export default function TabellenPermissionsPage() {
                             <button
                                 key={abt.id}
                                 onClick={() => setActiveAbt(abt.id)}
-                                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all ${isActive ? 'text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+                                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all ${isActive ? 'text-white' : 'text-slate-400 bg-slate-900/20 hover:bg-slate-800 hover:text-white'}`}
                                 style={isActive ? { background: 'rgba(255,107,53,0.12)', border: '1px solid rgba(255,107,53,0.25)' } : {}}
                             >
                                 <span className="font-semibold">{abt.name}</span>
@@ -155,15 +155,15 @@ export default function TabellenPermissionsPage() {
                         <p className="font-black text-white text-lg">{activeAbtConfig?.name}</p>
                         <div className="flex gap-2">
                             <button onClick={() => setAllForAbt(true)}
-                                    className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold text-slate-300 transition-all">
+                                    className="px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
                                 Alle aktivieren
                             </button>
                             <button onClick={() => setAllForAbt(false)}
-                                    className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold text-slate-300 transition-all">
+                                    className="px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
                                 Alle deaktivieren
                             </button>
                             <button onClick={resetToDefault}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold text-slate-300 transition-all">
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
                                 <RotateCcw className="h-3 w-3" />
                                 Standard
                             </button>
@@ -188,9 +188,9 @@ export default function TabellenPermissionsPage() {
                             const noneEnabled = ALL_PERMS.every(p => !tablePerms[p]);
 
                             return (
-                                <div key={tableId} className="rounded-2xl border border-white/10 overflow-hidden">
+                                <div key={tableId} className="rounded-2xl border border-slate-800 bg-slate-900/40 overflow-hidden">
                                     {/* Table header row */}
-                                    <div className="flex items-center justify-between px-5 py-3 bg-white/5 border-b border-white/5">
+                                    <div className="flex items-center justify-between px-5 py-3 bg-slate-900 border-b border-slate-800">
                                         <div className="flex items-center gap-3">
                                             <TableIcon className="h-4 w-4 text-slate-500" />
                                             <span className="font-bold text-white text-sm">{TABLE_LABELS[tableId]}</span>
@@ -210,17 +210,17 @@ export default function TabellenPermissionsPage() {
                                     </div>
 
                                     {/* Permission toggles */}
-                                    <div className="grid grid-cols-4 divide-x divide-white/5 bg-slate-900/50">
+                                    <div className="grid grid-cols-4 divide-x divide-slate-800 bg-slate-900/50">
                                         {ALL_PERMS.map(perm => {
                                             const enabled = tablePerms[perm];
                                             return (
                                                 <button
                                                     key={perm}
                                                     onClick={() => toggle(tableId, perm)}
-                                                    className="flex flex-col items-center gap-2 px-4 py-3.5 hover:bg-white/5 transition-colors"
+                                                    className="flex flex-col items-center gap-2 px-4 py-3.5 hover:bg-slate-800 transition-colors"
                                                 >
                                                     {/* Color dot + toggle pill */}
-                                                    <div className={`relative h-5 w-9 rounded-full transition-all ${!enabled ? 'bg-white/10' : ''}`}
+                                                    <div className={`relative h-5 w-9 rounded-full transition-all ${!enabled ? 'bg-slate-700' : ''}`}
                                                          style={enabled ? { background: PERM_COLORS[perm] } : {}}>
                                                         <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${enabled ? 'left-[18px]' : 'left-0.5'}`} />
                                                     </div>

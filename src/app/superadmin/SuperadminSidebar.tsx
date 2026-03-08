@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import { Shield, Users, ChevronRight, Eye, EyeOff, LogOut, Table as TableIcon, LayoutList } from 'lucide-react';
 import { ABTEILUNGEN_CONFIG } from '@/types';
 import { usePreviewAbteilung } from '@/lib/context/PreviewAbteilungContext';

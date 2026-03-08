@@ -70,7 +70,7 @@ export default function ZugriffPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
             {/* Header */}
-            <div className="border-b border-white/10 bg-white/5 backdrop-blur-sm px-8 py-6">
+            <div className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-sm px-8 py-6">
                 <div className="max-w-5xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg"
@@ -110,7 +110,7 @@ export default function ZugriffPage() {
                                 key={abt.id}
                                 onClick={() => setActiveAbt(abt.id)}
                                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all ${
-                                    isActive ? 'text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                                    isActive ? 'text-white' : 'text-slate-400 bg-slate-900/20 hover:bg-slate-800 hover:text-white'
                                 }`}
                                 style={isActive ? { background: 'rgba(255,107,53,0.12)', border: '1px solid rgba(255,107,53,0.25)' } : {}}
                             >
@@ -132,13 +132,16 @@ export default function ZugriffPage() {
                     <div className="flex items-center justify-between">
                         <p className="font-black text-white text-lg">{activeAbtConfig?.name}</p>
                         <div className="flex gap-2">
-                            <button onClick={enableAll} className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold text-slate-300 transition-all">
+                            <button onClick={enableAll}
+                                    className="px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
                                 Alle aktivieren
                             </button>
-                            <button onClick={disableAll} className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold text-slate-300 transition-all">
+                            <button onClick={disableAll}
+                                    className="px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
                                 Alle deaktivieren
                             </button>
-                            <button onClick={resetToDefault} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold text-slate-300 transition-all">
+                            <button onClick={resetToDefault}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
                                 <RotateCcw className="h-3 w-3" />
                                 Standard
                             </button>
@@ -147,24 +150,24 @@ export default function ZugriffPage() {
 
                     {/* Groups */}
                     {PAGE_GROUPS.map(group => (
-                        <div key={group.label} className="rounded-2xl border border-white/10 overflow-hidden">
-                            <div className="bg-white/5 px-5 py-3 border-b border-white/10">
+                        <div key={group.label} className="rounded-2xl border border-slate-800 bg-slate-900/40 overflow-hidden">
+                            <div className="bg-slate-900 px-5 py-3 border-b border-slate-800">
                                 <p className="text-xs font-black uppercase tracking-widest text-slate-400">{group.label}</p>
                             </div>
-                            <div className="bg-slate-900/50 divide-y divide-white/5">
+                            <div className="bg-slate-900/50 divide-y divide-slate-800">
                                 {group.pages.map(page => {
                                     const enabled = currentPerms.includes(page);
                                     return (
                                         <button
                                             key={page}
                                             onClick={() => toggle(page)}
-                                            className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-white/5 transition-colors"
+                                            className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-slate-800 transition-colors"
                                         >
                                             <span className={`text-sm font-semibold ${enabled ? 'text-white' : 'text-slate-500'}`}>
                                                 {PAGE_LABELS[page]}
                                             </span>
                                             <div className={`relative h-5 w-9 rounded-full transition-all ${
-                                                enabled ? '' : 'bg-white/10'
+                                                enabled ? '' : 'bg-slate-700'
                                             }`}
                                             style={enabled ? { background: '#ff6b35' } : {}}>
                                                 <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${

@@ -119,7 +119,7 @@ export default function SuperadminRollenPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
             {/* Header */}
-            <div className="border-b border-white/10 bg-white/5 backdrop-blur-sm px-8 py-6">
+            <div className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-sm px-8 py-6">
                 <div className="max-w-6xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         {/* Shield icon — matches sidebar visual language */}
@@ -154,7 +154,7 @@ export default function SuperadminRollenPage() {
 
             <div className="max-w-6xl mx-auto px-8 py-8 space-y-6">
                 {/* View Toggle */}
-                <div className="flex bg-white/5 border border-white/10 rounded-2xl p-1 w-fit gap-1">
+                <div className="flex bg-slate-900 border border-slate-800 rounded-2xl p-1 w-fit gap-1">
                     {(['abteilung', 'worker'] as const).map(mode => (
                         <button
                             key={mode}
@@ -172,13 +172,13 @@ export default function SuperadminRollenPage() {
 
                 {/* Stats bar */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
                         <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1">Gesamt</p>
                         <p className="text-3xl font-black text-white">{users.length}</p>
                         <p className="text-xs text-slate-500 font-medium mt-1">Benutzer</p>
                     </div>
                     {['superadmin', 'admin', 'projektleiter'].map(role => (
-                        <div key={role} className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                        <div key={role} className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
                             <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1">{roleInfo(role as UserRole)?.label}</p>
                             <p className="text-3xl font-black text-white">{users.filter(u => u.role === role).length}</p>
                             <p className="text-xs text-slate-500 font-medium mt-1">Benutzer</p>
@@ -199,9 +199,9 @@ export default function SuperadminRollenPage() {
                             const suggestedRoles = ABTEILUNG_ROLES[abt.id] || [];
 
                             return (
-                                <div key={abt.id} className="rounded-2xl border border-white/10 overflow-hidden">
+                                <div key={abt.id} className="rounded-2xl border border-slate-800 bg-slate-900/30 overflow-hidden">
                                     <button
-                                        className="w-full flex items-center justify-between px-6 py-4 bg-white/5 hover:bg-white/10 transition-colors"
+                                        className="w-full flex items-center justify-between px-6 py-4 bg-slate-900/50 hover:bg-slate-800 transition-colors"
                                         onClick={() => setExpandedAbt(prev => {
                                             const next = new Set(prev);
                                             isOpen ? next.delete(abt.id) : next.add(abt.id);
@@ -230,7 +230,7 @@ export default function SuperadminRollenPage() {
                                     </button>
 
                                     {isOpen && (
-                                        <div className="bg-slate-900/50 divide-y divide-white/5">
+                                        <div className="bg-slate-900/50 divide-y divide-slate-800">
                                             {abtUsers.length === 0 ? (
                                                 <p className="px-8 py-4 text-sm text-slate-500 italic">Keine Mitarbeiter in dieser Abteilung</p>
                                             ) : (
@@ -252,11 +252,11 @@ export default function SuperadminRollenPage() {
 
                         {/* Ohne Abteilung */}
                         {(byAbteilung['_ohne'] || []).length > 0 && (
-                            <div className="rounded-2xl border border-white/10 overflow-hidden">
-                                <div className="px-6 py-4 bg-white/5">
+                            <div className="rounded-2xl border border-slate-800 overflow-hidden">
+                                <div className="px-6 py-4 bg-slate-900">
                                     <p className="font-bold text-slate-400 text-sm">Ohne Abteilung ({byAbteilung['_ohne'].length})</p>
                                 </div>
-                                <div className="bg-slate-900/50 divide-y divide-white/5">
+                                <div className="bg-slate-900/50 divide-y divide-slate-800">
                                     {byAbteilung['_ohne'].map(u => (
                                         <UserRoleRow
                                             key={u.id}
@@ -272,13 +272,13 @@ export default function SuperadminRollenPage() {
                     </div>
                 ) : (
                     /* ─── BY WORKER ───── */
-                    <div className="rounded-2xl border border-white/10 overflow-hidden">
-                        <div className="bg-white/5 px-6 py-3 border-b border-white/10 grid grid-cols-[2fr_1fr_1fr] gap-4">
+                    <div className="rounded-2xl border border-slate-800 overflow-hidden">
+                        <div className="bg-slate-900/80 px-6 py-3 border-b border-slate-800 grid grid-cols-[2fr_1fr_1fr] gap-4">
                             <span className="text-xs font-black uppercase tracking-widest text-slate-400">Mitarbeiter</span>
                             <span className="text-xs font-black uppercase tracking-widest text-slate-400">Abteilung</span>
                             <span className="text-xs font-black uppercase tracking-widest text-slate-400">Rolle</span>
                         </div>
-                        <div className="divide-y divide-white/5 bg-slate-900/50">
+                        <div className="divide-y divide-slate-800 bg-slate-900/50">
                             {users
                                 .slice()
                                 .sort((a, b) => `${a.nachname} ${a.vorname}`.localeCompare(`${b.nachname} ${b.vorname}`, 'de'))
@@ -320,7 +320,7 @@ function UserRoleRow({
     const abtLabel = ABTEILUNGEN_CONFIG.find(a => a.id === user.abteilung)?.name || '–';
 
     return (
-        <div className="grid grid-cols-[2fr_1fr_1fr] gap-4 items-center px-6 py-4 hover:bg-white/5 transition-colors">
+        <div className="grid grid-cols-[2fr_1fr_1fr] gap-4 items-center px-6 py-4 hover:bg-slate-800/50 transition-colors">
             <div>
                 <p className="font-bold text-white text-sm">{user.vorname} {user.nachname}</p>
                 <p className="text-xs text-slate-400">{user.email}</p>
@@ -338,7 +338,7 @@ function UserRoleRow({
                     value={user.role}
                     disabled={saving}
                     onChange={(e) => onRoleChange(e.target.value as UserRole)}
-                    className="flex-1 bg-white/10 border border-white/20 text-white text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-purple-500 disabled:opacity-50 cursor-pointer"
+                    className="flex-1 bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-purple-500 disabled:opacity-50 cursor-pointer"
                 >
                     {ALL_ROLES.map(r => (
                         <option key={r.value} value={r.value} className="bg-slate-900 text-white">
