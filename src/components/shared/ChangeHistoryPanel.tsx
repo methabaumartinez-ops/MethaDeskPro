@@ -20,7 +20,22 @@ interface ChangelogEntry {
     changedBy: string;
     changedFields: FieldChange[];
     summary: string;
+    entityType?: 'teilsystem' | 'position' | 'unterposition';
 }
+
+const renderValue = (val: unknown) => {
+    if (val === null || val === undefined || val === '') return '—';
+    return String(val);
+};
+
+const getFieldLabel = (entityType: string | undefined, field: string, defaultLabel: string) => {
+    if (field === 'status') {
+        if (entityType === 'teilsystem') return 'TS Status';
+        if (entityType === 'position') return 'Pos Status';
+        if (entityType === 'unterposition') return 'UntPos Status';
+    }
+    return defaultLabel;
+};
 
 interface ChangeHistoryPanelProps {
     entityId: string;
@@ -50,7 +65,7 @@ export function ChangeHistoryPanel({ entityId, className }: ChangeHistoryPanelPr
 
     return (
         <Card className={cn("border-2 border-border shadow-sm overflow-hidden bg-white dark:bg-card flex flex-col", className)}>
-            <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
+            <CardHeader className="py-2.5 px-4 bg-muted border-b border-border shrink-0">
                 <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                     <History className="h-3.5 w-3.5" />
                     Aenderungshistorie
@@ -91,21 +106,28 @@ export function ChangeHistoryPanel({ entityId, className }: ChangeHistoryPanelPr
                                     </span>
                                 </div>
                                 <div className="space-y-0.5">
-                                    {(entry.changedFields ?? []).map((f, i) => (
-
-                                        <div key={i} className="flex items-baseline gap-1 text-[9px] leading-tight">
-                                            <span className="font-bold text-muted-foreground uppercase tracking-tight shrink-0">
-                                                {f.label}:
-                                            </span>
-                                            <span className="text-slate-400 line-through truncate max-w-[56px]">
-                                                {String(f.before ?? '—')}
-                                            </span>
-                                            <span className="text-muted-foreground/40 text-[8px]">→</span>
-                                            <span className="font-bold text-foreground truncate max-w-[80px]">
-                                                {String(f.after ?? '—')}
+                                    {(entry.changedFields && entry.changedFields.length > 0) ? (
+                                        entry.changedFields.map((f, i) => (
+                                            <div key={i} className="flex items-baseline gap-1 text-[9px] leading-tight">
+                                                <span className="font-bold text-muted-foreground uppercase tracking-tight shrink-0">
+                                                    {getFieldLabel(entry.entityType, f.field, f.label)}:
+                                                </span>
+                                                <span className="text-slate-400 line-through truncate max-w-[56px]">
+                                                    {renderValue(f.before)}
+                                                </span>
+                                                <span className="text-muted-foreground/40 text-[8px]">→</span>
+                                                <span className="font-bold text-foreground truncate max-w-[80px]">
+                                                    {renderValue(f.after)}
+                                                </span>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="flex items-baseline gap-1 text-[9px] leading-tight text-muted-foreground">
+                                            <span className="truncate max-w-full">
+                                                {entry.summary || 'Änderung erfasst'}
                                             </span>
                                         </div>
-                                    ))}
+                                    )}
                                 </div>
                             </div>
                         ))}

@@ -183,7 +183,7 @@ export default function PositionDetailPage() {
 
                 {/* ─── 1) Details & Info ─── */}
                 <Card className="border-2 border-border shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card flex flex-col">
-                    <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
+                    <CardHeader className="py-2.5 px-4 bg-muted border-b border-border shrink-0">
                         <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                             <FileSpreadsheet className="h-3.5 w-3.5" />
                             Details & Info
@@ -213,7 +213,7 @@ export default function PositionDetailPage() {
 
                 {/* ─── 2) Bemerkung ─── */}
                 <Card className="border-2 border-border shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card flex flex-col">
-                    <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
+                    <CardHeader className="py-2.5 px-4 bg-muted border-b border-border shrink-0">
                         <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                             <ListTodo className="h-3 w-3" />
                             Bemerkung
@@ -231,7 +231,7 @@ export default function PositionDetailPage() {
 
                 {/* ─── 4) Aktionen ─── */}
                 <Card className="border-2 border-border shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card flex flex-col">
-                    <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
+                    <CardHeader className="py-2.5 px-4 bg-muted border-b border-border shrink-0">
                         <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Aktionen</CardTitle>
                     </CardHeader>
                     <CardContent className="flex-1 flex items-center justify-center p-5">
@@ -270,7 +270,7 @@ export default function PositionDetailPage() {
             {/* Bottom: Unterpositionen (Full Width) */}
 
             <Card className="shadow-lg border-2 border-border overflow-hidden">
-                <CardHeader className="py-4 px-6 bg-muted/30 border-b border-border flex flex-row items-center justify-between">
+                <CardHeader className="py-4 px-6 bg-muted border-b border-border flex flex-row items-center justify-between">
                     <CardTitle className="text-lg font-black flex items-center gap-3">
                         <ListTodo className="h-5 w-5 text-primary" />
                         Unterpositionen / Komponenten
@@ -298,7 +298,7 @@ export default function PositionDetailPage() {
                             <TableBody>
                                 {unterpositionen.length > 0 ? (
                                     unterpositionen.map((upos) => (
-                                        <TableRow key={upos.id} className="group hover:bg-muted/50 transition-colors cursor-pointer border-b border-border/50" onClick={() => router.push(`/${projektId}/unterpositionen/${upos.id}`)}>
+                                        <TableRow key={upos.id} className="group hover:bg-muted transition-colors cursor-pointer border-b border-border/50" onClick={() => router.push(`/${projektId}/unterpositionen/${upos.id}`)}>
                                             <TableCell className="px-6 py-4 font-black text-primary">{upos.posNummer || '—'}</TableCell>
                                             <TableCell className="px-6 py-4 font-bold text-foreground">{upos.name}</TableCell>
                                             <TableCell className="px-6 py-4 font-bold text-muted-foreground">
@@ -331,7 +331,7 @@ export default function PositionDetailPage() {
                 {/* Left Side: Advanced IFC Metadata & IFC Details (5 cols) */}
                 <div className="lg:col-span-5 flex flex-col gap-6">
                     <Card className="shadow-sm border-2 border-border overflow-hidden bg-white dark:bg-card h-full flex flex-col">
-                        <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
+                        <CardHeader className="py-2.5 px-4 bg-muted border-b border-border shrink-0">
                             <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                                 <Badge variant="outline" className="text-[9px] h-4 border-orange-200 bg-orange-50 text-orange-700">IFC Extrakt</Badge>
                                 Technische Details
@@ -414,7 +414,7 @@ export default function PositionDetailPage() {
                     />
 
                     <Card className="shadow-sm border-2 border-border overflow-hidden">
-                        <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border">
+                        <CardHeader className="py-2.5 px-4 bg-muted border-b border-border">
                             <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                                 <FileSpreadsheet className="h-3.5 w-3.5" />
                                 Dokumente

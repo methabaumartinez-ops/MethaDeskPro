@@ -104,7 +104,7 @@ export function WorkflowTransitionPanel({
     if (transitions.length === 0) {
         return (
             <Card className={cn('border-2 border-border shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card flex flex-col', className)}>
-                <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
+                <CardHeader className="py-2.5 px-4 bg-muted border-b border-border shrink-0">
                     <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                         <ArrowRight className="h-3 w-3" />
                         Workflow
@@ -129,7 +129,7 @@ export function WorkflowTransitionPanel({
 
     return (
         <Card className={cn('border-2 border-border shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card flex flex-col', className)}>
-            <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
+            <CardHeader className="py-2.5 px-4 bg-muted border-b border-border shrink-0">
                 <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                     <ArrowRight className="h-3 w-3" />
                     Workflow-Schritte

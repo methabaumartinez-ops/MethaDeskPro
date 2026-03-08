@@ -11,21 +11,21 @@ export interface ProvisionalDateInputProps {
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
     name?: string;
-    /** Text to show in red when the field is empty. Defaults to "Durch den Bauleiter" */
+    /** Text to show in red when the field is empty. Defaults to "Durch Bauleiter" */
     provisionalText?: string;
     className?: string;
     disabled?: boolean;
 }
 
 /**
- * A date input that renders a red provisional label ("Durch den Bauleiter")
+ * A date input that renders a red provisional label ("Durch Bauleiter")
  * when no date is selected. Clicking the label triggers the native date picker
  * via a hidden input so the provisional text never flickers or disappears.
  * When a real date is selected, the native date input is shown normally in black.
  */
 const ProvisionalDateInput = React.forwardRef<HTMLInputElement, ProvisionalDateInputProps>(
     ({ label, error, value, onChange, onBlur, name, className, disabled,
-       provisionalText = 'Durch den Bauleiter' }, ref) => {
+       provisionalText = 'Durch Bauleiter' }, ref) => {
         const hasValue = Boolean(value && value.trim() !== '');
         const hiddenInputRef = React.useRef<HTMLInputElement>(null);
 

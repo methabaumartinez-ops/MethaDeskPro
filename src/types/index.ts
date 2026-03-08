@@ -35,7 +35,9 @@ export interface User {
 // ============================================================
 
 export const ABTEILUNGEN_CONFIG = [
-  { id: 'planung',        name: 'Planung',         color: 'teal'      },
+  { id: 'projektleiter',  name: 'Projektleiter',    color: 'blue'      },
+  { id: 'bauleiter',      name: 'Bauleiter',        color: 'sky'       },
+  { id: 'planung',        name: 'Planung',          color: 'teal'      },
   { id: 'einkauf',        name: 'Einkauf',          color: 'warning'   },
   { id: 'avor',           name: 'AVOR',             color: 'info'      },
   { id: 'schlosserei',    name: 'Schlosserei',      color: 'gray'      },
@@ -43,7 +45,6 @@ export const ABTEILUNGEN_CONFIG = [
   { id: 'werkhof',        name: 'Werkhof',          color: 'violet'    },
   { id: 'montage',        name: 'Montage',          color: 'success'   },
   { id: 'bau',            name: 'Bau',              color: 'error'     },
-  { id: 'zimmerei',       name: 'Zimmerei',         color: 'secondary' },
   { id: 'subunternehmer', name: 'Subunternehmer',   color: 'default'   },
   { id: 'unternehmer',    name: 'Unternehmer',      color: 'outline'   },
 ] as const;

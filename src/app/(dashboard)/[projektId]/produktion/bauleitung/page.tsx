@@ -20,7 +20,7 @@ export default function BauleitungPage() {
 
             <Card className="border-2 border-dashed rounded-2xl">
                 <CardContent className="py-32 text-center flex flex-col items-center">
-                    <div className="w-20 h-20 rounded-2xl bg-muted/50 flex items-center justify-center mb-6 border-2 border-slate-200">
+                    <div className="w-20 h-20 rounded-2xl bg-muted flex items-center justify-center mb-6 border-2 border-slate-200">
                         <Briefcase className="h-10 w-10 text-muted-foreground/50" />
                     </div>
                     <h3 className="text-2xl font-black text-foreground tracking-tight mb-2">Bauleitung</h3>

@@ -108,7 +108,7 @@ export function TeilsystemTable({
         <>
             <div className="overflow-x-auto max-w-full">
                 <Table>
-                    <TableHeader className="bg-muted/50">
+                    <TableHeader className="bg-muted">
                         <TableRow className="border-b-2 border-border hover:bg-transparent">
                             {/* 1. TS Nummer */}
                             <TableHead className="w-24 px-4 py-4 font-black text-foreground text-center text-[10px] uppercase tracking-wider">TS-Nr.</TableHead>

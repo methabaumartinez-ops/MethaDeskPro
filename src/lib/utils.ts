@@ -27,8 +27,8 @@ export function isMontageterminProvisional(item: { montageterminProvisional?: bo
     return item.montageterminProvisional === true || isMontageTerminBauleiter(item.montagetermin);
 }
 
-/** Returns true when the montagetermin text is "Durch den Bauleiter" (case-insensitive). */
+/** Returns true when the montagetermin text is "Durch Bauleiter" (case-insensitive). */
 export function isMontageTerminBauleiter(value?: string | null): boolean {
     if (!value) return false;
-    return value.trim().toLowerCase() === 'durch den bauleiter';
+    return value.trim().toLowerCase() === 'durch bauleiter';
 }

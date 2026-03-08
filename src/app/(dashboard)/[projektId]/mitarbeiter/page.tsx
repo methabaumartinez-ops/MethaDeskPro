@@ -82,7 +82,7 @@ export default function MitarbeiterListPage() {
                 ctaIcon={Plus}
             />
 
-            <Card className="overflow-hidden border-none shadow-xl bg-card/50 backdrop-blur-sm">
+            <Card className="overflow-hidden border-none shadow-xl bg-card">
                 <CardContent className="p-0">
                     {loading ? (
                         <div className="py-20 flex justify-center">

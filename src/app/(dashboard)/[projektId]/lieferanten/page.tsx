@@ -70,7 +70,7 @@ export default function LieferantenListPage() {
                 </div>
             )}
 
-            <Card className="overflow-hidden border-none shadow-xl bg-card/50 backdrop-blur-sm flex-1 w-full">
+            <Card className="overflow-hidden border-none shadow-xl bg-card flex-1 w-full">
                 <CardContent className="p-0 h-full overflow-auto">
                     {loading ? (
                         <div className="py-20 flex justify-center">

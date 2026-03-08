@@ -35,7 +35,7 @@ const FIELD_LABELS: Record<string, string> = {
     name:              'Name',
     bemerkung:         'Bemerkung',
     lieferfrist:       'Lieferdatum',
-    montagetermin:     'Montage',
+    montagetermin:     'Montagetermin',
     abgabePlaner:      'Planabgabe',
     lagerortId:        'Lagerort',
     teilsystemNummer:  'TS-Nummer',

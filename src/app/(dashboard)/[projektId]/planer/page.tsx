@@ -17,7 +17,7 @@ import {
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { ProjectService } from '@/lib/services/projectService';
 import { Teilsystem } from '@/types';
-import { cn } from '@/lib/utils';
+import { cn, isMontageTerminBauleiter } from '@/lib/utils';
 import { ChatAssistant } from '@/components/shared/ChatAssistant';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 
@@ -211,7 +211,7 @@ export default function PlannerPage() {
                 <Card className="flex-1 border-none shadow-md bg-white h-full flex flex-col min-w-0">
                     {selectedItem ? (
                         <>
-                            <CardHeader className="border-b bg-slate-50/50 p-6">
+                            <CardHeader className="border-b bg-slate-50 p-6">
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <div className="text-xs font-black uppercase text-slate-400 tracking-wider mb-1">
@@ -313,7 +313,11 @@ export default function PlannerPage() {
                                                 <Input
                                                     value={selectedItem.montagetermin || ''}
                                                     onChange={(e) => updateItem(selectedItem.id, 'montagetermin', e.target.value)}
-                                                    className="pl-10 font-bold text-orange-700 bg-orange-50/50 border-orange-100"
+                                                    className={cn("pl-10 font-bold",
+                                                        isMontageTerminBauleiter(selectedItem.montagetermin)
+                                                            ? "text-red-600 bg-red-50/50 border-red-100"
+                                                            : "text-orange-700 bg-orange-50/50 border-orange-100"
+                                                    )}
                                                     placeholder="DD.MM.YYYY"
                                                 />
                                                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-400" />
@@ -345,7 +349,7 @@ export default function PlannerPage() {
                                     </div>
                                 </div>
                             </CardContent>
-                            <CardFooter className="border-t bg-slate-50/50 p-4 text-xs text-slate-400 flex justify-between items-center">
+                            <CardFooter className="border-t bg-slate-50 p-4 text-xs text-slate-400 flex justify-between items-center">
                                 <span>Zuletzt bearbeitet: Heute</span>
                                 <div className="flex items-center gap-2 text-green-600 font-bold">
                                     <CheckCircle2 className="h-3 w-3" />
@@ -370,7 +374,7 @@ export default function PlannerPage() {
                 <div className="w-1/4 flex flex-col gap-6 h-full overflow-y-auto pr-1">
                     {/* Plan/Image Upload */}
                     <Card className="border-none shadow-sm bg-white overflow-hidden">
-                        <CardHeader className="border-b bg-slate-50/50 py-3 px-4">
+                        <CardHeader className="border-b bg-slate-50 py-3 px-4">
                             <CardTitle className="text-xs font-black text-slate-700 flex items-center gap-2 uppercase tracking-wide">
                                 <ImageIcon className="h-3 w-3" />
                                 Plan / Ansicht
@@ -412,7 +416,7 @@ export default function PlannerPage() {
 
                     {/* IFC Upload */}
                     <Card className="border-none shadow-sm bg-white overflow-hidden">
-                        <CardHeader className="border-b bg-slate-50/50 py-3 px-4">
+                        <CardHeader className="border-b bg-slate-50 py-3 px-4">
                             <CardTitle className="text-xs font-black text-slate-700 flex items-center gap-2 uppercase tracking-wide">
                                 <FileType className="h-3 w-3" />
                                 IFC Modell
@@ -451,7 +455,7 @@ export default function PlannerPage() {
 
                     {/* Documents Upload */}
                     <Card className="border-none shadow-sm bg-white overflow-hidden">
-                        <CardHeader className="border-b bg-slate-50/50 py-3 px-4">
+                        <CardHeader className="border-b bg-slate-50 py-3 px-4">
                             <CardTitle className="text-xs font-black text-slate-700 flex items-center gap-2 uppercase tracking-wide">
                                 <File className="h-3 w-3" />
                                 Dokumente

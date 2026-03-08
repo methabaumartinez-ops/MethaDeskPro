@@ -452,7 +452,7 @@ export default function AusfuehrungPage() {
                                     {filteredSubsystems.length > 0 ? (
                                         <div className="overflow-x-auto max-w-full">
                                             <Table>
-                                        <TableHeader className="bg-muted/50 sticky top-0 z-10">
+                                        <TableHeader className="bg-muted sticky top-0 z-10">
                                                     <TableRow className="border-b-2 border-border hover:bg-transparent">
                                                         <TableHead
                                                             className={cn('w-20 px-4 py-4 font-black text-center text-[10px] uppercase tracking-wider cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActiveTS('teilsystemNummer') ? 'text-orange-700' : 'text-foreground')}
@@ -583,7 +583,7 @@ export default function AusfuehrungPage() {
                                 </TabsContent>
 
                                 <TabsContent active={activeTab === 'fahrzeuge'} className="mt-0 h-full">
-                                    <div className="bg-background/95 backdrop-blur-sm -mx-4 px-4 py-3 mb-4 scrollbar-hide">
+                                    <div className="bg-background -mx-4 px-4 py-3 mb-4 scrollbar-hide">
                                         <div className="flex gap-2 p-1.5 overflow-x-auto border-2 border-[#FF6B35]/20 bg-white rounded-2xl shadow-sm">
                                             <Button
                                                 variant="ghost"
@@ -620,7 +620,7 @@ export default function AusfuehrungPage() {
                                         <div className="overflow-x-auto max-w-full">
                                             <Table className="border-none">
                                                 <TableHeader>
-                                                    <TableRow className="bg-muted/50 hover:bg-muted/50">
+                                                    <TableRow className="bg-muted hover:bg-muted/80">
                                                         <TableHead className={cn('h-10 px-4 font-bold text-xs cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActiveVeh('bezeichnung') ? 'text-orange-700' : 'text-foreground')} onClick={() => handleSortVeh('bezeichnung')}>
                                                             Bezeichnung <span className="text-[8px] opacity-50">{getSortIconVeh('bezeichnung')}</span>
                                                         </TableHead>
@@ -719,7 +719,7 @@ export default function AusfuehrungPage() {
                                     )}
                                 </TabsContent>
 
-                                <TabsContent active={activeTab === 'logistik'} className="mt-0 h-full flex flex-col p-4 bg-slate-50/50">
+                                <TabsContent active={activeTab === 'logistik'} className="mt-0 h-full flex flex-col p-4 bg-slate-50">
                                     {isCreatingOrder ? (
                                         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm max-w-3xl mx-auto w-full">
                                             <div className="flex justify-between items-center mb-6">
@@ -772,7 +772,7 @@ export default function AusfuehrungPage() {
 
                                                     <div className="space-y-3">
                                                         {newOrderItems.map((item, idx) => (
-                                                            <div key={idx} className="flex flex-col gap-1.5 p-2 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                                                            <div key={idx} className="flex flex-col gap-1.5 p-2 bg-slate-50 rounded-xl border border-dashed border-slate-200">
                                                                 <div className="flex gap-2 items-center">
                                                                     <Input
                                                                         placeholder="TS-Nr."

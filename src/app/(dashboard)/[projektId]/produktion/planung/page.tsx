@@ -196,7 +196,7 @@ export default function PlanerPage() {
             ) : items.length === 0 ? (
                 <Card className="border-2 border-dashed rounded-2xl">
                     <CardContent className="py-32 text-center flex flex-col items-center">
-                        <div className="p-6 bg-muted/30 rounded-full mb-6">
+                        <div className="p-6 bg-muted rounded-full mb-6">
                             <PenTool className="h-16 w-16 text-muted-foreground/20" />
                         </div>
                         <h3 className="text-xl font-black text-foreground tracking-tight">Keine Teilsysteme</h3>
@@ -208,35 +208,35 @@ export default function PlanerPage() {
                     {/* Left: Table */}
                     <SplitLayoutList>
                             <Table>
-                                <TableHeader className="sticky top-0 bg-muted/95 backdrop-blur-md z-20 border-b border-border">
+                                <TableHeader className="sticky top-0 bg-muted z-20 border-b border-border">
                                     <TableRow className="hover:bg-transparent">
-                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 bg-muted/95">KS</TableHead>
+                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 bg-muted">KS</TableHead>
                                         <TableHead
-                                            className={cn('font-black text-[10px] uppercase tracking-wider h-10 w-24 bg-muted/95 cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('teilsystemNummer') ? 'text-orange-700' : 'text-muted-foreground/80')}
+                                            className={cn('font-black text-[10px] uppercase tracking-wider h-10 w-24 bg-muted cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('teilsystemNummer') ? 'text-orange-700' : 'text-muted-foreground/80')}
                                             onClick={() => handleSort('teilsystemNummer')}
                                         >
                                             TS Nummer <span className="text-[8px] opacity-60">{getSortIcon('teilsystemNummer')}</span>
                                         </TableHead>
                                         <TableHead
-                                            className={cn('font-black text-[10px] uppercase tracking-wider h-10 bg-muted/95 cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('name') ? 'text-orange-700' : 'text-muted-foreground/80')}
+                                            className={cn('font-black text-[10px] uppercase tracking-wider h-10 bg-muted cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('name') ? 'text-orange-700' : 'text-muted-foreground/80')}
                                             onClick={() => handleSort('name')}
                                         >
                                             Name <span className="text-[8px] opacity-60">{getSortIcon('name')}</span>
                                         </TableHead>
                                         <TableHead
-                                            className={cn('font-black text-[10px] uppercase tracking-wider h-10 bg-muted/95 cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('abgabePlaner') ? 'text-orange-700' : 'text-muted-foreground/80')}
+                                            className={cn('font-black text-[10px] uppercase tracking-wider h-10 bg-muted cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('abgabePlaner') ? 'text-orange-700' : 'text-muted-foreground/80')}
                                             onClick={() => handleSort('abgabePlaner')}
                                         >
                                             Abgabe Plan <span className="text-[8px] opacity-60">{getSortIcon('abgabePlaner')}</span>
                                         </TableHead>
-                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 w-12 text-center bg-muted/95">KW</TableHead>
+                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 w-12 text-center bg-muted">KW</TableHead>
                                         <TableHead
-                                            className={cn('font-black text-[10px] uppercase tracking-wider h-10 bg-muted/95 cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('lieferfrist') ? 'text-orange-700' : 'text-muted-foreground/80')}
+                                            className={cn('font-black text-[10px] uppercase tracking-wider h-10 bg-muted cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('lieferfrist') ? 'text-orange-700' : 'text-muted-foreground/80')}
                                             onClick={() => handleSort('lieferfrist')}
                                         >
                                             Liefertermin <span className="text-[8px] opacity-60">{getSortIcon('lieferfrist')}</span>
                                         </TableHead>
-                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 w-12 text-center bg-muted/95">KW</TableHead>
+                                        <TableHead className="font-black text-[10px] uppercase tracking-wider text-muted-foreground/80 h-10 w-12 text-center bg-muted">KW</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -278,7 +278,7 @@ export default function PlanerPage() {
                         {selectedTs && (
                             <>
                                 <div className="h-1.5 w-full bg-orange-500" />
-                                <CardHeader className="border-b bg-muted/10 pb-5">
+                                <CardHeader className="border-b bg-muted pb-5">
                                     <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-1 block">DETAILANSICHT</span>
                                     <CardTitle className="text-xl font-black flex items-center gap-2">
                                         {selectedTs.teilsystemNummer && (
@@ -321,7 +321,7 @@ export default function PlanerPage() {
                                         />
                                     </div>
                                 </CardContent>
-                                <div className="p-5 border-t bg-muted/10 flex justify-end shrink-0">
+                                <div className="p-5 border-t bg-muted flex justify-end shrink-0">
                                     <Button
                                         onClick={handleSave}
                                         disabled={isSaving}

@@ -152,7 +152,7 @@ function renderTableContent(displayItems: Teilsystem[], loading?: boolean, proje
                     />
                 ) : (
                     <div className="py-32 text-center flex flex-col items-center">
-                        <div className="p-6 bg-muted/30 rounded-full mb-6">
+                        <div className="p-6 bg-muted rounded-full mb-6">
                             <Layers className="h-16 w-16 text-muted-foreground/20" />
                         </div>
                         <h3 className="text-xl font-black text-foreground tracking-tight">Keine Teilsysteme gefunden</h3>

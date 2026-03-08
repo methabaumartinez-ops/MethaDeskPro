@@ -110,7 +110,10 @@ export default function TeilsystemErfassenPage() {
                 const [empData, subData, loData] = await Promise.all([
                     EmployeeService.getMitarbeiter(),
                     SubunternehmerService.getSubunternehmer(),
-                    LagerortService.getLagerorte(projektId)
+                    LagerortService.getLagerorte(projektId).catch((err) => {
+                        console.error("Lagerorte fetch failed, degrading gracefully:", err);
+                        return [];
+                    })
                 ]);
                 setMitarbeiter(empData);
                 setSubunternehmerList(subData);

@@ -244,7 +244,7 @@ export default function TeilsystemDetailPage() {
 
                 {/* ─── 1) Termine u. Fristen ─── */}
                 <Card className="border-2 border-border shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card flex flex-col">
-                    <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
+                    <CardHeader className="py-2.5 px-4 bg-muted border-b border-border shrink-0">
                         <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Termine u. Fristen</CardTitle>
                     </CardHeader>
                     <CardContent className="p-5 flex-1 flex items-center">
@@ -293,11 +293,11 @@ export default function TeilsystemDetailPage() {
                                         <div key={i} className="flex flex-col items-center text-center gap-1">
                                             <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight">{d.label}</span>
                                             <span className={cn("text-sm font-black tracking-tight leading-none", 
-                                                d.label === 'Montage' && isMontageTerminBauleiter(d.value)
-                                                    ? "text-red-600"
-                                                    : d.value ? dateColorCls : "text-muted-foreground/30"
+                                                d.label === 'Montage' 
+                                                    ? (d.value ? (isMontageTerminBauleiter(d.value) ? "text-red-600" : dateColorCls) : "text-red-600")
+                                                    : (d.value ? dateColorCls : "text-muted-foreground/30")
                                             )}>
-                                                {d.value || '—'}
+                                                {d.label === 'Montage' ? (d.value || 'Durch Bauleiter') : (d.value || '—')}
                                             </span>
                                             {d.value ? (
                                                 <div className={cn("px-1.5 py-0.5 rounded text-[8px] font-black uppercase border leading-tight", badge.cls)}>
@@ -316,7 +316,7 @@ export default function TeilsystemDetailPage() {
 
                 {/* ─── 2) Bemerkung ─── */}
                 <Card className="border-2 border-border shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card flex flex-col">
-                    <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
+                    <CardHeader className="py-2.5 px-4 bg-muted border-b border-border shrink-0">
                         <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                             <ListTodo className="h-3 w-3" />
                             Bemerkung
@@ -334,7 +334,7 @@ export default function TeilsystemDetailPage() {
 
                 {/* ─── 4) Aktionen ─── */}
                 <Card className="border-2 border-border shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card flex flex-col">
-                    <CardHeader className="py-2.5 px-4 bg-muted/30 border-b border-border shrink-0">
+                    <CardHeader className="py-2.5 px-4 bg-muted border-b border-border shrink-0">
                         <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Aktionen</CardTitle>
                     </CardHeader>
                     <CardContent className="flex-1 flex items-center justify-center p-5">
@@ -376,7 +376,7 @@ export default function TeilsystemDetailPage() {
                 {/* Positions Table (Left - 5 columns) */}
                 <div className="lg:col-span-5 flex flex-col">
                     <Card className="shadow-lg border-2 border-border overflow-hidden rounded-3xl flex flex-col h-full">
-                        <CardHeader className="border-b border-border flex flex-row justify-between items-center py-3 bg-muted/30 px-4">
+                        <CardHeader className="border-b border-border flex flex-row justify-between items-center py-3 bg-muted px-4">
                             <CardTitle className="text-sm flex items-center gap-2 font-black uppercase tracking-wider text-muted-foreground">
                                 <ListTodo className="h-4 w-4 text-primary" />
                                 Positionen
@@ -404,7 +404,7 @@ export default function TeilsystemDetailPage() {
                                         </TableHeader>
                                         <TableBody>
                                             {positionen.map((pos) => (
-                                                <TableRow key={pos.id} className="group hover:bg-muted/50 transition-colors cursor-pointer border-b border-border/50" onClick={() => router.push(`/${projektId}/positionen/${pos.id}${from ? `?from=${from}` : ''}`)}>
+                                                <TableRow key={pos.id} className="group hover:bg-muted transition-colors cursor-pointer border-b border-border/50" onClick={() => router.push(`/${projektId}/positionen/${pos.id}${from ? `?from=${from}` : ''}`)}>
                                                     <TableCell className="font-black text-primary py-3 pl-4 text-[10px]">{pos.posNummer || '—'}</TableCell>
                                                     <TableCell className="py-3">
                                                         <span className="font-bold text-foreground text-[11px] block truncate max-w-[120px]">{pos.name}</span>
@@ -468,7 +468,7 @@ export default function TeilsystemDetailPage() {
 
             {/* Bottom Row: System Details (Full Width) */}
             <Card className="shadow-sm border-2 border-border overflow-hidden rounded-3xl bg-white dark:bg-card">
-                <CardHeader className="py-3 px-6 bg-muted/30 border-b border-border">
+                <CardHeader className="py-3 px-6 bg-muted border-b border-border">
                     <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">System Details</CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
@@ -519,7 +519,7 @@ export default function TeilsystemDetailPage() {
 
             {/* Bottom Section: Dokumente (Full Width) */}
             <Card className="shadow-sm border-2 border-border rounded-3xl overflow-hidden">
-                <CardHeader className="border-b border-border py-4 px-6 bg-muted/30">
+                <CardHeader className="border-b border-border py-4 px-6 bg-muted">
                     <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                         <FileText className="h-4 w-4" />
                         Dokumente & Pläne

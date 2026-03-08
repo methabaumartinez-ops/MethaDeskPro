@@ -133,7 +133,7 @@ export default function WerkhofPage() {
                     </div>
                 </div>
             ) : Object.keys(groupedBestellungen).length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-32 text-slate-300 bg-slate-50/50 rounded-[3rem] border-2 border-dashed border-slate-200">
+                <div className="flex flex-col items-center justify-center py-32 text-slate-300 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
                     <Inbox className="h-20 w-20 mb-6 opacity-20" />
                     <p className="text-lg font-black uppercase tracking-[0.2em] text-center">Keine Aufträge vorhanden</p>
                     <p className="text-sm font-medium text-slate-400 mt-2">Aktuell gibt es keine aktiven Materialbestellungen.</p>
@@ -199,7 +199,7 @@ export default function WerkhofPage() {
                                                     projektId={pId}
                                                 />
                                             )) : (
-                                                <div className="col-span-full py-12 flex flex-col items-center justify-center bg-slate-50/50 rounded-[2rem] border-2 border-dashed border-slate-100 italic text-slate-400 font-medium">
+                                                <div className="col-span-full py-12 flex flex-col items-center justify-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-100 italic text-slate-400 font-medium">
                                                     Keine offenen Bestellungen für dieses Projekt
                                                 </div>
                                             )}
@@ -222,7 +222,7 @@ export default function WerkhofPage() {
                                                     projektId={pId}
                                                 />
                                             )) : (
-                                                <div className="col-span-full py-12 flex flex-col items-center justify-center bg-slate-50/50 rounded-[2rem] border-2 border-dashed border-slate-100 italic text-slate-400 font-medium">
+                                                <div className="col-span-full py-12 flex flex-col items-center justify-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-100 italic text-slate-400 font-medium">
                                                     Keine abgeschlossenen Bestellungen für dieses Projekt
                                                 </div>
                                             )}
@@ -266,11 +266,11 @@ function OrderCard({
 
     return (
         <Card className="border border-slate-200 shadow-sm overflow-hidden bg-white hover:shadow-md transition-shadow flex flex-col h-full rounded-[1.5rem] w-full">
-            <div className="p-3.5 border-b border-slate-100 bg-slate-50/50">
+            <div className="p-3.5 border-b border-slate-100 bg-slate-50">
                 <div className="flex justify-between items-start mb-2">
                     <div>
                         <div className="flex items-center gap-1.5 mb-1.5">
-                            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest bg-white/80 border border-slate-100 px-1.5 py-0.5 rounded-lg shrink-0">
+                            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest bg-white border border-slate-100 px-1.5 py-0.5 rounded-lg shrink-0">
                                 {new Date(bestellung.bestelldatum).toLocaleString('de-CH', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                             </span>
                             {bestellung.liefertermin && (
@@ -308,7 +308,7 @@ function OrderCard({
             </div>
 
             <CardContent className="p-0 flex-1 flex flex-col">
-                <div className="bg-slate-50/30 px-5 py-2.5 border-b border-slate-100 flex items-center justify-between text-[10px] uppercase font-black text-slate-400 tracking-wider">
+                <div className="bg-slate-50 px-5 py-2.5 border-b border-slate-100 flex items-center justify-between text-[10px] uppercase font-black text-slate-400 tracking-wider">
                     <span className="flex items-center gap-2">
                         <ListChecks size={12} className="text-primary" />
                         Checkliste
@@ -321,8 +321,7 @@ function OrderCard({
                         <div
                             key={item.id}
                             className={cn(
-                                "flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-slate-50/80 transition-colors",
-                                item.vorbereitet && "opacity-60 bg-slate-50/30"
+                                item.vorbereitet && "opacity-60 bg-slate-50"
                             )}
                             onClick={() => handleToggleItem(bestellung.id, item)}
                         >
@@ -377,7 +376,7 @@ function OrderCard({
                     </div>
                 </div>
 
-                <div className="p-4 bg-slate-50/30 border-t border-slate-100 mt-auto">
+                <div className="p-4 bg-slate-50 border-t border-slate-100 mt-auto">
                     <div className="flex justify-between items-center mb-2">
                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Fortschritt</span>
                         <span className="text-[9px] font-black text-slate-900">{Math.round(progress)}%</span>

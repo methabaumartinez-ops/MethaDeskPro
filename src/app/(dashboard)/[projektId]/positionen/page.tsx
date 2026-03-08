@@ -141,7 +141,7 @@ export default function PositionenListPage() {
                             </TableBody>
                         </Table>
                     ) : (
-                        <div className="py-20 text-center border-2 border-dashed border-border rounded-xl bg-muted/30">
+                        <div className="py-20 text-center border-2 border-dashed border-border rounded-xl bg-muted">
                             <ListTodo className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
                             <h3 className="text-lg font-bold text-muted-foreground">Keine Positionen gefunden</h3>
                         </div>

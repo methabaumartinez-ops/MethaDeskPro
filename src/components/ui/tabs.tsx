@@ -8,7 +8,7 @@ const Tabs = ({ children, className }: { children: React.ReactNode; className?: 
 );
 
 const TabsList = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <div className={cn('inline-flex h-12 items-center justify-center rounded-xl bg-slate-50/50 dark:bg-slate-900/50 p-1 text-slate-500 dark:text-slate-400', className)}>
+    <div className={cn('inline-flex h-12 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-900 p-1 text-slate-500 dark:text-slate-400', className)}>
         {children}
     </div>
 );

@@ -103,7 +103,7 @@ export default function MyDashboardPage() {
                 <div className="lg:col-span-2 space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {features.map((f) => (
-                            <Card key={f.title} className="bg-white/40 dark:bg-slate-900/40 border-slate-100/50 dark:border-slate-800/50 shadow-sm rounded-xl hover:bg-white/60 dark:hover:bg-slate-900/60 transition-all">
+                            <Card key={f.title} className="bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 shadow-sm rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                                 <CardContent className="p-4 flex gap-3">
                                     <div className="p-2 bg-primary/5 rounded-lg shrink-0">
                                         <f.icon className="w-4 h-4 text-primary" />
@@ -140,7 +140,7 @@ export default function MyDashboardPage() {
 
                 {/* SIDEBAR: EXAMPLES & HISTORY */}
                 <div className="space-y-6">
-                    <Card className="bg-slate-50 dark:bg-slate-900/50 border-none rounded-xl p-5 shadow-inner">
+                    <Card className="bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-5 shadow-inner">
                         <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                             <Sparkles size={12} className="text-primary" />
                             Anwendung
@@ -156,7 +156,7 @@ export default function MyDashboardPage() {
                     </Card>
 
                     <Card className="bg-white dark:bg-card border-slate-100 dark:border-slate-800 rounded-xl shadow-md overflow-hidden flex flex-col max-h-[300px]">
-                        <CardHeader className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-50 dark:border-slate-800 flex flex-row items-center justify-between shrink-0">
+                        <CardHeader className="p-4 bg-slate-50 dark:bg-slate-900 border-b border-slate-50 dark:border-slate-800 flex flex-row items-center justify-between shrink-0">
                             <div className="flex items-center gap-2">
                                 <History size={14} className="text-slate-400" />
                                 <span className="text-[10px] font-black uppercase text-slate-500">History</span>

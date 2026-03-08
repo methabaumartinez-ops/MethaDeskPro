@@ -115,7 +115,7 @@ export default function DokumentePanel({ entityId, entityType, projektId, readon
 
             {/* Inline Form */}
             {showForm && (
-                <form onSubmit={handleSubmit} className="bg-muted/30 border border-border rounded-xl p-4 space-y-3">
+                <form onSubmit={handleSubmit} className="bg-muted border border-border rounded-xl p-4 space-y-3">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <Input
                             label="Bezeichnung *"
@@ -174,7 +174,7 @@ export default function DokumentePanel({ entityId, entityType, projektId, readon
                     {dokumente.map(d => {
                         const ti = DOKUMENT_TYPEN.find(t => t.value === d.typ) || DOKUMENT_TYPEN[8];
                         return (
-                            <div key={d.id} className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-muted/30 transition-colors group">
+                            <div key={d.id} className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-muted transition-colors group">
                                 <span className="text-lg shrink-0">{ti.icon}</span>
                                 <div className="flex-1 min-w-0">
                                     {d.url ? (

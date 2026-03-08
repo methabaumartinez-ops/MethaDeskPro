@@ -227,7 +227,7 @@ export default function FuhrparkPage() {
                 {/* Controls Section (Tabs, Search, Categories, Groups) */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between gap-4 flex-wrap">
-                        <TabsList className="bg-slate-100/50">
+                        <TabsList className="bg-slate-100">
                             <TabsTrigger
                                 active={activeTab === 'fahrzeuge'}
                                 onClick={() => setActiveTab('fahrzeuge')}
@@ -333,7 +333,7 @@ export default function FuhrparkPage() {
                                 </div>
                             ) : (
                                 <Table>
-                                    <TableHeader className="bg-slate-50/50 sticky top-0 z-20 shadow-sm border-b">
+                                    <TableHeader className="bg-slate-50 sticky top-0 z-20 shadow-sm border-b">
                                         <TableRow className="hover:bg-transparent h-14">
                                             <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-500 pl-6">Bezeichnung</TableHead>
                                             <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-500">Inv.-Nr.</TableHead>
@@ -348,7 +348,7 @@ export default function FuhrparkPage() {
                                         {filteredFahrzeuge.map(item => {
                                             const statusCfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.verfuegbar;
                                             return (
-                                                <TableRow key={item.id} className="group hover:bg-slate-50/80 transition-colors h-16 border-b border-slate-100 last:border-0">
+                                                <TableRow key={item.id} className="group hover:bg-slate-50 transition-colors h-16 border-b border-slate-100 last:border-0">
                                                     <TableCell className="pl-6">
                                                         <div className="flex flex-col">
                                                             <span className="font-bold text-slate-900">{item.bezeichnung}</span>
@@ -433,7 +433,7 @@ export default function FuhrparkPage() {
                                     </div>
                                 ) : (
                                     <Table>
-                                        <TableHeader className="bg-slate-50/50">
+                                        <TableHeader className="bg-slate-50">
                                             <TableRow className="h-12">
                                                 <TableHead className="font-bold text-[10px] pl-6">FAHRZEUG</TableHead>
                                                 <TableHead className="font-bold text-[10px]">PROJEKT</TableHead>

@@ -8,9 +8,16 @@ function generateQrContent(id: string): string {
 export const LagerortService = {
     async getLagerorte(projektId?: string): Promise<Lagerort[]> {
         const url = projektId ? `/api/lagerorte?projektId=${projektId}` : '/api/lagerorte';
-                    const res = await fetch(url);
-                    if (!res.ok) throw new Error('Failed to fetch lagerorte');
-                    return res.json();
+        const res = await fetch(url);
+        if (!res.ok) {
+            let errorMsg = res.statusText;
+            try {
+                const body = await res.json();
+                if (body.error) errorMsg = body.error;
+            } catch (e) { }
+            throw new Error(`Failed to fetch lagerorte for projektId ${projektId || 'ALL'}: HTTP ${res.status} - ${errorMsg}`);
+        }
+        return res.json();
     },
 
     async getLagerortById(id: string): Promise<Lagerort | null> {

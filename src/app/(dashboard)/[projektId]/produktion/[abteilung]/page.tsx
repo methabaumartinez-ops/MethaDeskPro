@@ -141,25 +141,25 @@ export default function AbteilungPage() {
                         </div>
                     ) : filteredItems.length > 0 ? (
                         <Table>
-                            <TableHeader className="sticky top-0 bg-muted/95 backdrop-blur-md z-20 border-b border-border">
+                            <TableHeader className="sticky top-0 bg-muted z-20 border-b border-border">
                                 <TableRow className="hover:bg-transparent">
-                                    <TableHead className="w-16 px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider bg-muted/95">
+                                    <TableHead className="w-16 px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider bg-muted">
                                         KS
                                     </TableHead>
                                     <TableHead
-                                        className={cn('w-24 px-4 py-4 font-black text-[10px] uppercase tracking-wider bg-muted/95 cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('teilsystemNummer') ? 'text-orange-700' : 'text-foreground')}
+                                        className={cn('w-24 px-4 py-4 font-black text-[10px] uppercase tracking-wider bg-muted cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('teilsystemNummer') ? 'text-orange-700' : 'text-foreground')}
                                         onClick={() => handleSort('teilsystemNummer')}
                                     >
                                         TS-Nr. <span className="text-[8px] opacity-50">{getSortIcon('teilsystemNummer')}</span>
                                     </TableHead>
                                     <TableHead
-                                        className={cn('min-w-[150px] px-4 py-4 font-black text-[10px] uppercase tracking-wider bg-muted/95 cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('name') ? 'text-orange-700' : 'text-foreground')}
+                                        className={cn('min-w-[150px] px-4 py-4 font-black text-[10px] uppercase tracking-wider bg-muted cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('name') ? 'text-orange-700' : 'text-foreground')}
                                         onClick={() => handleSort('name')}
                                     >
                                         Bezeichnung <span className="text-[8px] opacity-50">{getSortIcon('name')}</span>
                                     </TableHead>
                                     <TableHead
-                                        className={cn('px-4 py-4 font-black text-[10px] uppercase tracking-wider bg-muted/95 cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('montagetermin') ? 'text-orange-700' : 'text-foreground')}
+                                        className={cn('px-4 py-4 font-black text-[10px] uppercase tracking-wider bg-muted cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('montagetermin') ? 'text-orange-700' : 'text-foreground')}
                                         onClick={() => handleSort('montagetermin')}
                                     >
                                         Montage <span className="text-[8px] opacity-50">{getSortIcon('montagetermin')}</span>
@@ -190,8 +190,12 @@ export default function AbteilungPage() {
                                                 <div className="font-bold text-sm truncate max-w-[160px]">{item.name}</div>
                                                 {item.bemerkung && <div className="text-[10px] text-muted-foreground truncate max-w-[160px] italic mt-0.5">{item.bemerkung}</div>}
                                             </TableCell>
-                                            <TableCell className={cn("p-4 text-xs font-black", isMontageterminProvisional(item) ? "text-red-600" : "text-slate-700")}>
-                                                {item.montagetermin || '—'}
+                                            <TableCell className={cn("p-4 text-xs font-black", 
+                                                item.montagetermin 
+                                                    ? (isMontageterminProvisional(item) ? "text-red-600" : "text-slate-700")
+                                                    : "text-red-600"
+                                            )}>
+                                                {item.montagetermin || 'Durch Bauleiter'}
                                             </TableCell>
                                         </TableRow>
                                     );
@@ -200,7 +204,7 @@ export default function AbteilungPage() {
                         </Table>
                     ) : (
                         <div className="py-32 text-center flex flex-col items-center">
-                            <div className="p-6 bg-muted/30 rounded-full mb-6">
+                            <div className="p-6 bg-muted rounded-full mb-6">
                                 <AbteilungIcon className="h-16 w-16 text-muted-foreground/20" />
                             </div>
                             <h3 className="text-xl font-black text-foreground tracking-tight">Keine Teilsysteme in {abteilungName}</h3>
@@ -215,7 +219,7 @@ export default function AbteilungPage() {
                     {selectedTs && (
                         <>
                             <div className="h-1.5 w-full bg-orange-500 shrink-0" />
-                            <CardHeader className="border-b bg-muted/10 pb-5">
+                            <CardHeader className="border-b bg-muted pb-5">
                                 <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-1 block">DETAILANSICHT</span>
                                 <CardTitle className="text-xl font-black flex items-center gap-2">
                                     {selectedTs.teilsystemNummer && (
@@ -246,7 +250,7 @@ export default function AbteilungPage() {
                                     />
                                 </div>
                             </div>
-                            <div className="p-5 border-t bg-muted/10 flex justify-end shrink-0">
+                            <div className="p-5 border-t bg-muted flex justify-end shrink-0">
                                 <Button
                                     onClick={handleSave}
                                     disabled={isSaving}
