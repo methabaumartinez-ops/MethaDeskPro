@@ -46,7 +46,8 @@ export async function requireAuth(allowedRoles?: UserRole[]): Promise<AuthResult
         };
     }
 
-    if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+    if (allowedRoles && allowedRoles.length > 0 && user.role !== 'superadmin' && !allowedRoles.includes(user.role)) {
+
         return {
             user: null,
             error: NextResponse.json(

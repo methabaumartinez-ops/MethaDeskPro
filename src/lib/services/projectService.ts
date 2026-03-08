@@ -3,7 +3,10 @@ import { Projekt } from '@/types';
 export const ProjectService = {
     async getProjekte(): Promise<Projekt[]> {
         const res = await fetch('/api/projekte');
-        if (!res.ok) throw new Error('Failed to fetch projects');
+        if (!res.ok) {
+            console.warn('[ProjectService] API returned', res.status, '— returning empty list');
+            return [];
+        }
         const all = await res.json() as Projekt[];
         // Filter out soft-deleted projects
         return all.filter(p => !p.deletedAt);
@@ -32,7 +35,15 @@ export const ProjectService = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(projekt)
         });
-        if (!res.ok) throw new Error('Failed to create project');
+        if (!res.ok) {
+            let errorMsg = 'Failed to create project';
+            try {
+                const errData = await res.json();
+                if (errData.details) errorMsg += `: ${errData.details}`;
+                else if (errData.error) errorMsg += `: ${errData.error}`;
+            } catch (e) {}
+            throw new Error(errorMsg);
+        }
         return await res.json();
     },
 

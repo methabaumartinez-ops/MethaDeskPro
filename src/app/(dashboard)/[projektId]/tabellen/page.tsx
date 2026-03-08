@@ -50,12 +50,15 @@ export default function TabellenPage() {
     const [itemToDelete, setItemToDelete] = useState<{ id: string, table: string } | null>(null);
 
     const tables = [
-        { id: 'projekte', label: 'Projekte', icon: LayoutList, description: 'Alle Projekte und deren Status' },
-        { id: 'teilsysteme', label: 'Teilsysteme', icon: Database, description: 'Produktionsdaten und Systeme' },
-        { id: 'lieferanten', label: 'Lieferanten', icon: Truck, description: 'Lieferantenverzeichnis' },
-        { id: 'subunternehmer', label: 'Subunternehmer', icon: Users, description: 'Subunternehmer-Verwaltung' },
-        { id: 'mitarbeiter', label: 'Mitarbeiter', icon: Users, description: 'Personaldaten' },
-        { id: 'fahrzeuge', label: 'Fahrzeuge', icon: Car, description: 'Fuhrpark und Maschinen' },
+        { id: 'projekte',        label: 'Projekte',          icon: LayoutList,  description: 'Alle Projekte und deren Status' },
+        { id: 'teilsysteme',    label: 'Teilsysteme',       icon: Database,    description: 'Produktionsdaten und Systeme' },
+        { id: 'positionen',     label: 'Positionen',        icon: LayoutList,  description: 'Positionen der Teilsysteme' },
+        { id: 'unterpositionen',label: 'Unt. Positionen',   icon: LayoutList,  description: 'Unterpositionen der Positionen' },
+        { id: 'lieferanten',    label: 'Lieferanten',       icon: Truck,       description: 'Lieferantenverzeichnis' },
+        { id: 'subunternehmer', label: 'Subunternehmer',    icon: Users,       description: 'Subunternehmer-Verwaltung' },
+        { id: 'unternehmer',    label: 'Unternehmer',       icon: Users,       description: 'Unternehmer-Verwaltung' },
+        { id: 'mitarbeiter',    label: 'Mitarbeiter',       icon: Users,       description: 'Personaldaten' },
+        { id: 'fahrzeuge',      label: 'Fahrzeuge',         icon: Car,         description: 'Fuhrpark und Maschinen' },
     ];
 
     useEffect(() => {
@@ -101,7 +104,7 @@ export default function TabellenPage() {
                             const p = projectMap.get(sys.projektId);
                             return {
                                 ...sys,
-                                Projekt: p ? `${p.projektnummer} - ${p.projektname}` : sys.projektId // Add explicit Projekt column
+                                Projekt: p ? `${p.projektnummer} - ${p.projektname}` : sys.projektId
                             };
                         }).sort((a, b) => {
                             const numA = parseInt(a.teilsystemNummer?.replace(/\D/g, '') || '0', 10);
@@ -109,28 +112,24 @@ export default function TabellenPage() {
                             return numA - numB;
                         });
                         break;
-                    case 'positionen':
-                        const allPos = await PositionService.getPositionen();
-                        const allSystemsForPos = await SubsystemService.getTeilsysteme();
-                        const sysMap = new Map(allSystemsForPos.map(s => [s.id, s]));
-
-                        // Enrich and filter
-                        result = allPos.map(pos => {
-                            const sys = sysMap.get(pos.teilsystemId);
+                    case 'positionen': {
+                        const allPos2 = await PositionService.getPositionen();
+                        const allSys2 = await SubsystemService.getTeilsysteme();
+                        const sysMap2 = new Map(allSys2.map(s => [s.id, s]));
+                        result = allPos2.map(pos => {
+                            const sys = sysMap2.get(pos.teilsystemId);
                             const p = sys ? projectMap.get(sys.projektId) : undefined;
-                            return {
-                                ...pos,
-                                Projekt: p ? `${p.projektnummer} - ${p.projektname}` : '–',
-                                TSNummer: sys ? sys.teilsystemNummer : '–',
-                                Teilsystem: sys ? `${sys.teilsystemNummer || '—'} - ${sys.name}` : '–',
-                                _projektId: p?.id // Internal for filtering
-                            };
+                            return { ...pos, Projekt: p ? `${p.projektnummer} - ${p.projektname}` : '–', TSNummer: sys?.teilsystemNummer ?? '–', _projektId: p?.id };
                         });
-
-                        if (selectedProject && selectedProject !== 'all') {
-                            result = result.filter(r => r._projektId === selectedProject);
-                        }
+                        if (selectedProject && selectedProject !== 'all') result = result.filter(r => r._projektId === selectedProject);
                         break;
+                    }
+                    case 'unterpositionen': {
+                        const raw = await fetch('/api/data/unterpositionen').then(r => r.json()).catch(() => []);
+                        result = raw;
+                        break;
+                    }
+
                     case 'material':
                         const allMat = await MaterialService.getMaterial();
                         // Need deep link: Material -> Position -> Teilsystem -> Projekt
@@ -164,6 +163,9 @@ export default function TabellenPage() {
                         break;
                     case 'subunternehmer':
                         result = await SubunternehmerService.getSubunternehmer();
+                        break;
+                    case 'unternehmer':
+                        result = await fetch('/api/data/unternehmer').then(r => r.json()).catch(() => []);
                         break;
                     case 'mitarbeiter':
                         result = await EmployeeService.getMitarbeiter();

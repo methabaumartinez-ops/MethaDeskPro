@@ -1,6 +1,8 @@
 import { DatabaseService } from './db';
 import { v4 as uuidv4 } from 'uuid';
 import type { UserRole } from '@/types';
+import { isAllowedDomain } from '@/lib/validators/authValidators';
+import { sendConfirmationEmail } from '@/lib/email/mailer';
 
 const SALT_LENGTH = 16;
 const ITERATIONS = 600000; // Current recommendation
@@ -177,10 +179,12 @@ export interface StoredUser {
     email: string;
     passwordHash: string;
     department?: string;
+    abteilung?: string;
     role: UserRole;
     createdAt: string;
     confirmed: boolean;
     confirmationToken?: string;
+    onboardingStatus?: 'pending' | 'completed' | 'skipped';
 }
 
 export interface SafeUser {
@@ -189,7 +193,9 @@ export interface SafeUser {
     nachname: string;
     email: string;
     department?: string;
+    abteilung?: string;
     role: UserRole;
+    onboardingStatus?: 'pending' | 'completed' | 'skipped';
 }
 
 function toSafeUser(user: StoredUser): SafeUser {
@@ -199,7 +205,9 @@ function toSafeUser(user: StoredUser): SafeUser {
         nachname: user.nachname,
         email: user.email,
         department: user.department,
+        abteilung: user.abteilung,
         role: user.role,
+        onboardingStatus: user.onboardingStatus ?? 'pending',
     };
 }
 
@@ -278,15 +286,17 @@ export async function login(emailStr: string, passwordStr: string): Promise<{ to
             must: [{ key: 'email', match: { value: email } }]
         });
 
-        if (users.length === 0) return { error: 'Ungültige Anmeldedaten. (Hinweis: admin@methabau.ch / admin123)' };
+        if (users.length === 0) return { error: 'Ungültige Anmeldedaten.' };
+
         const user = users[0];
 
         const valid = await verifyPassword(password, user.passwordHash);
         if (!valid) return { error: 'Ungültige Anmeldedaten.' };
 
-        if (!user.confirmed) {
+        if (user.confirmed === false) {
             return { error: 'Bitte bestätigen Sie zuerst Ihre E-Mail-Adresse.' };
         }
+
 
         const safeUser = toSafeUser(user);
         const token = await generateToken({ userId: user.id, email: user.email, role: user.role });
@@ -305,10 +315,15 @@ export async function registerUser(data: {
     vorname: string;
     nachname: string;
     email: string;
-    password: string;
-    department?: string;
+    abteilung?: string;
+    // password is no longer collected at registration — set after email confirmation
 }): Promise<{ confirmationToken: string; user: SafeUser } | { error: string }> {
     try {
+        // Domain restriction — server-side enforcement
+        if (!isAllowedDomain(data.email)) {
+            return { error: 'Nur E-Mail-Adressen von @methabau.ch oder @mansergroup.ch sind erlaubt.' };
+        }
+
         await ensureUsersCollection();
 
         // Check if user exists
@@ -319,43 +334,26 @@ export async function registerUser(data: {
             return { error: 'Ein Konto mit dieser E-Mail-Adresse existiert bereits.' };
         }
 
-        const passwordHash = await hashPassword(data.password);
         const confirmationToken = uuidv4();
         const newUser: StoredUser = {
             id: uuidv4(),
             vorname: data.vorname,
             nachname: data.nachname,
             email: data.email,
-            passwordHash,
-            department: data.department,
+            passwordHash: '', // set after email confirmation
+            abteilung: data.abteilung,
+            department: data.abteilung,
             role: 'mitarbeiter',
             createdAt: new Date().toISOString(),
             confirmed: false,
             confirmationToken,
+            onboardingStatus: 'pending',
         };
 
         await DatabaseService.upsert(COLLECTION, newUser);
 
-        // ============================================================
-        // SIMULACIÓN DE EMAIL - En producción usar un servicio real
-        // ============================================================
-        console.log('\n══════════════════════════════════════════════════════════');
-        console.log('  📧 METHABAU — Bestätigungs-E-Mail (simuliert)');
-        console.log('══════════════════════════════════════════════════════════');
-        console.log(`  An: ${data.email}`);
-        console.log(`  Betreff: Willkommen bei METHADesk Pro — E-Mail bestätigen`);
-        console.log('');
-        console.log(`  Hallo ${data.vorname} ${data.nachname},`);
-        console.log('');
-        console.log('  Vielen Dank für Ihre Registrierung bei METHADesk Pro.');
-        console.log('  Bitte bestätigen Sie Ihre E-Mail-Adresse:');
-        console.log('');
-        console.log(`  🔗 Bestätigungslink:`);
-        console.log(`     /confirm?token=${confirmationToken}`);
-        console.log('');
-        console.log('  Mit freundlichen Grüssen,');
-        console.log('  METHABAU AG');
-        console.log('══════════════════════════════════════════════════════════\n');
+        // Send branded confirmation email
+        await sendConfirmationEmail(data.email, data.vorname, confirmationToken);
 
         const safeUser = toSafeUser(newUser);
         return { confirmationToken, user: safeUser };
@@ -365,26 +363,68 @@ export async function registerUser(data: {
     }
 }
 
-export async function confirmEmail(token: string): Promise<{ token: string; user: SafeUser } | { error: string }> {
+/**
+ * Validates confirmation token and marks email as verified.
+ * Does NOT create a session — user must set password first via setPasswordAfterConfirm.
+ */
+export async function confirmEmail(token: string): Promise<{ userId: string; email: string } | { error: string }> {
     try {
         const users = await DatabaseService.list<StoredUser>(COLLECTION, {
             must: [{ key: 'confirmationToken', match: { value: token } }]
         });
 
         if (users.length === 0) {
-            return { error: 'Ungültiger Bestätigungstoken.' };
+            return { error: 'Ungültiger oder abgelaufener Bestätigungslink.' };
         }
 
         const user = users[0];
-        if (user.confirmed) {
-            return { error: 'Diese E-Mail-Adresse wurde bereits bestätigt.' };
+        if (user.confirmed && user.passwordHash) {
+            // Already fully confirmed — user likely clicked link twice
+            return { error: 'Dieser Bestätigungslink wurde bereits verwendet. Bitte melden Sie sich an.' };
         }
 
-        // Confirm user
+        // Mark email as confirmed (password still empty)
         const updatedUser: StoredUser = {
             ...user,
             confirmed: true,
-            confirmationToken: undefined,
+            // Keep confirmationToken until password is set, so set-password page can use it
+        };
+        await DatabaseService.upsert(COLLECTION, updatedUser);
+
+        return { userId: user.id, email: user.email };
+    } catch (error) {
+        console.error('Confirm email error:', error);
+        return { error: 'Bestätigung fehlgeschlagen.' };
+    }
+}
+
+/**
+ * Sets the user password after email confirmation.
+ * Token = the original confirmationToken from the email link.
+ */
+export async function setPasswordAfterConfirm(
+    token: string,
+    password: string
+): Promise<{ token: string; user: SafeUser } | { error: string }> {
+    try {
+        const users = await DatabaseService.list<StoredUser>(COLLECTION, {
+            must: [{ key: 'confirmationToken', match: { value: token } }]
+        });
+
+        if (users.length === 0) {
+            return { error: 'Ungültiger oder bereits verwendeter Bestätigungslink.' };
+        }
+
+        const user = users[0];
+        if (!user.confirmed) {
+            return { error: 'E-Mail-Adresse wurde noch nicht bestätigt.' };
+        }
+
+        const passwordHash = await hashPassword(password);
+        const updatedUser: StoredUser = {
+            ...user,
+            passwordHash,
+            confirmationToken: undefined, // invalidate token after use
         };
         await DatabaseService.upsert(COLLECTION, updatedUser);
 
@@ -393,8 +433,27 @@ export async function confirmEmail(token: string): Promise<{ token: string; user
 
         return { token: jwtToken, user: safeUser };
     } catch (error) {
-        console.error('Confirm email error:', error);
-        return { error: 'Bestätigung fehlgeschlagen.' };
+        console.error('setPasswordAfterConfirm error:', error);
+        return { error: 'Passwort konnte nicht gesetzt werden.' };
+    }
+}
+
+/**
+ * Updates the onboarding status for a user.
+ */
+export async function updateOnboardingStatus(
+    userId: string,
+    status: 'completed' | 'skipped'
+): Promise<{ success: boolean } | { error: string }> {
+    try {
+        const user = await DatabaseService.get<StoredUser>(COLLECTION, userId);
+        if (!user) return { error: 'Benutzer nicht gefunden.' };
+
+        await DatabaseService.upsert(COLLECTION, { ...user, onboardingStatus: status });
+        return { success: true };
+    } catch (error) {
+        console.error('updateOnboardingStatus error:', error);
+        return { error: 'Status konnte nicht aktualisiert werden.' };
     }
 }
 
@@ -422,9 +481,24 @@ export async function getUserFromToken(token: string): Promise<SafeUser | null> 
 
     try {
         const user = await DatabaseService.get<StoredUser>(COLLECTION, payload.userId);
-        if (!user) return null;
-        return toSafeUser(user);
+        if (user) return toSafeUser(user);
     } catch {
-        return null;
+        // DB lookup failed — fall back to JWT payload below
     }
+
+    // Fallback: token is cryptographically valid — construct SafeUser from payload
+    // Handles cases where DB is temporarily unavailable or user record is not cached
+    if (payload.userId && payload.email && payload.role) {
+        return {
+            id: payload.userId,
+            email: payload.email,
+            role: payload.role as UserRole,
+            vorname: '',
+            nachname: '',
+            onboardingStatus: 'completed',
+        };
+    }
+
+    return null;
 }
+

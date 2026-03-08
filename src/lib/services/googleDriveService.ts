@@ -99,6 +99,49 @@ export const ensureProjectFolder = async (projekt: { projektnummer?: string; pro
     }
 };
 
+/**
+ * Finds a project folder in Drive ROOT by matching the folder name pattern.
+ * Pattern: [projektnummer]_[projektname]  (e.g. "0000001_MeinProjekt")
+ * Returns the folder ID or null if not found.
+ */
+export const findProjectFolderByName = async (
+    projektnummer?: string,
+    projektname?: string
+): Promise<string | null> => {
+    const drive = getDriveClient();
+    if (!drive || !ROOT_FOLDER_ID) return null;
+
+    // Build partial name to search (just the number prefix is enough)
+    const prefix = (projektnummer || '').trim();
+    if (!prefix) return null;
+
+    try {
+        const escapedPrefix = escapeQueryValue(prefix);
+        const query = `mimeType='application/vnd.google-apps.folder' and name contains '${escapedPrefix}' and '${ROOT_FOLDER_ID}' in parents and trashed=false`;
+        const res = await (drive.files as any).list({
+            q: query,
+            fields: 'files(id, name)',
+            spaces: 'drive',
+            pageSize: 5,
+        });
+
+        if (res.data.files && res.data.files.length > 0) {
+            // Prefer exact match like "0000001_Name", fallback to first result
+            const exact = res.data.files.find((f: any) =>
+                f.name.startsWith(`${prefix}_`)
+            );
+            const found = exact || res.data.files[0];
+            console.log(`[DriveService] findProjectFolderByName: found "${found.name}" (${found.id})`);
+            return found.id;
+        }
+    } catch (e: any) {
+        console.warn('[DriveService] findProjectFolderByName error:', e.message);
+    }
+    return null;
+};
+
+
+
 const createSubfolder = async (drive: any, parentId: string, name: string) => {
     try {
         await (drive.files as any).create({
@@ -301,31 +344,60 @@ export const downloadFileFromDriveAsBuffer = async (
 };
 
 /**
- * Ensures the _MethaDeskArchives folder exists in the Drive ROOT.
- * Returns its folder ID.
+ * Ensures the MethaArchives folder structure exists in the Drive ROOT.
+ * Structure: ROOT -> MethaArchives -> [subfolder]
+ * @param subfolder  'ProjektBackup' | 'ProjekteGeloescht'
+ * Returns the ID of the target subfolder.
  */
-export const ensureArchivesFolder = async (): Promise<string> => {
+export const ensureArchivesFolder = async (
+    subfolder: 'ProjektBackup' | 'ProjekteGeloescht' = 'ProjektBackup'
+): Promise<string> => {
     const drive = getDriveClient();
     if (!drive) throw new Error('Google Drive client is not available');
     if (!ROOT_FOLDER_ID) throw new Error('GOOGLE_ROOT_FOLDER_ID is missing');
 
-    const folderName = '_MethaDeskArchives';
-    const escapedName = escapeQueryValue(folderName);
-    const query = `mimeType='application/vnd.google-apps.folder' and name='${escapedName}' and '${ROOT_FOLDER_ID}' in parents and trashed=false`;
+    // ── Step 1: Ensure MethaArchives root exists ───────────────────────
+    const rootName = 'MethaArchives';
+    const escapedRoot = escapeQueryValue(rootName);
+    const rootQuery = `mimeType='application/vnd.google-apps.folder' and name='${escapedRoot}' and '${ROOT_FOLDER_ID}' in parents and trashed=false`;
 
-    const res = await (drive.files as any).list({ q: query, fields: 'files(id)', spaces: 'drive' });
-    if (res.data.files && res.data.files.length > 0) {
-        return res.data.files[0].id;
+    let methaArchivesId: string;
+    const rootRes = await (drive.files as any).list({ q: rootQuery, fields: 'files(id)', spaces: 'drive' });
+
+    if (rootRes.data.files && rootRes.data.files.length > 0) {
+        methaArchivesId = rootRes.data.files[0].id;
+    } else {
+        const created = await (drive.files as any).create({
+            requestBody: {
+                name: rootName,
+                mimeType: 'application/vnd.google-apps.folder',
+                parents: [ROOT_FOLDER_ID],
+            },
+            fields: 'id',
+        });
+        methaArchivesId = created.data.id;
+        console.log(`[DriveService] Created MethaArchives folder: ${methaArchivesId}`);
     }
 
-    // Create if not found
-    const file = await (drive.files as any).create({
+    // ── Step 2: Ensure subfolder (ProjektBackup or ProjekteGeloescht) ──
+    const escapedSub = escapeQueryValue(subfolder);
+    const subQuery = `mimeType='application/vnd.google-apps.folder' and name='${escapedSub}' and '${methaArchivesId}' in parents and trashed=false`;
+
+    const subRes = await (drive.files as any).list({ q: subQuery, fields: 'files(id)', spaces: 'drive' });
+
+    if (subRes.data.files && subRes.data.files.length > 0) {
+        return subRes.data.files[0].id;
+    }
+
+    const subCreated = await (drive.files as any).create({
         requestBody: {
-            name: folderName,
+            name: subfolder,
             mimeType: 'application/vnd.google-apps.folder',
-            parents: [ROOT_FOLDER_ID],
+            parents: [methaArchivesId],
         },
         fields: 'id',
     });
-    return file.data.id;
+    console.log(`[DriveService] Created subfolder ${subfolder}: ${subCreated.data.id}`);
+    return subCreated.data.id;
 };
+

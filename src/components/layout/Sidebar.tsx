@@ -26,22 +26,46 @@ import {
     Sparkles,
     ChevronDown,
     ChevronRight,
+    ShieldAlert,
 } from 'lucide-react';
 import { Signature } from '@/components/shared/Signature';
-import { usePermissions } from '@/lib/hooks/usePermissions';
-import { RolePermissions } from '@/lib/permissions';
+import { useProjekt } from '@/lib/context/ProjektContext';
+import { abtCanSee, loadAbtPermissions, type PageKey } from '@/lib/config/abteilungPagePermissions';
+import { usePreviewAbteilung } from '@/lib/context/PreviewAbteilungContext';
+import { ABTEILUNGEN_CONFIG } from '@/types';
+
 
 type MenuItem = {
     title: string;
     href?: string;
     icon?: React.ElementType;
-    permission?: keyof RolePermissions;
+    pageKey?: PageKey;        // used for Abteilung-based filtering
+    alwaysVisible?: boolean; // for items that all roles should see
     subItems?: MenuItem[];
 };
 
 export function Sidebar({ projektId, className }: { projektId: string; className?: string; forceProjectSelection?: boolean }) {
     const pathname = usePathname();
-    const { can } = usePermissions();
+    const { currentUser } = useProjekt();
+    const { previewAbteilung, isPreviewMode, setPreviewAbteilung } = usePreviewAbteilung();
+    const isSuperadmin = currentUser?.role === 'superadmin';
+    const isAdmin = currentUser?.role === 'admin' || isSuperadmin;
+    const realAbteilung = (currentUser as any)?.abteilung as string | undefined;
+
+    // When in preview mode, use the simulated Abteilung; otherwise use the user's real one.
+    // Admins/superadmins without preview always see everything.
+    const effectiveAbteilung = isPreviewMode ? previewAbteilung ?? undefined : realAbteilung;
+    const applyAbtFilter = isPreviewMode || (!isAdmin); // always filter in preview mode
+
+    // Load Abteilung permissions (from localStorage, set in superadmin panel)
+    const [abtPerms, setAbtPerms] = React.useState<Record<string, PageKey[]>>({});
+    React.useEffect(() => { setAbtPerms(loadAbtPermissions()); }, []);
+
+    const canSee = (pageKey?: PageKey): boolean => {
+        if (!applyAbtFilter) return true;  // admin without preview sees all
+        if (!pageKey) return true;          // items with no pageKey are always visible
+        return abtCanSee(effectiveAbteilung, pageKey);
+    };
 
     // Detect entry from project selection page and collapse all groups except "Projekte"
     const [forceOnlyProjekte, setForceOnlyProjekte] = React.useState(false);
@@ -82,13 +106,13 @@ export function Sidebar({ projektId, className }: { projektId: string; className
                     href: `/${projektId}/teilsysteme`,
                     icon: Factory,
                     subItems: [
-                        { title: 'Planer', href: `/${projektId}/produktion/planung`, icon: PenTool },
-                        { title: 'AVOR', href: `/${projektId}/produktion/avor`, icon: ClipboardList },
-                        { title: 'Einkauf', href: `/${projektId}/produktion/einkauf`, icon: ShoppingCart },
-                        { title: 'Schlosserei', href: `/${projektId}/produktion/schlosserei`, icon: Wrench },
-                        { title: 'Blechabteilung', href: `/${projektId}/produktion/blech`, icon: Box },
-                        { title: 'Kosten', href: `/${projektId}/kosten`, permission: 'viewKosten', icon: DollarSign },
-                        { title: 'Tabellen', href: `/${projektId}/tabellen`, permission: 'read', icon: Table },
+                        { title: 'Planer',        href: `/${projektId}/produktion/planung`,     icon: PenTool,      pageKey: 'planung' as const },
+                        { title: 'AVOR',          href: `/${projektId}/produktion/avor`,        icon: ClipboardList, pageKey: 'avor' as const },
+                        { title: 'Einkauf',       href: `/${projektId}/produktion/einkauf`,     icon: ShoppingCart, pageKey: 'einkauf' as const },
+                        { title: 'Schlosserei',   href: `/${projektId}/produktion/schlosserei`, icon: Wrench,       pageKey: 'schlosserei' as const },
+                        { title: 'Blechabteilung',href: `/${projektId}/produktion/blech`,       icon: Box,          pageKey: 'blech' as const },
+                        { title: 'Kosten',        href: `/${projektId}/kosten`,                 icon: DollarSign,   pageKey: 'kosten' as const },
+                        { title: 'Tabellen',      href: `/${projektId}/tabellen`,               icon: Table,        pageKey: 'tabellen' as const },
                     ]
                 },
                 {
@@ -107,12 +131,16 @@ export function Sidebar({ projektId, className }: { projektId: string; className
                 { title: 'QR Scan', href: `/${projektId}/lager-scan`, icon: QrCode },
             ]
         },
-        { title: 'Fuhrpark', href: `/fuhrpark`, icon: Car, permission: 'viewKosten' },
+        { title: 'Fuhrpark', href: `/fuhrpark`, icon: Car },
     ];
+
+    const superadminItems: MenuItem[] = isSuperadmin ? [
+        { title: 'Rollenverwaltung', href: '/superadmin/rollen', icon: ShieldAlert },
+    ] : [];
 
     const filterAllowed = (items: MenuItem[]): MenuItem[] => {
         return items
-            .filter(item => !item.permission || can(item.permission))
+            .filter(item => canSee(item.pageKey))
             .map(item => ({
                 ...item,
                 subItems: item.subItems ? filterAllowed(item.subItems) : undefined
@@ -123,6 +151,28 @@ export function Sidebar({ projektId, className }: { projektId: string; className
 
     return (
         <aside className={cn("relative flex flex-col h-[calc(100vh-5rem)] w-64 border-r bg-white dark:bg-slate-950 dark:border-slate-800 transition-colors", className)}>
+
+            {/* Preview mode banner — Methabau Orange branding */}
+            {isPreviewMode && (
+                <div
+                    className="shrink-0 px-3 py-2.5 flex items-center justify-between gap-2 text-white text-[10px] font-bold"
+                    style={{ background: '#ff6b35' }}
+                >
+                    <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="opacity-80 shrink-0">👁 Ansicht:</span>
+                        <span className="font-black truncate">
+                            {ABTEILUNGEN_CONFIG.find(a => a.id === previewAbteilung)?.name ?? previewAbteilung}
+                        </span>
+                    </div>
+                    <button
+                        onClick={() => setPreviewAbteilung(null)}
+                        className="shrink-0 underline opacity-80 hover:opacity-100 transition-opacity"
+                    >
+                        ✕ Stop
+                    </button>
+                </div>
+            )}
+
             <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-1 pb-40">
                 {allowedItems.map((item) => (
                     <NavItem
@@ -133,6 +183,22 @@ export function Sidebar({ projektId, className }: { projektId: string; className
                         forceOnlyProjekte={forceOnlyProjekte}
                     />
                 ))}
+
+                {isSuperadmin && (
+                    <>
+                        <div className="my-2 border-t border-border/50" />
+                        <p className="px-3 text-[9px] font-black uppercase tracking-widest text-purple-500/70 mb-1">Superadmin</p>
+                        {superadminItems.map((item) => (
+                            <NavItem
+                                key={item.title}
+                                item={item}
+                                pathname={pathname}
+                                depth={0}
+                                forceOnlyProjekte={false}
+                            />
+                        ))}
+                    </>
+                )}
             </div>
 
             <div className="absolute bottom-0 left-0 right-0 p-3 bg-white dark:bg-slate-950 transition-colors z-10">

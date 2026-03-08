@@ -118,7 +118,7 @@ export default function ProjektBearbeitenPage() {
     const [showHardDelete1, setShowHardDelete1] = React.useState(false);
     const [showHardDelete2, setShowHardDelete2] = React.useState(false);
 
-    const isAdmin = currentUser?.role === 'admin';
+    const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'superadmin';
 
     const {
         register,
@@ -257,6 +257,9 @@ export default function ProjektBearbeitenPage() {
     // ── HARD DELETE (admin, double confirmation) ──────────────────────────────
     const handleHardDeleteConfirmed = async () => {
         setIsDeleting(true);
+        toast.info('Archivierung läuft... Bitte warten. Drive-Dateien werden heruntergeladen und verpackt.', {
+            title: 'Archivierung startet'
+        });
         try {
             const res = await fetch(`/api/projekte/${id}/export-delete`, { method: 'POST' });
 
@@ -266,23 +269,26 @@ export default function ProjektBearbeitenPage() {
             }
 
             const blob = await res.blob();
+            const archiveFileId = res.headers.get('X-Archive-Drive-File-Id');
+            const driveFiles = res.headers.get('X-Drive-Files-Downloaded');
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `projekt_${projektNummer || id}_export.json`;
+            a.download = `archiv_${projektNummer || id}_${new Date().toISOString().slice(0, 10)}.zip`;
             document.body.appendChild(a);
             a.click();
             a.remove();
             URL.revokeObjectURL(url);
 
-            toast.success('Projekt gelöscht', { 
-                title: 'Erfolg'
-            });
+            toast.success(
+                `Archiv in Drive gespeichert (${driveFiles ?? '?'} Dateien). Projekt gelöscht.`,
+                { title: '✅ Archivierung abgeschlossen' }
+            );
             router.push('/projekte');
         } catch (error: any) {
             console.error('Failed to export/delete project:', error);
-            toast.error('Löschen fehlgeschlagen', { 
-                title: 'Fehler' 
+            toast.error(error?.message || 'Löschen fehlgeschlagen', { 
+                title: 'Fehler beim Archivieren'
             });
         } finally {
             setIsDeleting(false);

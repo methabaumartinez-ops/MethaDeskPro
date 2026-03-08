@@ -170,8 +170,8 @@ export default function ProjektErfassenPage() {
             router.push('/projekte');
         } catch (error: any) {
             console.error('Failed to create project:', error);
-            toast.error('Fehler beim Erstellen des Projekts', { 
-                title: 'Fehler'
+            toast.error(error?.message || 'Fehler beim Erstellen des Projekts', { 
+                title: 'Error de Guardado'
             });
         }
     };

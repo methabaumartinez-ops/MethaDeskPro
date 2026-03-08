@@ -20,7 +20,15 @@ CREATE TABLE IF NOT EXISTS projekte (
     "deletedAt" TEXT,
     archived BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now()
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    kanton TEXT,
+    "bimKonstrukteur" TEXT,
+    "createdBy" TEXT,
+    "createdAt" TEXT,
+    "imageUrl" TEXT,
+    "infoBlattUrl" TEXT,
+    "infoBlattName" TEXT,
+    "driveFolderId" TEXT
 );
 
 -- 2) TEILSYSTEME
@@ -452,6 +460,10 @@ BEGIN
             'users','dashboard_requests','dokumente'
         ])
     LOOP
+        EXECUTE format(
+            'DROP TRIGGER IF EXISTS set_updated_at ON %I;',
+            tbl
+        );
         EXECUTE format(
             'CREATE TRIGGER set_updated_at BEFORE UPDATE ON %I FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();',
             tbl

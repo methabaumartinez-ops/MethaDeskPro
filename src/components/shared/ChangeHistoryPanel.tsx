@@ -39,9 +39,10 @@ export function ChangeHistoryPanel({ entityId, className }: ChangeHistoryPanelPr
         setLoading(true);
         fetch(`/api/changelog?entityId=${entityId}`)
             .then(r => r.ok ? r.json() : [])
-            .then(setEntries)
+            .then(data => setEntries(Array.isArray(data) ? data : []))
             .catch(() => setEntries([]))
             .finally(() => setLoading(false));
+
     }, [entityId]);
 
     const visible = expanded ? entries : entries.slice(0, VISIBLE_COUNT);
@@ -90,7 +91,8 @@ export function ChangeHistoryPanel({ entityId, className }: ChangeHistoryPanelPr
                                     </span>
                                 </div>
                                 <div className="space-y-0.5">
-                                    {entry.changedFields.map((f, i) => (
+                                    {(entry.changedFields ?? []).map((f, i) => (
+
                                         <div key={i} className="flex items-baseline gap-1 text-[9px] leading-tight">
                                             <span className="font-bold text-muted-foreground uppercase tracking-tight shrink-0">
                                                 {f.label}:

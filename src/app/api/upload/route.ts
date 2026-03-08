@@ -23,7 +23,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 });
         }
         const user = await getUserFromToken(token);
-        if (!user || (user.role !== 'admin' && user.role !== 'projektleiter')) {
+        if (!user || (!['admin', 'projektleiter', 'superadmin'].includes(user.role))) {
             return NextResponse.json({ error: 'Keine Berechtigung zum Hochladen von Dateien.' }, { status: 403 });
         }
 

@@ -24,7 +24,7 @@ export async function POST(
         if (!token) return NextResponse.json({ error: 'Nicht authentifiziert.' }, { status: 401 });
 
         const user = await getUserFromToken(token);
-        if (!user || user.role !== 'admin') {
+        if (!user || !['admin', 'superadmin'].includes(user.role)) {
             return NextResponse.json({ error: 'Nur Administratoren können Projekte archivieren.' }, { status: 403 });
         }
 
@@ -36,30 +36,36 @@ export async function POST(
         // ─────────────────────────────────────────────────
         // 1. Gather all project data from database
         // ─────────────────────────────────────────────────
-        const [
-            teilsysteme,
-            lagerorte,
-            teams,
-            tasks,
-        ] = await Promise.all([
-            DatabaseService.list<any>('teilsysteme').then(items => items.filter((i: any) => i.projektId === id)),
-            DatabaseService.list<any>('lagerorte').then(items => items.filter((i: any) => i.projektId === id)),
-            DatabaseService.list<any>('teams').then(items => items.filter((i: any) => i.projektId === id)),
-            DatabaseService.list<any>('tasks').then(items => items.filter((i: any) => i.projektId === id)),
+        // Helper: list from table silently if it doesn't exist
+        // ─────────────────────────────────────────────────
+        const tryList = async (table: string, filterFn: (items: any[]) => any[]) => {
+            try {
+                const items = await DatabaseService.list<any>(table);
+                return filterFn(items);
+            } catch (e: any) {
+                console.warn(`[Archive] Table '${table}' not found or error — skipping. (${e.message})`);
+                return [];
+            }
+        };
+
+        const [teilsysteme, lagerorte, teams, tasks] = await Promise.all([
+            tryList('teilsysteme', items => items.filter(i => i.projektId === id)),
+            tryList('lagerorte',   items => items.filter(i => i.projektId === id)),
+            tryList('teams',       items => items.filter(i => i.projektId === id)),
+            tryList('tasks',       items => items.filter(i => i.projektId === id)),
         ]);
 
         const tsIds = teilsysteme.map((ts: any) => ts.id);
 
         const [positionen, dokumente, kosten_stunden, kosten_material] = await Promise.all([
-            DatabaseService.list<any>('positionen').then(items => items.filter((i: any) => tsIds.includes(i.teilsystemId))),
-            DatabaseService.list<any>('dokumente').then(items => items.filter((i: any) => i.projektId === id || tsIds.includes(i.entityId))),
-            DatabaseService.list<any>('ts_stunden').then(items => items.filter((i: any) => i.projektId === id)),
-            DatabaseService.list<any>('ts_materialkosten').then(items => items.filter((i: any) => i.projektId === id)),
+            tryList('positionen',      items => items.filter(i => tsIds.includes(i.teilsystemId))),
+            tryList('dokumente',       items => items.filter(i => i.projektId === id || tsIds.includes(i.entityId))),
+            tryList('ts_stunden',      items => items.filter(i => i.projektId === id)),
+            tryList('ts_materialkosten', items => items.filter(i => i.projektId === id)),
         ]);
 
         const posIds = positionen.map((p: any) => p.id);
-        const unterpositionen = await DatabaseService.list<any>('unterpositionen')
-            .then(items => items.filter((i: any) => posIds.includes(i.positionId)));
+        const unterpositionen = await tryList('unterpositionen', items => items.filter(i => posIds.includes(i.positionId)));
 
         const exportData = {
             exportedAt: new Date().toISOString(),
@@ -86,35 +92,74 @@ export async function POST(
         // ─────────────────────────────────────────────────
         // 3. Download Drive files and add to ZIP
         // ─────────────────────────────────────────────────
-        if (project.driveFolderId) {
+        let driveFolderId: string | null = project.driveFolderId || null;
+        let driveFilesTotal = 0;
+        let driveFilesOk = 0;
+        let driveNote = '';
+
+        // Fallback: if driveFolderId not stored in DB, search Drive by project number
+        if (!driveFolderId && project.projektnummer) {
             try {
-                const driveFiles = await listFolderFilesRecursive(project.driveFolderId, 'archivos_drive');
+                const { findProjectFolderByName } = await import('@/lib/services/googleDriveService');
+                driveFolderId = await findProjectFolderByName(project.projektnummer, project.projektname);
+                if (driveFolderId) {
+                    console.log(`[Archive] Found Drive folder by name search: ${driveFolderId}`);
+                    // Save it back to DB for future operations
+                    await DatabaseService.upsert('projekte', { ...project, driveFolderId });
+                }
+            } catch (e: any) {
+                console.warn('[Archive] Could not search Drive by name:', e.message);
+            }
+        }
+
+        if (driveFolderId) {
+            try {
+                console.log(`[Archive] Downloading Drive folder: ${driveFolderId}`);
+                const driveFiles = await listFolderFilesRecursive(driveFolderId, 'archivos_drive');
+                driveFilesTotal = driveFiles.length;
                 const driveFolder = zip.folder('archivos_drive');
 
-                const BATCH_SIZE = 5; // Download in batches to avoid rate limits
+                const BATCH_SIZE = 5;
                 for (let i = 0; i < driveFiles.length; i += BATCH_SIZE) {
                     const batch = driveFiles.slice(i, i + BATCH_SIZE);
                     await Promise.all(
                         batch.map(async (file) => {
                             try {
                                 const buffer = await downloadFileFromDriveAsBuffer(file.id, file.mimeType);
-                                // Preserve directory structure in ZIP
                                 const relativePath = file.path.startsWith('archivos_drive/')
                                     ? file.path.slice('archivos_drive/'.length)
                                     : file.path;
                                 driveFolder?.file(relativePath, buffer);
+                                driveFilesOk++;
                             } catch (e) {
-                                console.warn(`[Archive] Could not download file ${file.id} (${file.name}):`, e);
+                                console.warn(`[Archive] Could not download ${file.name}:`, e);
                                 driveFolder?.file(`ERROR_${file.name}.txt`, `Could not download: ${String(e)}`);
                             }
                         })
                     );
                 }
+                driveNote = `Drive: ${driveFilesOk}/${driveFilesTotal} Dateien heruntergeladen. Folder ID: ${driveFolderId}`;
+                console.log(`[Archive] ${driveNote}`);
             } catch (driveErr) {
-                console.warn('[Archive] Drive download failed, continuing without Drive files:', driveErr);
-                zip.file('DRIVE_ERROR.txt', `No se pudieron descargar los archivos de Drive: ${String(driveErr)}`);
+                driveNote = `Drive-Fehler: ${String(driveErr)}`;
+                console.warn('[Archive] Drive download failed:', driveErr);
+                zip.file('DRIVE_ERROR.txt', driveNote);
             }
+        } else {
+            driveNote = 'Kein Google Drive-Ordner für dieses Projekt gefunden (driveFolderId fehlt und Suche ergab kein Ergebnis).';
+            console.warn('[Archive]', driveNote);
+            zip.file('DRIVE_HINWEIS.txt', driveNote);
         }
+
+        // Summary file always added
+        zip.file('ARCHIVIERUNGS_INFO.txt', [
+            `Archiviert am: ${new Date().toLocaleString('de-CH')}`,
+            `Projekt: ${project.projektname} (${project.projektnummer})`,
+            `Exportiert von: ${user.email || user.id}`,
+            `DB-Daten: Projekt, ${teilsysteme.length} TS, ${positionen.length} Pos, ${unterpositionen.length} UnterPos`,
+            driveNote,
+        ].join('\n'));
+
 
         // ─────────────────────────────────────────────────
         // 4. Generate ZIP buffer
@@ -128,7 +173,7 @@ export async function POST(
         // ─────────────────────────────────────────────────
         // 5. Upload ZIP to _MethaDeskArchives in Drive
         // ─────────────────────────────────────────────────
-        const archivesFolderId = await ensureArchivesFolder();
+        const archivesFolderId = await ensureArchivesFolder('ProjektBackup');
         const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
         const zipName = `${project.projektnummer || 'P'}_${(project.projektname || 'Projekt').replace(/[^a-zA-Z0-9_-]/g, '_')}_${dateStr}.zip`;
 

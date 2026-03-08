@@ -5,6 +5,7 @@ import { ProjektProvider } from "@/lib/context/ProjektContext";
 import { AlertProvider } from "@/components/shared/AlertProvider";
 import { ToastProvider } from "@/components/shared/ToastProvider";
 import { ChatAssistant } from "@/components/shared/ChatAssistant";
+import { PreviewAbteilungProvider } from "@/lib/context/PreviewAbteilungContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,11 +23,13 @@ export default function RootLayout({
     <html lang="de">
       <body className="antialiased">
         <ProjektProvider>
-          <AlertProvider>
-            <ToastProvider>
-              {children}
-            </ToastProvider>
-          </AlertProvider>
+          <PreviewAbteilungProvider>
+            <AlertProvider>
+              <ToastProvider>
+                {children}
+              </ToastProvider>
+            </AlertProvider>
+          </PreviewAbteilungProvider>
         </ProjektProvider>
       </body>
     </html>

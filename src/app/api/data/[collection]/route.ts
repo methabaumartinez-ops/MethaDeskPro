@@ -5,7 +5,7 @@ import { requireAuth } from '@/lib/helpers/requireAuth';
 
 const ALLOWED_COLLECTIONS = [
     'projekte', 'teilsysteme', 'positionen', 'unterpositionen',
-    'material', 'mitarbeiter', 'workers', 'fahrzeuge', 'fahrzeug_reservierungen', 'reservierungen', 'lieferanten', 'subunternehmer',
+    'material', 'mitarbeiter', 'workers', 'fahrzeuge', 'fahrzeug_reservierungen', 'reservierungen', 'lieferanten', 'subunternehmer', 'unternehmer',
     'teams', 'team_members', 'tasks', 'subtasks',
     'ausfuehrung_tasks', 'ausfuehrung_subtasks', 'ausfuehrung_task_resources', 'ausfuehrung_resources'
 ];

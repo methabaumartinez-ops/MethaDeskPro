@@ -63,20 +63,42 @@ export class SupabaseDatabaseService {
      */
     static async upsert<T extends { id?: string }>(tableName: string, item: T): Promise<T> {
         const id = item.id || uuidv4();
-        const payload = { ...item, id };
+        let payload = { ...item, id };
+        let retries = 0;
+        const maxRetries = 10;
 
-        const { data, error } = await supabaseAdmin
-            .from(tableName)
-            .upsert(payload as any, { onConflict: 'id' })
-            .select()
-            .single();
+        while (retries < maxRetries) {
+            const { data, error } = await supabaseAdmin
+                .from(tableName)
+                .upsert(payload as any, { onConflict: 'id' })
+                .select()
+                .single();
 
-        if (error) {
-            console.error(`[SupabaseDB] Error upserting to ${tableName}:`, error.message);
-            throw new Error(`Failed to upsert to ${tableName}: ${error.message}`);
+            if (!error) {
+                return (data || payload) as unknown as T;
+            }
+
+            // PGRST204: Could not find the 'column_name' column of 'table_name' in the schema cache
+            if (error.code === 'PGRST204') {
+                const match = error.message.match(/'([^']+)' column/);
+                if (match && match[1]) {
+                    const badColumn = match[1];
+                    console.warn(`[SupabaseDB] Stripping unknown column '${badColumn}' from payload for table '${tableName}'`);
+                    
+                    // Remove the offending column from the payload format entirely
+                    const { [badColumn as keyof typeof payload]: _, ...cleanPayload } = payload;
+                    payload = cleanPayload as any;
+                    
+                    retries++;
+                    continue;
+                }
+            }
+
+            console.error(`[SupabaseDB] Error upserting to ${tableName}:`, JSON.stringify(error, null, 2));
+            throw new Error(`Failed to upsert to ${tableName}: ${error.message} - Code: ${error.code} - Details: ${error.details || 'None'} - Hint: ${error.hint || 'None'}`);
         }
 
-        return (data || payload) as unknown as T;
+        throw new Error(`[SupabaseDB] Exceeded max retries cleaning unknown columns for ${tableName}`);
     }
 
     /**

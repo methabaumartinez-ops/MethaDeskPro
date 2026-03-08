@@ -14,11 +14,10 @@ export async function GET() {
         const data = await DatabaseService.list('projekte');
         return NextResponse.json(data);
     } catch (error) {
-        console.error('API Error fetching projects:', error);
-        return NextResponse.json(
-            { error: 'Failed to fetch projects' },
-            { status: 500 }
-        );
+        // Log the error but don't crash the app — return empty list
+        // This handles temporary DB connectivity issues (e.g. Supabase not yet configured)
+        console.error('[API/projekte] DB unavailable, returning empty list:', error instanceof Error ? error.message : error);
+        return NextResponse.json([]);
     }
 }
 
@@ -58,7 +57,7 @@ export async function POST(req: Request) {
     } catch (error) {
         console.error('API Error creating project:', error);
         return NextResponse.json(
-            { error: 'Failed to create project' },
+            { error: 'Failed to create project', details: error instanceof Error ? error.message : String(error) },
             { status: 500 }
         );
     }

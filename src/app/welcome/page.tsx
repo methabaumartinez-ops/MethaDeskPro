@@ -14,14 +14,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useProjekt } from '@/lib/context/ProjektContext';
 import { Signature } from '@/components/shared/Signature';
 import { Header } from '@/components/layout/Header';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { cn } from '@/lib/utils';
+import { OnboardingTour, useOnboarding } from '@/components/onboarding/OnboardingTour';
 
 export default function WelcomePage() {
-    const { loading } = useProjekt();
+    const { loading, currentUser } = useProjekt();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [firstProjectId, setFirstProjectId] = useState<string>('methabau');
     const router = useRouter();
+
+    const { show: showOnboarding, complete, skip } = useOnboarding(currentUser?.onboardingStatus, currentUser?.id);
 
     useEffect(() => {
         async function fetchFirstProject() {
@@ -53,6 +54,11 @@ export default function WelcomePage() {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-background flex flex-col relative overflow-hidden">
+            {/* Onboarding tour — only shows on first login */}
+            {showOnboarding && (
+                <OnboardingTour onComplete={complete} onSkip={skip} />
+            )}
+
             <Header
                 onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 hideProjectInfo={true}
@@ -155,7 +161,7 @@ export default function WelcomePage() {
             <footer className="py-6 bg-white/30 dark:bg-slate-950/30 backdrop-blur-sm self-stretch flex flex-row items-end justify-between px-8 relative w-full flex-shrink-0 z-20">
                 <Signature />
                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest opacity-60">
-                    © {new Date().getFullYear()} METHABAU AG. v1.3
+                    © {new Date().getFullYear()} METHABAU AG. v1.4
                 </p>
             </footer>
         </div>

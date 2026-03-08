@@ -19,6 +19,11 @@ export interface RolePermissions {
 }
 
 export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
+    superadmin: {
+        read: true, create: true, update: true, delete: true,
+        statusChange: true, qrMove: true, viewKosten: true, editKosten: true,
+        viewDokumente: true, uploadDokumente: true, manageUsers: true, manageLagerorte: true,
+    },
     admin: {
         read: true, create: true, update: true, delete: true,
         statusChange: true, qrMove: true, viewKosten: true, editKosten: true,
@@ -80,10 +85,12 @@ export function hasPermission(
     role: UserRole | string | undefined,
     permission: keyof RolePermissions
 ): boolean {
+    if (role === 'superadmin') return true; // Superadmin has all permissions
     return getPermissions(role)[permission] === true;
 }
 
 export const ROLE_LABELS: Record<UserRole, string> = {
+    superadmin: 'Super Admin',
     admin: 'Administrator',
     projektleiter: 'Projektleiter',
     bauprojektleiter: 'Bau-Projektleiter',

@@ -5,6 +5,7 @@
 // ============================================================
 
 export type UserRole =
+  | 'superadmin'
   | 'admin'
   | 'projektleiter'
   | 'bauprojektleiter'
@@ -16,14 +17,18 @@ export type UserRole =
   | 'produktion'
   | 'mitarbeiter';
 
+
 export interface User {
   id: string;
   vorname: string;
   nachname: string;
   email: string;
   department?: string;
+  abteilung?: string;
   role: UserRole;
+  onboardingStatus?: 'pending' | 'completed' | 'skipped';
 }
+
 
 // ============================================================
 // ENUMS CONTROLADOS (Wertlisten)
