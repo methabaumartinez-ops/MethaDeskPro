@@ -111,9 +111,9 @@ export function TeilsystemTable({
                     <TableHeader className="bg-muted/50">
                         <TableRow className="border-b-2 border-border hover:bg-transparent">
                             {/* 1. TS Nummer */}
-                            <TableHead className="w-20 px-4 py-4 font-black text-foreground text-center text-[10px] uppercase tracking-wider">TS-Nr.</TableHead>
+                            <TableHead className="w-24 px-4 py-4 font-black text-foreground text-center text-[10px] uppercase tracking-wider">TS-Nr.</TableHead>
                             {/* 2. TS Name */}
-                            <TableHead className="min-w-[200px] px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">TS Name</TableHead>
+                            <TableHead className="min-w-[200px] w-[35%] px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">TS Name</TableHead>
                             {/* 2b. Kostenstelle */}
                             <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">KS</TableHead>
                             {/* 3. Lieferdatum */}
@@ -124,10 +124,10 @@ export function TeilsystemTable({
                             <TableHead className="w-14 px-4 py-4 font-black text-foreground text-center text-[10px] uppercase tracking-wider">QR</TableHead>
                             {/* 6. Abteilung */}
                             <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider">Abteilung</TableHead>
-                            {/* 7. Status */}
-                            <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider w-40">Status</TableHead>
-                            {/* Arrow */}
-                            <TableHead className="w-10 px-4 py-4" />
+                            {/* Status */}
+                            <TableHead className="px-4 py-4 font-black text-foreground text-[10px] uppercase tracking-wider w-36">Status</TableHead>
+                            {/* Actions (Only if editable) */}
+                            {editable && <TableHead className="w-10 px-4 py-4" />}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -138,7 +138,7 @@ export function TeilsystemTable({
                             return (
                                 <TableRow
                                     key={item.id}
-                                    className="group hover:bg-orange-50/50 transition-colors cursor-pointer border-b border-border/50"
+                                    className="group hover:bg-orange-500/10 transition-colors cursor-pointer border-b border-border/50"
                                     onClick={() => router.push(`/${projektId}/teilsysteme/${item.id}${fromParam}`)}
                                 >
                                     {/* 1. TS-Nr. */}
@@ -220,21 +220,22 @@ export function TeilsystemTable({
                                         )}
                                     </TableCell>
 
-                                    {/* Arrow */}
-                                    <TableCell className="p-4 text-right">
-                                        <div className="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            {canEdit && (
-                                                <button
-                                                    onClick={(e) => handleDeleteClick(e, item)}
-                                                    className="p-1.5 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors"
-                                                    title="Teilsystem löschen"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
-                                            )}
-                                            <ArrowRight className="h-4 w-4 text-orange-500" />
-                                        </div>
-                                    </TableCell>
+                                    {/* Actions */}
+                                    {editable && (
+                                        <TableCell className="p-4 text-right">
+                                            <div className="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                {canEdit && (
+                                                    <button
+                                                        onClick={(e) => handleDeleteClick(e, item)}
+                                                        className="p-1.5 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors"
+                                                        title="Teilsystem löschen"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                    )}
                                 </TableRow>
                             );
                         })}
