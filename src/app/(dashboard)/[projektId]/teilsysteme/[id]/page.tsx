@@ -150,7 +150,7 @@ export default function TeilsystemDetailPage() {
             {/* Header / Navigation Section */}
             <div className="flex justify-between items-center -mt-2 mb-2 px-2">
                 <div className="flex items-center gap-4">
-                    <Button onClick={handleBack} className="h-9 px-6 bg-orange-500 hover:bg-orange-600 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-500/20 rounded-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                    <Button variant="metha-orange" onClick={handleBack} className="h-9 px-6 font-black uppercase text-[10px] tracking-widest shadow-lg rounded-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
                         <ArrowLeft className="h-4 w-4" />
                         Zurück
                     </Button>

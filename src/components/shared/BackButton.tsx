@@ -39,10 +39,10 @@ export function BackButton({ href, className, label = 'Zurück' }: BackButtonPro
     return (
         <Button
             onClick={handleClick}
-            variant="ghost"
+            variant="metha-orange"
             size="sm"
             className={cn(
-                "h-8 px-3 text-white/70 hover:text-white hover:bg-white/10 rounded-lg flex items-center gap-2 transition-all group",
+                "h-8 px-3 rounded-lg flex items-center gap-2 transition-all group",
                 className
             )}
         >

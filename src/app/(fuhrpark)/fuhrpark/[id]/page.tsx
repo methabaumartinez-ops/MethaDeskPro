@@ -261,7 +261,10 @@ export default function FahrzeugDetailPage() {
                 </div>
                 <p className="text-foreground font-bold text-lg">{error || 'Fahrzeug nicht gefunden'}</p>
                 <Link href="/fuhrpark">
-                    <Button variant="ghost" className="mt-4">Zurück zum Fuhrpark</Button>
+                    <Button variant="metha-orange" className="mt-4 font-bold">
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Zurück zum Fuhrpark
+                    </Button>
                 </Link>
             </div>
         );

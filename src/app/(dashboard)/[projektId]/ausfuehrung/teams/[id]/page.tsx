@@ -68,11 +68,11 @@ export default function TeamDetailPage({ params }: { params: Promise<{ projektId
             {/* Header / Nav */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <Button
-                    variant="ghost"
-                    className="text-slate-500 hover:text-orange-600 pl-0 -ml-2"
+                    variant="metha-orange"
+                    className="font-bold pl-3 h-8 gap-2 rounded-lg"
                     onClick={() => router.push(`/${projektId}/ausfuehrung/teams`)}
                 >
-                    <ArrowLeft className="h-4 w-4 mr-2" /> Zurück zur Übersicht
+                    <ArrowLeft className="h-4 w-4" /> Zurück zur Übersicht
                 </Button>
 
                 <div className="flex items-center gap-2">

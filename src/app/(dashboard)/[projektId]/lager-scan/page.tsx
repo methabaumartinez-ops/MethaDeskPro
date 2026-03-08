@@ -232,7 +232,7 @@ export default function LagerScanSeite() {
             <div className="flex justify-between items-center mb-6 px-2">
                 <div className="flex items-center gap-6">
                     <Link href={`/${projektId}/lagerorte`}>
-                        <Button className="h-9 px-6 bg-orange-500 hover:bg-orange-600 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-500/20 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                        <Button variant="metha-orange" className="h-9 px-6 font-black uppercase text-[10px] tracking-widest shadow-lg rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
                             <ArrowLeft className="h-4 w-4" />
                             Zurück
                         </Button>
@@ -325,7 +325,7 @@ export default function LagerScanSeite() {
                         <QrScanner onScan={handleEntityScan} label="" />
                     </CardContent>
                     <CardFooter className="border-t bg-muted/20 px-6 py-4">
-                        <Button variant="ghost" onClick={() => setStep('idle')} className="font-bold gap-2">
+                        <Button variant="metha-orange" onClick={() => setStep('idle')} className="font-bold gap-2">
                             <ArrowLeft className="h-4 w-4" />
                             Zurück
                         </Button>
@@ -467,7 +467,7 @@ export default function LagerScanSeite() {
                         </div>
                     </CardContent>
                     <CardFooter className="border-t bg-muted/20 px-6 py-4">
-                        <Button variant="outline" onClick={() => setStep('scan-entity')} className="font-black uppercase text-[10px] tracking-widest h-10 px-6 rounded-full border-2 border-slate-200 hover:bg-slate-50 transition-all gap-2">
+                        <Button variant="metha-orange" onClick={() => setStep('scan-entity')} className="font-black uppercase text-[10px] tracking-widest h-10 px-6 rounded-full transition-all gap-2">
                             <ArrowLeft className="h-4 w-4" />
                             Zurück
                         </Button>
@@ -497,7 +497,7 @@ export default function LagerScanSeite() {
                         ))}
                     </CardContent>
                     <CardFooter className="border-t bg-muted/20 px-6 py-4 flex justify-between">
-                        <Button variant="ghost" onClick={() => setStep('scan-lagerort')} className="font-bold gap-2">
+                        <Button variant="metha-orange" onClick={() => setStep('scan-lagerort')} className="font-bold gap-2">
                             <ArrowLeft className="h-4 w-4" />
                             Zurück
                         </Button>

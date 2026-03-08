@@ -100,7 +100,7 @@ export default function UnterpositionDetailPage() {
             <div className="flex justify-between items-center -mt-2 mb-2 px-2">
                 <div className="flex items-center gap-4">
                     <Link href={`/${projektId}/positionen/${unterposition.positionId}`}>
-                        <Button className="h-9 px-6 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100 rounded-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                        <Button variant="metha-orange" className="h-9 px-6 font-black uppercase text-[10px] tracking-widest shadow-lg rounded-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
                             <ArrowLeft className="h-4 w-4" />
                             Zurück
                         </Button>

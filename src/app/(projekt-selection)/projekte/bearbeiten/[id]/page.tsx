@@ -308,7 +308,7 @@ export default function ProjektBearbeitenPage() {
             <div className="max-w-4xl mx-auto py-12 px-4 text-center">
                 <h1 className="text-2xl font-bold text-foreground mb-4">Projekt nicht gefunden</h1>
                 <Link href="/projekte">
-                    <Button variant="outline">Zurück zur Projektwahl</Button>
+                    <Button variant="metha-orange">Zurück zur Projektwahl</Button>
                 </Link>
             </div>
         );
@@ -316,7 +316,7 @@ export default function ProjektBearbeitenPage() {
 
     return (
         <div className="max-w-4xl mx-auto space-y-6 py-12 px-4 pb-20">
-            <Link href="/projekte" className="inline-flex items-center text-sm font-bold text-slate-500 hover:text-primary transition-colors">
+            <Link href="/projekte" className="inline-flex items-center text-sm font-bold text-slate-500 hover:text-[#FF6B00] transition-colors">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Zurück zur Projektwahl
             </Link>

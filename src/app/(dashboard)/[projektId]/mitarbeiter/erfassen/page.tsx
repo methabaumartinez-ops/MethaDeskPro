@@ -74,9 +74,11 @@ export default function MitarbeiterErfassenPage() {
 
     return (
         <div className="w-full space-y-6">
-            <Link href={`/${projektId}/mitarbeiter`} className="inline-flex items-center text-sm font-bold text-slate-500 hover:text-primary transition-colors">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Zurück zur Liste
+            <Link href={`/${projektId}/mitarbeiter`} className="inline-block mb-4">
+                <Button variant="metha-orange" className="font-bold">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Zurück zur Liste
+                </Button>
             </Link>
             <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Mitarbeiter hinzufügen</h1>
             <form onSubmit={handleSubmit(onSubmit)}>

@@ -93,14 +93,15 @@ export default function ProfilPage() {
             <Header />
             <div className="pt-16">
                 <main className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8">
-                    {/* Back button */}
-                    <button
+                    <Button
+                        variant="metha-orange"
+                        size="sm"
                         onClick={goBack}
-                        className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-primary transition-colors mb-6"
+                        className="flex items-center gap-2 mb-6 font-bold"
                     >
                         <ArrowLeft className="h-4 w-4" />
                         Zurück
-                    </button>
+                    </Button>
 
                     {/* Profile Header Card */}
                     <Card className="shadow-2xl border-none mb-6 overflow-hidden">

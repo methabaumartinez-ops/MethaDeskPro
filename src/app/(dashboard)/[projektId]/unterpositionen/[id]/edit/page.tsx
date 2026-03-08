@@ -265,7 +265,7 @@ export default function UnterpositionEditPage() {
 
     return (
         <div className="w-full space-y-6 pb-8 animate-in fade-in duration-500">
-            <Link href={`/${projektId}/unterpositionen/${id}`} className="inline-flex items-center text-sm font-bold text-muted-foreground hover:text-primary transition-colors">
+            <Link href={`/${projektId}/unterpositionen/${id}`} className="inline-flex items-center text-sm font-bold text-orange-600 hover:text-orange-700 transition-colors bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-200 shadow-sm mb-2">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Zurück zur Unterposition
             </Link>

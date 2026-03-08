@@ -219,12 +219,11 @@ export function SuperadminSidebar() {
 
             {/* ── Footer ────────────────────────────────────── */}
             <div className="p-3 border-t border-white/8">
-                <Link
-                    href="/projekte"
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs text-slate-500 hover:text-white hover:bg-white/5 transition-all"
-                >
-                    <LogOut className="h-3.5 w-3.5 rotate-180" />
-                    Zurück zur App
+                <Link href="/projekte" className="block w-full">
+                    <Button variant="metha-orange" className="w-full flex items-center justify-center gap-2 font-bold py-2.5 h-auto">
+                        <LogOut className="h-4 w-4 rotate-180" />
+                        Zurück zur App
+                    </Button>
                 </Link>
             </div>
         </aside>
