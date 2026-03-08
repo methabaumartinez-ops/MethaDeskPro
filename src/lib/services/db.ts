@@ -61,7 +61,23 @@ export class DatabaseService {
      * List items from a collection
      */
     static async list<T>(collectionName: string, filter?: any): Promise<T[]> {
-        if (this.useSupabase) return SupabaseDatabaseService.list<T>(collectionName, filter);
+        if (this.useSupabase) {
+            try {
+                return await SupabaseDatabaseService.list<T>(collectionName, filter);
+            } catch (err: any) {
+                // Fallback to Qdrant if Supabase credentials are not configured
+                const isAuthError = err?.message?.includes('Invalid authentication credentials') ||
+                    err?.message?.includes('not set') ||
+                    err?.message?.includes('SUPABASE');
+                if (isAuthError) {
+                    console.warn(`[DatabaseService] Supabase auth failed for '${collectionName}' — falling back to Qdrant`);
+                    // fall through to Qdrant below
+                } else {
+                    throw err;
+                }
+            }
+        }
+
         if (this.useMock) {
             console.log(`[DatabaseService] Mock list: ${collectionName}`, filter);
             let result: any[] = [];
@@ -150,7 +166,17 @@ export class DatabaseService {
      * Get a single item by ID
      */
     static async get<T>(collectionName: string, id: string): Promise<T | null> {
-        if (this.useSupabase) return SupabaseDatabaseService.get<T>(collectionName, id);
+        if (this.useSupabase) {
+            try {
+                return await SupabaseDatabaseService.get<T>(collectionName, id);
+            } catch (err: any) {
+                const isAuthError = err?.message?.includes('Invalid authentication credentials') ||
+                    err?.message?.includes('not set') || err?.message?.includes('SUPABASE');
+                if (isAuthError) {
+                    console.warn(`[DatabaseService] Supabase auth failed for get '${collectionName}' — falling back to Qdrant`);
+                } else { throw err; }
+            }
+        }
         if (this.useMock) {
             const all = await this.list<T>(collectionName);
             return (all as any[]).find(item => item.id === id) || null;
@@ -182,7 +208,17 @@ export class DatabaseService {
      * Create or Update an item
      */
     static async upsert<T extends { id?: string }>(collectionName: string, item: T): Promise<T> {
-        if (this.useSupabase) return SupabaseDatabaseService.upsert<T>(collectionName, item);
+        if (this.useSupabase) {
+            try {
+                return await SupabaseDatabaseService.upsert<T>(collectionName, item);
+            } catch (err: any) {
+                const isAuthError = err?.message?.includes('Invalid authentication credentials') ||
+                    err?.message?.includes('not set') || err?.message?.includes('SUPABASE');
+                if (isAuthError) {
+                    console.warn(`[DatabaseService] Supabase auth failed for upsert '${collectionName}' — falling back to Qdrant`);
+                } else { throw err; }
+            }
+        }
         if (this.useMock) {
             const id = item.id || uuidv4();
             const newItem = { ...item, id };
