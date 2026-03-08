@@ -6,10 +6,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { ProjectService } from '@/lib/services/projectService';
 import { Teilsystem, Projekt } from '@/types';
-import { Layers } from 'lucide-react';
+import { Layers, Hammer, Factory } from 'lucide-react';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { TeilsystemTable } from '@/components/shared/TeilsystemTable';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 
 export default function TeilsystemeListPage() {
     const { projektId } = useParams() as { projektId: string };
@@ -26,6 +28,7 @@ export default function TeilsystemeListPage() {
     const [project, setProject] = useState<Projekt | null>(null);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('alle');
 
     useEffect(() => {
         const loadData = async () => {
@@ -52,6 +55,9 @@ export default function TeilsystemeListPage() {
         return matchesSearch;
     });
 
+    const baumeisterItems = filteredItems.filter(item => item.ks === '1' || String(item.ks).toLowerCase().includes('baumeister'));
+    const produktionItems = filteredItems.filter(item => item.ks === '2' || String(item.ks).toLowerCase().includes('produkt'));
+
     const autocompleteItems = items.map(i => ({
         id: i.id,
         label: `${i.teilsystemNummer ?? ''} — ${i.name}`.trim(),
@@ -70,32 +76,92 @@ export default function TeilsystemeListPage() {
                 ctaHref={`/${projektId}/teilsysteme/erfassen`}
             />
 
-            <Card className="shadow-xl border-2 border-border overflow-hidden rounded-2xl">
-                <CardContent className="p-0">
-                    {loading ? (
-                        <div className="py-24 flex flex-col items-center justify-center space-y-4">
-                            <div className="h-12 w-12 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
-                            <p className="text-sm font-black text-muted-foreground uppercase tracking-widest">Laden...</p>
-                        </div>
-                    ) : filteredItems.length > 0 ? (
-                        <TeilsystemTable
-                            items={filteredItems}
-                            projektId={projektId}
-                            projekt={project}
-                        />
-                    ) : (
-                        <div className="py-32 text-center flex flex-col items-center">
-                            <div className="p-6 bg-muted/30 rounded-full mb-6">
-                                <Layers className="h-16 w-16 text-muted-foreground/20" />
+            <Tabs className="w-full">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                    <TabsList className="bg-white shadow-sm border border-slate-100 p-1.5 h-auto rounded-2xl">
+                        <TabsTrigger 
+                            active={activeTab === 'alle'} 
+                            onClick={() => setActiveTab('alle')} 
+                            className="px-6 py-2.5 rounded-xl transition-all"
+                        >
+                            <div className="flex items-center gap-2">
+                                <Layers className="w-4 h-4" />
+                                Alle
+                                <Badge className="ml-2 bg-slate-100 text-slate-500 hover:bg-slate-200 border-none h-5 px-1.5 font-black text-[10px]">
+                                    {filteredItems.length}
+                                </Badge>
                             </div>
-                            <h3 className="text-xl font-black text-foreground tracking-tight">Keine Teilsysteme gefunden</h3>
-                            <p className="text-sm text-muted-foreground max-w-xs mt-2 font-medium">
-                                Ändern Sie Ihre Suche o. erfassen Sie ein neues Teilsystem in diesem Projekt.
-                            </p>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            active={activeTab === 'baumeister'} 
+                            onClick={() => setActiveTab('baumeister')} 
+                            className="px-6 py-2.5 rounded-xl transition-all"
+                        >
+                            <div className="flex items-center gap-2">
+                                <Hammer className="w-4 h-4" />
+                                Baumeister
+                                <Badge className={activeTab === 'baumeister' ? "ml-2 bg-white/50 text-orange-900 border-none h-5 px-1.5 font-black text-[10px]" : "ml-2 bg-orange-100 text-orange-600 border-none h-5 px-1.5 font-black text-[10px]"}>
+                                    {baumeisterItems.length}
+                                </Badge>
+                            </div>
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            active={activeTab === 'produktion'} 
+                            onClick={() => setActiveTab('produktion')} 
+                            className="px-6 py-2.5 rounded-xl transition-all"
+                        >
+                            <div className="flex items-center gap-2">
+                                <Factory className="w-4 h-4" />
+                                Produktion
+                                <Badge className={activeTab === 'produktion' ? "ml-2 bg-white/50 text-orange-900 border-none h-5 px-1.5 font-black text-[10px]" : "ml-2 bg-blue-100 text-blue-600 border-none h-5 px-1.5 font-black text-[10px]"}>
+                                    {produktionItems.length}
+                                </Badge>
+                            </div>
+                        </TabsTrigger>
+                    </TabsList>
+                </div>
+
+                <TabsContent active={activeTab === 'alle'} className="mt-0">
+                    {renderTableContent(filteredItems, loading, projektId, project)}
+                </TabsContent>
+                <TabsContent active={activeTab === 'baumeister'} className="mt-0">
+                    {renderTableContent(baumeisterItems, loading, projektId, project)}
+                </TabsContent>
+                <TabsContent active={activeTab === 'produktion'} className="mt-0">
+                    {renderTableContent(produktionItems, loading, projektId, project)}
+                </TabsContent>
+            </Tabs>
         </div>
+    );
+}
+
+function renderTableContent(displayItems: Teilsystem[], loading?: boolean, projektId?: string, project?: Projekt | null) {
+    return (
+        <Card className="shadow-xl border-2 border-border overflow-hidden rounded-[2rem]">
+            <CardContent className="p-0">
+                {loading ? (
+                    <div className="py-24 flex flex-col items-center justify-center space-y-4">
+                        <div className="h-12 w-12 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
+                        <p className="text-sm font-black text-muted-foreground uppercase tracking-widest">Laden...</p>
+                    </div>
+                ) : displayItems.length > 0 ? (
+                    <TeilsystemTable
+                        items={displayItems}
+                        projektId={projektId || ''}
+                        projekt={project}
+                    />
+                ) : (
+                    <div className="py-32 text-center flex flex-col items-center">
+                        <div className="p-6 bg-muted/30 rounded-full mb-6">
+                            <Layers className="h-16 w-16 text-muted-foreground/20" />
+                        </div>
+                        <h3 className="text-xl font-black text-foreground tracking-tight">Keine Teilsysteme gefunden</h3>
+                        <p className="text-sm text-muted-foreground max-w-xs mt-2 font-medium">
+                            Ändern Sie Ihre Suche o. erfassen Sie ein neues Teilsystem in diesem Bereich.
+                        </p>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
     );
 }
