@@ -375,7 +375,7 @@ export default function TeilsystemDetailPage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                 {/* Positions Table (Left - 5 columns) */}
                 <div className="lg:col-span-5 flex flex-col">
-                    <Card className="shadow-lg border-2 border-border overflow-hidden rounded-3xl flex flex-col h-full">
+                    <Card className="shadow-lg border-2 border-border overflow-hidden rounded-3xl flex flex-col h-full bg-white dark:bg-card">
                         <CardHeader className="border-b border-border flex flex-row justify-between items-center py-3 bg-muted px-4">
                             <CardTitle className="text-sm flex items-center gap-2 font-black uppercase tracking-wider text-muted-foreground">
                                 <ListTodo className="h-4 w-4 text-primary" />
@@ -394,7 +394,7 @@ export default function TeilsystemDetailPage() {
                             {positionen.length > 0 ? (
                                 <div className="overflow-auto max-h-[440px]">
                                     <Table className="border-none rounded-none">
-                                        <TableHeader className="bg-background sticky top-0 z-10">
+                                        <TableHeader className="bg-white dark:bg-card sticky top-0 z-10">
                                             <TableRow className="border-b-2 border-border">
                                                 <TableHead className="pl-4 font-black text-foreground uppercase text-[9px] tracking-widest">Nr.</TableHead>
                                                 <TableHead className="font-black text-foreground uppercase text-[9px] tracking-widest">Name</TableHead>
@@ -518,7 +518,7 @@ export default function TeilsystemDetailPage() {
             </Card>
 
             {/* Bottom Section: Dokumente (Full Width) */}
-            <Card className="shadow-sm border-2 border-border rounded-3xl overflow-hidden">
+            <Card className="shadow-sm border-2 border-border rounded-3xl overflow-hidden bg-white dark:bg-card">
                 <CardHeader className="border-b border-border py-4 px-6 bg-muted">
                     <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                         <FileText className="h-4 w-4" />

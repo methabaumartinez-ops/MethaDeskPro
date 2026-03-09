@@ -269,7 +269,7 @@ export default function PositionDetailPage() {
 
             {/* Bottom: Unterpositionen (Full Width) */}
 
-            <Card className="shadow-lg border-2 border-border overflow-hidden">
+            <Card className="shadow-lg border-2 border-border overflow-hidden bg-white dark:bg-card">
                 <CardHeader className="py-4 px-6 bg-muted border-b border-border flex flex-row items-center justify-between">
                     <CardTitle className="text-lg font-black flex items-center gap-3">
                         <ListTodo className="h-5 w-5 text-primary" />
@@ -287,7 +287,7 @@ export default function PositionDetailPage() {
                 <CardContent className="p-0">
                     <div className="overflow-x-auto">
                         <Table className="border-none">
-                            <TableHeader className="bg-background">
+                            <TableHeader className="bg-white dark:bg-card">
                                 <TableRow className="border-b-2 border-border hover:bg-transparent">
                                     <TableHead className="w-24 px-6 py-4 font-black text-foreground">Pos-Nr.</TableHead>
                                     <TableHead className="px-6 py-4 font-black text-foreground">Bezeichnung</TableHead>
@@ -413,7 +413,7 @@ export default function PositionDetailPage() {
                         entityType="position"
                     />
 
-                    <Card className="shadow-sm border-2 border-border overflow-hidden">
+                    <Card className="shadow-sm border-2 border-border overflow-hidden bg-white dark:bg-card">
                         <CardHeader className="py-2.5 px-4 bg-muted border-b border-border">
                             <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                                 <FileSpreadsheet className="h-3.5 w-3.5" />

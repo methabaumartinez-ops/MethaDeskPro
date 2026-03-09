@@ -352,7 +352,7 @@ export default function UnterpositionDetailPage() {
                         entityType="unterposition"
                     />
 
-                    <Card className="shadow-sm border-2 border-border overflow-hidden">
+                    <Card className="shadow-sm border-2 border-border overflow-hidden bg-white dark:bg-card">
                         <CardHeader className="py-2.5 px-4 bg-muted border-b border-border text-center">
                             <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center justify-center gap-2">
                                 <FileSpreadsheet className="h-3.5 w-3.5" />
