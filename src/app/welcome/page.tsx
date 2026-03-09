@@ -53,16 +53,32 @@ export default function WelcomePage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-background flex flex-col relative overflow-hidden">
+        <div 
+            className="min-h-screen text-white flex flex-col relative overflow-hidden"
+            style={{
+                backgroundImage: "url('/construction_bg.png')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                backgroundAttachment: 'fixed',
+            }}
+        >
+            {/* Dark overlay for text readability */}
+            <div className="absolute inset-0 bg-slate-950/85 pointer-events-none z-0" />
+
             {/* Onboarding tour — only shows on first login */}
             {showOnboarding && (
-                <OnboardingTour onComplete={complete} onSkip={skip} />
+                <div className="relative z-50">
+                    <OnboardingTour onComplete={complete} onSkip={skip} />
+                </div>
             )}
 
-            <Header
-                onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                hideProjectInfo={true}
-            />
+            <div className="relative z-40">
+                <Header
+                    onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    hideProjectInfo={true}
+                />
+            </div>
 
             <div className="flex pt-16 w-full">
                 <main className="flex-1 relative z-10 flex flex-col items-center justify-center px-4 py-8 min-h-[calc(100vh-4rem)]">
@@ -74,13 +90,13 @@ export default function WelcomePage() {
                         {/* Welcome Text */}
                         <div className="text-center space-y-2">
                             <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-primary">Willkommen zurück</h2>
-                            <h1 className="text-2xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
+                            <h1 className="text-2xl md:text-4xl font-black text-white tracking-tight leading-none">
                                 Was machen wir <br />
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400">
                                     heute als Nächstes?
                                 </span>
                             </h1>
-                            <p className="text-[13px] text-slate-500 font-medium max-w-md mx-auto leading-relaxed opacity-80">
+                            <p className="text-[13px] text-slate-300 font-medium max-w-md mx-auto leading-relaxed opacity-80">
                                 Wähle deinen Arbeitsbereich. Wir sind bereit, deine Projekte effizienter zu gestalten.
                             </p>
                         </div>
@@ -90,26 +106,26 @@ export default function WelcomePage() {
                             {/* ACTION 1: PROJECTS */}
                             <div className="flex flex-col items-center gap-6">
                                 <Card
-                                    className="w-full group relative overflow-hidden bg-white dark:bg-card border border-slate-100 dark:border-slate-800 shadow-xl hover:border-primary/30 transition-all duration-500 cursor-pointer rounded-2xl"
+                                    className="w-full group relative overflow-hidden bg-slate-900/50 border border-slate-800 shadow-xl hover:border-primary/30 transition-all duration-500 cursor-pointer rounded-2xl backdrop-blur-sm"
                                     onClick={() => handleNavigate('/projekte')}
                                 >
                                     <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-700" />
                                     <CardContent className="p-5 flex flex-col items-center text-center space-y-3 relative z-10">
-                                        <div className="p-3.5 bg-primary/5 rounded-xl text-primary group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-500">
+                                        <div className="p-3.5 bg-primary/10 rounded-xl text-primary group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-500">
                                             <Briefcase size={28} className="stroke-[2.5]" />
                                         </div>
                                         <div className="space-y-1">
-                                            <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">Arbeiten am Projekt</h3>
-                                            <p className="text-[12px] text-slate-500 font-medium leading-tight opacity-70">
+                                            <h3 className="text-lg font-black text-white tracking-tight">Arbeiten am Projekt</h3>
+                                            <p className="text-[12px] text-slate-400 font-medium leading-tight opacity-90">
                                                 Wähle ein Projekt aus, verwalte Teilsysteme, Positionen und steuere deine Baustellen.
                                             </p>
                                         </div>
-                                        <Button className="w-full h-9 rounded-lg font-black uppercase tracking-widest group-hover:shadow-lg group-hover:shadow-primary/20 transition-all text-[10px]">
+                                        <Button className="w-full h-9 rounded-lg font-black uppercase tracking-widest bg-primary hover:bg-orange-600 group-hover:shadow-lg group-hover:shadow-primary/20 transition-all text-[10px] text-white border-0">
                                             Projekte öffnen <ArrowRight className="ml-2 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                                         </Button>
                                     </CardContent>
                                 </Card>
-                                <div className="flex items-center gap-2 text-black dark:text-black">
+                                <div className="flex items-center gap-2 text-slate-300">
                                     <Building2 size={16} />
                                     <span className="text-[10px] font-black uppercase tracking-[0.2em]">METHABAU Infrastructure</span>
                                 </div>
@@ -118,7 +134,7 @@ export default function WelcomePage() {
                             {/* ACTION 2: DASHBOARD */}
                             <div className="flex flex-col items-center gap-6">
                                 <Card
-                                    className="w-full group relative overflow-hidden bg-slate-900 border-none shadow-xl transition-all duration-500 cursor-pointer rounded-2xl"
+                                    className="w-full group relative overflow-hidden bg-slate-900/50 border border-slate-800 shadow-xl hover:border-primary/30 transition-all duration-500 cursor-pointer rounded-2xl backdrop-blur-sm"
                                     onClick={() => handleNavigate(`/${firstProjectId}/my-dashboard`)}
                                 >
                                     <div className="absolute bottom-0 right-0 w-28 h-28 bg-primary/10 blur-2xl rounded-full -mb-14 -mr-14" />
@@ -128,19 +144,19 @@ export default function WelcomePage() {
                                         </div>
                                         <div className="space-y-1">
                                             <h3 className="text-lg font-black text-white tracking-tight">Mein Dashboard</h3>
-                                            <p className="text-[12px] text-slate-400 font-medium leading-tight opacity-70">
+                                            <p className="text-[12px] text-slate-400 font-medium leading-tight opacity-90">
                                                 Nutze den KI-Builder, um deine repetitiven Aufgaben zu automatisieren und Widgets zu erstellen.
                                             </p>
                                         </div>
                                         <Button
                                             variant="outline"
-                                            className="w-full h-9 rounded-lg font-black uppercase tracking-widest border-white/10 text-white hover:bg-white hover:text-slate-900 transition-all text-[10px]"
+                                            className="w-full h-9 rounded-lg font-black uppercase tracking-widest bg-white text-slate-900 hover:bg-slate-100 hover:text-slate-900 border-0 transition-all text-[10px]"
                                         >
                                             Constructor öffnen <ArrowRight className="ml-2 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                                         </Button>
                                     </CardContent>
                                 </Card>
-                                <div className="flex items-center gap-2 text-black dark:text-black">
+                                <div className="flex items-center gap-2 text-slate-300">
                                     <Cpu size={16} />
                                     <span className="text-[10px] font-black uppercase tracking-[0.2em]">AI Powered Engine</span>
                                 </div>
@@ -158,9 +174,9 @@ export default function WelcomePage() {
                 )}
             </div>
 
-            <footer className="py-6 bg-white/30 dark:bg-slate-950/30 backdrop-blur-sm self-stretch flex flex-row items-end justify-between px-8 relative w-full flex-shrink-0 z-20">
+            <footer className="py-6 bg-slate-950/40 backdrop-blur-sm self-stretch flex flex-row items-end justify-between px-8 relative w-full flex-shrink-0 z-20 border-t border-slate-800/50">
                 <Signature />
-                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest opacity-60">
+                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest opacity-80">
                     © {new Date().getFullYear()} METHABAU AG. v1.4
                 </p>
             </footer>
