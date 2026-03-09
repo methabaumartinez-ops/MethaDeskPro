@@ -1,49 +1,36 @@
-export type TaskStatus = 'offen' | 'in_arbeit' | 'blockiert' | 'fertig';
-export type SubtaskStatus = 'offen' | 'in_arbeit' | 'fertig';
-export type ResourceType = 'material' | 'machine' | 'document' | 'link' | 'other';
-export type Priority = 'niedrig' | 'mittel' | 'hoch' | 'kritisch';
+/**
+ * src/types/ausfuehrung.ts
+ *
+ * Re-exports and extensions for the Ausfuehrung (execution) module.
+ * Task, Team, TaskStatus, and Priority are sourced from index.ts (single source of truth).
+ * Ausfuehrung-specific types (Worker, Subtask, Resource, etc.) are defined here.
+ */
 
-export interface Team {
-    id: string;
-    projektId: string;
-    name: string;
-    description?: string;
-    members: string[]; // UUIDs of Workers
-    createdAt: string;
-    updatedAt: string;
-}
+// ─── Re-export from index.ts to avoid type duplication ───────────────────────
+export type { Task, Team, TaskStatus, TaskPriority as Priority } from './index';
+
+// ─── Ausfuehrung-specific status types (distinct from TaskStatus) ─────────────
+// These exist in the DB as lowercase values. They will be normalized in a future migration.
+export type SubtaskStatus = 'Offen' | 'In Arbeit' | 'Erledigt'
+    | 'offen' | 'in_arbeit' | 'fertig'; // legacy lowercase DB values
+
+export type ResourceType = 'material' | 'machine' | 'document' | 'link' | 'other';
 
 export interface Worker {
     id: string;
-    projektId?: string; // Optional if workers are global or per project
+    projektId?: string;
     fullName: string;
     role?: string;
     active: boolean;
 }
 
-export interface Task {
-    id: string;
-    projektId: string;
-    teamId: string; // FK to Team
-    teilsystemId?: string; // FK to Teilsystem (Optional)
-    title: string;
-    description?: string;
-    status: TaskStatus;
-    priority?: Priority;
-    startDate?: string;
-    dueDate?: string;
-    createdBy?: string;
-    createdAt: string;
-    updatedAt: string;
-}
-
 export interface Subtask {
     id: string;
-    taskId: string; // FK to Task
+    taskId: string;
     title: string;
     description?: string;
     status?: SubtaskStatus;
-    assignedWorkerId?: string; // FK to Worker
+    assignedWorkerId?: string;
     orderIndex: number;
     createdAt: string;
     updatedAt: string;
@@ -61,7 +48,7 @@ export interface Resource {
 
 export interface TaskResource {
     id: string;
-    taskId?: string; // Either taskId or subtaskId should be set
+    taskId?: string;
     subtaskId?: string;
     resourceId: string;
     quantity?: number;

@@ -194,8 +194,8 @@ export const mockPositionen: Position[] = [
 export const mockMaterial: Material[] = [
     {
         id: 'm1',
-        positionId: 'pos1',
-        name: 'Stahlträger HEB 200 - S235JR',
+        teilsystemId: 'ts2605',
+        name: 'Stahltraeger HEB 200 - S235JR',
         hersteller: 'ArcelorMittal',
         menge: 12,
         einheit: 'Stk',
@@ -205,7 +205,7 @@ export const mockMaterial: Material[] = [
     },
     {
         id: 'm2',
-        positionId: 'pos1', // Reusing same position for demo
+        teilsystemId: 'ts2605',
         name: 'Kopfplatten 20mm',
         hersteller: 'Sager AG',
         menge: 24,
@@ -214,9 +214,9 @@ export const mockMaterial: Material[] = [
     },
     {
         id: 'm3',
-        positionId: 'pos1',
+        teilsystemId: 'ts2605',
         name: 'Schraubensets M24',
-        hersteller: 'Würth',
+        hersteller: 'Wuerth',
         menge: 100,
         einheit: 'Stk',
         status: 'verbaut',

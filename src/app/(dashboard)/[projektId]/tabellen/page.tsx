@@ -65,15 +65,15 @@ export default function TabellenPage() {
     const [itemToDelete, setItemToDelete] = useState<{ id: string, table: string } | null>(null);
 
     const tables = [
-        { id: 'projekte',        label: 'Projekte',          icon: LayoutList,  description: 'Alle Projekte und deren Status' },
-        { id: 'teilsysteme',    label: 'Teilsysteme',       icon: Database,    description: 'Produktionsdaten und Systeme' },
-        { id: 'positionen',     label: 'Positionen',        icon: LayoutList,  description: 'Positionen der Teilsysteme' },
-        { id: 'unterpositionen',label: 'Unt. Positionen',   icon: LayoutList,  description: 'Unterpositionen der Positionen' },
-        { id: 'lieferanten',    label: 'Lieferanten',       icon: Truck,       description: 'Lieferantenverzeichnis' },
-        { id: 'subunternehmer', label: 'Subunternehmer',    icon: Users,       description: 'Subunternehmer-Verwaltung' },
-        { id: 'unternehmer',    label: 'Unternehmer',       icon: Users,       description: 'Unternehmer-Verwaltung' },
-        { id: 'mitarbeiter',    label: 'Mitarbeiter',       icon: Users,       description: 'Personaldaten' },
-        { id: 'fahrzeuge',      label: 'Fahrzeuge',         icon: Car,         description: 'Fuhrpark und Maschinen' },
+        { id: 'projekte', label: 'Projekte', icon: LayoutList, description: 'Alle Projekte und deren Status' },
+        { id: 'teilsysteme', label: 'Teilsysteme', icon: Database, description: 'Produktionsdaten und Systeme' },
+        { id: 'positionen', label: 'Positionen', icon: LayoutList, description: 'Positionen der Teilsysteme' },
+        { id: 'unterpositionen', label: 'Unt. Positionen', icon: LayoutList, description: 'Unterpositionen der Positionen' },
+        { id: 'lieferanten', label: 'Lieferanten', icon: Truck, description: 'Lieferantenverzeichnis' },
+        { id: 'subunternehmer', label: 'Subunternehmer', icon: Users, description: 'Subunternehmer-Verwaltung' },
+        { id: 'unternehmer', label: 'Unternehmer', icon: Users, description: 'Unternehmer-Verwaltung' },
+        { id: 'mitarbeiter', label: 'Mitarbeiter', icon: Users, description: 'Personaldaten' },
+        { id: 'fahrzeuge', label: 'Fahrzeuge', icon: Car, description: 'Fuhrpark und Maschinen' },
     ];
 
     useEffect(() => {
@@ -147,24 +147,18 @@ export default function TabellenPage() {
 
                     case 'material':
                         const allMat = await MaterialService.getMaterial();
-                        // Need deep link: Material -> Position -> Teilsystem -> Projekt
-                        // Fetch positions if not already
-                        const posRes = await PositionService.getPositionen();
-                        const posMap = new Map(posRes.map(p => [p.id, p]));
-
+                        // Material links directly to Teilsystem via teilsystemId
                         const sysRes = await SubsystemService.getTeilsysteme();
                         const sysMapMat = new Map(sysRes.map(s => [s.id, s]));
 
                         result = allMat.map(m => {
-                            const pos = m.positionId ? posMap.get(m.positionId) : undefined;
-                            const sys = pos ? sysMapMat.get(pos.teilsystemId) : undefined;
+                            const sys = m.teilsystemId ? sysMapMat.get(m.teilsystemId) : undefined;
                             const p = sys ? projectMap.get(sys.projektId) : undefined;
                             return {
                                 ...m,
                                 Projekt: p ? `${p.projektnummer} - ${p.projektname}` : '–',
                                 TSNummer: sys ? sys.teilsystemNummer : '–',
                                 Teilsystem: sys ? `${sys.teilsystemNummer || '—'} - ${sys.name}` : '–',
-                                Position: pos ? pos.name : '–',
                                 _projektId: p?.id
                             };
                         });
@@ -393,7 +387,7 @@ export default function TabellenPage() {
             } else if (itemToDelete.table === 'mitarbeiter') {
                 await EmployeeService.deleteMitarbeiter(itemToDelete.id);
             }
-            
+
             toast.success('Eintrag gelöscht');
             window.location.reload();
         } catch (error) {

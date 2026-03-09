@@ -73,7 +73,8 @@ export default function GlobalEinkaufPage() {
                     }
 
                     tsPositions.forEach((pos: Position) => {
-                        const posMaterialien = materialien.filter((m: Material) => m.positionId === pos.id);
+                        // Filter materials by teilsystemId (Material no longer has positionId)
+                        const posMaterialien = materialien.filter((m: Material) => m.teilsystemId === ts.id);
 
                         if (posMaterialien.length === 0) {
                             joined.push({

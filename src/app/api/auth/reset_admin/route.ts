@@ -38,10 +38,10 @@ export async function GET() {
         const adminPasswordHash = await hashPassword(newPassword);
 
         if (users.length > 0) {
-            const adminUser = users[0];
+            const adminUser = users[0] as Record<string, any>;
             adminUser.passwordHash = adminPasswordHash;
             adminUser.confirmed = true;
-            await DatabaseService.upsert('users', adminUser);
+            await DatabaseService.upsert('users', adminUser as any);
             return NextResponse.json({ message: `Admin reset to ${newPassword}` });
         } else {
             const adminUser = {

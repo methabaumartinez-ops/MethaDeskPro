@@ -45,9 +45,9 @@ export async function POST(req: Request) {
         response.cookies.set('methabau_token', result.token, {
             httpOnly: true,
             secure: isProduction,
-            sameSite: 'lax',
+            sameSite: 'strict',
             path: '/',
-            maxAge: 60 * 60 * 24 * 7, // 7 dias
+            maxAge: 60 * 60 * 24 * 7, // 7 Tage
         });
 
         return response;

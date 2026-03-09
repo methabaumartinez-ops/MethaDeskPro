@@ -1,5 +1,9 @@
 import 'server-only';
 import { createClient } from '@supabase/supabase-js';
+import { validateEnv } from '@/lib/env';
+
+// Fail-fast: throws at startup if required env vars are missing
+validateEnv();
 
 // ============================================================
 // Supabase Admin Client — Self-Hosted on Easypanel/VPS

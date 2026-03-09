@@ -87,15 +87,20 @@ export default function TaskDetailPage({ params }: { params: Promise<{ projektId
 
     const handleTaskStatusWorkflow = async () => {
         if (!task) return;
-        const nextStatus: Record<TaskStatus, TaskStatus> = {
-            'offen': 'in_arbeit',
-            'in_arbeit': 'fertig',
-            'blockiert': 'offen',
-            'fertig': 'offen'
+        const nextStatus: Partial<Record<TaskStatus, TaskStatus>> = {
+            'Offen': 'In Arbeit',
+            'offen': 'In Arbeit', // legacy fallback
+            'In Arbeit': 'Erledigt',
+            'in_arbeit': 'Erledigt', // legacy fallback
+            'Blockiert': 'Offen',
+            'blockiert': 'Offen', // legacy fallback
+            'Erledigt': 'Offen',
+            'fertig': 'Offen', // legacy fallback
         };
-        const updated = await TaskService.updateTaskStatus(task.id, nextStatus[task.status]);
+        const resolved = nextStatus[task.status] ?? 'Offen';
+        const updated = await TaskService.updateTaskStatus(task.id, resolved);
         setTask(updated);
-        toast.success(`Task-Status geändert: ${nextStatus[task.status]}`);
+        toast.success(`Task-Status geaendert: ${resolved}`);
     };
 
     const handleSubtaskStatus = async (stId: string, currentStatus: SubtaskStatus) => {

@@ -89,10 +89,10 @@ export default function TasksPage({ params }: { params: Promise<{ projektId: str
 
     const statusOptions = [
         { value: 'all', label: 'Alle Status' },
-        { value: 'offen', label: 'Offen' },
-        { value: 'in_arbeit', label: 'In Arbeit' },
-        { value: 'blockiert', label: 'Blockiert' },
-        { value: 'fertig', label: 'Fertig' },
+        { value: 'Offen', label: 'Offen' },
+        { value: 'In Arbeit', label: 'In Arbeit' },
+        { value: 'Blockiert', label: 'Blockiert' },
+        { value: 'Erledigt', label: 'Fertig' },
     ];
 
     return (

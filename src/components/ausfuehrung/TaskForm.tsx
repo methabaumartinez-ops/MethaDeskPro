@@ -51,8 +51,8 @@ export function TaskForm({ projektId, taskToEdit, onSuccess, onCancel }: TaskFor
             description: taskToEdit?.description || '',
             teamId: taskToEdit?.teamId || '',
             teilsystemId: taskToEdit?.teilsystemId || '',
-            status: taskToEdit?.status || 'offen',
-            priority: taskToEdit?.priority || 'mittel'
+            status: taskToEdit?.status || 'Offen',
+            priority: taskToEdit?.priority || 'Mittel'
         }
     });
 
@@ -137,7 +137,7 @@ export function TaskForm({ projektId, taskToEdit, onSuccess, onCancel }: TaskFor
                         taskId: savedTaskId,
                         title: subtasksDraft[i].title,
                         orderIndex: i,
-                        status: 'offen'
+                        status: 'Offen'
                     });
                 }
                 toast.success('Neue Aufgabe wurde erfolgreich erstellt.');
@@ -221,11 +221,11 @@ export function TaskForm({ projektId, taskToEdit, onSuccess, onCancel }: TaskFor
                                 onChange={(e) => field.onChange(e.target.value)}
                                 disabled={isLoading}
                                 options={[
-                                    { label: 'Wählen...', value: '' },
-                                    { label: 'Niedrig', value: 'niedrig' },
-                                    { label: 'Mittel', value: 'mittel' },
-                                    { label: 'Hoch', value: 'hoch' },
-                                    { label: 'Kritisch', value: 'kritisch' }
+                                    { label: 'Waehlen...', value: '' },
+                                    { label: 'Niedrig', value: 'Niedrig' },
+                                    { label: 'Mittel', value: 'Mittel' },
+                                    { label: 'Hoch', value: 'Hoch' },
+                                    { label: 'Kritisch', value: 'Kritisch' }
                                 ]}
                             />
                         )}

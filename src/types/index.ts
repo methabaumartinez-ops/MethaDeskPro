@@ -588,14 +588,19 @@ export interface TeamMember {
   createdAt?: string;
 }
 
-export type TaskStatus = 'Offen' | 'In Arbeit' | 'Blockiert' | 'Erledigt' | 'Abgerechnet';
-export type TaskPriority = 'Niedrig' | 'Mittel' | 'Hoch';
+// Canonical values (capitalized) + legacy lowercase values that exist in DB rows.
+// TODO: normalize DB data to canonical form and remove lowercase variants.
+export type TaskStatus = 'Offen' | 'In Arbeit' | 'Blockiert' | 'Erledigt' | 'Abgerechnet'
+  | 'offen' | 'in_arbeit' | 'blockiert' | 'fertig'; // legacy DB values
+export type TaskPriority = 'Niedrig' | 'Mittel' | 'Hoch'
+  | 'niedrig' | 'mittel' | 'hoch' | 'kritisch'; // legacy DB values
 export type TaskSourceType = 'ts' | 'manual';
 
 export interface Task {
   id: string;
   projektId: string;
   teamId?: string | null;
+  teilsystemId?: string | null; // FK to Teilsystem (optional link from ausfuehrung module)
   assignedToMitarbeiterId?: string | null;
   title: string;
   description?: string | null;
@@ -606,7 +611,7 @@ export interface Task {
   sourceTsId?: string | null;
   createdAt?: string;
   updatedAt?: string;
-  costLogged?: boolean; // Indicates if hours/materials were logged to project costs
+  costLogged?: boolean;
 }
 
 export interface Subtask {

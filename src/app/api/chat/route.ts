@@ -1,5 +1,18 @@
+/**
+ * src/app/api/chat/route.ts
+ *
+ * P0 Grounding Lockdown — 2026-03-09
+ *
+ * Safety guarantees:
+ * - User role extracted from JWT session and passed to context builder.
+ * - Cost data only included in prompt when user role is authorized (RBAC gate).
+ * - Empty-context guard: if no valid projektId or context, LLM is NOT called.
+ * - System prompt enforces EISERNE REGELN — no pretrained-knowledge fallback.
+ * - Stale Qdrant reference removed from prompt text.
+ */
+
 import OpenAI from 'openai';
-import { AIService } from '@/lib/services/aiService';
+import { AIService, userCanSeeCosts } from '@/lib/services/aiService';
 import { z } from 'zod';
 import { requireAuth } from '@/lib/helpers/requireAuth';
 import { chatLimiter } from '@/lib/helpers/rateLimit';
@@ -12,65 +25,122 @@ const chatSchema = z.object({
     projektId: z.string().uuid().optional(),
 });
 
+// ============================================================
+// Hardened System Prompt — EISERNE REGELN
+// ============================================================
+
+function buildSystemPrompt(contextText: string): string {
+    return `Du bist METHAbot, ein KI-Assistent für das MethaDeskPro Baumanagementsystem.
+
+EISERNE REGELN — NIEMALS BRECHEN:
+A. Du arbeitest AUSSCHLIESSLICH mit dem untenstehenden DATENBANKKONTEXT.
+   Du hast kein eigenes Wissen über dieses Unternehmen, diese Projekte oder diese Daten.
+B. Du darfst KEIN trainiertes Wissen über Baubranche, Kosten, Termine oder Materialien
+   als Ersatz für fehlende Projektdaten verwenden. Branchenwissen ist VERBOTEN.
+C. Wenn eine Information nicht im Datenbankkontext enthalten ist, antworte EXAKT:
+   "Diese Information ist im aktuellen Datenbankkontext nicht vorhanden."
+D. Wenn nur ein Teil der Frage beantwortet werden kann:
+   Beantworte nur den belegten Teil und nenne EXPLIZIT was fehlt.
+E. Nenne NIEMALS Zahlen, Daten, Namen, Statuswerte oder Mengen,
+   die nicht wörtlich im untenstehenden Kontext stehen.
+F. Wenn keine Kostendaten im Kontext vorhanden sind und nach Kosten gefragt wird:
+   Antworte: "Du hast keine Berechtigung auf Kostendaten zuzugreifen, oder es sind keine vorhanden."
+G. Antworte IMMER auf DEUTSCH in informellem Stil.
+H. Formatiere Listen mit doppeltem Zeilenumbruch. Nutze das Schema:
+   **[Name]** | **[TS-Nummer]** | **[Datum/Status]**
+
+DATENBANKKONTEXT (Supabase — MethaDeskPro):
+${contextText}`;
+}
+
+// ============================================================
+// Route Handler
+// ============================================================
+
 export async function POST(req: Request) {
-    // SECURITY: Require authentication to prevent unauthenticated OpenAI cost abuse.
+    // Auth: Require valid session
     const { user, error } = await requireAuth();
     if (error) return error;
 
-    // RATE LIMIT: max 20 requests/min per user to protect OpenAI credits
+    // Rate limit: 20 req/min per user
     const limitResult = chatLimiter.check(user.id);
     if (!limitResult.allowed) {
         return NextResponse.json({ error: limitResult.message }, { status: 429 });
     }
 
     const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) return new Response(JSON.stringify({ error: 'API Key missing' }), { status: 500 });
+    if (!apiKey) {
+        return NextResponse.json({ error: 'API Key nicht konfiguriert.' }, { status: 500 });
+    }
 
-    const openai = new OpenAI({ apiKey: apiKey.trim() });
-
+    let body: unknown;
     try {
-        const body = await req.json();
-        const validation = chatSchema.safeParse(body);
+        body = await req.json();
+    } catch {
+        return NextResponse.json({ error: 'Ungültige JSON-Anfrage.' }, { status: 400 });
+    }
 
-        if (!validation.success) {
-            return new Response(JSON.stringify({ error: 'Ungültige Anfragedaten.', details: validation.error.errors }), { status: 400 });
+    const validation = chatSchema.safeParse(body);
+    if (!validation.success) {
+        return NextResponse.json(
+            { error: 'Ungültige Anfragedaten.', details: validation.error.errors },
+            { status: 400 }
+        );
+    }
+
+    const { messages, projektId } = validation.data;
+
+    // ── Empty-Context Guard ──────────────────────────────────
+    // If no projektId is provided, do NOT call the LLM.
+    // Return a deterministic refusal — prevents GPT-4o answering without grounding.
+    if (!projektId) {
+        return NextResponse.json(
+            { error: 'Fuer dieses Projekt sind aktuell keine Daten im Kontext verfuegbar. Bitte waehle ein Projekt aus.' },
+            { status: 400 }
+        );
+    }
+
+    // ── RBAC: Check cost authorization before context build ──
+    const canSeeCosts = userCanSeeCosts(user.role);
+
+    // ── Context Assembly ────────────────────────────────────
+    let contextText = '';
+    try {
+        const context = await AIService.getProjectContext({
+            projektId,
+            userRole: user.role,
+        });
+
+        if (!context || !context.projekt) {
+            // Project not found in DB — deterministic refusal, do NOT call LLM
+            return NextResponse.json(
+                { error: 'Fuer dieses Projekt sind aktuell keine Daten im Kontext verfuegbar.' },
+                { status: 404 }
+            );
         }
 
-        const { messages, projektId } = validation.data;
+        contextText = AIService.formatContextToText(context);
+    } catch (e) {
+        console.error('[Chat] Context fetch failed:', e);
+        return NextResponse.json(
+            { error: 'Datenbankkontext konnte nicht geladen werden.' },
+            { status: 500 }
+        );
+    }
 
-        let contextText = "Kein Kontext.";
-        if (projektId) {
-            try {
-                const context = await AIService.getProjectContext(projektId);
-                if (context) contextText = AIService.formatContextToText(context);
-            } catch (e) { }
-        }
+    // ── Prompt Construction ─────────────────────────────────
+    const systemPrompt = buildSystemPrompt(contextText);
 
-        const systemPrompt = `Du bist METHAbot, ein hochintelligenter KI-Experte für MethaDeskPro.
-Deine Aufgabe ist die Analyse und Beantwortung von Fragen basierend auf dem untenstehenden PROJEKTKONTEXT.
-Dieser Kontext stammt direkt aus unserer Qdrant-Echtzeit-Datenbank.
-
-REGELN FÜR DICH:
-1. Antworte IMMER auf DEUTSCH und sprich den Benutzer informell mit "Du" an. Wenn möglich, sprich ihn mit seinem Namen an, falls dieser im Gesprächsverlauf genannt wird.
-2. ERFINDE NIEMALS ANTWORTEN. Wenn die Antwort nicht im Kontext enthalten ist, musst du explizit sagen, dass du diese Information nicht hast. Keine Halluzinationen!
-3. Behaupte NIE, dass du keinen Zugriff auf die Datenbank hast. Der untenstehende Kontext IST die Datenbank.
-4. Wenn nach Terminen (Bauzeitenplan) gefragt wird, schaue unter "=== TEILSYSTEME & BAUZEITENPLAN ===" nach "MONTAGETERMIN".
-5. Wenn nach Kosten gefragt wird, schaue unter "=== FINANZDATEN & MATERIALKOSTEN ===" nach Preisen und Summen.
-6. Sei ein proaktiver Bau-Assistent. Wenn nach einem Problem gefragt wird, schlage Lösungen basierend auf den vorhandenen Maschinen und Mitarbeitern vor.
-7. Formatiere Antworten über Teilsysteme, Termine oder Materialien IMMER als übersichtliche Liste mit DOPPELTEM Zeilenumbruch zwischen den Elementen.
-8. Nutze für Listen dieses klare Schema fettgedruckt:
-   **[Name]** | **[TS-Nummer]** | **[Datum/Termin]**
-9. Verwende kurze, prägnante Sätze und vermeide Textwände.
-
-KONTEXT AUS DER DATENBANK:
-${contextText}`;
+    // ── LLM Call ────────────────────────────────────────────
+    try {
+        const openai = new OpenAI({ apiKey: apiKey.trim() });
 
         const response = await openai.chat.completions.create({
             model: 'gpt-4o',
             stream: true,
             messages: [
                 { role: 'system', content: systemPrompt },
-                ...messages.map((m: any) => ({
+                ...messages.map((m: { role: string; content: string }) => ({
                     role: m.role as 'user' | 'assistant' | 'system',
                     content: m.content,
                 })),
@@ -83,12 +153,10 @@ ${contextText}`;
                 try {
                     for await (const chunk of response) {
                         const content = chunk.choices[0]?.delta?.content || '';
-                        if (content) {
-                            controller.enqueue(encoder.encode(content));
-                        }
+                        if (content) controller.enqueue(encoder.encode(content));
                     }
-                } catch (error) {
-                    controller.error(error);
+                } catch (err) {
+                    controller.error(err);
                 } finally {
                     controller.close();
                 }
@@ -99,14 +167,17 @@ ${contextText}`;
             headers: {
                 'Content-Type': 'text/plain; charset=utf-8',
                 'X-Content-Type-Options': 'nosniff',
+                // Expose whether costs are included so client can display notice
+                'X-Cost-Context': canSeeCosts ? 'included' : 'excluded',
             },
         });
-    } catch (error: any) {
-        console.error('Chat error:', error);
-        let message = error.message || 'Ein Fehler ist aufgetreten.';
-        if (error.status === 429 || message.toLowerCase().includes('quota')) {
-            message = 'API-Quota überschritten. Bitte versuchen Sie es in ein paar Minuten erneut oder prüfen Sie Ihren Tarif.';
+    } catch (error: unknown) {
+        const err = error as { message?: string; status?: number };
+        console.error('[Chat] LLM error:', err);
+        let message = err.message || 'Ein Fehler ist aufgetreten.';
+        if (err.status === 429 || message.toLowerCase().includes('quota')) {
+            message = 'API-Quota ueberschritten. Bitte in einigen Minuten erneut versuchen.';
         }
-        return new Response(JSON.stringify({ error: message }), { status: error.status || 500 });
+        return NextResponse.json({ error: message }, { status: err.status || 500 });
     }
 }
