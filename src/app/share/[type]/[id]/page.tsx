@@ -1,37 +1,24 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useParams } from 'next/navigation';
-import TeilsystemDetailPage from '@/app/(dashboard)/[projektId]/teilsysteme/[id]/page';
-import PositionDetailPage from '@/app/(dashboard)/[projektId]/positionen/[id]/page';
-import UnterpositionDetailPage from '@/app/(dashboard)/[projektId]/unterpositionen/[id]/page';
+import TeilsystemShareView from './TeilsystemShareView';
+import PositionShareView from './PositionShareView';
+import UnterpositionShareView from './UnterpositionShareView';
 import LagerortShareView from './LagerortShareView';
 
 export default function PublicSharePage() {
     const { type, id } = useParams() as { type: string; id: string };
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-        // Sobrescribir búsqueda para forzar modo lectura si el componente depende de searchParams
-        const url = new URL(window.location.href);
-        if (!url.searchParams.has('mode')) {
-            url.searchParams.set('mode', 'readOnly');
-            window.history.replaceState({}, '', url.toString());
-        }
-    }, []);
-
-    if (!mounted) return null;
 
     const renderContent = () => {
         switch (type) {
-            case 'teilsystem': return <TeilsystemDetailPage />;
-            case 'position': return <PositionDetailPage />;
-            case 'unterposition': return <UnterpositionDetailPage />;
-            case 'lagerort': return <LagerortShareView id={id} />;
+            case 'teilsystem':    return <TeilsystemShareView id={id} />;
+            case 'position':      return <PositionShareView id={id} />;
+            case 'unterposition': return <UnterpositionShareView id={id} />;
+            case 'lagerort':      return <LagerortShareView id={id} />;
             default: return (
-                <div className="text-center py-20 font-bold text-muted-foreground">
-                    Ungültiger Typ: {type}
+                <div className="text-center py-20">
+                    <p className="font-bold text-muted-foreground">Ungültiger Typ: {type}</p>
                 </div>
             );
         }
@@ -39,12 +26,26 @@ export default function PublicSharePage() {
 
     return (
         <div className="min-h-screen bg-background p-4 md:p-8">
-            <div className="max-w-7xl mx-auto">
+            {/* Branding Header */}
+            <div className="max-w-4xl mx-auto mb-8">
+                <div className="flex items-center gap-2">
+                    <span className="text-xl font-black tracking-tight">
+                        <span className="text-foreground">METHA</span>
+                        <span className="text-primary">Desk</span>
+                        <span className="text-muted-foreground text-xs font-light">pro</span>
+                    </span>
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase bg-muted px-3 py-1 rounded-full ml-auto">
+                        QR-Info · Nur Lesezugriff
+                    </div>
+                </div>
+            </div>
+
+            <div className="max-w-4xl mx-auto">
                 {renderContent()}
             </div>
 
-            <div className="mt-12 text-center text-[10px] text-muted-foreground font-medium uppercase tracking-widest border-t pt-8 border-border">
-                © {new Date().getFullYear()} MethaDeskPro • Nur Lesezugriff
+            <div className="mt-12 text-center text-[10px] text-muted-foreground font-medium uppercase tracking-widest border-t border-border pt-8 max-w-4xl mx-auto">
+                © {new Date().getFullYear()} MethaDeskPro · Nur Lesezugriff · Keine Anmeldung erforderlich
             </div>
         </div>
     );

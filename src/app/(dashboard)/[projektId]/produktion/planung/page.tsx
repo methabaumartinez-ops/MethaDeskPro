@@ -154,7 +154,7 @@ export default function PlanerPage() {
         label: `${e.vorname} ${e.nachname}`
     }));
 
-    const { sortedData: sortedItems, handleSort, getSortIcon, isSortActive } = useSortableTable(items);
+    const { sortedData: sortedItems, handleSort, getSortIcon, isSortActive } = useSortableTable(items, 'teilsystemNummer', 'asc');
 
     const getStatusColorClass = (status: string) => {
         switch (status) {

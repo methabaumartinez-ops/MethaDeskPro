@@ -330,7 +330,7 @@ export default function PlannerPage() {
                                         </div>
 
                                         <div className="space-y-2 relative group">
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Lieferfrist</label>
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Liefertermin</label>
                                             <div className="relative">
                                                 <Input
                                                     value={selectedItem.lieferfrist || ''}

@@ -16,7 +16,9 @@ import {
     Car,
     Edit2,
     Trash2,
-    Plus
+    Plus,
+    Search,
+    Lock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Select } from '@/components/ui/select';
@@ -35,9 +37,15 @@ import { Badge } from '@/components/ui/badge';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { toast } from '@/lib/toast';
+import { useProjekt } from '@/lib/context/ProjektContext';
+import { tableCanDo, TableId } from '@/lib/config/tablePermissions';
 
 export default function TabellenPage() {
     const { projektId } = useParams() as { projektId: string };
+    const { currentUser } = useProjekt();
+    const userRole = currentUser?.role?.toLowerCase() || '';
+    const userAbteilung = (currentUser as any)?.abteilung?.toLowerCase() || userRole;
+    const isSuperAdmin = userRole === 'superadmin' || userRole === 'admin' || userRole === 'projektleiter';
     const [activeTable, setActiveTable] = useState('projekte');
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -48,6 +56,9 @@ export default function TabellenPage() {
     // Sort state
     const [sortCol, setSortCol] = useState<string | null>(null);
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+
+    // Search state
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Delete confirmation state
     const [confirmOpen, setConfirmOpen] = useState(false);
@@ -258,9 +269,10 @@ export default function TabellenPage() {
         };
 
         loadData();
-        // Reset sort when switching tables
+        // Reset sort and search when switching tables
         setSortCol(null);
         setSortDir('asc');
+        setSearchTerm('');
     }, [activeTable, selectedProject]);
 
     // ── Sort logic ─────────────────────────────────────────────────────
@@ -300,6 +312,20 @@ export default function TabellenPage() {
             return sortDir === 'asc' ? cmp : -cmp;
         });
     }, [data, sortCol, sortDir]);
+
+    // ── Search / filter logic ────────────────────────────────────────
+    const filteredData = React.useMemo(() => {
+        const source = sortedData || [];
+        if (!searchTerm.trim()) return source;
+        const term = searchTerm.toLowerCase();
+        return source.filter(row =>
+            columns.some(col => {
+                const val = row[col];
+                if (val == null) return false;
+                return String(val).toLowerCase().includes(term);
+            })
+        );
+    }, [sortedData, searchTerm, columns]);
     // ───────────────────────────────────────────────────────────────────
 
     const router = useRouter();
@@ -497,24 +523,75 @@ export default function TabellenPage() {
                                     )}
                                 </p>
                             </div>
-                            <div className="flex gap-2">
-                                {(activeTable === 'mitarbeiter' || activeTable === 'subunternehmer') && (
-                                    <Button
-                                        size="sm"
-                                        className="bg-primary hover:bg-primary/90 text-white font-black uppercase text-[10px] h-9 px-4 rounded-lg shadow-md flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
-                                        onClick={() => {
-                                            if (activeTable === 'mitarbeiter') {
+                            <div className="flex items-center gap-3">
+                                {/* Search Input */}
+                                <div className="relative group">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-orange-500 transition-colors" />
+                                    <input
+                                        type="text"
+                                        placeholder="Suchen..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="h-9 w-56 bg-white border border-slate-200 rounded-xl pl-9 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all shadow-sm"
+                                    />
+                                </div>
+                                {(() => {
+                                    const canEdit = isSuperAdmin || tableCanDo(userAbteilung, activeTable as TableId, 'edit');
+                                    if (!canEdit) {
+                                        return (
+                                            <Badge variant="outline" className="h-9 px-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-wider border-slate-300 text-slate-500 bg-slate-50 rounded-lg">
+                                                <Lock className="h-3 w-3" />
+                                                Nur Lesen
+                                            </Badge>
+                                        );
+                                    }
+                                    // Route map per table
+                                    const handleAdd = () => {
+                                        switch (activeTable) {
+                                            case 'mitarbeiter':
                                                 router.push(`/${projektId}/mitarbeiter/erfassen`);
-                                            } else {
-                                                const name = prompt('Name des Subunternehmers (ss):');
+                                                break;
+                                            case 'lieferanten':
+                                                router.push(`/${projektId}/lieferanten/erfassen`);
+                                                break;
+                                            case 'teilsysteme':
+                                                router.push(`/${projektId}/teilsysteme/erfassen`);
+                                                break;
+                                            case 'positionen':
+                                                router.push(`/${projektId}/positionen/erfassen`);
+                                                break;
+                                            case 'projekte':
+                                                router.push(`/${projektId}/projekte/erfassen`);
+                                                break;
+                                            case 'fahrzeuge':
+                                                router.push(`/${projektId}/fuhrpark/erfassen`);
+                                                break;
+                                            case 'subunternehmer': {
+                                                const name = prompt('Name des Subunternehmers:');
                                                 if (name) SubunternehmerService.createSubunternehmer({ name }).then(() => window.location.reload());
+                                                return;
                                             }
-                                        }}
-                                    >
-                                        <Plus className="h-4 w-4" />
-                                        Hinzufügen
-                                    </Button>
-                                )}
+                                            case 'unternehmer': {
+                                                const name = prompt('Name des Unternehmers:');
+                                                if (name) fetch('/api/data/unternehmer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) }).then(() => window.location.reload());
+                                                return;
+                                            }
+                                            default:
+                                                toast.info('Hinzufuegen fuer diese Tabelle noch nicht implementiert.');
+                                                return;
+                                        }
+                                    };
+                                    return (
+                                        <Button
+                                            size="sm"
+                                            className="bg-primary hover:bg-primary/90 text-white font-black uppercase text-[10px] h-9 px-4 rounded-lg shadow-md flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+                                            onClick={handleAdd}
+                                        >
+                                            <Plus className="h-4 w-4" />
+                                            Hinzufuegen
+                                        </Button>
+                                    );
+                                })()}
                             </div>
                         </div>
 
@@ -566,7 +643,7 @@ export default function TabellenPage() {
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {sortedData.map((row, i) => (
+                                                {(Array.isArray(filteredData) ? filteredData : []).map((row, i) => (
                                                     <TableRow key={i} className="hover:bg-slate-50/50">
                                                         {columns.map(col => (
                                                             <TableCell key={`${i}-${col}`} className={cn(

@@ -15,7 +15,7 @@ function addSecurityHeaders(response: NextResponse) {
 const PUBLIC_PATHS = ['/', '/login', '/register', '/confirm'];
 // SECURITY: Only truly public prefixes. All /api/* routes are protected by default.
 // Route handlers perform additional fine-grained RBAC checks as defense-in-depth.
-const PUBLIC_PREFIXES = ['/api/auth/', '/_next/', '/favicon.ico', '/share/'];
+const PUBLIC_PREFIXES = ['/api/auth/', '/api/public/', '/_next/', '/favicon.ico', '/share/'];
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;

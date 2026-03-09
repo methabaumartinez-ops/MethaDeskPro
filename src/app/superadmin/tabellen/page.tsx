@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { Shield, Save, RotateCcw, Check, Table as TableIcon, ToggleLeft, ToggleRight } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { Shield, Save, RotateCcw, Check, Table as TableIcon, ToggleLeft, ToggleRight, Search } from 'lucide-react';
 import { ABTEILUNGEN_CONFIG } from '@/types';
 import {
     ALL_TABLES,
@@ -27,6 +27,7 @@ export default function TabellenPermissionsPage() {
     const [perms, setPerms] = React.useState<Record<string, Record<TableId, TablePerms>>>({});
     const [activeAbt, setActiveAbt] = React.useState<string>(ABTEILUNGEN_CONFIG[0].id);
     const [saved, setSaved] = React.useState(false);
+    const [searchTerm, setSearchTerm] = React.useState('');
 
     React.useEffect(() => { setPerms(loadTablePermissions()); }, []);
 
@@ -95,6 +96,12 @@ export default function TabellenPermissionsPage() {
     };
     const maxPerms = ALL_TABLES.length * ALL_PERMS.length;
 
+    const filteredTables = useMemo(() => {
+        if (!searchTerm) return ALL_TABLES;
+        const lowerTerm = searchTerm.toLowerCase();
+        return ALL_TABLES.filter(t => TABLE_LABELS[t].toLowerCase().includes(lowerTerm));
+    }, [searchTerm]);
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
             {/* Header */}
@@ -153,20 +160,34 @@ export default function TabellenPermissionsPage() {
                     {/* Abteilung header + global actions */}
                     <div className="flex items-center justify-between">
                         <p className="font-black text-white text-lg">{activeAbtConfig?.name}</p>
-                        <div className="flex gap-2">
-                            <button onClick={() => setAllForAbt(true)}
-                                    className="px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
-                                Alle aktivieren
-                            </button>
-                            <button onClick={() => setAllForAbt(false)}
-                                    className="px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
-                                Alle deaktivieren
-                            </button>
-                            <button onClick={resetToDefault}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
-                                <RotateCcw className="h-3 w-3" />
-                                Standard
-                            </button>
+                        <div className="flex items-center gap-4">
+                            {/* Search Input */}
+                            <div className="relative group">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-[#ff6b35] transition-colors" />
+                                <input
+                                    type="text"
+                                    placeholder="Tabellen suchen..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="h-9 w-64 bg-slate-900/60 border border-slate-700 rounded-xl pl-9 pr-4 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#ff6b35]/50 focus:border-[#ff6b35] transition-all"
+                                />
+                            </div>
+
+                            <div className="flex gap-2">
+                                <button onClick={() => setAllForAbt(true)}
+                                        className="px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
+                                    Alle aktivieren
+                                </button>
+                                <button onClick={() => setAllForAbt(false)}
+                                        className="px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
+                                    Alle deaktivieren
+                                </button>
+                                <button onClick={resetToDefault}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
+                                    <RotateCcw className="h-3 w-3" />
+                                    Standard
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -182,58 +203,65 @@ export default function TabellenPermissionsPage() {
 
                     {/* Table permission rows */}
                     <div className="space-y-2">
-                        {ALL_TABLES.map(tableId => {
-                            const tablePerms = currentAbtPerms[tableId] ?? { read: false, export: false, edit: false, delete: false };
-                            const allEnabled = ALL_PERMS.every(p => tablePerms[p]);
-                            const noneEnabled = ALL_PERMS.every(p => !tablePerms[p]);
+                        {filteredTables.length === 0 ? (
+                            <div className="py-12 text-center border-2 border-dashed border-slate-800 rounded-2xl bg-slate-900/20">
+                                <Search className="h-8 w-8 text-slate-600 mx-auto mb-3" />
+                                <p className="text-slate-400 font-medium">Keine Tabellen gefunden für "{searchTerm}"</p>
+                            </div>
+                        ) : (
+                            filteredTables.map(tableId => {
+                                const tablePerms = currentAbtPerms[tableId] ?? { read: false, export: false, edit: false, delete: false };
+                                const allEnabled = ALL_PERMS.every(p => tablePerms[p]);
+                                const noneEnabled = ALL_PERMS.every(p => !tablePerms[p]);
 
-                            return (
-                                <div key={tableId} className="rounded-2xl border border-slate-800 bg-slate-900/40 overflow-hidden">
-                                    {/* Table header row */}
-                                    <div className="flex items-center justify-between px-5 py-3 bg-slate-900 border-b border-slate-800">
-                                        <div className="flex items-center gap-3">
-                                            <TableIcon className="h-4 w-4 text-slate-500" />
-                                            <span className="font-bold text-white text-sm">{TABLE_LABELS[tableId]}</span>
+                                return (
+                                    <div key={tableId} className="rounded-2xl border border-slate-800 bg-slate-900/40 overflow-hidden">
+                                        {/* Table header row */}
+                                        <div className="flex items-center justify-between px-5 py-3 bg-slate-900 border-b border-slate-800">
+                                            <div className="flex items-center gap-3">
+                                                <TableIcon className="h-4 w-4 text-slate-500" />
+                                                <span className="font-bold text-white text-sm">{TABLE_LABELS[tableId]}</span>
+                                            </div>
+                                            {/* Quick toggle: all on/off for this table */}
+                                            <button
+                                                onClick={() => setAllForTable(tableId, !allEnabled)}
+                                                className="flex items-center gap-1.5 text-[10px] font-bold transition-colors"
+                                                style={{ color: allEnabled ? '#ff6b35' : '#64748b' }}
+                                            >
+                                                {allEnabled
+                                                    ? <ToggleRight className="h-4 w-4" />
+                                                    : <ToggleLeft className="h-4 w-4" />
+                                                }
+                                                {allEnabled ? 'Alle an' : noneEnabled ? 'Alle aus' : 'Teils'}
+                                            </button>
                                         </div>
-                                        {/* Quick toggle: all on/off for this table */}
-                                        <button
-                                            onClick={() => setAllForTable(tableId, !allEnabled)}
-                                            className="flex items-center gap-1.5 text-[10px] font-bold transition-colors"
-                                            style={{ color: allEnabled ? '#ff6b35' : '#64748b' }}
-                                        >
-                                            {allEnabled
-                                                ? <ToggleRight className="h-4 w-4" />
-                                                : <ToggleLeft className="h-4 w-4" />
-                                            }
-                                            {allEnabled ? 'Alle an' : noneEnabled ? 'Alle aus' : 'Teils'}
-                                        </button>
-                                    </div>
 
-                                    {/* Permission toggles */}
-                                    <div className="grid grid-cols-4 divide-x divide-slate-800 bg-slate-900/50">
-                                        {ALL_PERMS.map(perm => {
-                                            const enabled = tablePerms[perm];
-                                            return (
-                                                <button
-                                                    key={perm}
-                                                    onClick={() => toggle(tableId, perm)}
-                                                    className="flex flex-col items-center gap-2 px-4 py-3.5 hover:bg-slate-800 transition-colors"
-                                                >
-                                                    {/* Color dot + toggle pill */}
-                                                    <div className={`relative h-5 w-9 rounded-full transition-all ${!enabled ? 'bg-slate-700' : ''}`}
-                                                         style={enabled ? { background: PERM_COLORS[perm] } : {}}>
-                                                        <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${enabled ? 'left-[18px]' : 'left-0.5'}`} />
-                                                    </div>
-                                                    <span className={`text-[10px] font-bold transition-colors ${enabled ? 'text-white' : 'text-slate-600'}`}>
-                                                        {PERM_LABELS[perm]}
-                                                    </span>
-                                                </button>
-                                            );
-                                        })}
+                                        {/* Permission toggles */}
+                                        <div className="grid grid-cols-4 divide-x divide-slate-800 bg-slate-900/50">
+                                            {ALL_PERMS.map(perm => {
+                                                const enabled = tablePerms[perm];
+                                                return (
+                                                    <button
+                                                        key={perm}
+                                                        onClick={() => toggle(tableId, perm)}
+                                                        className="flex flex-col items-center gap-2 px-4 py-3.5 hover:bg-slate-800 transition-colors"
+                                                    >
+                                                        {/* Color dot + toggle pill */}
+                                                        <div className={`relative h-5 w-9 rounded-full transition-all ${!enabled ? 'bg-slate-700' : ''}`}
+                                                             style={enabled ? { background: PERM_COLORS[perm] } : {}}>
+                                                            <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${enabled ? 'left-[18px]' : 'left-0.5'}`} />
+                                                        </div>
+                                                        <span className={`text-[10px] font-bold transition-colors ${enabled ? 'text-white' : 'text-slate-600'}`}>
+                                                            {PERM_LABELS[perm]}
+                                                        </span>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })
+                        )}
                     </div>
 
                     <p className="text-xs text-slate-500 text-center pt-2">

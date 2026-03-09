@@ -155,7 +155,7 @@ export default function FuhrparkPage() {
             (f.typ || '').toLowerCase().includes(term) ||
             (f.kennzeichen || '').toLowerCase().includes(term)
         );
-    });
+    }).sort((a, b) => a.bezeichnung.localeCompare(b.bezeichnung, 'de'));
 
     const getFahrzeugName = (fahrzeugId: string) => {
         const fz = fahrzeuge.find(f => f.id === fahrzeugId);

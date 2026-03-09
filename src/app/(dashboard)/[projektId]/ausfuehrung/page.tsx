@@ -170,8 +170,8 @@ export default function AusfuehrungPage() {
         return matchesSearch && matchesKategorie;
     });
 
-    const { sortedData: sortedSubsystems, handleSort: handleSortTS, getSortIcon: getSortIconTS, isSortActive: isSortActiveTS } = useSortableTable(filteredSubsystems);
-    const { sortedData: sortedVehicles, handleSort: handleSortVeh, getSortIcon: getSortIconVeh, isSortActive: isSortActiveVeh } = useSortableTable(filteredVehicles);
+    const { sortedData: sortedSubsystems, handleSort: handleSortTS, getSortIcon: getSortIconTS, isSortActive: isSortActiveTS } = useSortableTable(filteredSubsystems, 'teilsystemNummer', 'asc');
+    const { sortedData: sortedVehicles, handleSort: handleSortVeh, getSortIcon: getSortIconVeh, isSortActive: isSortActiveVeh } = useSortableTable(filteredVehicles, 'bezeichnung', 'asc');
 
     const filteredBestellungen = bestellungen.filter(b =>
         (b.containerBez?.toLowerCase() || '').includes(search.toLowerCase()) ||

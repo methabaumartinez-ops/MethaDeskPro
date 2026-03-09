@@ -70,7 +70,7 @@ export class AIService {
                 text += `- ${ts.name} (${ts.teilsystemNummer || 'ID: ' + ts.id}):\n`;
                 text += `  Status: ${ts.status || 'offen'}\n`;
                 if (ts.montagetermin) text += `  MONTAGETERMIN: ${ts.montagetermin}\n`;
-                if (ts.lieferfrist) text += `  Lieferfrist: ${ts.lieferfrist}\n`;
+                if (ts.lieferfrist) text += `  Liefertermin: ${ts.lieferfrist}\n`;
                 if (ts.abgabePlaner) text += `  Abgabe Planer: ${ts.abgabePlaner}\n`;
                 if (ts.verantwortlich) text += `  Verantwortlich: ${ts.verantwortlich}\n`;
 

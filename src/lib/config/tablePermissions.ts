@@ -47,7 +47,9 @@ export const TABLE_LABELS: Record<TableId, string> = {
     qr:              'QR-Codes',
 };
 
-export const ALL_TABLES: TableId[] = Object.keys(TABLE_LABELS) as TableId[];
+export const ALL_TABLES: TableId[] = (Object.keys(TABLE_LABELS) as TableId[]).sort((a, b) =>
+    TABLE_LABELS[a].localeCompare(TABLE_LABELS[b], 'de')
+);
 
 export const ALL_PERMS: (keyof TablePerms)[] = ['read', 'export', 'edit', 'delete'];
 

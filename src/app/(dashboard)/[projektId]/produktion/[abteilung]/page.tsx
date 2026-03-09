@@ -82,7 +82,7 @@ export default function AbteilungPage() {
         (item.name?.toLowerCase() || '').includes(search.toLowerCase())
     );
 
-    const { sortedData: filteredItems, handleSort, getSortIcon, isSortActive } = useSortableTable(baseFilteredItems);
+    const { sortedData: filteredItems, handleSort, getSortIcon, isSortActive } = useSortableTable(baseFilteredItems, 'teilsystemNummer', 'asc');
 
     const selectedTs = items.find(i => i.id === selectedId);
 

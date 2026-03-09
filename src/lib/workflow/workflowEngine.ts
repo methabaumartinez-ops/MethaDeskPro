@@ -170,8 +170,8 @@ export function validateTransition(
     userRole: UserRole | string | undefined | null
 ): boolean {
     if (!userRole) return false;
-    // Admin and projektleiter can always change status freely
-    if (userRole === 'admin' || userRole === 'projektleiter') return true;
+    // Superadmin, Admin and projektleiter can always change status freely
+    if (userRole === 'superadmin' || userRole === 'admin' || userRole === 'projektleiter') return true;
 
     const available = getAvailableTransitions(fromStatus as ItemStatus, userRole);
     return available.some((t) => t.targetStatus === toStatus);

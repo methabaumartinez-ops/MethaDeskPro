@@ -14,6 +14,8 @@ import { Position, Teilsystem } from '@/types';
 import { Eye, Filter, ListTodo, Edit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
+import { useSortableTable } from '@/lib/hooks/useSortableTable';
+import { cn } from '@/lib/utils';
 
 export default function PositionenListPage() {
     const { projektId } = useParams() as { projektId: string };
@@ -60,6 +62,13 @@ export default function PositionenListPage() {
         (teilsysteme[item.teilsystemId]?.name.toLowerCase() || '').includes(search.toLowerCase())
     );
 
+    // Enrich with TS-Nummer for sorting
+    const enriched = filteredItems.map(i => ({
+        ...i,
+        _tsNummer: teilsysteme[i.teilsystemId]?.teilsystemNummer || ''
+    }));
+    const { sortedData: sortedItems, handleSort, getSortIcon, isSortActive } = useSortableTable(enriched, '_tsNummer', 'asc');
+
     const autocompleteItems = items.map(i => ({
         id: i.id,
         label: i.name,
@@ -90,8 +99,8 @@ export default function PositionenListPage() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Bezeichnung</TableHead>
-                                    <TableHead>Teilsystem</TableHead>
+                                    <TableHead className={cn('font-bold cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('name') ? 'text-orange-700' : '')} onClick={() => handleSort('name')}>Bezeichnung <span className="text-[9px] opacity-50">{getSortIcon('name')}</span></TableHead>
+                                    <TableHead className={cn('font-bold cursor-pointer select-none hover:text-orange-600 transition-colors', isSortActive('_tsNummer') ? 'text-orange-700' : '')} onClick={() => handleSort('_tsNummer')}>Teilsystem <span className="text-[9px] opacity-50">{getSortIcon('_tsNummer')}</span></TableHead>
                                     <TableHead>Menge</TableHead>
                                     <TableHead>Einheit</TableHead>
                                     <TableHead>Status</TableHead>
@@ -99,7 +108,7 @@ export default function PositionenListPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredItems.map((item) => (
+                                {sortedItems.map((item) => (
                                     <TableRow key={item.id} className="group">
                                         <TableCell className="font-bold text-foreground">{item.name}</TableCell>
                                         <TableCell className="font-medium text-primary">

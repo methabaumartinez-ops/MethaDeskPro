@@ -635,7 +635,7 @@ export default function TeilsystemErfassenPage() {
                                     </div>
                                     <div className="md:col-span-3">
                                         <DateInput
-                                            label="Lieferfrist"
+                                            label="Liefertermin"
                                             {...register('lieferfrist')}
                                             error={errors.lieferfrist?.message}
                                         />

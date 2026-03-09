@@ -49,7 +49,7 @@ export default function ProduktionLieferantenPage() {
         );
     });
 
-    const { sortedData: sortedItems, handleSort, getSortIcon, isSortActive } = useSortableTable(filteredItems);
+    const { sortedData: sortedItems, handleSort, getSortIcon, isSortActive } = useSortableTable(filteredItems, 'name', 'asc');
 
     return (
         <div className="flex flex-col h-[calc(100vh-6rem)] space-y-4 max-w-none">
