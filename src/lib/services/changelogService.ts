@@ -29,23 +29,38 @@ export interface ChangelogEntry {
 // ============================================================
 
 const FIELD_LABELS: Record<string, string> = {
+    // Common
     status:            'Status',
     planStatus:        'Plan-Status',
     abteilung:         'Abteilung',
     name:              'Name',
     bemerkung:         'Bemerkung',
-    lieferfrist:       'Lieferdatum',
+    // Dates
+    lieferfrist:       'Liefertermin',
     montagetermin:     'Montagetermin',
     abgabePlaner:      'Planabgabe',
-    lagerortId:        'Lagerort',
+    // TS specific
     teilsystemNummer:  'TS-Nummer',
-    menge:             'Menge',
-    einheit:           'Einheit',
-    beschreibung:      'Beschreibung',
+    lagerortId:        'Lagerort',
     wemaLink:          'WEMA Link',
     ks:                'Kostenstelle',
     gewicht:           'Gewicht',
     beschichtung:      'Beschichtung',
+    unternehmer:       'Unternehmer',
+    lieferantenIds:    'Lieferanten',
+    // Pos specific
+    posNummer:         'Pos-Nummer',
+    teilsystemId:      'Teilsystem',
+    // UntPos specific
+    untPosNummer:      'UntPos-Nummer',
+    positionId:        'Position',
+    // Shared
+    menge:             'Menge',
+    einheit:           'Einheit',
+    beschreibung:      'Beschreibung',
+    material:          'Material',
+    abmessung:         'Abmessung',
+    oberflaeche:       'Oberfläche',
 };
 
 const TRACKED_FIELDS = Object.keys(FIELD_LABELS);

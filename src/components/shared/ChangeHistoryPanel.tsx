@@ -92,40 +92,50 @@ export function ChangeHistoryPanel({ entityId, className }: ChangeHistoryPanelPr
                             <div
                                 key={entry.id}
                                 className={cn(
-                                    "px-4 py-2.5 hover:bg-muted/5 transition-colors",
+                                    "px-4 py-3 hover:bg-muted/5 transition-colors",
                                     idx === 0 && "bg-primary/5"
                                 )}
                             >
-                                <div className="flex items-center justify-between gap-2 mb-1">
-                                    <div className="flex items-center gap-1 text-[9px] font-black text-primary uppercase tracking-wider truncate">
+                                {/* Header row: user + date + field count */}
+                                <div className="flex items-center justify-between gap-2 mb-2">
+                                    <div className="flex items-center gap-1.5 text-[9px] font-black text-primary uppercase tracking-wider truncate">
                                         <User className="h-2.5 w-2.5 shrink-0" />
                                         <span className="truncate">{entry.changedBy}</span>
                                     </div>
-                                    <span className="text-[9px] font-bold text-muted-foreground/50 whitespace-nowrap shrink-0">
-                                        {format(new Date(entry.changedAt), 'dd.MM.yy HH:mm', { locale: de })}
-                                    </span>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        {entry.changedFields && entry.changedFields.length > 0 && (
+                                            <span className="text-[8px] font-black uppercase bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
+                                                {entry.changedFields.length} Feld{entry.changedFields.length !== 1 ? 'er' : ''}
+                                            </span>
+                                        )}
+                                        <span className="text-[9px] font-bold text-muted-foreground/50 whitespace-nowrap">
+                                            {format(new Date(entry.changedAt), 'dd.MM.yy HH:mm', { locale: de })}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="space-y-0.5">
+
+                                {/* Field changes */}
+                                <div className="space-y-1.5">
                                     {(entry.changedFields && entry.changedFields.length > 0) ? (
                                         entry.changedFields.map((f, i) => (
-                                            <div key={i} className="flex items-baseline gap-1 text-[9px] leading-tight">
-                                                <span className="font-bold text-muted-foreground uppercase tracking-tight shrink-0">
-                                                    {getFieldLabel(entry.entityType, f.field, f.label)}:
-                                                </span>
-                                                <span className="text-slate-400 line-through truncate max-w-[56px]">
-                                                    {renderValue(f.before)}
-                                                </span>
-                                                <span className="text-muted-foreground/40 text-[8px]">→</span>
-                                                <span className="font-bold text-foreground truncate max-w-[80px]">
-                                                    {renderValue(f.after)}
-                                                </span>
+                                            <div key={i} className="rounded-lg bg-muted/40 border border-border/50 px-2.5 py-1.5">
+                                                <div className="text-[8px] font-black uppercase tracking-widest text-muted-foreground mb-1">
+                                                    {getFieldLabel(entry.entityType, f.field, f.label)}
+                                                </div>
+                                                <div className="flex items-start gap-1.5 flex-wrap">
+                                                    <span className="text-[10px] font-medium text-red-500/80 line-through break-all leading-tight">
+                                                        {renderValue(f.before)}
+                                                    </span>
+                                                    <span className="text-[9px] text-muted-foreground/40 shrink-0 mt-0.5">→</span>
+                                                    <span className="text-[10px] font-bold text-foreground break-all leading-tight">
+                                                        {renderValue(f.after)}
+                                                    </span>
+                                                </div>
                                             </div>
                                         ))
                                     ) : (
-                                        <div className="flex items-baseline gap-1 text-[9px] leading-tight text-muted-foreground">
-                                            <span className="truncate max-w-full">
-                                                {entry.summary || 'Änderung erfasst'}
-                                            </span>
+                                        <div className="text-[9px] text-muted-foreground italic px-1">
+                                            {entry.summary || 'Änderung erfasst'}
                                         </div>
                                     )}
                                 </div>
