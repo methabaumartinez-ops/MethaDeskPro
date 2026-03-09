@@ -9,9 +9,9 @@ export async function deleteTeilsystemWithCascade(id: string) {
         await DatabaseService.deleteByFilter('unterpositionen', {
             must: [{ key: 'positionId', match: { value: pos.id } }]
         });
-        await DatabaseService.deleteByFilter('material', {
-            must: [{ key: 'positionId', match: { value: pos.id } }]
-        });
+        // NOTE: The 'material' table has no positionId column in the DB schema.
+        // Do not attempt to delete by positionId here. Material entries linked
+        // to a Teilsystem use 'teilsystemId' but are managed independently.
     }
 
     const allDocs = await DatabaseService.list<any>('dokumente', { must: [{ key: 'entityId', match: { value: id } }] });
@@ -45,9 +45,7 @@ export async function deletePositionWithCascade(id: string) {
         must: [{ key: 'positionId', match: { value: id } }]
     });
 
-    await DatabaseService.deleteByFilter('material', {
-        must: [{ key: 'positionId', match: { value: id } }]
-    });
+    // NOTE: The 'material' table has no positionId column — do not filter by it.
 
     const docs = await DatabaseService.list<any>('dokumente', { must: [{ key: 'entityId', match: { value: id } }] });
     for (const doc of docs) {
