@@ -9,48 +9,48 @@ import type { UserRole } from '@/types';
 import { ABTEILUNGEN_CONFIG } from '@/types';
 
 const ALL_ROLES: { value: UserRole; label: string; color: string }[] = [
-    { value: 'superadmin',      label: 'Super Admin',      color: 'bg-purple-600' },
-    { value: 'admin',           label: 'Admin',            color: 'bg-red-600' },
-    { value: 'projektleiter',   label: 'Projektleiter',    color: 'bg-blue-600' },
-    { value: 'bauprojektleiter',label: 'Bauprojektleiter', color: 'bg-cyan-600' },
-    { value: 'baufuhrer',       label: 'Bauführer',       color: 'bg-sky-600' },
-    { value: 'planer',          label: 'Planer',           color: 'bg-teal-600' },
-    { value: 'polier',          label: 'Polier',           color: 'bg-green-600' },
-    { value: 'monteur',         label: 'Monteur',          color: 'bg-amber-600' },
-    { value: 'werkhof',         label: 'Werkhof',          color: 'bg-orange-600' },
-    { value: 'produktion',      label: 'Produktion',       color: 'bg-yellow-600' },
-    { value: 'mitarbeiter',     label: 'Mitarbeiter',      color: 'bg-slate-500' },
+    { value: 'superadmin', label: 'Super Admin', color: 'bg-purple-600' },
+    { value: 'admin', label: 'Admin', color: 'bg-red-600' },
+    { value: 'projektleiter', label: 'Projektleiter', color: 'bg-blue-600' },
+    { value: 'bauprojektleiter', label: 'Bauprojektleiter', color: 'bg-cyan-600' },
+    { value: 'baufuhrer', label: 'Bauführer', color: 'bg-sky-600' },
+    { value: 'planer', label: 'Planer', color: 'bg-teal-600' },
+    { value: 'polier', label: 'Polier', color: 'bg-green-600' },
+    { value: 'monteur', label: 'Monteur', color: 'bg-amber-600' },
+    { value: 'werkhof', label: 'Werkhof', color: 'bg-orange-600' },
+    { value: 'produktion', label: 'Produktion', color: 'bg-yellow-600' },
+    { value: 'mitarbeiter', label: 'Mitarbeiter', color: 'bg-slate-500' },
 ];
 
 // Inline-style color map for ABTEILUNGEN_CONFIG (Tailwind dynamic classes don’t work at build time)
 const ABT_COLORS: Record<string, { bg: string; border: string; icon: string }> = {
-    blue:    { bg: 'rgba(59,130,246,0.15)',   border: 'rgba(59,130,246,0.3)',   icon: '#3b82f6' },
-    sky:     { bg: 'rgba(14,165,233,0.15)',   border: 'rgba(14,165,233,0.3)',   icon: '#0ea5e9' },
-    teal:    { bg: 'rgba(20,184,166,0.15)',   border: 'rgba(20,184,166,0.3)',   icon: '#14b8a6' },
-    warning: { bg: 'rgba(234,179,8,0.15)',    border: 'rgba(234,179,8,0.3)',    icon: '#eab308' },
-    info:    { bg: 'rgba(99,102,241,0.15)',   border: 'rgba(99,102,241,0.3)',   icon: '#6366f1' },
-    gray:    { bg: 'rgba(107,114,128,0.15)',  border: 'rgba(107,114,128,0.3)',  icon: '#9ca3af' },
-    orange:  { bg: 'rgba(249,115,22,0.15)',   border: 'rgba(249,115,22,0.3)',   icon: '#f97316' },
-    violet:  { bg: 'rgba(139,92,246,0.15)',   border: 'rgba(139,92,246,0.3)',   icon: '#8b5cf6' },
-    success: { bg: 'rgba(34,197,94,0.15)',    border: 'rgba(34,197,94,0.3)',    icon: '#22c55e' },
-    error:   { bg: 'rgba(239,68,68,0.15)',    border: 'rgba(239,68,68,0.3)',    icon: '#ef4444' },
-    default: { bg: 'rgba(100,116,139,0.15)',  border: 'rgba(100,116,139,0.3)',  icon: '#94a3b8' },
-    outline: { bg: 'rgba(148,163,184,0.10)',  border: 'rgba(148,163,184,0.25)', icon: '#94a3b8' },
+    blue: { bg: 'rgba(59,130,246,0.15)', border: 'rgba(59,130,246,0.3)', icon: '#3b82f6' },
+    sky: { bg: 'rgba(14,165,233,0.15)', border: 'rgba(14,165,233,0.3)', icon: '#0ea5e9' },
+    teal: { bg: 'rgba(20,184,166,0.15)', border: 'rgba(20,184,166,0.3)', icon: '#14b8a6' },
+    warning: { bg: 'rgba(234,179,8,0.15)', border: 'rgba(234,179,8,0.3)', icon: '#eab308' },
+    info: { bg: 'rgba(99,102,241,0.15)', border: 'rgba(99,102,241,0.3)', icon: '#6366f1' },
+    gray: { bg: 'rgba(107,114,128,0.15)', border: 'rgba(107,114,128,0.3)', icon: '#9ca3af' },
+    orange: { bg: 'rgba(249,115,22,0.15)', border: 'rgba(249,115,22,0.3)', icon: '#f97316' },
+    violet: { bg: 'rgba(139,92,246,0.15)', border: 'rgba(139,92,246,0.3)', icon: '#8b5cf6' },
+    success: { bg: 'rgba(34,197,94,0.15)', border: 'rgba(34,197,94,0.3)', icon: '#22c55e' },
+    error: { bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.3)', icon: '#ef4444' },
+    default: { bg: 'rgba(100,116,139,0.15)', border: 'rgba(100,116,139,0.3)', icon: '#94a3b8' },
+    outline: { bg: 'rgba(148,163,184,0.10)', border: 'rgba(148,163,184,0.25)', icon: '#94a3b8' },
 };
 
 // Map Abteilung -> suggested roles
 const ABTEILUNG_ROLES: Record<string, UserRole[]> = {
-    planung:        ['planer', 'projektleiter'],
-    einkauf:        ['mitarbeiter', 'projektleiter'],
-    avor:           ['mitarbeiter', 'planer'],
-    schlosserei:    ['produktion', 'monteur'],
-    blech:          ['produktion', 'monteur'],
-    werkhof:        ['werkhof'],
-    montage:        ['monteur', 'polier'],
-    bau:            ['baufuhrer', 'bauprojektleiter', 'polier'],
-    zimmerei:       ['monteur', 'polier'],
+    planung: ['planer', 'projektleiter'],
+    einkauf: ['mitarbeiter', 'projektleiter'],
+    avor: ['mitarbeiter', 'planer'],
+    schlosserei: ['produktion', 'monteur'],
+    blech: ['produktion', 'monteur'],
+    werkhof: ['werkhof'],
+    montage: ['monteur', 'polier'],
+    bau: ['baufuhrer', 'bauprojektleiter', 'polier'],
+    zimmerei: ['monteur', 'polier'],
     subunternehmer: ['mitarbeiter'],
-    unternehmer:    ['mitarbeiter'],
+    unternehmer: ['mitarbeiter'],
 };
 
 interface UserEntry {
@@ -133,7 +133,7 @@ export default function SuperadminRollenPage() {
     if (currentUser?.role !== 'superadmin') return null;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+        <div className="min-h-screen text-white pb-10">
             {/* Header */}
             <div className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-sm px-8 py-6">
                 <div className="max-w-6xl mx-auto flex items-center justify-between">

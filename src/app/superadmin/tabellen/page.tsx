@@ -17,9 +17,9 @@ import {
 import { toast } from '@/lib/toast';
 
 const PERM_COLORS: Record<keyof TablePerms, string> = {
-    read:   '#38bdf8', // sky
+    read: '#38bdf8', // sky
     export: '#a78bfa', // violet
-    edit:   '#ff6b35', // methabau orange
+    edit: '#ff6b35', // methabau orange
     delete: '#f87171', // red
 };
 
@@ -103,13 +103,13 @@ export default function TabellenPermissionsPage() {
     }, [searchTerm]);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+        <div className="min-h-screen text-white pb-10">
             {/* Header */}
             <div className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-sm px-8 py-6">
                 <div className="max-w-5xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg shrink-0"
-                             style={{ background: 'rgba(255,107,53,0.15)', border: '1px solid rgba(255,107,53,0.3)' }}>
+                            style={{ background: 'rgba(255,107,53,0.15)', border: '1px solid rgba(255,107,53,0.3)' }}>
                             <TableIcon className="h-6 w-6" style={{ color: '#ff6b35' }} />
                         </div>
                         <div>
@@ -147,7 +147,7 @@ export default function TabellenPermissionsPage() {
                             >
                                 <span className="font-semibold">{abt.name}</span>
                                 <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${isActive ? 'text-white' : 'bg-white/10 text-slate-500'}`}
-                                      style={isActive ? { background: 'rgba(255,107,53,0.35)' } : {}}>
+                                    style={isActive ? { background: 'rgba(255,107,53,0.35)' } : {}}>
                                     {count}/{maxPerms}
                                 </span>
                             </button>
@@ -175,15 +175,15 @@ export default function TabellenPermissionsPage() {
 
                             <div className="flex gap-2">
                                 <button onClick={() => setAllForAbt(true)}
-                                        className="px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
+                                    className="px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
                                     Alle aktivieren
                                 </button>
                                 <button onClick={() => setAllForAbt(false)}
-                                        className="px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
+                                    className="px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
                                     Alle deaktivieren
                                 </button>
                                 <button onClick={resetToDefault}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
                                     <RotateCcw className="h-3 w-3" />
                                     Standard
                                 </button>
@@ -248,7 +248,7 @@ export default function TabellenPermissionsPage() {
                                                     >
                                                         {/* Color dot + toggle pill */}
                                                         <div className={`relative h-5 w-9 rounded-full transition-all ${!enabled ? 'bg-slate-700' : ''}`}
-                                                             style={enabled ? { background: PERM_COLORS[perm] } : {}}>
+                                                            style={enabled ? { background: PERM_COLORS[perm] } : {}}>
                                                             <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${enabled ? 'left-[18px]' : 'left-0.5'}`} />
                                                         </div>
                                                         <span className={`text-[10px] font-bold transition-colors ${enabled ? 'text-white' : 'text-slate-600'}`}>

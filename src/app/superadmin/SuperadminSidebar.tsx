@@ -38,17 +38,17 @@ const ADMIN_NAV: AdminNavItem[] = [
 ];
 
 const ABT_COLORS: Record<string, string> = {
-    planung:        'bg-teal-500',
-    einkauf:        'bg-yellow-500',
-    avor:           'bg-sky-500',
-    schlosserei:    'bg-slate-400',
-    blech:          'bg-orange-400',
-    werkhof:        'bg-violet-500',
-    montage:        'bg-emerald-500',
-    bau:            'bg-red-500',
-    zimmerei:       'bg-indigo-400',
+    planung: 'bg-teal-500',
+    einkauf: 'bg-yellow-500',
+    avor: 'bg-sky-500',
+    schlosserei: 'bg-slate-400',
+    blech: 'bg-orange-400',
+    werkhof: 'bg-violet-500',
+    montage: 'bg-emerald-500',
+    bau: 'bg-red-500',
+    zimmerei: 'bg-indigo-400',
     subunternehmer: 'bg-zinc-400',
-    unternehmer:    'bg-stone-400',
+    unternehmer: 'bg-stone-400',
 };
 
 export function SuperadminSidebar() {
@@ -72,7 +72,7 @@ export function SuperadminSidebar() {
     const activeAbt = ABTEILUNGEN_CONFIG.find(a => a.id === previewAbteilung);
 
     return (
-        <aside className="w-64 min-h-screen bg-slate-950 border-r border-white/10 flex flex-col font-[Inter,system-ui,sans-serif]">
+        <aside className="w-64 min-h-screen bg-slate-950/40 backdrop-blur-md border-r border-white/10 flex flex-col font-[Inter,system-ui,sans-serif]">
 
             {/* ── Logo / Identity Box (Blue-marked area) ──── */}
             <div
@@ -123,7 +123,7 @@ export function SuperadminSidebar() {
                             <Icon className={cn('h-4 w-4 shrink-0 transition-colors',
                                 isActive ? '' : 'text-slate-500 group-hover:text-slate-300'
                             )}
-                            style={isActive ? { color: '#ff6b35' } : {}}
+                                style={isActive ? { color: '#ff6b35' } : {}}
                             />
                             <div className="flex-1 min-w-0">
                                 <p className="font-semibold leading-none">{item.title}</p>
@@ -158,7 +158,7 @@ export function SuperadminSidebar() {
                         /* Active preview banner */
                         <div className="rounded-xl border border-white/10 overflow-hidden">
                             <div className="px-3 py-2.5 flex items-center gap-2"
-                                 style={{ background: 'rgba(255,107,53,0.10)', borderBottom: '1px solid rgba(255,107,53,0.15)' }}>
+                                style={{ background: 'rgba(255,107,53,0.10)', borderBottom: '1px solid rgba(255,107,53,0.15)' }}>
                                 <Eye className="h-3.5 w-3.5 shrink-0" style={{ color: '#ff6b35' }} />
                                 <div className="flex-1 min-w-0">
                                     <p className="text-[10px] font-black uppercase tracking-wide" style={{ color: '#ff6b35' }}>
@@ -197,7 +197,7 @@ export function SuperadminSidebar() {
 
                     {/* Abteilung picker dropdown */}
                     {showAbtPicker && (
-                        <div className="mt-2 rounded-xl border border-white/10 bg-slate-900 overflow-hidden">
+                        <div className="mt-2 rounded-xl border border-white/10 bg-slate-900/80 backdrop-blur-md overflow-hidden">
                             <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 px-3 py-2 border-b border-white/5">
                                 Abteilung wählen
                             </p>

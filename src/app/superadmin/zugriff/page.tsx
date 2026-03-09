@@ -68,13 +68,13 @@ export default function ZugriffPage() {
     const activeAbtConfig = ABTEILUNGEN_CONFIG.find(a => a.id === activeAbt);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+        <div className="min-h-screen text-white pb-10">
             {/* Header */}
             <div className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-sm px-8 py-6">
                 <div className="max-w-5xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg"
-                             style={{ background: 'rgba(255,107,53,0.15)', border: '1px solid rgba(255,107,53,0.3)' }}>
+                            style={{ background: 'rgba(255,107,53,0.15)', border: '1px solid rgba(255,107,53,0.3)' }}>
                             <Shield className="h-6 w-6" style={{ color: '#ff6b35' }} />
                         </div>
                         <div>
@@ -87,9 +87,8 @@ export default function ZugriffPage() {
                     </div>
                     <button
                         onClick={handleSave}
-                        className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                            saved ? 'bg-emerald-600 text-white' : 'text-white'
-                        }`}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${saved ? 'bg-emerald-600 text-white' : 'text-white'
+                            }`}
                         style={!saved ? { background: '#ff6b35', boxShadow: '0 4px 14px rgba(255,107,53,0.35)' } : {}}
                     >
                         {saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
@@ -109,16 +108,14 @@ export default function ZugriffPage() {
                             <button
                                 key={abt.id}
                                 onClick={() => setActiveAbt(abt.id)}
-                                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all ${
-                                    isActive ? 'text-white' : 'text-slate-400 bg-slate-900/20 hover:bg-slate-800 hover:text-white'
-                                }`}
+                                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all ${isActive ? 'text-white' : 'text-slate-400 bg-slate-900/20 hover:bg-slate-800 hover:text-white'
+                                    }`}
                                 style={isActive ? { background: 'rgba(255,107,53,0.12)', border: '1px solid rgba(255,107,53,0.25)' } : {}}
                             >
                                 <span className="font-semibold">{abt.name}</span>
-                                <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${
-                                    isActive ? 'text-white' : 'bg-white/10 text-slate-500'
-                                }`}
-                                style={isActive ? { background: 'rgba(255,107,53,0.35)', color: '#fff' } : {}}>
+                                <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${isActive ? 'text-white' : 'bg-white/10 text-slate-500'
+                                    }`}
+                                    style={isActive ? { background: 'rgba(255,107,53,0.35)', color: '#fff' } : {}}>
                                     {abtPerms.length}/{ALL_PAGES.length}
                                 </span>
                             </button>
@@ -133,15 +130,15 @@ export default function ZugriffPage() {
                         <p className="font-black text-white text-lg">{activeAbtConfig?.name}</p>
                         <div className="flex gap-2">
                             <button onClick={enableAll}
-                                    className="px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
+                                className="px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
                                 Alle aktivieren
                             </button>
                             <button onClick={disableAll}
-                                    className="px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
+                                className="px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
                                 Alle deaktivieren
                             </button>
                             <button onClick={resetToDefault}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
                                 <RotateCcw className="h-3 w-3" />
                                 Standard
                             </button>
@@ -166,13 +163,11 @@ export default function ZugriffPage() {
                                             <span className={`text-sm font-semibold ${enabled ? 'text-white' : 'text-slate-500'}`}>
                                                 {PAGE_LABELS[page]}
                                             </span>
-                                            <div className={`relative h-5 w-9 rounded-full transition-all ${
-                                                enabled ? '' : 'bg-slate-700'
-                                            }`}
-                                            style={enabled ? { background: '#ff6b35' } : {}}>
-                                                <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${
-                                                    enabled ? 'left-[18px]' : 'left-0.5'
-                                                }`} />
+                                            <div className={`relative h-5 w-9 rounded-full transition-all ${enabled ? '' : 'bg-slate-700'
+                                                }`}
+                                                style={enabled ? { background: '#ff6b35' } : {}}>
+                                                <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${enabled ? 'left-[18px]' : 'left-0.5'
+                                                    }`} />
                                             </div>
                                         </button>
                                     );

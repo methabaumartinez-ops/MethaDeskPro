@@ -85,8 +85,9 @@ export function Sidebar({ projektId, className }: { projektId: string; className
             title: 'Dashboard Builder',
             icon: Sparkles,
             href: `/${projektId}/dashboard-builder`,
+            pageKey: 'dashboard-builder',
             subItems: [
-                { title: 'My Dashboard', href: `/${projektId}/my-dashboard`, icon: LayoutDashboard },
+                { title: 'My Dashboard', href: `/${projektId}/my-dashboard`, icon: LayoutDashboard, pageKey: 'my-dashboard' },
             ]
         },
         {
@@ -97,27 +98,30 @@ export function Sidebar({ projektId, className }: { projektId: string; className
                     title: 'Bauleitung',
                     href: `/${projektId}/produktion/bauleitung`,
                     icon: Briefcase,
+                    pageKey: 'bauleitung',
                     subItems: [
-                        { title: 'Analyse', href: `/${projektId}/analyse`, icon: Activity },
+                        { title: 'Analyse', href: `/${projektId}/analyse`, icon: Activity, pageKey: 'analyse' },
                     ]
                 },
                 {
                     title: 'Produktion',
                     href: `/${projektId}/teilsysteme`,
                     icon: Factory,
+                    pageKey: 'produktion',
                     subItems: [
-                        { title: 'Planer',        href: `/${projektId}/produktion/planung`,     icon: PenTool,      pageKey: 'planung' as const },
-                        { title: 'AVOR',          href: `/${projektId}/produktion/avor`,        icon: ClipboardList, pageKey: 'avor' as const },
-                        { title: 'Einkauf',       href: `/${projektId}/produktion/einkauf`,     icon: ShoppingCart, pageKey: 'einkauf' as const },
-                        { title: 'Schlosserei',   href: `/${projektId}/produktion/schlosserei`, icon: Wrench,       pageKey: 'schlosserei' as const },
-                        { title: 'Blechabteilung',href: `/${projektId}/produktion/blech`,       icon: Box,          pageKey: 'blech' as const },
-                        { title: 'Kosten',        href: `/${projektId}/kosten`,                 icon: DollarSign,   pageKey: 'kosten' as const },
+                        { title: 'Planer', href: `/${projektId}/produktion/planung`, icon: PenTool, pageKey: 'planung' as const },
+                        { title: 'AVOR', href: `/${projektId}/produktion/avor`, icon: ClipboardList, pageKey: 'avor' as const },
+                        { title: 'Einkauf', href: `/${projektId}/produktion/einkauf`, icon: ShoppingCart, pageKey: 'einkauf' as const },
+                        { title: 'Schlosserei', href: `/${projektId}/produktion/schlosserei`, icon: Wrench, pageKey: 'schlosserei' as const },
+                        { title: 'Blechabteilung', href: `/${projektId}/produktion/blech`, icon: Box, pageKey: 'blech' as const },
+                        { title: 'Kosten', href: `/${projektId}/kosten`, icon: DollarSign, pageKey: 'kosten' as const },
                     ]
                 },
                 {
                     title: 'Ausfuehrung',
                     href: `/${projektId}/ausfuehrung`,
                     icon: Hammer,
+                    pageKey: 'ausfuehrung',
                 },
             ]
         },
@@ -125,13 +129,13 @@ export function Sidebar({ projektId, className }: { projektId: string; className
             title: 'Werkhof',
             icon: Warehouse,
             subItems: [
-                { title: 'Bestellungen', href: `/${projektId}/werkhof`, icon: Package },
-                { title: 'Lagerort', href: `/${projektId}/lagerorte`, icon: MapPin },
-                { title: 'QR Scan', href: `/${projektId}/lager-scan`, icon: QrCode },
+                { title: 'Bestellungen', href: `/${projektId}/werkhof`, icon: Package, pageKey: 'werkhof-bestellungen' },
+                { title: 'Lagerort', href: `/${projektId}/lagerorte`, icon: MapPin, pageKey: 'lagerort' },
+                { title: 'QR Scan', href: `/${projektId}/lager-scan`, icon: QrCode, pageKey: 'qr-scan' },
             ]
         },
-        { title: 'Fuhrpark', href: `/fuhrpark`, icon: Car },
-        { title: 'DatenBank', href: `/${projektId}/tabellen`, icon: Database },
+        { title: 'Fuhrpark', href: `/fuhrpark`, icon: Car, pageKey: 'fuhrpark' },
+        { title: 'DatenBank', href: `/${projektId}/tabellen`, icon: Database, pageKey: 'tabellen' },
     ];
 
     const superadminItems: MenuItem[] = isSuperadmin ? [
@@ -144,7 +148,13 @@ export function Sidebar({ projektId, className }: { projektId: string; className
             .map(item => ({
                 ...item,
                 subItems: item.subItems ? filterAllowed(item.subItems) : undefined
-            }));
+            }))
+            .filter(item => {
+                if (item.subItems !== undefined) {
+                    return item.subItems.length > 0 || !!item.href;
+                }
+                return true;
+            });
     };
 
     const allowedItems = filterAllowed(menuItems);
