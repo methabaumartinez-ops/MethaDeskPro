@@ -82,7 +82,7 @@ export async function PUT(req: Request) {
                     await DatabaseService.upsert('abt_page_permissions', {
                         abteilung_id: abtId,
                         page_key: pageKey,
-                    });
+                    } as any);
                 }
             }
         }
@@ -98,7 +98,7 @@ export async function PUT(req: Request) {
                         can_export: perms.export,
                         can_edit: perms.edit,
                         can_delete: perms.delete,
-                    });
+                    } as any);
                 }
             }
         }
