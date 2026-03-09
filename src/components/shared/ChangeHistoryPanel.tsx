@@ -87,64 +87,41 @@ export function ChangeHistoryPanel({ entityId, className }: ChangeHistoryPanelPr
                         </p>
                     </div>
                 ) : (
-                    <div className="divide-y divide-border/50 overflow-y-auto max-h-[280px]">
-                        {visible.map((entry, idx) => (
-                            <div
-                                key={entry.id}
-                                className={cn(
-                                    "px-4 py-3 hover:bg-muted/5 transition-colors",
-                                    idx === 0 && "bg-primary/5"
-                                )}
-                            >
-                                {/* Header row: user + date + field count */}
-                                <div className="flex items-center justify-between gap-2 mb-2">
-                                    <div className="flex items-center gap-1.5 text-[9px] font-black text-primary uppercase tracking-wider truncate">
-                                        <User className="h-2.5 w-2.5 shrink-0" />
-                                        <span className="truncate">{entry.changedBy}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 shrink-0">
-                                        {entry.changedFields && entry.changedFields.length > 0 && (
-                                            <span className="text-[8px] font-black uppercase bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
-                                                {entry.changedFields.length} Feld{entry.changedFields.length !== 1 ? 'er' : ''}
-                                            </span>
-                                        )}
-                                        <span className="text-[9px] font-bold text-muted-foreground/50 whitespace-nowrap">
-                                            {format(new Date(entry.changedAt), 'dd.MM.yy HH:mm', { locale: de })}
-                                        </span>
-                                    </div>
-                                </div>
+                    <div className="divide-y divide-border/30 overflow-y-auto max-h-[280px]">
+                        {visible.map((entry) => {
+                            const dateStr = format(new Date(entry.changedAt), 'dd.MM.yy', { locale: de });
+                            // Short name: "F.Martinez"
+                            const nameParts = entry.changedBy.trim().split(' ');
+                            const shortName = nameParts.length >= 2
+                                ? `${nameParts[0][0]}.${nameParts.slice(1).join(' ')}`
+                                : entry.changedBy;
 
-                                {/* Field changes */}
-                                <div className="space-y-1.5">
-                                    {(entry.changedFields && entry.changedFields.length > 0) ? (
-                                        entry.changedFields.map((f, i) => (
-                                            <div key={i} className="rounded-lg bg-muted/40 border border-border/50 px-2.5 py-1.5">
-                                                <div className="text-[8px] font-black uppercase tracking-widest text-muted-foreground mb-1">
-                                                    {getFieldLabel(entry.entityType, f.field, f.label)}
-                                                </div>
-                                                <div className="flex items-start gap-1.5 flex-wrap">
-                                                    <span className="text-[10px] font-medium text-red-500/80 line-through break-all leading-tight">
-                                                        {renderValue(f.before)}
-                                                    </span>
-                                                    <span className="text-[9px] text-muted-foreground/40 shrink-0 mt-0.5">→</span>
-                                                    <span className="text-[10px] font-bold text-foreground break-all leading-tight">
-                                                        {renderValue(f.after)}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div className="text-[9px] text-muted-foreground italic px-1">
-                                            {entry.summary || 'Änderung erfasst'}
-                                        </div>
+                            const rows = (entry.changedFields && entry.changedFields.length > 0)
+                                ? entry.changedFields.map((f, i) => ({ key: `${entry.id}-${i}`, label: getFieldLabel(entry.entityType, f.field, f.label), before: renderValue(f.before), after: renderValue(f.after) }))
+                                : [{ key: entry.id, label: '', before: '', after: entry.summary || 'Änderung erfasst' }];
+
+                            return rows.map(row => (
+                                <div key={row.key} className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-muted/30 transition-colors text-[10px]">
+                                    <span className="font-black text-primary shrink-0">{shortName}</span>
+                                    <span className="text-muted-foreground/50 shrink-0">{dateStr}</span>
+                                    {row.label && (
+                                        <>
+                                            <span className="font-bold text-muted-foreground shrink-0">{row.label}:</span>
+                                            <span className="text-red-500/70 line-through shrink-0 max-w-[60px] truncate">{row.before}</span>
+                                            <span className="text-muted-foreground/40 shrink-0">→</span>
+                                            <span className="font-bold text-foreground truncate">{row.after}</span>
+                                        </>
+                                    )}
+                                    {!row.label && (
+                                        <span className="text-muted-foreground italic truncate">{row.after}</span>
                                     )}
                                 </div>
-                            </div>
-                        ))}
+                            ));
+                        })}
                         {hasMore && (
                             <button
                                 onClick={() => setExpanded(e => !e)}
-                                className="w-full py-2 text-[9px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary hover:bg-muted/20 transition-colors flex items-center justify-center gap-1"
+                                className="w-full py-1.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary hover:bg-muted/20 transition-colors flex items-center justify-center gap-1"
                             >
                                 {expanded
                                     ? <><ChevronUp className="h-3 w-3" /> Weniger</>
