@@ -39,9 +39,9 @@ function compareValues(va: any, vb: any, dir: SortDir): number {
  *
  * Render rows with `sortedData` instead of the original array.
  */
-export function useSortableTable<T extends Record<string, any>>(data: T[]) {
-    const [sortCol, setSortCol] = useState<string | null>(null);
-    const [sortDir, setSortDir] = useState<SortDir>('asc');
+export function useSortableTable<T extends Record<string, any>>(data: T[], initialSortCol: string | null = null, initialSortDir: SortDir = 'asc') {
+    const [sortCol, setSortCol] = useState<string | null>(initialSortCol);
+    const [sortDir, setSortDir] = useState<SortDir>(initialSortDir);
 
     const handleSort = useCallback((col: string) => {
         setSortCol(prev => {

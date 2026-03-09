@@ -67,8 +67,8 @@ export default function MitarbeiterListPage() {
     });
 
     // Enrich with fullName for sorting
-    const enriched = filteredItems.map(i => ({ ...i, _fullName: `${i.nachname} ${i.vorname}` }));
-    const { sortedData: sortedItems, handleSort, getSortIcon, isSortActive } = useSortableTable(enriched);
+    const enriched = filteredItems.map(i => ({ ...i, _fullName: `${i.vorname} ${i.nachname}` }));
+    const { sortedData: sortedItems, handleSort, getSortIcon, isSortActive } = useSortableTable(enriched, '_fullName', 'asc');
 
     return (
         <div className="space-y-6">
