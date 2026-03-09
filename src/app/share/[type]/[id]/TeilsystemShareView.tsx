@@ -3,8 +3,12 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Layers, Calendar, MapPin, FileText, Hash, Loader2, ShieldCheck, ListTodo } from 'lucide-react';
+import {
+    Layers, Calendar, MapPin, FileText, Loader2, ShieldCheck, ListTodo,
+    LogIn, BadgeDollarSign
+} from 'lucide-react';
 import { StatusBadge } from '@/components/shared/StatusBadge';
+import { Button } from '@/components/ui/button';
 
 export default function TeilsystemShareView({ id }: { id: string }) {
     const [item, setItem] = useState<any>(null);
@@ -155,19 +159,65 @@ export default function TeilsystemShareView({ id }: { id: string }) {
                         <CardContent className="p-0">
                             <div className="divide-y divide-border">
                                 {item._positionen.map((pos: any) => (
-                                    <div key={pos.id} className="flex items-center justify-between px-4 py-3 hover:bg-muted/40 transition-colors">
+                                    <a
+                                        key={pos.id}
+                                        href={`/share/position/${pos.id}`}
+                                        className="flex items-center justify-between px-4 py-3 hover:bg-muted/40 transition-colors group cursor-pointer"
+                                    >
                                         <div className="flex items-center gap-3">
                                             <span className="text-xs font-black text-primary w-16 shrink-0">{pos.posNummer || '—'}</span>
-                                            <span className="text-sm font-bold text-foreground">{pos.name}</span>
+                                            <span className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{pos.name}</span>
                                         </div>
-                                        <StatusBadge status={pos.status} className="scale-75 origin-right" />
-                                    </div>
+                                        <div className="flex items-center gap-2">
+                                            <StatusBadge status={pos.status} className="scale-75 origin-right" />
+                                            <span className="text-muted-foreground opacity-0 group-hover:opacity-60 transition-opacity text-sm">→</span>
+                                        </div>
+                                    </a>
                                 ))}
                             </div>
                         </CardContent>
                     </Card>
                 )}
             </div>
+
+            {/* ── Aktionen (nur mit Login) ───────────────────────────────────── */}
+            {item.projektId && (
+                <Card className="border-2 border-primary/10 shadow-sm rounded-2xl overflow-hidden">
+                    <CardHeader className="py-2.5 px-4 bg-muted border-b border-border">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                            <LogIn className="h-3 w-3" /> Aktionen · Login erforderlich
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4">
+                        <p className="text-[10px] text-muted-foreground font-medium mb-4">
+                            Um folgende Aktionen auszuführen, ist eine Anmeldung erforderlich. Sie werden nach dem Login automatisch hierher weitergeleitet.
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            {/* Einlagern */}
+                            <a href={`/login?redirect=${encodeURIComponent(`/${item.projektId}/lager-scan?type=teilsystem&id=${id}&action=einlagerung&qr=TEILSYSTEM:${id}`)}`}>
+                                <Button className="w-full h-11 border-2 border-blue-400 bg-blue-50 hover:bg-blue-100 text-blue-700 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm border-b-4 active:border-b-2">
+                                    <span className="text-base">↓</span>
+                                    Einlagern
+                                </Button>
+                            </a>
+                            {/* Auslagern */}
+                            <a href={`/login?redirect=${encodeURIComponent(`/${item.projektId}/lager-scan?type=teilsystem&id=${id}&action=auslagerung&qr=TEILSYSTEM:${id}`)}`}>
+                                <Button className="w-full h-11 border-2 border-red-400 bg-red-50 hover:bg-red-100 text-red-700 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm border-b-4 active:border-b-2">
+                                    <span className="text-base">↑</span>
+                                    Auslagern
+                                </Button>
+                            </a>
+                            {/* Kosten erfassen */}
+                            <a href={`/login?redirect=${encodeURIComponent(`/${item.projektId}/kosten?ts=${id}`)}`}>
+                                <Button className="w-full h-11 border-2 border-green-400 bg-green-50 hover:bg-green-100 text-green-700 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm border-b-4 active:border-b-2">
+                                    <BadgeDollarSign className="h-4 w-4" />
+                                    Kosten erfassen
+                                </Button>
+                            </a>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 }

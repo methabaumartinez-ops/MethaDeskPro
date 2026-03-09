@@ -102,13 +102,20 @@ export default function PositionShareView({ id }: { id: string }) {
                     <CardContent className="p-0">
                         <div className="divide-y divide-border">
                             {item._unterpositionen.map((u: any) => (
-                                <div key={u.id} className="flex items-center justify-between px-4 py-3 hover:bg-muted/40 transition-colors">
+                                <a
+                                    key={u.id}
+                                    href={`/share/unterposition/${u.id}`}
+                                    className="flex items-center justify-between px-4 py-3 hover:bg-muted/40 transition-colors group cursor-pointer"
+                                >
                                     <div className="flex items-center gap-3">
                                         <span className="text-xs font-black text-primary w-16 shrink-0">{u.untPosNummer || '—'}</span>
-                                        <span className="text-sm font-bold text-foreground">{u.name}</span>
+                                        <span className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{u.name}</span>
                                     </div>
-                                    <StatusBadge status={u.status} className="scale-75 origin-right" />
-                                </div>
+                                    <div className="flex items-center gap-2">
+                                        <StatusBadge status={u.status} className="scale-75 origin-right" />
+                                        <span className="text-muted-foreground opacity-0 group-hover:opacity-60 transition-opacity text-sm">→</span>
+                                    </div>
+                                </a>
                             ))}
                         </div>
                     </CardContent>

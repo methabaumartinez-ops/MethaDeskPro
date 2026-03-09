@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -23,6 +24,8 @@ type LoginValues = z.infer<typeof loginSchema>;
 export default function LoginPage() {
     const { setCurrentUser } = useProjekt();
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const redirectTo = searchParams.get('redirect') || '/welcome';
     const [serverError, setServerError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -55,7 +58,7 @@ export default function LoginPage() {
             }
 
             setCurrentUser(result.user);
-            router.push('/welcome');
+            router.push(redirectTo);
         } catch {
             setServerError('Verbindungsfehler. Bitte versuchen Sie es erneut.');
         }
