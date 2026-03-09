@@ -24,18 +24,19 @@ export async function GET() {
 
 /**
  * PATCH /api/admin/users
- * Updates a user's role (superadmin only).
- * Body: { userId: string, role: UserRole }
+ * Updates a user's role and/or name (superadmin only).
+ * Body: { userId: string, role?: UserRole, vorname?: string, nachname?: string }
  */
 export async function PATCH(req: Request) {
     const { error } = await requireAuth(['superadmin']);
     if (error) return error;
 
     try {
-        const { userId, role } = await req.json() as { userId: string; role: UserRole };
+        const body = await req.json() as { userId: string; role?: UserRole; vorname?: string; nachname?: string; name?: string };
+        const { userId, role, vorname, nachname, name } = body;
 
-        if (!userId || !role) {
-            return NextResponse.json({ error: 'userId und role sind erforderlich.' }, { status: 400 });
+        if (!userId) {
+            return NextResponse.json({ error: 'userId ist erforderlich.' }, { status: 400 });
         }
 
         const existing = await DatabaseService.get<any>('users', userId);
@@ -43,7 +44,13 @@ export async function PATCH(req: Request) {
             return NextResponse.json({ error: 'Benutzer nicht gefunden.' }, { status: 404 });
         }
 
-        const updated = await DatabaseService.upsert('users', { ...existing, role });
+        const updates: any = { ...existing };
+        if (role)     updates.role     = role;
+        if (name)     updates.name     = name;
+        if (vorname)  updates.vorname  = vorname;
+        if (nachname) updates.nachname = nachname;
+
+        const updated = await DatabaseService.upsert('users', updates);
         const { passwordHash: _, ...safeUser } = updated as any;
         return NextResponse.json(safeUser);
     } catch (err) {
