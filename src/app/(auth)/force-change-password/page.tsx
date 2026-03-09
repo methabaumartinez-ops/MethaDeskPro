@@ -44,13 +44,9 @@ export default function ForceChangePasswordPage() {
                 setServerError(result.error || 'Fehler beim Speichern.');
                 return;
             }
-            // Refresh user session to clear mustChangePassword flag
-            const meRes = await fetch('/api/auth/me');
-            if (meRes.ok) {
-                const meData = await meRes.json();
-                setCurrentUser({ ...meData.user, mustChangePassword: false });
-            }
-            router.push('/welcome');
+            // Hard redirect — forces a full page reload so the middleware
+            // picks up the fresh JWT cookie (without mustChangePassword)
+            window.location.href = '/welcome';
         } catch {
             setServerError('Verbindungsfehler. Bitte erneut versuchen.');
         }

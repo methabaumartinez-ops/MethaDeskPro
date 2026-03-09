@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/helpers/requireAuth';
-import { forceChangePassword } from '@/lib/services/authService';
+import { forceChangePassword, generateToken } from '@/lib/services/authService';
 import { z } from 'zod';
 
 const schema = z.object({
@@ -23,7 +23,24 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: result.error }, { status: 400 });
         }
 
-        return NextResponse.json({ success: true });
+        // Generate a fresh JWT WITHOUT mustChangePassword so the middleware
+        // no longer redirects back to /force-change-password
+        const newToken = await generateToken({
+            userId: user!.id,
+            email: user!.email,
+            role: user!.role,
+            mustChangePassword: false,
+        });
+
+        const response = NextResponse.json({ success: true });
+        response.cookies.set('methabau_token', newToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/',
+        });
+
+        return response;
     } catch {
         return NextResponse.json({ error: 'Passwortänderung fehlgeschlagen.' }, { status: 500 });
     }
