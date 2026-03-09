@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { DatabaseService } from '@/lib/services/db';
 import { v4 as uuidv4 } from 'uuid';
 import { requireAuth } from '@/lib/helpers/requireAuth';
+import { ChangelogService } from '@/lib/services/changelogService';
 
 const ALLOWED_COLLECTIONS = [
     'projekte', 'teilsysteme', 'positionen', 'unterpositionen',
@@ -49,7 +50,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ collecti
 
 export async function POST(req: Request, { params }: { params: Promise<{ collection: string }> }) {
     // SECURITY: Require admin or projektleiter to create records.
-    const { error } = await requireAuth(['admin', 'projektleiter']);
+    const { user, error } = await requireAuth(['admin', 'projektleiter']);
     if (error) return error;
 
     try {
@@ -66,6 +67,49 @@ export async function POST(req: Request, { params }: { params: Promise<{ collect
         };
 
         const result = await DatabaseService.upsert(collection, newItem);
+
+        // Track creation of Positionen and Unterpositionen
+        if (user && collection === 'positionen' && newItem.teilsystemId) {
+            await ChangelogService.createEntry({
+                entityType: 'teilsystem',
+                entityId: newItem.teilsystemId,
+                projektId: newItem.projektId,
+                changedAt: new Date().toISOString(),
+                changedBy: `${user.vorname} ${user.nachname}`,
+                changedByEmail: user.email,
+                changedFields: [{ field: 'posNummer', label: 'Neue Position', before: null, after: `${newItem.posNummer || ''} ${newItem.name || ''}`.trim() }],
+                summary: `Position hinzugefügt: ${newItem.posNummer || ''} – ${newItem.name || ''}`,
+            });
+        }
+        if (user && collection === 'unterpositionen' && newItem.positionId) {
+            // Also log to the parent position's history
+            const pos = await DatabaseService.get<any>('positionen', newItem.positionId);
+            const tsId = pos?.teilsystemId || newItem.teilsystemId;
+            if (tsId) {
+                await ChangelogService.createEntry({
+                    entityType: 'teilsystem',
+                    entityId: tsId,
+                    projektId: newItem.projektId || pos?.projektId,
+                    changedAt: new Date().toISOString(),
+                    changedBy: `${user.vorname} ${user.nachname}`,
+                    changedByEmail: user.email,
+                    changedFields: [{ field: 'untPosNummer', label: 'Neue Unterposition', before: null, after: `${newItem.untPosNummer || ''} ${newItem.name || ''}`.trim() }],
+                    summary: `Unterposition hinzugefügt: ${newItem.untPosNummer || ''} – ${newItem.name || ''} (Pos: ${pos?.posNummer || newItem.positionId})`,
+                });
+            }
+            // Also log in the position history
+            await ChangelogService.createEntry({
+                entityType: 'position',
+                entityId: newItem.positionId,
+                projektId: newItem.projektId || pos?.projektId,
+                changedAt: new Date().toISOString(),
+                changedBy: `${user.vorname} ${user.nachname}`,
+                changedByEmail: user.email,
+                changedFields: [{ field: 'untPosNummer', label: 'Neue Unterposition', before: null, after: `${newItem.untPosNummer || ''} ${newItem.name || ''}`.trim() }],
+                summary: `Unterposition hinzugefügt: ${newItem.untPosNummer || ''} – ${newItem.name || ''}`,
+            });
+        }
+
         return NextResponse.json(result);
     } catch (error) {
         const { collection } = await params;

@@ -5,6 +5,8 @@ import { Lagerbewegung } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 import { PositionService } from '@/lib/services/positionService';
 import { SubPositionService } from '@/lib/services/subPositionService';
+import { ChangelogService } from '@/lib/services/changelogService';
+import { requireAuth } from '@/lib/helpers/requireAuth';
 
 export async function GET(request: NextRequest) {
     try {
@@ -62,6 +64,34 @@ export async function POST(request: NextRequest) {
         } catch (updateError) {
             console.warn('[Lagerbewegung] Could not update entity lagerortId:', updateError);
         }
+
+        // Log to entity change history
+        try {
+            const { user } = await requireAuth();
+            const who = durchgefuehrtVonName || (user ? `${user.vorname} ${user.nachname}` : 'System');
+            const email = user?.email || '';
+            const typLabel = typ === 'einlagerung' ? 'Einlagerung' : typ === 'auslagerung' ? 'Auslagerung' : typ;
+            // Resolve lagerort names for a readable summary
+            const [vonLagerort, nachLagerort] = await Promise.all([
+                vonLagerortId ? DatabaseService.get('lagerorte', vonLagerortId) : Promise.resolve(null),
+                DatabaseService.get('lagerorte', nachLagerortId),
+            ]);
+            const vonName = (vonLagerort as any)?.name || vonLagerortId || '—';
+            const nachName = (nachLagerort as any)?.name || nachLagerortId || '—';
+            const entityTypeCasted = (['teilsystem','position','unterposition'] as const).find(t => t === entityType);
+            if (entityTypeCasted) {
+                await ChangelogService.createEntry({
+                    entityType: entityTypeCasted,
+                    entityId,
+                    projektId,
+                    changedAt: new Date().toISOString(),
+                    changedBy: who,
+                    changedByEmail: email,
+                    changedFields: [{ field: 'lagerortId', label: typLabel, before: vonName, after: nachName }],
+                    summary: `${typLabel}: ${vonName} → ${nachName}`,
+                });
+            }
+        } catch { /* changelog failures must not block the response */ }
 
         return NextResponse.json(bewegung, { status: 201 });
     } catch (error: any) {

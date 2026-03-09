@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { DatabaseService } from '@/lib/services/db';
 import { TsStunden, Mitarbeiter } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
+import { requireAuth } from '@/lib/helpers/requireAuth';
+import { ChangelogService } from '@/lib/services/changelogService';
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
@@ -24,6 +26,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+    const { user } = await requireAuth();
     try {
         const body = await request.json();
         if (!body.teilsystemId || !body.projektId || !body.mitarbeiterId || !body.datum || body.stunden == null) {
@@ -44,6 +47,24 @@ export async function POST(request: NextRequest) {
             createdAt: new Date().toISOString()
         };
         const created = await DatabaseService.upsert('ts_stunden', entry);
+
+        // Log to TS change history
+        if (body.teilsystemId) {
+            const who = user ? `${user.vorname} ${user.nachname}` : 'System';
+            const email = user?.email || '';
+            const mitarbeiterLabel = body.mitarbeiterName || body.mitarbeiterId;
+            await ChangelogService.createEntry({
+                entityType: 'teilsystem',
+                entityId: body.teilsystemId,
+                projektId: body.projektId,
+                changedAt: new Date().toISOString(),
+                changedBy: who,
+                changedByEmail: email,
+                changedFields: [{ field: 'stunden', label: 'Stunden', before: null, after: `${mitarbeiterLabel}: ${body.stunden}h (CHF ${gesamtpreis})` }],
+                summary: `Stunden erfasst: ${mitarbeiterLabel} ${body.stunden}h am ${body.datum} = CHF ${gesamtpreis}`,
+            });
+        }
+
         return NextResponse.json(created, { status: 201 });
     } catch (error) {
         return NextResponse.json({ error: 'Fehler beim Speichern' }, { status: 500 });
