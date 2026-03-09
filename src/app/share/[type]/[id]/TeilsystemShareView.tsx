@@ -181,7 +181,7 @@ export default function TeilsystemShareView({ id }: { id: string }) {
             </div>
 
             {/* ── Aktionen (nur mit Login) ───────────────────────────────────── */}
-            {item.projektId && (
+            {(
                 <Card className="border-2 border-primary/10 shadow-sm rounded-2xl overflow-hidden">
                     <CardHeader className="py-2.5 px-4 bg-muted border-b border-border">
                         <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
@@ -194,21 +194,21 @@ export default function TeilsystemShareView({ id }: { id: string }) {
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             {/* Einlagern */}
-                            <a href={`/login?redirect=${encodeURIComponent(`/${item.projektId}/lager-scan?type=teilsystem&id=${id}&action=einlagerung&qr=TEILSYSTEM:${id}`)}`}>
+                            <a href={`/login?redirect=${encodeURIComponent(`/lager-scan?type=teilsystem&id=${id}&action=einlagerung&qr=TEILSYSTEM:${id}&projektId=${item.projektId || ''}`)}`}>
                                 <Button className="w-full h-11 border-2 border-blue-400 bg-blue-50 hover:bg-blue-100 text-blue-700 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm border-b-4 active:border-b-2">
                                     <span className="text-base">↓</span>
                                     Einlagern
                                 </Button>
                             </a>
                             {/* Auslagern */}
-                            <a href={`/login?redirect=${encodeURIComponent(`/${item.projektId}/lager-scan?type=teilsystem&id=${id}&action=auslagerung&qr=TEILSYSTEM:${id}`)}`}>
+                            <a href={`/login?redirect=${encodeURIComponent(`/lager-scan?type=teilsystem&id=${id}&action=auslagerung&qr=TEILSYSTEM:${id}&projektId=${item.projektId || ''}`)}`}>
                                 <Button className="w-full h-11 border-2 border-red-400 bg-red-50 hover:bg-red-100 text-red-700 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm border-b-4 active:border-b-2">
                                     <span className="text-base">↑</span>
                                     Auslagern
                                 </Button>
                             </a>
                             {/* Kosten erfassen */}
-                            <a href={`/login?redirect=${encodeURIComponent(`/${item.projektId}/kosten?ts=${id}`)}`}>
+                            <a href={`/login?redirect=${encodeURIComponent(`/kosten?ts=${id}&projektId=${item.projektId || ''}`)}`}>
                                 <Button className="w-full h-11 border-2 border-green-400 bg-green-50 hover:bg-green-100 text-green-700 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm border-b-4 active:border-b-2">
                                     <BadgeDollarSign className="h-4 w-4" />
                                     Kosten erfassen
