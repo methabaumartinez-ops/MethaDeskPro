@@ -185,6 +185,8 @@ export interface StoredUser {
     confirmed: boolean;
     confirmationToken?: string;
     onboardingStatus?: 'pending' | 'completed' | 'skipped';
+    mustChangePassword?: boolean;
+    must_change_password?: boolean; // Supabase column name
 }
 
 export interface SafeUser {
@@ -196,12 +198,15 @@ export interface SafeUser {
     abteilung?: string;
     role: UserRole;
     onboardingStatus?: 'pending' | 'completed' | 'skipped';
+    mustChangePassword?: boolean;
 }
 
 function toSafeUser(user: StoredUser & Record<string, any>): SafeUser {
     // Supabase schema uses 'name' (full), legacy uses 'vorname'/'nachname'
     const vorname = user.vorname || (user.name ? user.name.split(' ')[0] : user.username || '');
     const nachname = user.nachname || (user.name ? user.name.split(' ').slice(1).join(' ') : '');
+    // Support both camelCase (code) and snake_case (Supabase column)
+    const mustChangePassword = user.mustChangePassword ?? user.must_change_password ?? false;
 
     return {
         id: user.id,
@@ -212,6 +217,7 @@ function toSafeUser(user: StoredUser & Record<string, any>): SafeUser {
         abteilung: user.abteilung || user.department,
         role: user.role,
         onboardingStatus: user.onboardingStatus ?? 'completed',
+        mustChangePassword,
     };
 }
 
@@ -325,7 +331,12 @@ export async function login(emailStr: string, passwordStr: string): Promise<{ to
         }
 
         const safeUser = toSafeUser(user);
-        const token = await generateToken({ userId: user.id, email: user.email, role: user.role });
+        const token = await generateToken({
+            userId: user.id,
+            email: user.email,
+            role: user.role,
+            mustChangePassword: safeUser.mustChangePassword ?? false,
+        });
 
         console.log(`[Diagnostic] Login successful for ${email}, token generated`);
         return { token, user: safeUser };
@@ -499,6 +510,36 @@ export async function changePassword(userId: string, currentPassword: string, ne
         return { success: true };
     } catch (error) {
         console.error('Change password error:', error);
+        return { error: 'Passwortänderung fehlgeschlagen.' };
+    }
+}
+
+/**
+ * Clears the must_change_password flag after the user sets a new password.
+ */
+export async function clearMustChangePassword(userId: string): Promise<void> {
+    try {
+        const user = await DatabaseService.get<StoredUser & Record<string, any>>(COLLECTION, userId);
+        if (!user) return;
+        await DatabaseService.upsert(COLLECTION, { ...user, must_change_password: false, mustChangePassword: false });
+    } catch (error) {
+        console.error('clearMustChangePassword error:', error);
+    }
+}
+
+/**
+ * Sets a new password for a user (forced change — no current password required).
+ */
+export async function forceChangePassword(userId: string, newPassword: string): Promise<{ success: boolean } | { error: string }> {
+    try {
+        const user = await DatabaseService.get<StoredUser & Record<string, any>>(COLLECTION, userId);
+        if (!user) return { error: 'Benutzer nicht gefunden.' };
+
+        const newHash = await hashPassword(newPassword);
+        await DatabaseService.upsert(COLLECTION, { ...user, passwordHash: newHash, must_change_password: false, mustChangePassword: false });
+        return { success: true };
+    } catch (error) {
+        console.error('forceChangePassword error:', error);
         return { error: 'Passwortänderung fehlgeschlagen.' };
     }
 }

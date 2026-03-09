@@ -87,7 +87,7 @@ function EditCell({ value, onChange, type = 'text' }: { value: string | number; 
     return (
         <input
             type={type}
-            className="w-full bg-transparent border-b border-border focus:border-primary outline-none text-xs font-semibold py-0.5 px-1"
+            className="w-full bg-transparent border-b border-border focus:border-primary outline-none text-xs font-semibold py-0.5 px-1 text-slate-900"
             value={value}
             onChange={e => onChange(e.target.value)}
         />
@@ -357,7 +357,7 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
                                                     onChange={e => setPositions(prev => prev.map((x, j) => j === i ? { ...x, selected: e.target.checked } : x))}
                                                 />
                                             </TableCell>
-                                            <TableCell className="font-black text-xs text-primary/70">
+                                            <TableCell className="font-black text-xs text-slate-500">
                                                 {p.posNr}
                                             </TableCell>
                                             <TableCell className="font-bold text-sm">
@@ -430,7 +430,7 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
                                                         onChange={e => setUnterpos(prev => prev.map((x, j) => j === i ? { ...x, selected: e.target.checked } : x))}
                                                     />
                                                 </TableCell>
-                                                <TableCell className="font-black text-xs text-primary/70">
+                                                <TableCell className="font-black text-xs text-slate-500">
                                                     {u.posNummer}
                                                 </TableCell>
                                                 <TableCell>

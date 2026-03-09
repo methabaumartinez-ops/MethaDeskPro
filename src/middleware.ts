@@ -12,7 +12,7 @@ function addSecurityHeaders(response: NextResponse) {
 }
 
 // Rutas públicas que NO requieren autenticación
-const PUBLIC_PATHS = ['/', '/login', '/register', '/confirm'];
+const PUBLIC_PATHS = ['/', '/login', '/register', '/confirm', '/force-change-password'];
 // SECURITY: Only truly public prefixes. All /api/* routes are protected by default.
 // Route handlers perform additional fine-grained RBAC checks as defense-in-depth.
 const PUBLIC_PREFIXES = ['/api/auth/', '/api/public/', '/_next/', '/favicon.ico', '/share/'];
@@ -67,6 +67,11 @@ export async function middleware(request: NextRequest) {
         const response = NextResponse.redirect(new URL('/login', request.url));
         response.cookies.set('methabau_token', '', { maxAge: 0, path: '/' });
         return response;
+    }
+    // force-change-password check: si el token indica que hay que cambiar password,
+    // bloquear toda navegación de página (no APIs, no la propia página de cambio)
+    if (payload.mustChangePassword === true && !isApiRoute && pathname !== '/force-change-password') {
+        return NextResponse.redirect(new URL('/force-change-password', request.url));
     }
 
     return addSecurityHeaders(NextResponse.next());

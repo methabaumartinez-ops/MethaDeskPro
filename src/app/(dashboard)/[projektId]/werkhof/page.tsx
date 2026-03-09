@@ -9,7 +9,7 @@ import { BestellService } from '@/lib/services/bestellService';
 import { ProjectService } from '@/lib/services/projectService';
 import { MaterialBestellung, BestellungItem, Projekt } from '@/types';
 import { Badge } from '@/components/ui/badge';
-import { Warehouse, Package, CheckCircle2, Circle, Truck, Inbox, ArrowRight, Check, Edit2, MessageSquare, Camera, ListChecks, Clock, Users } from 'lucide-react';
+import { Warehouse, Package, CheckCircle2, Circle, Truck, Inbox, ArrowRight, Check, Edit2, MessageSquare, Camera, ListChecks, Clock, Users, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 
@@ -92,6 +92,16 @@ export default function WerkhofPage() {
             setBestellungen(current => current.map(b => b.id === bestellungId ? { ...b, bemerkung } : b));
         } catch (error) {
             console.error("Fehler beim Speichern des Kommentars", error);
+        }
+    };
+
+    const handleDeleteBestellung = async (bestellungId: string) => {
+        if (!window.confirm('Bestellung wirklich endgueltig loeschen? Diese Aktion kann nicht rueckgaengig gemacht werden.')) return;
+        try {
+            await fetch(`/api/bestellungen/${bestellungId}`, { method: 'DELETE' });
+            setBestellungen(current => current.filter(b => b.id !== bestellungId));
+        } catch (error) {
+            console.error('Fehler beim Loeschen der Bestellung', error);
         }
     };
 
@@ -197,6 +207,7 @@ export default function WerkhofPage() {
                                                     router={router}
                                                     setBestellungen={setBestellungen}
                                                     projektId={pId}
+                                                    onDelete={handleDeleteBestellung}
                                                 />
                                             )) : (
                                                 <div className="col-span-full py-12 flex flex-col items-center justify-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-100 italic text-slate-400 font-medium">
@@ -220,6 +231,7 @@ export default function WerkhofPage() {
                                                     router={router}
                                                     setBestellungen={setBestellungen}
                                                     projektId={pId}
+                                                    onDelete={handleDeleteBestellung}
                                                 />
                                             )) : (
                                                 <div className="col-span-full py-12 flex flex-col items-center justify-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-100 italic text-slate-400 font-medium">
@@ -248,7 +260,8 @@ function OrderCard({
     router,
     setBestellungen,
     projektId,
-    onEdit
+    onEdit,
+    onDelete,
 }: {
     bestellung: MaterialBestellung,
     getProjektName: (id: string) => string,
@@ -260,6 +273,7 @@ function OrderCard({
     setBestellungen: React.Dispatch<React.SetStateAction<MaterialBestellung[]>>,
     projektId: string,
     onEdit?: () => void,
+    onDelete?: (id: string) => void,
 }) {
     const progress = (bestellung.items.filter(i => i.vorbereitet).length / bestellung.items.length) * 100;
     const isAllReady = progress === 100;
@@ -409,9 +423,21 @@ function OrderCard({
                     )}
 
                     {bestellung.status === 'versendet' && (
-                        <div className="w-full py-2 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-center gap-2 text-emerald-600">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span className="text-[9px] font-black uppercase tracking-widest">Versendet</span>
+                        <div className="flex flex-col gap-2">
+                            <div className="w-full py-2 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-center gap-2 text-emerald-600">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span className="text-[9px] font-black uppercase tracking-widest">Versendet</span>
+                            </div>
+                            {onDelete && (
+                                <Button
+                                    variant="outline"
+                                    className="w-full h-10 border-red-200 text-red-500 hover:bg-red-50 hover:text-red-700 hover:border-red-300 font-black text-xs uppercase tracking-[0.15em] rounded-xl flex items-center justify-center gap-2 transition-all"
+                                    onClick={() => onDelete(bestellung.id)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                    Bestellung loeschen
+                                </Button>
+                            )}
                         </div>
                     )}
                 </div>

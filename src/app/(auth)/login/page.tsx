@@ -59,7 +59,11 @@ function LoginForm() {
             }
 
             setCurrentUser(result.user);
-            router.push(redirectTo);
+            if (result.user.mustChangePassword) {
+                router.push('/force-change-password');
+            } else {
+                router.push(redirectTo);
+            }
         } catch {
             setServerError('Verbindungsfehler. Bitte versuchen Sie es erneut.');
         }
