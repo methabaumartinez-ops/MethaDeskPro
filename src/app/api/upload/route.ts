@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getUserFromToken } from '@/lib/services/authService';
+import { uploadLimiter } from '@/lib/helpers/rateLimit';
 
 const MAX_FILE_SIZE = 200 * 1024 * 1024; // 200MB
 const ALLOWED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png', '.ifc', '.zip', '.docx', '.xlsx'];
@@ -27,7 +28,12 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Keine Berechtigung zum Hochladen von Dateien.' }, { status: 403 });
         }
 
-        // 2. File Size Validation
+        // 2. RATE LIMIT: max 20 uploads/min per user
+        const limitResult = uploadLimiter.check(user.id);
+        if (!limitResult.allowed) {
+            return NextResponse.json({ error: limitResult.message }, { status: 429 });
+        }
+
         if (file.size > MAX_FILE_SIZE) {
             return NextResponse.json({ error: 'Datei ist zu gross (max. 10MB).' }, { status: 400 });
         }

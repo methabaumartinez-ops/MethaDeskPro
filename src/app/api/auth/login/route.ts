@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { login } from '@/lib/services/authService';
 import { z } from 'zod';
+import { loginLimiter } from '@/lib/helpers/rateLimit';
 
 const loginSchema = z.object({
     email: z.string().email({ message: 'Ungültiges E-Mail-Format.' }),
@@ -8,6 +9,13 @@ const loginSchema = z.object({
 });
 
 export async function POST(req: Request) {
+    // RATE LIMIT: max 10 login attempts/min per IP — brute force protection
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+    const limitResult = loginLimiter.check(ip);
+    if (!limitResult.allowed) {
+        return NextResponse.json({ error: limitResult.message }, { status: 429 });
+    }
+
     try {
         const body = await req.json();
         const validation = loginSchema.safeParse(body);

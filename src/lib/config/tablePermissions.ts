@@ -12,39 +12,39 @@
  */
 
 export type TableId =
-  | 'projekte'
-  | 'teilsysteme'
-  | 'positionen'
-  | 'unterpositionen'
-  | 'lieferanten'
-  | 'subunternehmer'
-  | 'mitarbeiter'
-  | 'fahrzeuge'
-  | 'unternehmer'
-  | 'kosten'
-  | 'lagerort'
-  | 'qr';
+    | 'projekte'
+    | 'teilsysteme'
+    | 'positionen'
+    | 'unterpositionen'
+    | 'lieferanten'
+    | 'subunternehmer'
+    | 'mitarbeiter'
+    | 'fahrzeuge'
+    | 'unternehmer'
+    | 'kosten'
+    | 'lagerort'
+    | 'qr';
 
 export interface TablePerms {
-    read:   boolean;
+    read: boolean;
     export: boolean;
-    edit:   boolean;
+    edit: boolean;
     delete: boolean;
 }
 
 export const TABLE_LABELS: Record<TableId, string> = {
-    projekte:        'Projekte',
-    teilsysteme:     'Teilsysteme',
-    positionen:      'Positionen',
+    projekte: 'Projekte',
+    teilsysteme: 'Teilsysteme',
+    positionen: 'Positionen',
     unterpositionen: 'Unt. Positionen',
-    lieferanten:     'Lieferanten',
-    subunternehmer:  'Subunternehmer',
-    mitarbeiter:     'Mitarbeiter',
-    fahrzeuge:       'Fahrzeuge',
-    unternehmer:     'Unternehmer',
-    kosten:          'Kosten',
-    lagerort:        'Lagerort',
-    qr:              'QR-Codes',
+    lieferanten: 'Lieferanten',
+    subunternehmer: 'Subunternehmer',
+    mitarbeiter: 'Mitarbeiter',
+    fahrzeuge: 'Fahrzeuge',
+    unternehmer: 'Unternehmer',
+    kosten: 'Kosten',
+    lagerort: 'Lagerort',
+    qr: 'QR-Codes',
 };
 
 export const ALL_TABLES: TableId[] = (Object.keys(TABLE_LABELS) as TableId[]).sort((a, b) =>
@@ -54,9 +54,9 @@ export const ALL_TABLES: TableId[] = (Object.keys(TABLE_LABELS) as TableId[]).so
 export const ALL_PERMS: (keyof TablePerms)[] = ['read', 'export', 'edit', 'delete'];
 
 export const PERM_LABELS: Record<keyof TablePerms, string> = {
-    read:   'Lesen',
+    read: 'Lesen',
     export: 'Exportieren',
-    edit:   'Bearbeiten',
+    edit: 'Bearbeiten',
     delete: 'Loeschen',
 };
 
@@ -67,18 +67,18 @@ const NONE: TablePerms = { read: false, export: false, edit: false, delete: fals
 
 /** Default table permissions per Abteilung */
 export const DEFAULT_TABLE_PERMISSIONS: Record<string, Record<TableId, TablePerms>> = {
-    projektleiter:  { projekte: FULL, teilsysteme: FULL, positionen: FULL, unterpositionen: FULL, lieferanten: FULL, subunternehmer: FULL, mitarbeiter: FULL, fahrzeuge: FULL, unternehmer: FULL, kosten: FULL, lagerort: FULL, qr: FULL },
-    bauleiter:      { projekte: READ_EXPORT, teilsysteme: READ_EXPORT, positionen: READ_EXPORT, unterpositionen: READ_EXPORT, lieferanten: READ_ONLY, subunternehmer: READ_ONLY, mitarbeiter: NONE, fahrzeuge: READ_ONLY, unternehmer: READ_EXPORT, kosten: FULL, lagerort: FULL, qr: FULL },
-    planung:        { projekte: FULL, teilsysteme: READ_EXPORT, positionen: READ_EXPORT, unterpositionen: READ_EXPORT, lieferanten: READ_ONLY, subunternehmer: READ_ONLY, mitarbeiter: READ_ONLY, fahrzeuge: NONE, unternehmer: READ_ONLY, kosten: FULL, lagerort: FULL, qr: FULL },
-    einkauf:        { projekte: READ_ONLY, teilsysteme: READ_ONLY, positionen: READ_ONLY, unterpositionen: READ_ONLY, lieferanten: FULL, subunternehmer: READ_EXPORT, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: READ_EXPORT, kosten: FULL, lagerort: FULL, qr: FULL },
-    avor:           { projekte: READ_ONLY, teilsysteme: READ_EXPORT, positionen: READ_EXPORT, unterpositionen: READ_EXPORT, lieferanten: READ_ONLY, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE, kosten: FULL, lagerort: FULL, qr: FULL },
-    schlosserei:    { projekte: READ_ONLY, teilsysteme: READ_ONLY, positionen: READ_ONLY, unterpositionen: READ_ONLY, lieferanten: NONE, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE, kosten: FULL, lagerort: FULL, qr: FULL },
-    blech:          { projekte: READ_ONLY, teilsysteme: READ_ONLY, positionen: READ_ONLY, unterpositionen: READ_ONLY, lieferanten: NONE, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE, kosten: FULL, lagerort: FULL, qr: FULL },
-    werkhof:        { projekte: READ_ONLY, teilsysteme: READ_ONLY, positionen: READ_ONLY, unterpositionen: NONE, lieferanten: READ_ONLY, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: FULL, unternehmer: NONE, kosten: FULL, lagerort: FULL, qr: FULL },
-    montage:        { projekte: READ_ONLY, teilsysteme: READ_ONLY, positionen: READ_ONLY, unterpositionen: READ_ONLY, lieferanten: NONE, subunternehmer: READ_ONLY, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE, kosten: FULL, lagerort: FULL, qr: FULL },
-    bau:            { projekte: READ_EXPORT, teilsysteme: READ_EXPORT, positionen: READ_EXPORT, unterpositionen: READ_EXPORT, lieferanten: READ_ONLY, subunternehmer: READ_ONLY, mitarbeiter: NONE, fahrzeuge: READ_ONLY, unternehmer: READ_EXPORT, kosten: FULL, lagerort: FULL, qr: FULL },
+    projektleiter: { projekte: FULL, teilsysteme: FULL, positionen: FULL, unterpositionen: FULL, lieferanten: FULL, subunternehmer: FULL, mitarbeiter: FULL, fahrzeuge: FULL, unternehmer: FULL, kosten: FULL, lagerort: FULL, qr: FULL },
+    bauleiter: { projekte: READ_EXPORT, teilsysteme: READ_EXPORT, positionen: READ_EXPORT, unterpositionen: READ_EXPORT, lieferanten: READ_ONLY, subunternehmer: READ_ONLY, mitarbeiter: NONE, fahrzeuge: READ_ONLY, unternehmer: READ_EXPORT, kosten: FULL, lagerort: FULL, qr: FULL },
+    planung: { projekte: FULL, teilsysteme: READ_EXPORT, positionen: READ_EXPORT, unterpositionen: READ_EXPORT, lieferanten: READ_ONLY, subunternehmer: READ_ONLY, mitarbeiter: READ_ONLY, fahrzeuge: NONE, unternehmer: READ_ONLY, kosten: FULL, lagerort: FULL, qr: FULL },
+    einkauf: { projekte: READ_ONLY, teilsysteme: READ_ONLY, positionen: READ_ONLY, unterpositionen: READ_ONLY, lieferanten: FULL, subunternehmer: READ_EXPORT, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: READ_EXPORT, kosten: FULL, lagerort: FULL, qr: FULL },
+    avor: { projekte: READ_ONLY, teilsysteme: READ_EXPORT, positionen: READ_EXPORT, unterpositionen: READ_EXPORT, lieferanten: READ_ONLY, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE, kosten: FULL, lagerort: FULL, qr: FULL },
+    schlosserei: { projekte: READ_ONLY, teilsysteme: READ_ONLY, positionen: READ_ONLY, unterpositionen: READ_ONLY, lieferanten: NONE, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE, kosten: FULL, lagerort: FULL, qr: FULL },
+    blech: { projekte: READ_ONLY, teilsysteme: READ_ONLY, positionen: READ_ONLY, unterpositionen: READ_ONLY, lieferanten: NONE, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE, kosten: FULL, lagerort: FULL, qr: FULL },
+    werkhof: { projekte: READ_ONLY, teilsysteme: READ_ONLY, positionen: READ_ONLY, unterpositionen: NONE, lieferanten: READ_ONLY, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: FULL, unternehmer: NONE, kosten: FULL, lagerort: FULL, qr: FULL },
+    montage: { projekte: READ_ONLY, teilsysteme: READ_ONLY, positionen: READ_ONLY, unterpositionen: READ_ONLY, lieferanten: NONE, subunternehmer: READ_ONLY, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE, kosten: FULL, lagerort: FULL, qr: FULL },
+    bau: { projekte: READ_EXPORT, teilsysteme: READ_EXPORT, positionen: READ_EXPORT, unterpositionen: READ_EXPORT, lieferanten: READ_ONLY, subunternehmer: READ_ONLY, mitarbeiter: NONE, fahrzeuge: READ_ONLY, unternehmer: READ_EXPORT, kosten: FULL, lagerort: FULL, qr: FULL },
     subunternehmer: { projekte: NONE, teilsysteme: NONE, positionen: NONE, unterpositionen: NONE, lieferanten: NONE, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE, kosten: FULL, lagerort: FULL, qr: FULL },
-    unternehmer:    { projekte: NONE, teilsysteme: NONE, positionen: NONE, unterpositionen: NONE, lieferanten: NONE, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE, kosten: FULL, lagerort: FULL, qr: FULL },
+    unternehmer: { projekte: NONE, teilsysteme: NONE, positionen: NONE, unterpositionen: NONE, lieferanten: NONE, subunternehmer: NONE, mitarbeiter: NONE, fahrzeuge: NONE, unternehmer: NONE, kosten: FULL, lagerort: FULL, qr: FULL },
 };
 
 const STORAGE_KEY = 'methabau_table_permissions';
@@ -95,6 +95,45 @@ export function loadTablePermissions(): Record<string, Record<TableId, TablePerm
 export function saveTablePermissions(perms: Record<string, Record<TableId, TablePerms>>): void {
     if (typeof window === 'undefined') return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(perms));
+}
+
+// ─── DB-backed API (source of truth) ──────────────────────────────────────
+
+/**
+ * Fetch table permissions from the server (GET /api/admin/permissions).
+ * On success, updates the localStorage cache.
+ * Falls back to localStorage/defaults if the request fails.
+ */
+export async function fetchAndCacheTablePermissions(): Promise<Record<string, Record<TableId, TablePerms>>> {
+    try {
+        const res = await fetch('/api/admin/permissions');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const perms = data.tablePermissions as Record<string, Record<TableId, TablePerms>>;
+        saveTablePermissions(perms);
+        return perms;
+    } catch (err) {
+        console.warn('[tablePermissions] Could not fetch from DB, using cache/defaults:', err);
+        return loadTablePermissions();
+    }
+}
+
+/**
+ * Save table permissions to the server (PUT /api/admin/permissions).
+ * Simultaneously updates the localStorage cache.
+ */
+export async function persistTablePermissions(perms: Record<string, Record<TableId, TablePerms>>): Promise<void> {
+    // Optimistic cache update
+    saveTablePermissions(perms);
+    const res = await fetch('/api/admin/permissions', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tablePermissions: perms }),
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Fehler beim Speichern der Tabellenberechtigungen.');
+    }
 }
 
 /** Check if abteilung has a specific permission on a table */

@@ -2,6 +2,8 @@ import OpenAI from 'openai';
 import { AIService } from '@/lib/services/aiService';
 import { z } from 'zod';
 import { requireAuth } from '@/lib/helpers/requireAuth';
+import { chatLimiter } from '@/lib/helpers/rateLimit';
+import { NextResponse } from 'next/server';
 
 export const maxDuration = 30;
 
@@ -12,8 +14,14 @@ const chatSchema = z.object({
 
 export async function POST(req: Request) {
     // SECURITY: Require authentication to prevent unauthenticated OpenAI cost abuse.
-    const { error } = await requireAuth();
+    const { user, error } = await requireAuth();
     if (error) return error;
+
+    // RATE LIMIT: max 20 requests/min per user to protect OpenAI credits
+    const limitResult = chatLimiter.check(user.id);
+    if (!limitResult.allowed) {
+        return NextResponse.json({ error: limitResult.message }, { status: 429 });
+    }
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) return new Response(JSON.stringify({ error: 'API Key missing' }), { status: 500 });
