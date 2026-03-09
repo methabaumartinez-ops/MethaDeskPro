@@ -9,12 +9,9 @@ const nextConfig: NextConfig = {
   experimental: {
     webpackBuildWorker: false,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  // eslint and typescript checks are ENABLED — do not suppress them.
+  // If the build fails due to type errors, fix the errors instead of
+  // re-adding ignoreBuildErrors / ignoreDuringBuilds here.
   serverExternalPackages: ['googleapis', 'google-auth-library', '@xenova/transformers'],
   async headers() {
     return [
@@ -35,12 +32,15 @@ const nextConfig: NextConfig = {
   },
   webpack(config, { isServer, webpack }) {
     if (!isServer) {
-      // For client-side bundles, map the database service to the dummy client proxy
-      // to prevent "server-only" or qdrant components from breaking the build.
+      // INTENTIONAL: permanent server/client boundary guards — do not remove.
+      //
+      // 1. db.ts → db.client.ts: prevents ANY DB service code from reaching
+      //    the browser bundle. DatabaseService on the client throws immediately.
+      //
+      // 2. qdrant/client → false: Qdrant is semantic-search only (server-side).
+      //    Blocking it here ensures it can never be bundled for the browser.
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const path = require('path');
-
-      // Use NormalModuleReplacementPlugin to intercept TS aliases BEFORE resolution
       config.plugins.push(
         new webpack.NormalModuleReplacementPlugin(
           /^@\/lib\/services\/db$/,

@@ -35,18 +35,18 @@ export interface User {
 // ============================================================
 
 export const ABTEILUNGEN_CONFIG = [
-  { id: 'projektleiter',  name: 'Projektleiter',    color: 'blue'      },
-  { id: 'bauleiter',      name: 'Bauleiter',        color: 'sky'       },
-  { id: 'planung',        name: 'Planung',          color: 'teal'      },
-  { id: 'einkauf',        name: 'Einkauf',          color: 'warning'   },
-  { id: 'avor',           name: 'AVOR',             color: 'info'      },
-  { id: 'schlosserei',    name: 'Schlosserei',      color: 'gray'      },
-  { id: 'blech',          name: 'Blechabteilung',   color: 'orange'    },
-  { id: 'werkhof',        name: 'Werkhof',          color: 'violet'    },
-  { id: 'montage',        name: 'Montage',          color: 'success'   },
-  { id: 'bau',            name: 'Bau',              color: 'error'     },
-  { id: 'subunternehmer', name: 'Subunternehmer',   color: 'default'   },
-  { id: 'unternehmer',    name: 'Unternehmer',      color: 'outline'   },
+  { id: 'projektleiter', name: 'Projektleiter', color: 'blue' },
+  { id: 'bauleiter', name: 'Bauleiter', color: 'sky' },
+  { id: 'planung', name: 'Planung', color: 'teal' },
+  { id: 'einkauf', name: 'Einkauf', color: 'warning' },
+  { id: 'avor', name: 'AVOR', color: 'info' },
+  { id: 'schlosserei', name: 'Schlosserei', color: 'gray' },
+  { id: 'blech', name: 'Blechabteilung', color: 'orange' },
+  { id: 'werkhof', name: 'Werkhof', color: 'violet' },
+  { id: 'montage', name: 'Montage', color: 'success' },
+  { id: 'bau', name: 'Bau', color: 'error' },
+  { id: 'subunternehmer', name: 'Subunternehmer', color: 'default' },
+  { id: 'unternehmer', name: 'Unternehmer', color: 'outline' },
 ] as const;
 
 export const ITEM_STATUS_OPTIONS = [
@@ -259,19 +259,30 @@ export interface Unterposition {
 // MATERIAL (Bestellungen)
 // ============================================================
 
+/**
+ * Material (Bestellungen)
+ *
+ * NOTE: The `material` table in Supabase has NO `positionId` column.
+ * Material is grouped by `projektId` only. Do NOT add `positionId` here
+ * unless the DB schema is explicitly migrated to include that column.
+ * See: scripts/supabase-schema.sql §9
+ */
 export interface Material {
   id: string;
-  positionId?: string;
+  // positionId is intentionally absent — column does not exist in DB schema
   teilsystemId?: string;
+  projektId?: string;
   name: string;
-  hersteller: string;
+  hersteller?: string;
   artikelnummer?: string;
-  status: ItemStatus;
+  bezeichnung?: string;
+  status?: ItemStatus;
   menge?: number;
   einheit?: string;
   preis?: number;
   liefertermin?: string;
-  projektId?: string;
+  lieferant?: string;
+  bemerkung?: string;
 }
 
 export type BestellungStatus = 'angefragt' | 'in_bearbeitung' | 'bereit' | 'versendet' | 'geliefert';
