@@ -68,10 +68,11 @@ export async function POST(req: Request) {
 
         const result = await DatabaseService.upsert('teilsysteme', newItem);
         return NextResponse.json(result);
-    } catch (error) {
+    } catch (error: any) {
         console.error('API Error creating teilsystem:', error);
+        const message = error?.message || 'Failed to create teilsystem';
         return NextResponse.json(
-            { error: 'Failed to create teilsystem' },
+            { error: message },
             { status: 500 }
         );
     }

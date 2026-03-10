@@ -86,9 +86,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         }
 
         return NextResponse.json(result);
-    } catch (error) {
+    } catch (error: any) {
         console.error('API Error updating teilsystem:', error);
-        return NextResponse.json({ error: 'Failed to update' }, { status: 500 });
+        const message = error?.message || 'Failed to update';
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }
 

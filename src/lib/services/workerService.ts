@@ -10,7 +10,7 @@ export const WorkerService = {
                     if (!res.ok) throw new Error('Failed to fetch workers');
                     const allWorkers = await res.json() as Worker[];
                     const workers = allWorkers.filter(w => (!projektId || !w.projektId || w.projektId === projektId));
-                    return workers.sort((a, b) => a.fullName.localeCompare(b.fullName));
+                    return workers.sort((a, b) => (a.fullName || '').localeCompare(b.fullName || ''));
     },
 
     async getWorkerById(id: string): Promise<Worker | null> {

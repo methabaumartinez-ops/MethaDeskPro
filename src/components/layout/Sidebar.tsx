@@ -105,7 +105,7 @@ export function Sidebar({ projektId, className }: { projektId: string; className
                 },
                 {
                     title: 'Produktion',
-                    href: `/${projektId}/teilsysteme`,
+                    href: `/${projektId}/produktion`,
                     icon: Factory,
                     pageKey: 'produktion',
                     subItems: [
