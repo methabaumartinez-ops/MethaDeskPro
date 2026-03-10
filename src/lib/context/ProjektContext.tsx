@@ -25,16 +25,14 @@ export function ProjektProvider({ children }: { children: React.ReactNode }) {
     // Load user from session cookie on mount
     useEffect(() => {
         async function loadUser() {
-            try {
-                const res = await fetch('/api/auth/me');
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.user) {
-                        _setCurrentUser(data.user);
-                    }
+            // 1. Load from localStorage immediately for instant render / permission check
+            const storedUser = localStorage.getItem('methabau_user');
+            if (storedUser) {
+                try {
+                    _setCurrentUser(JSON.parse(storedUser));
+                } catch (e) {
+                    console.error('Failed to parse user from localStorage:', e);
                 }
-            } catch (error) {
-                console.error('Failed to load user session:', error);
             }
 
             // Load project from localStorage
@@ -43,18 +41,24 @@ export function ProjektProvider({ children }: { children: React.ReactNode }) {
                 try {
                     _setActiveProjekt(JSON.parse(storedProjekt));
                 } catch (e) {
-                    console.error("Failed to parse project", e);
+                    console.error('Failed to parse project', e);
                 }
             }
 
-            // Load user from localStorage (for immediate permission check)
-            const storedUser = localStorage.getItem('methabau_user');
-            if (storedUser) {
-                try {
-                    _setCurrentUser(JSON.parse(storedUser));
-                } catch (e) {
-                    console.error("Failed to parse user", e);
+            // 2. Fetch fresh user from API — overwrites localStorage with latest DB data
+            //    (ensures new fields like profileImageUrl are always up to date)
+            try {
+                const res = await fetch('/api/auth/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.user) {
+                        _setCurrentUser(data.user);
+                        // Keep localStorage in sync with the fresh value
+                        localStorage.setItem('methabau_user', JSON.stringify(data.user));
+                    }
                 }
+            } catch (error) {
+                console.error('Failed to load user session:', error);
             }
 
             setLoading(false);

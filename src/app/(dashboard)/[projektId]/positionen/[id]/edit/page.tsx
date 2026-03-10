@@ -400,8 +400,23 @@ export default function PositionEditPage() {
                         </CardContent>
                     </Card>
 
-                    {/* Right Column: Uploads */}
-                    <div className="space-y-4 sticky top-6 lg:mt-[4.5rem]">
+                    {/* Right Column: Actions + Uploads */}
+                    <div className="space-y-4 sticky top-6">
+                        {/* Action Buttons — same size as Zurück button */}
+                        <div className="flex justify-between gap-3">
+                            <Link href={`/${projektId}/positionen/${id}`}>
+                                <Button type="button" variant="outline" className="h-9 px-6 font-bold border-2">Abbrechen</Button>
+                            </Link>
+                            <Button type="submit" className="h-9 px-6 font-bold" disabled={isSubmitting}>
+                                {isSubmitting ? 'Speichern...' : (
+                                    <span className="flex items-center gap-2">
+                                        <Save className="h-4 w-4" />
+                                        Speichern
+                                    </span>
+                                )}
+                            </Button>
+                        </div>
+
                         {/* IFC */}
                         <Card className="shadow-none border-2 border-dashed border-border bg-muted/30 flex flex-col">
                             <CardHeader className="bg-transparent border-b-0 pb-0 pt-3 px-4">
@@ -430,7 +445,7 @@ export default function PositionEditPage() {
                                 <p className="text-[9px] font-medium text-muted-foreground mb-3 text-center">
                                     Nur .ifc (Max. 50MB)
                                 </p>
-                                <Button type="button" size="sm" variant="outline" className="text-[10px] font-bold border-border h-7 px-3" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}>
+                                <Button type="button" size="sm" variant="metha-orange" className="text-[10px] font-bold h-7 px-3" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}>
                                     Wählen
                                 </Button>
                                 <input
@@ -475,7 +490,7 @@ export default function PositionEditPage() {
                                 <p className="text-[9px] font-medium text-muted-foreground mb-3 text-center">
                                     pdf, jpg, png, heic
                                 </p>
-                                <Button type="button" size="sm" variant="outline" className="text-[10px] font-bold border-border h-7 px-3" onClick={(e) => { e.stopPropagation(); docInputRef.current?.click(); }}>
+                                <Button type="button" size="sm" variant="metha-orange" className="text-[10px] font-bold h-7 px-3" onClick={(e) => { e.stopPropagation(); docInputRef.current?.click(); }}>
                                     Wählen
                                 </Button>
                                 <input
@@ -519,8 +534,8 @@ export default function PositionEditPage() {
                     </div>
                 </div>
 
-                {/* Bottom Action Row aligned perfectly right */}
-                <div className="flex justify-between gap-4 mt-8 sticky bottom-0 bg-background/80 backdrop-blur-sm py-4 border-t border-border/50 -mx-4 px-4 sm:mx-0 sm:px-0">
+                {/* Bottom: Delete */}
+                <div className="flex justify-start pt-4 border-t border-border/50">
                     <Button
                         type="button"
                         variant="danger"
@@ -528,22 +543,8 @@ export default function PositionEditPage() {
                         onClick={() => setShowDeleteConfirm(true)}
                     >
                         <Trash2 className="h-4 w-4" />
-                        Position löschen
+                        Position loeschen
                     </Button>
-
-                    <div className="flex gap-3">
-                        <Link href={`/${projektId}/positionen/${id}`}>
-                            <Button type="button" variant="outline" className="font-bold border-2">Abbrechen</Button>
-                        </Link>
-                        <Button type="submit" className="font-bold min-w-[140px]" disabled={isSubmitting}>
-                            {isSubmitting ? 'Wird gespeichert...' : (
-                                <span className="flex items-center gap-2">
-                                    <Save className="h-4 w-4" />
-                                    Speichern
-                                </span>
-                            )}
-                        </Button>
-                    </div>
                 </div>
             </form >
 

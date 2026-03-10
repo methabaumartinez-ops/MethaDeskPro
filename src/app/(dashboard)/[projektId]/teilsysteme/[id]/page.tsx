@@ -15,7 +15,7 @@ import { PositionService } from '@/lib/services/positionService';
 import { LagerortService } from '@/lib/services/lagerortService';
 import { SupplierService } from '@/lib/services/supplierService';
 import { Teilsystem, Position, Projekt, Lagerort, Lieferant, ABTEILUNGEN_CONFIG } from '@/types';
-import { STATUS_UI_CONFIG } from '@/lib/config/statusConfig';
+import { getStatusStyle, getStatusDateColor, getStatusPillClasses, getStatusBorderRing } from '@/lib/config/statusConfig';
 import {
     ArrowLeft, Edit, ListTodo, Plus, FileText, Truck,
     Calendar, User as UserIcon, Clock, Link as LinkIcon,
@@ -228,7 +228,7 @@ export default function TeilsystemDetailPage() {
                         );
                     })()}
 
-                    <StatusBadge status={item.status} className="px-5 py-1.5 text-sm rounded-xl shadow-md border-b-4 border-green-600/20 ring-4 ring-green-50/50" />
+                    <StatusBadge status={item.status} className={cn('px-5 py-1.5 text-sm rounded-xl shadow-md border-b-4', getStatusBorderRing(item.status))} />
 
                     {isReadOnly && (
                         <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase bg-muted px-2 py-1 rounded-md">
@@ -250,58 +250,28 @@ export default function TeilsystemDetailPage() {
                     <CardContent className="p-5 flex-1 flex items-center">
                         <div className="grid grid-cols-3 gap-3 w-full">
                             {(() => {
-                                // Derive date text color from status using the centralized config
-                                const getStatusColor = (s: string | undefined): string => {
-                                    const val = s?.toLowerCase() || 'offen';
-                                    const cfg = STATUS_UI_CONFIG[val as keyof typeof STATUS_UI_CONFIG];
-                                    if (!cfg) return 'text-muted-foreground/50';
-                                    const variantColorMap: Record<string, string> = {
-                                        success: 'text-green-600 dark:text-green-400',
-                                        info: 'text-blue-600 dark:text-blue-400',
-                                        teal: 'text-teal-600 dark:text-teal-400',
-                                        warning: 'text-amber-600 dark:text-amber-400',
-                                        error: 'text-red-600 dark:text-red-400',
-                                        outline: 'text-slate-500 dark:text-slate-400',
-                                        default: 'text-slate-500 dark:text-slate-400',
-                                    };
-                                    return variantColorMap[cfg.variant] || 'text-muted-foreground/50';
-                                };
-                                const getStatusBadge = (s: string | undefined) => {
-                                    const val = s?.toLowerCase() || 'offen';
-                                    const cfg = STATUS_UI_CONFIG[val as keyof typeof STATUS_UI_CONFIG];
-                                    if (!cfg) return { text: s ?? '—', cls: 'bg-muted text-muted-foreground border-border' };
-                                    const variantBadgeMap: Record<string, string> = {
-                                        success: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800',
-                                        info: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800',
-                                        teal: 'bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-900/30 dark:text-teal-400 dark:border-teal-800',
-                                        warning: 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800',
-                                        error: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800',
-                                        outline: 'bg-slate-100 text-slate-600 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600',
-                                        default: 'bg-slate-100 text-slate-600 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600',
-                                    };
-                                    return { text: cfg.label, cls: variantBadgeMap[cfg.variant] || 'bg-muted text-muted-foreground border-border' };
-                                };
                                 const dates = [
                                     { label: 'Planabgabe', value: item.abgabePlaner, status: item.planStatus },
                                     { label: 'Lieferdatum', value: item.lieferfrist, status: item.status === 'geliefert' || item.status === 'verbaut' || item.status === 'abgeschlossen' ? 'fertig' : item.status },
                                     { label: 'Montage', value: item.montagetermin, status: item.status === 'verbaut' || item.status === 'abgeschlossen' ? 'fertig' : item.status },
                                 ];
                                 return dates.map((d, i) => {
-                                    const dateColorCls = getStatusColor(d.status);
-                                    const badge = getStatusBadge(d.status);
+                                    const dateColorCls = d.status ? getStatusDateColor(d.status) : 'text-muted-foreground/50';
+                                    const statusStyle = getStatusStyle(d.status);
+                                    const pillCls = getStatusPillClasses(d.status);
                                     return (
                                         <div key={i} className="flex flex-col items-center text-center gap-1">
                                             <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight">{d.label}</span>
-                                            <span className={cn("text-sm font-black tracking-tight leading-none", 
-                                                d.label === 'Montage' 
-                                                    ? (d.value ? (isMontageTerminBauleiter(d.value) ? "text-red-600" : dateColorCls) : "text-red-600")
-                                                    : (d.value ? dateColorCls : "text-muted-foreground/30")
+                                            <span className={cn("text-sm font-black tracking-tight leading-none",
+                                                d.label === 'Montage'
+                                                    ? (d.value ? (isMontageTerminBauleiter(d.value) ? 'text-red-600' : dateColorCls) : 'text-red-600')
+                                                    : (d.value ? dateColorCls : 'text-muted-foreground/30')
                                             )}>
                                                 {d.label === 'Montage' ? (d.value || 'Durch Bauleiter') : (d.value || '—')}
                                             </span>
                                             {d.value ? (
-                                                <div className={cn("px-1.5 py-0.5 rounded text-[8px] font-black uppercase border leading-tight", badge.cls)}>
-                                                    {badge.text}
+                                                <div className={cn('px-1.5 py-0.5 rounded text-[8px] font-black uppercase border leading-tight', pillCls)}>
+                                                    {statusStyle.label}
                                                 </div>
                                             ) : (
                                                 <div className="text-[9px] text-muted-foreground/20 font-bold">—</div>

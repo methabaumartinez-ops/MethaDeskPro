@@ -27,6 +27,7 @@ export interface User {
   abteilung?: string;
   role: UserRole;
   onboardingStatus?: 'pending' | 'completed' | 'skipped';
+  profileImageUrl?: string | null;
 }
 
 

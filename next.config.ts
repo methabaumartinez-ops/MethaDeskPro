@@ -6,6 +6,21 @@ const nextConfig: NextConfig = {
   // In dev mode this generates incompatible cache artifacts that cause
   // vendor-chunk 404s and ERR_CONNECTION_REFUSED after hot reloads.
   ...(process.env.NEXT_OUTPUT_STANDALONE === '1' ? { output: 'standalone' } : {}),
+  images: {
+    // Allow loading avatars from the self-hosted Supabase Storage (Easypanel)
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.easypanel.host',
+        pathname: '/storage/v1/object/public/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
+  },
   experimental: {
     webpackBuildWorker: false,
   },

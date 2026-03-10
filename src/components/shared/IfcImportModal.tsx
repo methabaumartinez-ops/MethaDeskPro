@@ -72,12 +72,22 @@ export type IfcExtractResult = {
     summary: { totalPositionen: number; totalUnterpositionen: number; totalMateriale: number };
 };
 
+export type IfcPreviewResult = {
+    positionen: any[];
+    unterpositionen: any[];
+    materiale: any[];
+    tsInfo?: IfcExtractResult['tsInfo'];
+};
+
 type Props = {
     data: IfcExtractResult;
     teilsystemId: string;
     projektId: string;
     onClose: () => void;
     onImported: () => void;
+    /** When true, confirm button passes data back instead of saving to DB */
+    previewMode?: boolean;
+    onPreviewConfirm?: (result: IfcPreviewResult) => void;
 };
 
 type Tab = 'positionen' | 'unterpositionen' | 'material';
@@ -95,7 +105,7 @@ function EditCell({ value, onChange, type = 'text' }: { value: string | number; 
 }
 
 // ── Main Component ────────────────────────────────────────────────────────────
-export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImported }: Props) {
+export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImported, previewMode, onPreviewConfirm }: Props) {
     const [activeTab, setActiveTab] = useState<Tab>('positionen');
     const [importing, setImporting] = useState(false);
     const [done, setDone] = useState(false);
@@ -569,14 +579,28 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
                             Abbrechen
                         </button>
                         <Button
-                            onClick={handleImport}
+                            onClick={() => {
+                                if (previewMode && onPreviewConfirm) {
+                                    onPreviewConfirm({
+                                        positionen: selectedPos,
+                                        unterpositionen: selectedUPos,
+                                        materiale: selectedMat,
+                                        tsInfo: data.tsInfo,
+                                    });
+                                    onClose();
+                                } else {
+                                    handleImport();
+                                }
+                            }}
                             disabled={importing || (selectedPos.length === 0 && selectedUPos.length === 0 && selectedMat.length === 0)}
                             className="bg-orange-500 hover:bg-orange-600 text-white font-black rounded-2xl h-12 px-10 flex items-center gap-3 shadow-xl shadow-orange-500/20 transition-all hover:scale-105 active:scale-95"
                         >
                             {importing ? (
                                 <><Loader2 className="h-5 w-5 animate-spin" /> <span className="uppercase tracking-[0.2em] text-[10px]">Importiere...</span></>
+                            ) : previewMode ? (
+                                <><Check className="h-5 w-5" /> <span className="uppercase tracking-[0.2em] text-[10px]">Uebernehmen</span></>
                             ) : (
-                                <><Check className="h-5 w-5" /> <span className="uppercase tracking-[0.2em] text-[10px]">Import Bestätigen</span></>
+                                <><Check className="h-5 w-5" /> <span className="uppercase tracking-[0.2em] text-[10px]">Import Bestaetigen</span></>
                             )}
                         </Button>
                     </div>

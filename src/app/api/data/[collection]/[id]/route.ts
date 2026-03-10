@@ -10,7 +10,8 @@ import { ChangelogService, detectChanges, buildSummary } from '@/lib/services/ch
 
 const ALLOWED_COLLECTIONS = [
     'projekte', 'teilsysteme', 'positionen', 'unterpositionen',
-    'material', 'mitarbeiter', 'fahrzeuge', 'fahrzeug_reservierungen', 'reservierungen', 'lieferanten'
+    'material', 'mitarbeiter', 'fahrzeuge', 'fahrzeug_reservierungen', 'reservierungen', 'lieferanten',
+    'ausfuehrung_tasks', 'ausfuehrung_subtasks',
 ];
 
 export async function GET(req: Request, { params }: { params: Promise<{ collection: string, id: string }> }) {

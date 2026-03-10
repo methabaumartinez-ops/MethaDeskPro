@@ -3,9 +3,10 @@
 import React from 'react';
 import { useProjekt } from '@/lib/context/ProjektContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Menu, LayoutGrid } from 'lucide-react';
+import { LogOut, Menu, LayoutGrid } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { SupportChat } from '@/components/shared/SupportChat';
+import { UserAvatar, getUserInitials } from '@/components/shared/UserAvatar';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
@@ -83,9 +84,13 @@ export function Header({ onMenuClick, hideProjectInfo = false, projectBanner }: 
                                     {currentUser.role}
                                 </span>
                             </div>
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted border">
-                                <User className="h-4 w-4 text-foreground/70" />
-                            </div>
+                            <UserAvatar
+                                profileImageUrl={currentUser.profileImageUrl}
+                                initials={getUserInitials(currentUser.vorname, currentUser.nachname)}
+                                sizeClass="h-8 w-8"
+                                textClass="text-xs"
+                                shape="circle"
+                            />
                         </div>
                     )}
                     <SupportChat />

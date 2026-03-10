@@ -348,8 +348,45 @@ export async function POST(req: NextRequest) {
             }
         }
 
+        // ── PHASE 5: CONSOLIDATION BY NAME ────────────────────────────────────
+        // Group positions with identical names, summing menge and weight,
+        // and re-mapping child Unterpositionen to the consolidated parent.
+        log("Phase 5: Consolidation by Name");
+        const nameGroups = new Map<string, number[]>(); // normalized name → indices
+        for (let i = 0; i < extractedPositions.length; i++) {
+            const key = (extractedPositions[i].name || '').trim().toLowerCase();
+            if (!nameGroups.has(key)) nameGroups.set(key, []);
+            nameGroups.get(key)!.push(i);
+        }
+
+        const indicesToRemove = new Set<number>();
+        for (const [, indices] of nameGroups) {
+            if (indices.length <= 1) continue; // nothing to merge
+
+            const primary = extractedPositions[indices[0]];
+            for (let k = 1; k < indices.length; k++) {
+                const dup = extractedPositions[indices[k]];
+                // Sum quantities and weight
+                primary.menge = (primary.menge || 1) + (dup.menge || 1);
+                primary.weight = (primary.weight || 0) + (dup.weight || 0);
+
+                // Re-map child Unterpositionen from duplicate → primary
+                for (const u of extractedUnterpositions) {
+                    if (u.parentExpressID === dup.expressID) {
+                        u.parentExpressID = primary.expressID;
+                    }
+                }
+                indicesToRemove.add(indices[k]);
+            }
+            primary.beschreibung = `${indices.length} Baugruppen zusammengefasst`;
+        }
+
+        // Filter out merged duplicates (iterate in reverse to keep indices stable)
+        const consolidatedPositions = extractedPositions.filter((_, i) => !indicesToRemove.has(i));
+        log(`Consolidated ${extractedPositions.length} → ${consolidatedPositions.length} positions`);
+
         // Validation: No empty parents
-        for (const p of extractedPositions) {
+        for (const p of consolidatedPositions) {
             if (!extractedUnterpositions.some(u => u.parentExpressID === p.expressID)) {
                 extractedUnterpositions.push({
                     tempId: `upos-self-${p.expressID}`, parentExpressID: p.expressID, uposNr: p.posNr,
@@ -360,13 +397,13 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({
             tsInfo,
-            positionen: extractedPositions.map(p => ({ ...p, posNummer: p.posNr, einheit: "Stk" })),
+            positionen: consolidatedPositions.map(p => ({ ...p, posNummer: p.posNr, einheit: "Stk" })),
             unterpositionen: extractedUnterpositions.map(u => ({ ...u, posNummer: u.uposNr, gewicht: u.weight })),
             materiale: [],
             warnings,
             debugLogs,
             summary: {
-                totalPositionen: extractedPositions.length,
+                totalPositionen: consolidatedPositions.length,
                 totalUnterpositionen: extractedUnterpositions.length,
                 totalMateriale: 0
             }

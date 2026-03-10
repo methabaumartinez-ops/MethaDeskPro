@@ -1,51 +1,52 @@
 import * as React from 'react';
-import { TaskStatus, SubtaskStatus } from '@/types/ausfuehrung';
 import { Badge } from '@/components/ui/badge';
+import { getStatusStyle } from '@/lib/config/statusConfig';
 import { cn } from '@/lib/utils';
-import { CheckCircle2, Circle, AlertCircle, Clock } from 'lucide-react';
+import {
+    CheckCircle2, Circle, AlertCircle, Clock,
+    Loader2, Package, PackageCheck, Wrench, Ban
+} from 'lucide-react';
 
 interface TaskStatusBadgeProps {
-    status: TaskStatus | SubtaskStatus;
+    status: string;
     className?: string;
     variant?: 'default' | 'outline' | 'ghost';
     size?: 'sm' | 'md' | 'lg';
 }
 
-const statusConfig: Record<string, { label: string; colorClass: string; icon: React.ReactNode }> = {
-    'offen': {
-        label: 'Offen',
-        colorClass: 'bg-slate-100 text-slate-600 border-slate-200',
-        icon: <Circle className="h-3 w-3" />
-    },
-    'in_arbeit': {
-        label: 'In Arbeit',
-        colorClass: 'bg-orange-50 text-orange-600 border-orange-200',
-        icon: <Clock className="h-3 w-3" />
-    },
-    'blockiert': {
-        label: 'Blockiert',
-        colorClass: 'bg-red-100 text-red-700 border-red-200',
-        icon: <AlertCircle className="h-3 w-3" />
-    },
-    'fertig': {
-        label: 'Fertig',
-        colorClass: 'bg-green-100 text-green-700 border-green-200',
-        icon: <CheckCircle2 className="h-3 w-3" />
-    },
-};
+/** Returns the icon component for a given canonical status */
+function getStatusIcon(status: string): React.ReactNode {
+    const key = status.toLowerCase().trim();
+    const iconMap: Record<string, React.ReactNode> = {
+        offen:           <Circle className="h-3 w-3" />,
+        in_arbeit:       <Loader2 className="h-3 w-3" />,
+        in_planung:      <Clock className="h-3 w-3" />,
+        fertig:          <CheckCircle2 className="h-3 w-3" />,
+        nachbearbeitung: <Wrench className="h-3 w-3" />,
+        geaendert:       <Wrench className="h-3 w-3" />,
+        geliefert:       <PackageCheck className="h-3 w-3" />,
+        bestellt:        <Package className="h-3 w-3" />,
+        verbaut:         <CheckCircle2 className="h-3 w-3" />,
+        abgeschlossen:   <CheckCircle2 className="h-3 w-3" />,
+        blockiert:       <Ban className="h-3 w-3" />,
+        pausiert:        <AlertCircle className="h-3 w-3" />,
+    };
+    return iconMap[key] ?? <Circle className="h-3 w-3" />;
+}
 
-export function TaskStatusBadge({ status, className, variant = 'default', size = 'md' }: TaskStatusBadgeProps) {
-    const config = statusConfig[status] || statusConfig['offen'];
-
-    // Map variant to styling approach
-    let variantStyles = '';
-    if (variant === 'ghost') {
-        variantStyles = config.colorClass.replace(/bg-\w+-\d+/, 'bg-transparent border-transparent').replace(/text-\w+-\d+/, 'text-muted-foreground hover:bg-slate-50');
-    } else if (variant === 'outline') {
-        variantStyles = config.colorClass.replace(/bg-\w+-\d+/, 'bg-transparent');
-    } else {
-        variantStyles = config.colorClass;
-    }
+/**
+ * Status badge with icon — used in Ausfuehrung task views.
+ * Now backed by the centralized getStatusStyle() system.
+ * Scope: task status chips only.
+ */
+export function TaskStatusBadge({
+    status,
+    className,
+    variant = 'default',
+    size = 'md',
+}: TaskStatusBadgeProps) {
+    const style = getStatusStyle(status);
+    const icon = getStatusIcon(status);
 
     const sizeStyles = {
         sm: 'px-1.5 py-0 text-[10px] gap-1 h-5',
@@ -53,18 +54,28 @@ export function TaskStatusBadge({ status, className, variant = 'default', size =
         lg: 'px-3 py-1 text-sm gap-2 h-8',
     };
 
+    // Build class string from granular tokens based on variant
+    let colorClasses: string;
+    if (variant === 'ghost') {
+        colorClasses = cn('bg-transparent border-transparent', style.iconColor);
+    } else if (variant === 'outline') {
+        colorClasses = cn('bg-transparent', style.textColor, style.borderColor);
+    } else {
+        colorClasses = cn(style.bgColor, style.textColor, style.borderColor ?? '');
+    }
+
     return (
         <Badge
             variant="outline"
             className={cn(
-                "font-bold uppercase tracking-widest whitespace-nowrap shadow-sm transition-colors",
-                variantStyles,
+                'font-bold uppercase tracking-widest whitespace-nowrap shadow-sm transition-colors',
+                colorClasses,
                 sizeStyles[size],
                 className
             )}
         >
-            {config.icon}
-            {config.label}
+            <span className={cn('shrink-0', style.iconColor)}>{icon}</span>
+            {style.label}
         </Badge>
     );
 }

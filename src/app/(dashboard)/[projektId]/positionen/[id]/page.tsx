@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit, Plus, FileSpreadsheet, ListTodo, Printer, Share2, ShieldCheck, X, Download, MapPin, BadgeDollarSign } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { cn, getAppUrl } from '@/lib/utils';
+import { getStatusBorderRing } from '@/lib/config/statusConfig';
 import Link from 'next/link';
 import { ChangeHistoryPanel } from '@/components/shared/ChangeHistoryPanel';
 
@@ -167,7 +168,7 @@ export default function PositionDetailPage() {
                 </div>
 
                 <div className="text-center md:text-right flex flex-col items-center md:items-end gap-3 w-full">
-                    <StatusBadge status={position.status} className="px-5 py-1.5 text-sm rounded-xl shadow-md border-b-4 border-green-600/20 ring-4 ring-green-50/50" />
+                    <StatusBadge status={position.status} className={cn('px-5 py-1.5 text-sm rounded-xl shadow-md border-b-4', getStatusBorderRing(position.status))} />
                     {isReadOnly && (
                         <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase bg-muted px-2 py-1 rounded-md">
                             <ShieldCheck className="h-3.5 w-3.5 text-blue-500" />

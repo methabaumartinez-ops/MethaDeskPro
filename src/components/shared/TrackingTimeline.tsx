@@ -72,6 +72,9 @@ export function TrackingTimeline({ entityId, projektId, entityType, className }:
                         const nachLo = lagerorte[event.nachLagerortId]?.bezeichnung || 'Unbekannt';
                         const vonLo = event.vonLagerortId ? lagerorte[event.vonLagerortId]?.bezeichnung : null;
                         const zeitpunkt = new Date(event.zeitpunkt);
+                        const zeitpunktStr = !isNaN(zeitpunkt.getTime())
+                            ? format(zeitpunkt, 'dd.MM.yyyy HH:mm', { locale: de })
+                            : (event.zeitpunkt || '—');
 
                         return (
                             <div key={event.id} className="relative flex items-start group">
@@ -105,7 +108,7 @@ export function TrackingTimeline({ entityId, projektId, entityType, className }:
                                         </div>
                                         <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full w-fit">
                                             <Calendar className="h-3 w-3" />
-                                            {format(zeitpunkt, 'dd.MM.yyyy HH:mm', { locale: de })}
+                                            {zeitpunktStr}
                                         </div>
                                     </div>
 

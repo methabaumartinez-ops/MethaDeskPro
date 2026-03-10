@@ -1,5 +1,6 @@
 'use client';
 import { toast } from '@/lib/toast';
+import { IfcPreviewResult } from '@/components/shared/IfcImportModal';
 
 import React, { useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
@@ -99,6 +100,8 @@ export default function TeilsystemErfassenPage() {
     const [selectedFileObj, setSelectedFileObj] = React.useState<File | null>(null);
     const [uploadedIfcUrl, setUploadedIfcUrl] = React.useState<string | null>(null);
     const [lagerorte, setLagerorte] = React.useState<any[]>([]);
+    /** Stores selected IFC positions/unterpos for import after TS creation */
+    const [pendingIfcImport, setPendingIfcImport] = React.useState<IfcPreviewResult | null>(null);
 
     const [docDragActive, setDocDragActive] = React.useState(false);
     const [dokumenteFiles, setDokumenteFiles] = React.useState<File[]>([]);
@@ -192,11 +195,12 @@ export default function TeilsystemErfassenPage() {
                 return;
             }
 
-            let uploadedIfcUrl = undefined;
-            if (fileInputRef.current?.files?.[0]) {
+            // Use already-uploaded IFC URL from auto-import, or upload fresh
+            let ifcUrlFinal = uploadedIfcUrl || undefined;
+            if (!ifcUrlFinal && fileInputRef.current?.files?.[0]) {
                 const file = fileInputRef.current.files[0];
                 try {
-                    uploadedIfcUrl = await ProjectService.uploadImage(file, projektId, 'ifc');
+                    ifcUrlFinal = await ProjectService.uploadImage(file, projektId, 'ifc');
                 } catch (uploadErr: any) {
                     console.error('IFC upload failed:', uploadErr);
                     throw new Error(`IFC Upload fehlgeschlagen: ${uploadErr.message || String(uploadErr)}`);
@@ -217,25 +221,77 @@ export default function TeilsystemErfassenPage() {
                 subunternehmerId: data.subunternehmerId,
                 subunternehmerName: sub ? sub.name : undefined,
                 status: data.status as any,
-                ifcUrl: uploadedIfcUrl
+                ifcUrl: ifcUrlFinal
             } as any);
 
-            // If IFC was uploaded, trigger extraction
-            if (uploadedIfcUrl && created?.id) {
+            // If we have pending IFC positions from preview, import them now
+            if (pendingIfcImport && created?.id) {
+                const { PositionService } = await import('@/lib/services/positionService');
+                const { SubPositionService } = await import('@/lib/services/subPositionService');
+
+                const expressIdToPositionId = new Map<number, string>();
+
+                for (let i = 0; i < pendingIfcImport.positionen.length; i++) {
+                    const p = pendingIfcImport.positionen[i];
+                    try {
+                        const posCreated = await PositionService.createPosition({
+                            teilsystemId: created.id,
+                            projektId,
+                            posNummer: p.posNr || p.posNummer || String(i + 1).padStart(3, '0'),
+                            name: p.name,
+                            beschreibung: p.beschreibung,
+                            menge: Number(p.menge),
+                            einheit: p.einheit || 'Stk',
+                            status: 'offen',
+                            weight: Number(p.weight || 0),
+                            ifcMeta: { psets: p.rawPsets, dimensions: { length: p.length, width: p.width, height: p.height }, ok: p.ok, uk: p.uk },
+                            groupingMethod: p.ifcType === 'Fallback' ? 'FALLBACK_GROUP' : 'REAL_PARENT',
+                        } as any);
+                        expressIdToPositionId.set(p.expressID, posCreated.id);
+                    } catch (e: any) {
+                        console.error(`Position import failed: ${p.name}`, e);
+                    }
+                }
+
+                for (const u of pendingIfcImport.unterpositionen) {
+                    const parentPositionId = expressIdToPositionId.get(u.parentExpressID);
+                    if (!parentPositionId) continue;
+                    try {
+                        await SubPositionService.createUnterposition({
+                            positionId: parentPositionId,
+                            teilsystemId: created.id,
+                            projektId,
+                            posNummer: u.posNummer || '001',
+                            name: u.name,
+                            beschreibung: u.beschreibung,
+                            menge: Number(u.menge),
+                            einheit: u.einheit || 'Stk',
+                            material: u.material,
+                            gewicht: u.gewicht,
+                            ifcMeta: { psets: u.rawPsets, dimensions: u.dimensions, ok: u.ok, uk: u.uk, area: u.area, color: u.color, remark: u.remark },
+                            status: 'offen',
+                        } as any);
+                    } catch (e: any) {
+                        console.error(`Unterposition import failed: ${u.name}`, e);
+                    }
+                }
+            }
+            // If IFC was uploaded but no preview was done, trigger extraction
+            else if (ifcUrlFinal && created?.id && !pendingIfcImport) {
                 setNewTeilsystemId(created.id);
                 setExtracting(true);
                 try {
                     const res = await fetch('/api/ifc-extract', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ url: uploadedIfcUrl, teilsystemId: created.id, projektId }),
+                        body: JSON.stringify({ url: ifcUrlFinal, teilsystemId: created.id, projektId }),
                     });
                     if (res.ok) {
                         const extractResult = await res.json();
                         if (extractResult.summary.totalPositionen > 0 || extractResult.summary.totalMateriale > 0) {
                             setIfcExtractData(extractResult);
                             setExtracting(false);
-                            return; // Don't navigate yet — modal will handle navigation
+                            return;
                         }
                     }
                 } catch (e) {
@@ -252,7 +308,7 @@ export default function TeilsystemErfassenPage() {
                         let typ = 'Andere';
                         const ext = file.name.split('.').pop()?.toLowerCase();
                         if (ext === 'pdf') typ = 'PDF';
-                        else if (['jpg', 'jpeg', 'png', 'heic'].includes(ext || '')) typ = 'Zeichnung'; // mapped loosely
+                        else if (['jpg', 'jpeg', 'png', 'heic'].includes(ext || '')) typ = 'Zeichnung';
 
                         await fetch('/api/dokumente', {
                             method: 'POST',
@@ -273,7 +329,7 @@ export default function TeilsystemErfassenPage() {
             }
 
             toast.success('Teilsystem erstellt');
-            router.push(`/${projektId}/teilsysteme`);
+            router.push(`/${projektId}/teilsysteme/${created.id}`);
         } catch (error: any) {
             console.error("Failed to create teilsystem", error);
             toast.error(`Fehler beim Speichern: ${error?.message || String(error)}`);
@@ -298,54 +354,51 @@ export default function TeilsystemErfassenPage() {
                 setUploadedIfcUrl(url);
             }
 
-            // 2. Trigger auto-import endpoint
-            // We pass the current form values so they are prioritized over IFC metadata
-            const formValues = watch();
-
-            const res = await fetch('/api/teilsystem-import', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    url: url,
-                    filename: selectedFileObj.name,
-                    projektId,
-                    user: currentUser ? `${currentUser.vorname} ${currentUser.nachname}` : 'system-import',
-                    overrides: {
-                        teilsystemNummer: formValues.teilsystemNummer,
-                        name: formValues.name,
-                        beschreibung: formValues.beschreibung,
-                    }
-                }),
-            });
-
-            if (!res.ok) {
-                const err = await res.json();
-                throw new Error(err.error || 'Import failed');
-            }
-
-            const result = await res.json();
-
-            // 3. If it's a new or existing TS, we still want to trigger the extraction of positions
-            if (result.teilsystem?.id) {
-                setNewTeilsystemId(result.teilsystem.id);
-                setExtracting(true);
-
-                const extractRes = await fetch('/api/ifc-extract', {
+            // 2. Extract IFC metadata (for form pre-fill) via teilsystem-import
+            //    This does NOT create a TS — we only use the extracted metadata.
+            try {
+                const metaRes = await fetch('/api/teilsystem-import', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         url: url,
-                        teilsystemId: result.teilsystem.id,
-                        projektId
+                        filename: selectedFileObj.name,
+                        projektId,
+                        user: currentUser ? `${currentUser.vorname} ${currentUser.nachname}` : 'system-import',
                     }),
                 });
-
-                if (extractRes.ok) {
-                    const extractData = await extractRes.json();
-                    setIfcExtractData(extractData);
-                } else {
-                    router.push(`/${projektId}/teilsysteme/${result.teilsystem.id}`);
+                if (metaRes.ok) {
+                    const metaResult = await metaRes.json();
+                    // Pre-fill form with IFC metadata if available
+                    const ts = metaResult.teilsystem;
+                    if (ts) {
+                        if (ts.teilsystemNummer && !watch('teilsystemNummer')) setValue('teilsystemNummer', ts.teilsystemNummer);
+                        if (ts.name && !watch('name')) setValue('name', ts.name);
+                        if (ts.beschreibung && !watch('beschreibung')) setValue('beschreibung', ts.beschreibung);
+                        if (ts.bemerkung && !watch('bemerkung')) setValue('bemerkung', ts.bemerkung);
+                    }
                 }
+            } catch (metaErr) {
+                console.warn('IFC metadata extraction skipped:', metaErr);
+            }
+
+            // 3. Extract positions (preview only — nothing saved to DB)
+            setExtracting(true);
+            const extractRes = await fetch('/api/ifc-extract', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    url: url,
+                    teilsystemId: 'preview', // dummy — no real TS yet
+                    projektId
+                }),
+            });
+
+            if (extractRes.ok) {
+                const extractData = await extractRes.json();
+                setIfcExtractData(extractData);
+            } else {
+                toast.error('IFC Extraktion fehlgeschlagen');
             }
         } catch (error: any) {
             console.error("Auto-import failed", error);
@@ -818,7 +871,11 @@ export default function TeilsystemErfassenPage() {
                     </Link>
                     <Button type="submit" className="font-black px-12 h-11 text-sm shadow-xl shadow-primary/20 hover:scale-105 transition-all gap-2" disabled={isSubmitting}>
                         <Save className="h-4 w-4" />
-                        {isSubmitting ? 'Wird gespeichert...' : 'Teilsystem speichern'}
+                        {isSubmitting
+                            ? (pendingIfcImport ? 'Speichern & Importieren...' : 'Wird gespeichert...')
+                            : (pendingIfcImport
+                                ? `Speichern + ${pendingIfcImport.positionen.length} Pos. importieren`
+                                : 'Teilsystem speichern')}
                     </Button>
                 </div>
             </form>
@@ -829,31 +886,46 @@ export default function TeilsystemErfassenPage() {
                     <div className="bg-white dark:bg-card rounded-2xl shadow-2xl border-2 border-border p-10 flex flex-col items-center gap-4">
                         <div className="w-14 h-14 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
                         <h3 className="text-lg font-black text-foreground">
-                            {analyzing ? 'Analysiere Modell...' : (importingAuto ? 'Erstelle Teilsystem...' : 'Extrahiere Positionen...')}
+                            {analyzing ? 'Analysiere Modell...' : (importingAuto ? 'IFC wird extrahiert...' : 'Extrahiere Positionen...')}
                         </h3>
                         <p className="text-sm text-muted-foreground text-center">
                             {analyzing
-                                ? 'Metadaten werden für das Formular extrahiert.'
+                                ? 'Metadaten werden fuer das Formular extrahiert.'
                                 : (importingAuto
-                                    ? 'Daten werden aus dem IFC extrahiert und Teilsystem wird angelegt.'
+                                    ? 'Daten werden aus dem IFC gelesen (kein Teilsystem wird angelegt).'
                                     : 'Positionen, Unterpositionen und Material werden extrahiert')}
                         </p>
                     </div>
                 </div>
             )}
 
-            {/* IFC Import Modal */}
-            {ifcExtractData && newTeilsystemId && (
+            {/* IFC Import Modal — Preview Mode (no TS created yet) */}
+            {ifcExtractData && (
                 <IfcImportModal
                     data={ifcExtractData}
-                    teilsystemId={newTeilsystemId}
+                    teilsystemId={newTeilsystemId || 'preview'}
                     projektId={projektId}
+                    previewMode={!newTeilsystemId}
+                    onPreviewConfirm={(result) => {
+                        // Store selected positions for import when user saves the TS
+                        setPendingIfcImport(result);
+                        setIfcExtractData(null);
+
+                        // Pre-fill form with tsInfo if available
+                        if (result.tsInfo) {
+                            if (result.tsInfo.nummer && !watch('teilsystemNummer')) setValue('teilsystemNummer', result.tsInfo.nummer);
+                            if (result.tsInfo.name && !watch('name')) setValue('name', result.tsInfo.name);
+                        }
+
+                        toast.success(`${result.positionen.length} Positionen und ${result.unterpositionen.length} Teile uebernommen. Formular ausfuellen und speichern.`);
+                    }}
                     onClose={() => {
                         setIfcExtractData(null);
-                        router.push(`/${projektId}/teilsysteme`);
                     }}
                     onImported={() => {
-                        router.push(`/${projektId}/teilsysteme/${newTeilsystemId}`);
+                        if (newTeilsystemId) {
+                            router.push(`/${projektId}/teilsysteme/${newTeilsystemId}`);
+                        }
                     }}
                 />
             )}

@@ -11,6 +11,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Header } from '@/components/layout/Header';
 import { useRouter } from 'next/navigation';
 import { useSmartBack } from '@/lib/navigation/useSmartBack';
+import { UserAvatar, getUserInitials } from '@/components/shared/UserAvatar';
+import { toast } from '@/lib/toast';
 import {
     User,
     Mail,
@@ -34,7 +36,7 @@ const passwordSchema = z.object({
 type PasswordValues = z.infer<typeof passwordSchema>;
 
 export default function ProfilPage() {
-    const { currentUser, logout } = useProjekt();
+    const { currentUser, setCurrentUser, logout } = useProjekt();
     const router = useRouter();
     const goBack = useSmartBack('/projekte');
     const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -80,7 +82,36 @@ export default function ProfilPage() {
 
     if (!currentUser) return null;
 
-    const initials = `${currentUser.vorname?.[0] || ''}${currentUser.nachname?.[0] || ''}`.toUpperCase();
+    const initials = getUserInitials(currentUser.vorname, currentUser.nachname);
+
+    // ── Avatar upload / remove ─────────────────────────────────────────────
+    const handleAvatarUpload = async (file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+            const res = await fetch('/api/user/avatar', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (!res.ok) { toast.error(data.error || 'Upload fehlgeschlagen.'); return; }
+            // Update context + localStorage so header refreshes without reload
+            const updated = { ...currentUser, profileImageUrl: data.profileImageUrl };
+            setCurrentUser(updated);
+            toast.success('Profilfoto aktualisiert.');
+        } catch {
+            toast.error('Verbindungsfehler beim Avatar-Upload.');
+        }
+    };
+
+    const handleAvatarRemove = async () => {
+        try {
+            const res = await fetch('/api/user/avatar', { method: 'DELETE' });
+            if (!res.ok) { toast.error('Loeschen fehlgeschlagen.'); return; }
+            const updated = { ...currentUser, profileImageUrl: null };
+            setCurrentUser(updated);
+            toast.success('Profilfoto entfernt.');
+        } catch {
+            toast.error('Verbindungsfehler.');
+        }
+    };
 
     const roleLabels: Record<string, string> = {
         admin: 'Administrator',
@@ -104,33 +135,42 @@ export default function ProfilPage() {
                     </Button>
 
                     {/* Profile Header Card */}
-                    <Card className="shadow-2xl border-none mb-6 overflow-hidden">
-                        {/* Orange gradient banner */}
-                        <div className="h-28 bg-primary-gradient relative">
-                            <div className="absolute -bottom-10 left-8">
-                                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white text-primary text-2xl font-extrabold shadow-lg border-4 border-white">
-                                    {initials}
-                                </div>
-                            </div>
-                        </div>
-                        <CardContent className="pt-14 pb-6 px-8">
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
-                                        {currentUser.vorname} {currentUser.nachname}
-                                    </h1>
-                                    <p className="text-sm text-slate-500 mt-0.5">
-                                        {roleLabels[currentUser.role] || currentUser.role}
-                                    </p>
-                                </div>
+                    <Card className="shadow-2xl border-none mb-6 overflow-visible">
+                        {/* Orange gradient banner — no avatar inside to avoid overflow-hidden clipping */}
+                        <div className="h-28 bg-primary-gradient rounded-t-2xl" />
+
+                        <CardContent className="px-8 pb-6">
+                            {/* Avatar row — pulled up onto the banner with negative margin */}
+                            <div className="flex items-end justify-between -mt-10 mb-4">
+                                <UserAvatar
+                                    profileImageUrl={currentUser.profileImageUrl}
+                                    initials={initials}
+                                    sizeClass="h-20 w-20"
+                                    textClass="text-2xl"
+                                    shape="rounded"
+                                    editable
+                                    onUpload={handleAvatarUpload}
+                                    onRemove={handleAvatarRemove}
+                                    className="text-primary font-extrabold bg-white"
+                                />
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600 gap-2"
+                                    className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600 gap-2 mb-1"
                                     onClick={() => logout()}
                                 >
                                     Abmelden
                                 </Button>
+                            </div>
+
+                            {/* Name + Role */}
+                            <div>
+                                <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+                                    {currentUser.vorname} {currentUser.nachname}
+                                </h1>
+                                <p className="text-sm text-slate-500 mt-0.5">
+                                    {roleLabels[currentUser.role] || currentUser.role}
+                                </p>
                             </div>
                         </CardContent>
                     </Card>

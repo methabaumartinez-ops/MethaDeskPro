@@ -187,6 +187,7 @@ export interface StoredUser {
     onboardingStatus?: 'pending' | 'completed' | 'skipped';
     mustChangePassword?: boolean;
     must_change_password?: boolean; // Supabase column name
+    profileImageUrl?: string | null;
 }
 
 export interface SafeUser {
@@ -199,6 +200,7 @@ export interface SafeUser {
     role: UserRole;
     onboardingStatus?: 'pending' | 'completed' | 'skipped';
     mustChangePassword?: boolean;
+    profileImageUrl?: string | null;
 }
 
 function toSafeUser(user: StoredUser & Record<string, any>): SafeUser {
@@ -218,6 +220,7 @@ function toSafeUser(user: StoredUser & Record<string, any>): SafeUser {
         role: user.role,
         onboardingStatus: user.onboardingStatus ?? 'completed',
         mustChangePassword,
+        profileImageUrl: user.profileImageUrl ?? null,
     };
 }
 
