@@ -324,15 +324,44 @@ CREATE TABLE IF NOT EXISTS ausfuehrung_tasks (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     "projektId" UUID,
     "teilsystemId" UUID,
+    "teamId" UUID,
+    "workerId" UUID,
     title TEXT,
     description TEXT,
     status TEXT DEFAULT 'Offen',
     priority TEXT DEFAULT 'Normal',
     "assignedTo" TEXT,
     "dueDate" TEXT,
+    "scheduledDate" TEXT,
+    "startTime" TEXT,
+    "endTime" TEXT,
+    "estimatedHours" NUMERIC,
+    "planStatus" TEXT DEFAULT 'Ungeplant',
+    "sourceTsId" UUID,
+    "sourceType" TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
+CREATE INDEX IF NOT EXISTS idx_ausfuehrung_tasks_worker ON ausfuehrung_tasks("workerId");
+CREATE INDEX IF NOT EXISTS idx_ausfuehrung_tasks_team ON ausfuehrung_tasks("teamId");
+CREATE INDEX IF NOT EXISTS idx_ausfuehrung_tasks_scheduled ON ausfuehrung_tasks("scheduledDate");
+CREATE INDEX IF NOT EXISTS idx_ausfuehrung_tasks_projekt ON ausfuehrung_tasks("projektId");
+
+-- 21b) TEAM MEMBERSHIP HISTORY
+CREATE TABLE IF NOT EXISTS team_membership_history (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    "workerId" UUID NOT NULL,
+    "teamId" UUID NOT NULL,
+    "projektId" UUID,
+    "startDate" TEXT NOT NULL,
+    "endDate" TEXT,
+    "reason" TEXT,
+    "changedBy" TEXT,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_tmh_worker ON team_membership_history("workerId");
+CREATE INDEX IF NOT EXISTS idx_tmh_team ON team_membership_history("teamId");
 
 -- 22) AUSFUEHRUNG SUBTASKS
 CREATE TABLE IF NOT EXISTS ausfuehrung_subtasks (

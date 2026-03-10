@@ -6,10 +6,13 @@ import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { CheckSquare, Save, ArrowLeft, Plus, MessageSquare, Trash2 } from 'lucide-react';
+import { CheckSquare, Save, ArrowLeft, Plus, MessageSquare, Trash2, CalendarClock, Clock, UserCircle } from 'lucide-react';
 import { TaskService } from '@/lib/services/taskService';
 import { TeamService } from '@/lib/services/teamService';
-import { Team, TaskPriority, TaskStatus } from '@/types';
+import { WorkerService } from '@/lib/services/workerService';
+import { validateScheduleFields } from '@/lib/services/workforcePlanningService';
+import { Team, TaskPriority, TaskStatus, TaskPlanStatus } from '@/types';
+import { Worker } from '@/types/ausfuehrung';
 import Link from 'next/link';
 import { useSmartBack } from '@/lib/navigation/useSmartBack';
 
@@ -23,23 +26,35 @@ export default function TaskCreatePage() {
     const [teamId, setTeamId] = useState<string>('');
     const [priority, setPriority] = useState<TaskPriority>('Mittel');
     const [dueDate, setDueDate] = useState('');
+    // Scheduling fields
+    const [workerId, setWorkerId] = useState<string>('');
+    const [scheduledDate, setScheduledDate] = useState('');
+    const [startTime, setStartTime] = useState('');
+    const [endTime, setEndTime] = useState('');
+    const [estimatedHours, setEstimatedHours] = useState<string>('');
+    const [planStatus, setPlanStatus] = useState<TaskPlanStatus>('Ungeplant');
 
     const [teams, setTeams] = useState<Team[]>([]);
+    const [workers, setWorkers] = useState<Worker[]>([]);
     const [subtasks, setSubtasks] = useState<{ title: string, sortOrder: number }[]>([
         { title: '', sortOrder: 0 }
     ]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const loadTeams = async () => {
+        const loadData = async () => {
             try {
-                const fetchedTeams = await TeamService.getTeams(projektId);
+                const [fetchedTeams, fetchedWorkers] = await Promise.all([
+                    TeamService.getTeams(projektId),
+                    WorkerService.getActiveWorkers(projektId),
+                ]);
                 setTeams(fetchedTeams);
+                setWorkers(fetchedWorkers);
             } catch (err) {
-                console.error("Failed to load teams", err);
+                console.error("Failed to load data", err);
             }
         };
-        loadTeams();
+        loadData();
     }, [projektId]);
 
     const handleAddSubtask = () => {
@@ -60,6 +75,18 @@ export default function TaskCreatePage() {
     const handleSave = async () => {
         if (!title.trim()) return toast.error('Bitte Aufgabentitel eingeben');
 
+        // Validate scheduling fields before save
+        const scheduleErrors = validateScheduleFields({
+            scheduledDate: scheduledDate || undefined,
+            startTime: startTime || undefined,
+            endTime: endTime || undefined,
+            estimatedHours: estimatedHours ? parseFloat(estimatedHours) : undefined,
+        });
+        if (scheduleErrors.length > 0) {
+            scheduleErrors.forEach(e => toast.error(e.message));
+            return;
+        }
+
         setLoading(true);
         try {
             const newTask = await TaskService.createTask({
@@ -67,9 +94,15 @@ export default function TaskCreatePage() {
                 title: title.trim(),
                 description: description.trim(),
                 teamId: teamId || null,
+                workerId: workerId || null,
                 status: 'Offen' as TaskStatus,
                 priority,
                 dueDate: dueDate || null,
+                scheduledDate: scheduledDate || null,
+                startTime: startTime || null,
+                endTime: endTime || null,
+                estimatedHours: estimatedHours ? parseFloat(estimatedHours) : null,
+                planStatus: scheduledDate ? planStatus : 'Ungeplant',
                 sourceType: 'manual'
             });
 
@@ -153,13 +186,100 @@ export default function TaskCreatePage() {
                         </div>
 
                         <div>
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mb-1.5 block">Fälligkeitsdatum (optional)</label>
+                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mb-1.5 block">Faelligkeitsdatum (optional)</label>
                             <Input
                                 type="date"
                                 value={dueDate}
                                 onChange={e => setDueDate(e.target.value)}
                                 className="border-input bg-background text-sm w-full md:w-1/2"
                             />
+                        </div>
+
+                        {/* Scheduling section */}
+                        <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-100 space-y-4">
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-blue-700 flex items-center gap-1.5">
+                                <CalendarClock className="h-3.5 w-3.5" />
+                                Arbeitsplanung
+                            </h4>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mb-1.5 block">
+                                        <UserCircle className="h-3 w-3 inline mr-1" />
+                                        Zugewiesener Mitarbeiter
+                                    </label>
+                                    <select
+                                        className="w-full bg-white border border-input rounded-xl px-3 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 transition-all"
+                                        value={workerId}
+                                        onChange={e => setWorkerId(e.target.value)}
+                                    >
+                                        <option value="">-- Nicht zugewiesen --</option>
+                                        {workers.map(w => (
+                                            <option key={w.id} value={w.id}>{w.fullName}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mb-1.5 block">Geplantes Datum</label>
+                                    <Input
+                                        type="date"
+                                        value={scheduledDate}
+                                        onChange={e => setScheduledDate(e.target.value)}
+                                        className="border-input bg-white text-sm"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mb-1.5 block">
+                                        <Clock className="h-3 w-3 inline mr-1" />
+                                        Startzeit
+                                    </label>
+                                    <Input
+                                        type="time"
+                                        value={startTime}
+                                        onChange={e => setStartTime(e.target.value)}
+                                        className="border-input bg-white text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mb-1.5 block">Endzeit</label>
+                                    <Input
+                                        type="time"
+                                        value={endTime}
+                                        onChange={e => setEndTime(e.target.value)}
+                                        className="border-input bg-white text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mb-1.5 block">Geschaetzte Stunden</label>
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        max="24"
+                                        step="0.5"
+                                        value={estimatedHours}
+                                        onChange={e => setEstimatedHours(e.target.value)}
+                                        className="border-input bg-white text-sm"
+                                        placeholder="z.B. 4"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mb-1.5 block">Planstatus</label>
+                                <select
+                                    className="w-full bg-white border border-input rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-widest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 transition-all"
+                                    value={planStatus}
+                                    onChange={e => setPlanStatus(e.target.value as TaskPlanStatus)}
+                                >
+                                    <option value="Ungeplant">Ungeplant</option>
+                                    <option value="Geplant">Geplant</option>
+                                    <option value="In Ausfuehrung">In Ausfuehrung</option>
+                                    <option value="Abgeschlossen">Abgeschlossen</option>
+                                </select>
+                            </div>
                         </div>
 
                         <div>

@@ -46,27 +46,3 @@ export const WorkerService = {
                     return;
     }
 };
-
-// Seed workers for testing
-if (typeof window !== 'undefined') {
-    (async () => {
-        try {
-            const workers = await WorkerService.getAllWorkers();
-            if (workers.length === 0) {
-                const dummyWorkers = [
-                    { fullName: 'Hans Meier', active: true, role: 'Polier' },
-                    { fullName: 'Anna Schmidt', active: true, role: 'Bauleiter' },
-                    { fullName: 'Peter Müller', active: true, role: 'Baufacharbeiter' },
-                    { fullName: 'Lukas Weber', active: false, role: 'Praktikant' },
-                    { fullName: 'Simon Keller', active: true, role: 'Kranführer' },
-                    { fullName: 'Julia Wagner', active: true, role: 'Baufacharbeiter' },
-                ];
-                for (const w of dummyWorkers) {
-                    await WorkerService.createWorker(w as any);
-                }
-            }
-        } catch (e) {
-            console.error('Error seeding workers', e);
-        }
-    })();
-}

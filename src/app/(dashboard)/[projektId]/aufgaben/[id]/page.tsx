@@ -7,11 +7,14 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { CheckSquare, ArrowLeft, Save, Briefcase, Clock, Calendar, AlertCircle } from 'lucide-react';
+import { CheckSquare, ArrowLeft, Save, Briefcase, Clock, Calendar, AlertCircle, CalendarClock, UserCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TaskService } from '@/lib/services/taskService';
 import { TeamService } from '@/lib/services/teamService';
-import { Task, Subtask, Team, TeamMember, Mitarbeiter } from '@/types';
+import { WorkerService } from '@/lib/services/workerService';
+import { validateScheduleFields } from '@/lib/services/workforcePlanningService';
+import { Task, Subtask, Team, TeamMember, Mitarbeiter, TaskPlanStatus } from '@/types';
+import { Worker } from '@/types/ausfuehrung';
 import Link from 'next/link';
 import { useSmartBack } from '@/lib/navigation/useSmartBack';
 
@@ -24,7 +27,17 @@ export default function TaskDetailPage() {
     const [subtasks, setSubtasks] = useState<Subtask[]>([]);
     const [team, setTeam] = useState<Team | null>(null);
     const [teamMembers, setTeamMembers] = useState<{ member: TeamMember, detail: Mitarbeiter }[]>([]);
+    const [workers, setWorkers] = useState<Worker[]>([]);
     const [loading, setLoading] = useState(true);
+
+    // Scheduling edit state
+    const [schedWorkerId, setSchedWorkerId] = useState<string>('');
+    const [schedDate, setSchedDate] = useState<string>('');
+    const [schedStartTime, setSchedStartTime] = useState<string>('');
+    const [schedEndTime, setSchedEndTime] = useState<string>('');
+    const [schedEstHours, setSchedEstHours] = useState<string>('');
+    const [schedPlanStatus, setSchedPlanStatus] = useState<TaskPlanStatus>('Ungeplant');
+    const [schedSaving, setSchedSaving] = useState(false);
 
     // Abrechnung States
     const [showAbrechnung, setShowAbrechnung] = useState(false);
@@ -42,8 +55,20 @@ export default function TaskDetailPage() {
                 }
                 setTask(currentTask);
 
+                // Initialize scheduling state from task data
+                setSchedWorkerId(currentTask.workerId || '');
+                setSchedDate(currentTask.scheduledDate || '');
+                setSchedStartTime(currentTask.startTime || '');
+                setSchedEndTime(currentTask.endTime || '');
+                setSchedEstHours(currentTask.estimatedHours != null ? String(currentTask.estimatedHours) : '');
+                setSchedPlanStatus((currentTask.planStatus as TaskPlanStatus) || 'Ungeplant');
+
                 const fetchedSubtasks = await TaskService.getSubtasks(id);
                 setSubtasks(fetchedSubtasks);
+
+                // Load workers for assignment dropdown
+                const fetchedWorkers = await WorkerService.getActiveWorkers(projektId);
+                setWorkers(fetchedWorkers);
 
                 if (currentTask.teamId) {
                     const fetchedTeams = await TeamService.getTeams(projektId);
@@ -81,6 +106,42 @@ export default function TaskDetailPage() {
         };
         loadTaskData();
     }, [projektId, id, router]);
+
+    const handleSaveScheduling = async () => {
+        if (!task) return;
+
+        const errors = validateScheduleFields({
+            scheduledDate: schedDate || undefined,
+            startTime: schedStartTime || undefined,
+            endTime: schedEndTime || undefined,
+            estimatedHours: schedEstHours ? parseFloat(schedEstHours) : undefined,
+        });
+        if (errors.length > 0) {
+            errors.forEach(e => toast.error(e.message));
+            return;
+        }
+
+        setSchedSaving(true);
+        try {
+            const updates: Partial<Task> = {
+                projektId,
+                workerId: schedWorkerId || null,
+                scheduledDate: schedDate || null,
+                startTime: schedStartTime || null,
+                endTime: schedEndTime || null,
+                estimatedHours: schedEstHours ? parseFloat(schedEstHours) : null,
+                planStatus: schedDate ? schedPlanStatus : 'Ungeplant',
+            };
+            await TaskService.updateTask(task.id, updates);
+            setTask({ ...task, ...updates });
+            toast.success('Arbeitsplanung gespeichert');
+        } catch (err) {
+            console.error(err);
+            toast.error('Fehler beim Speichern der Planung');
+        } finally {
+            setSchedSaving(false);
+        }
+    };
 
     const handleSubtaskToggle = async (subtask: Subtask) => {
         const newStatus = subtask.status === 'Erledigt' ? 'Offen' : 'Erledigt';
@@ -358,6 +419,71 @@ export default function TaskDetailPage() {
                                     </div>
                                 )}
                             </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Scheduling Card */}
+                    <Card className="border-none shadow-sm">
+                        <CardHeader className="bg-blue-50/50 border-b border-blue-100 py-4 px-6">
+                            <h3 className="font-black text-sm text-blue-800 uppercase tracking-widest flex items-center gap-2">
+                                <CalendarClock className="h-4 w-4 text-blue-500" /> Arbeitsplanung
+                            </h3>
+                        </CardHeader>
+                        <CardContent className="p-4 space-y-3">
+                            <div>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mb-1 block">
+                                    <UserCircle className="h-3 w-3 inline mr-1" />Zugewiesener Mitarbeiter
+                                </label>
+                                <select
+                                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                    value={schedWorkerId}
+                                    onChange={e => setSchedWorkerId(e.target.value)}
+                                >
+                                    <option value="">-- Nicht zugewiesen --</option>
+                                    {workers.map(w => (
+                                        <option key={w.id} value={w.id}>{w.fullName}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mb-1 block">Geplantes Datum</label>
+                                <Input type="date" value={schedDate} onChange={e => setSchedDate(e.target.value)} className="h-8 text-xs border-slate-200" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mb-1 block">Start</label>
+                                    <Input type="time" value={schedStartTime} onChange={e => setSchedStartTime(e.target.value)} className="h-8 text-xs border-slate-200" />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mb-1 block">Ende</label>
+                                    <Input type="time" value={schedEndTime} onChange={e => setSchedEndTime(e.target.value)} className="h-8 text-xs border-slate-200" />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mb-1 block">Geschaetzte Stunden</label>
+                                <Input type="number" min="0" max="24" step="0.5" value={schedEstHours} onChange={e => setSchedEstHours(e.target.value)} className="h-8 text-xs border-slate-200" placeholder="z.B. 4" />
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mb-1 block">Planstatus</label>
+                                <select
+                                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                    value={schedPlanStatus}
+                                    onChange={e => setSchedPlanStatus(e.target.value as TaskPlanStatus)}
+                                >
+                                    <option value="Ungeplant">Ungeplant</option>
+                                    <option value="Geplant">Geplant</option>
+                                    <option value="In Ausfuehrung">In Ausfuehrung</option>
+                                    <option value="Abgeschlossen">Abgeschlossen</option>
+                                </select>
+                            </div>
+                            <Button
+                                onClick={handleSaveScheduling}
+                                disabled={schedSaving}
+                                className="w-full h-8 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white gap-1.5"
+                            >
+                                <Save className="h-3 w-3" />
+                                {schedSaving ? 'Speichern...' : 'Planung speichern'}
+                            </Button>
                         </CardContent>
                     </Card>
                 </div>

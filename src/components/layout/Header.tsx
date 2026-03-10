@@ -62,7 +62,7 @@ export function Header({ onMenuClick, hideProjectInfo = false, projectBanner }: 
                 {/* ── ZONE CENTER: Project Banner ── */}
                 <div className="flex items-center justify-center h-full min-w-0 px-3">
                     {showBanner && (
-                        <div className="hidden md:flex w-full max-w-2xl min-w-0">
+                        <div className="hidden md:flex w-full max-w-5xl min-w-0">
                             {projectBanner}
                         </div>
                     )}

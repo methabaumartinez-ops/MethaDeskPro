@@ -45,6 +45,21 @@ export class SupabaseDatabaseService {
                 bemerkung TEXT,
                 "createdAt" TIMESTAMPTZ DEFAULT now()
             );`,
+        team_membership_history: `
+            CREATE TABLE IF NOT EXISTS public.team_membership_history (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                "workerId" UUID NOT NULL,
+                "teamId" UUID NOT NULL,
+                "projektId" UUID,
+                "startDate" TEXT NOT NULL,
+                "endDate" TEXT,
+                "reason" TEXT,
+                "changedBy" TEXT,
+                created_at TIMESTAMPTZ DEFAULT now(),
+                updated_at TIMESTAMPTZ DEFAULT now()
+            );
+            CREATE INDEX IF NOT EXISTS idx_tmh_worker ON team_membership_history("workerId");
+            CREATE INDEX IF NOT EXISTS idx_tmh_team ON team_membership_history("teamId");`,
     };
 
     /**

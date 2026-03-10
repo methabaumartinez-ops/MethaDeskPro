@@ -2,11 +2,12 @@ import { Task, TaskStatus, Subtask } from '@/types';
 import { SubsystemService } from './subsystemService';
 
 export const TaskService = {
-    async getTasks(filters?: { teamId?: string; status?: TaskStatus; projektId?: string }): Promise<Task[]> {
+    async getTasks(filters?: { teamId?: string; status?: TaskStatus; projektId?: string; workerId?: string }): Promise<Task[]> {
         const params = new URLSearchParams();
         if (filters?.projektId) params.append('projektId', filters.projektId);
         if (filters?.teamId) params.append('teamId', filters.teamId);
         if (filters?.status) params.append('status', filters.status);
+        if (filters?.workerId) params.append('workerId', filters.workerId);
         const res = await fetch(`/api/data/ausfuehrung_tasks?${params.toString()}`);
         if (!res.ok) throw new Error('Failed to fetch tasks');
         return await res.json();

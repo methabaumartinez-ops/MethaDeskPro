@@ -10,7 +10,8 @@ import { ChangelogService, detectChanges, buildSummary } from '@/lib/services/ch
 
 const ALLOWED_COLLECTIONS = [
     'projekte', 'teilsysteme', 'positionen', 'unterpositionen',
-    'material', 'mitarbeiter', 'fahrzeuge', 'fahrzeug_reservierungen', 'reservierungen', 'lieferanten',
+    'material', 'mitarbeiter', 'workers', 'fahrzeuge', 'fahrzeug_reservierungen', 'reservierungen', 'lieferanten',
+    'teams', 'team_members', 'team_membership_history',
     'ausfuehrung_tasks', 'ausfuehrung_subtasks',
 ];
 

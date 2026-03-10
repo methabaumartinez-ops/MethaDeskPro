@@ -596,6 +596,7 @@ export type TaskStatus = 'Offen' | 'In Arbeit' | 'Blockiert' | 'Erledigt' | 'Abg
 export type TaskPriority = 'Niedrig' | 'Mittel' | 'Hoch'
   | 'niedrig' | 'mittel' | 'hoch' | 'kritisch'; // legacy DB values
 export type TaskSourceType = 'ts' | 'manual';
+export type TaskPlanStatus = 'Ungeplant' | 'Geplant' | 'In Ausfuehrung' | 'Abgeschlossen';
 
 export interface Task {
   id: string;
@@ -603,11 +604,17 @@ export interface Task {
   teamId?: string | null;
   teilsystemId?: string | null; // FK to Teilsystem (optional link from ausfuehrung module)
   assignedToMitarbeiterId?: string | null;
+  workerId?: string | null;
   title: string;
   description?: string | null;
   status: TaskStatus;
   priority?: TaskPriority | null;
   dueDate?: string | null;
+  scheduledDate?: string | null;
+  startTime?: string | null;
+  endTime?: string | null;
+  estimatedHours?: number | null;
+  planStatus?: TaskPlanStatus | null;
   sourceType?: TaskSourceType | null;
   sourceTsId?: string | null;
   createdAt?: string;
@@ -624,6 +631,22 @@ export interface Subtask {
   notes?: string | null;
   createdAt?: string;
   updatedAt?: string;
+}
+
+// ============================================================
+// TEAM MEMBERSHIP HISTORY (Workforce Planning)
+// ============================================================
+
+export interface TeamMembershipHistory {
+  id: string;
+  workerId: string;
+  teamId: string;
+  projektId?: string;
+  startDate: string;
+  endDate?: string | null;
+  reason?: string | null;
+  changedBy?: string | null;
+  createdAt?: string;
 }
 
 // ============================================================

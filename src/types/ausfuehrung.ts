@@ -19,6 +19,7 @@ export type ResourceType = 'material' | 'machine' | 'document' | 'link' | 'other
 export interface Worker {
     id: string;
     projektId?: string;
+    teamId?: string;
     fullName: string;
     role?: string;
     active: boolean;

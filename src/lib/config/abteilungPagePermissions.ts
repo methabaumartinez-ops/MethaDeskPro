@@ -26,6 +26,7 @@ export type PageKey =
   | 'kosten'
   | 'tabellen'
   | 'ausfuehrung'
+  | 'arbeitsplan'
   | 'werkhof-bestellungen'
   | 'lagerort'
   | 'qr-scan'
@@ -45,6 +46,7 @@ export const PAGE_LABELS: Record<PageKey, string> = {
   'kosten': 'Kosten',
   'tabellen': 'Tabellen',
   'ausfuehrung': 'Ausfuehrung',
+  'arbeitsplan': 'Arbeitsplan',
   'werkhof-bestellungen': 'Werkhof \u2013 Bestellungen',
   'lagerort': 'Lagerort',
   'qr-scan': 'QR Scan',

@@ -27,6 +27,7 @@ import {
     ChevronDown,
     ChevronRight,
     ShieldAlert,
+    CalendarClock,
 } from 'lucide-react';
 import { Signature } from '@/components/shared/Signature';
 import { useProjekt } from '@/lib/context/ProjektContext';
@@ -122,6 +123,9 @@ export function Sidebar({ projektId, className }: { projektId: string; className
                     href: `/${projektId}/ausfuehrung`,
                     icon: Hammer,
                     pageKey: 'ausfuehrung',
+                    subItems: [
+                        { title: 'Arbeitsplan', href: `/${projektId}/arbeitsplan`, icon: CalendarClock, pageKey: 'arbeitsplan' as const },
+                    ]
                 },
             ]
         },
