@@ -194,7 +194,8 @@ export class SupabaseDatabaseService {
     }
 
     /**
-     * Create or Update an item (upsert)
+     * Create or Update an item (upsert by id)
+     * Use `insert` when you want to guarantee a NEW row is created.
      */
     static async upsert<T extends { id?: string }>(tableName: string, item: T): Promise<T> {
         const id = item.id || uuidv4();
@@ -234,6 +235,47 @@ export class SupabaseDatabaseService {
         }
 
         throw new Error(`[SupabaseDB] Exceeded max retries cleaning unknown columns for ${tableName}`);
+    }
+
+    /**
+     * Insert a single NEW item. Unlike upsert, this fails if a row with the same id already exists.
+     * Use this for entity creation to guarantee no accidental merge with existing rows.
+     */
+    static async insert<T extends { id?: string }>(tableName: string, item: T): Promise<T> {
+        const id = item.id || uuidv4();
+        let payload = { ...item, id };
+        let retries = 0;
+        const maxRetries = 10;
+
+        while (retries < maxRetries) {
+            const { data, error } = await supabaseAdmin
+                .from(tableName)
+                .insert(payload as any)
+                .select()
+                .single();
+
+            if (!error) {
+                return (data || payload) as unknown as T;
+            }
+
+            // PGRST204: Could not find the 'column_name' column of 'table_name' in the schema cache
+            if (error.code === 'PGRST204') {
+                const match = error.message.match(/'([^']+)' column/);
+                if (match && match[1]) {
+                    const badColumn = match[1];
+                    console.warn(`[SupabaseDB] Stripping unknown column '${badColumn}' from INSERT payload for table '${tableName}'`);
+                    const { [badColumn as keyof typeof payload]: _, ...cleanPayload } = payload;
+                    payload = cleanPayload as any;
+                    retries++;
+                    continue;
+                }
+            }
+
+            console.error(`[SupabaseDB] Error inserting to ${tableName}:`, JSON.stringify(error, null, 2));
+            throw new Error(`Failed to insert to ${tableName}: ${error.message} - Code: ${error.code} - Details: ${error.details || 'None'}`);
+        }
+
+        throw new Error(`[SupabaseDB] Exceeded max retries cleaning unknown columns for ${tableName} (insert)`);
     }
 
     /**

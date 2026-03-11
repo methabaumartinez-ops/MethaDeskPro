@@ -1,10 +1,12 @@
 // src/app/api/teilsystem-import/route.ts
+// NOTE: This endpoint extracts IFC metadata for form pre-fill ONLY.
+// It does NOT create or modify any database records.
+// The real Teilsystem creation happens exclusively via POST /api/teilsysteme.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { google } from 'googleapis';
 import { IFCImportService } from '@/lib/services/ifcImportService';
-import { DatabaseService } from '@/lib/services/db';
-import { Teilsystem } from '@/types';
+import { requireAuth } from '@/lib/helpers/requireAuth';
 
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID?.trim();
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET?.trim();
@@ -26,8 +28,14 @@ function extractFileId(url: string): string | null {
 /**
  * POST /api/teilsystem-import
  * Body: { url: string, filename: string, projektId: string, user: string }
+ * Returns extracted IFC metadata for form pre-fill.
+ * DOES NOT write to the database.
  */
 export async function POST(req: NextRequest) {
+    // BUG-01 FIX: Enforce authentication BEFORE any IFC parsing or Drive access.
+    const { error: authError } = await requireAuth();
+    if (authError) return authError;
+
     try {
         const body = await req.json();
         const { url, filename, projektId, user, overrides } = body;
@@ -55,7 +63,7 @@ export async function POST(req: NextRequest) {
             ifcBuffer = await response.arrayBuffer();
         }
 
-        // 2. Extract and Process
+        // 2. Extract metadata only — no DB writes
         const data = new Uint8Array(ifcBuffer);
         const result = await IFCImportService.extractTeilsystemFromIFC(
             data,
@@ -72,20 +80,10 @@ export async function POST(req: NextRequest) {
             if (overrides.beschreibung) result.teilsystem.beschreibung = overrides.beschreibung;
         }
 
-        if (result.alreadyExists) {
-            return NextResponse.json({
-                message: 'already imported',
-                teilsystem: result.teilsystem
-            });
-        }
-
-        // 3. Save to DB
-        const saved = await DatabaseService.upsert('teilsysteme', result.teilsystem);
-
-        // 4. Return summary
+        // Return metadata for form pre-fill — no DB save
         return NextResponse.json({
-            message: 'success',
-            teilsystem: saved,
+            message: 'metadata_only',
+            teilsystem: result.teilsystem,
             summary: {
                 extractedFields: Object.keys(result.teilsystem).filter(k => (result.teilsystem as any)[k] !== null),
                 missingFields: result.missingFields
@@ -97,3 +95,4 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
+

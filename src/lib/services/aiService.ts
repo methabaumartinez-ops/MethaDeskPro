@@ -146,11 +146,8 @@ export class AIService {
                     'v_ai_task_status', projektIdFilter
                 ),
                 // VIEW: Unified personal (no email/phone, active only)
-                DatabaseService.list<PersonalViewRow>('v_ai_personal', {
-                    must: [
-                        { key: 'projektId', match: { value: projektId } },
-                    ],
-                }),
+                // Fetch ALL active and filter in memory to support isGlobal=true (BUG-11 Fix)
+                DatabaseService.list<PersonalViewRow>('v_ai_personal'),
                 // RAW: positionen (field-whitelisted at format layer)
                 DatabaseService.list<Record<string, unknown>>(
                     'positionen', projektIdFilter
@@ -186,7 +183,7 @@ export class AIService {
                 projekt,
                 teilsysteme: teilsysteme ?? [],
                 tasks: tasks ?? [],
-                personal: personal ?? [],
+                personal: (personal ?? []).filter(p => p.isGlobal === true || p.projektId === projektId),
                 positionen: (positionenRaw ?? []).map(pos => ({
                     id: pos.id,
                     teilsystemId: pos.teilsystemId,

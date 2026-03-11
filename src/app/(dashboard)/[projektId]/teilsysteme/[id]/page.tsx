@@ -15,7 +15,7 @@ import { PositionService } from '@/lib/services/positionService';
 import { LagerortService } from '@/lib/services/lagerortService';
 import { SupplierService } from '@/lib/services/supplierService';
 import { Teilsystem, Position, Projekt, Lagerort, Lieferant, ABTEILUNGEN_CONFIG } from '@/types';
-import { getStatusStyle, getStatusDateColor, getStatusPillClasses, getStatusBorderRing } from '@/lib/config/statusConfig';
+import { getStatusStyle, getStatusDateColor, getStatusPillClasses, getStatusBorderRing, getAbteilungColorClasses } from '@/lib/config/statusConfig';
 import {
     ArrowLeft, Edit, ListTodo, Plus, FileText, Truck,
     Calendar, User as UserIcon, Clock, Link as LinkIcon,
@@ -247,7 +247,7 @@ export default function TeilsystemDetailPage() {
                     <CardHeader className="py-2.5 px-4 bg-muted border-b border-border shrink-0">
                         <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Termine u. Fristen</CardTitle>
                     </CardHeader>
-                    <CardContent className="p-5 flex-1 flex items-center">
+                    <CardContent className="p-3 flex-1 flex items-center">
                         <div className="grid grid-cols-3 gap-3 w-full">
                             {(() => {
                                 const dates = [
@@ -292,8 +292,8 @@ export default function TeilsystemDetailPage() {
                             Bemerkung
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-4 flex-1 overflow-hidden">
-                        <div className="text-[10px] text-muted-foreground leading-relaxed italic whitespace-pre-wrap line-clamp-[10]">
+                    <CardContent className="p-3 flex-1 overflow-hidden">
+                        <div className="text-[10px] text-muted-foreground leading-relaxed italic whitespace-pre-wrap line-clamp-4">
                             {cleanBemerkung(item.bemerkung) || 'Keine Bemerkung vorhanden.'}
                         </div>
                     </CardContent>
@@ -307,11 +307,11 @@ export default function TeilsystemDetailPage() {
                     <CardHeader className="py-2.5 px-4 bg-muted border-b border-border shrink-0">
                         <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Aktionen</CardTitle>
                     </CardHeader>
-                    <CardContent className="flex-1 flex items-center justify-center p-5">
+                    <CardContent className="flex-1 flex items-center justify-center p-3">
                         <div className="grid grid-cols-2 gap-3 w-full max-w-[220px]">
                             {canViewKosten && (
                                 <Link href={`/${projektId}/kosten?ts=${id}${from ? `&from=${from}` : ''}`} className="col-span-2">
-                                    <Button className="w-full h-10 border-2 border-green-400 bg-green-50/50 hover:bg-green-100/70 dark:bg-green-900/20 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center justify-center gap-2.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
+                                    <Button className="w-full h-8 border-2 border-green-400 bg-green-50/50 hover:bg-green-100/70 dark:bg-green-900/20 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 font-black uppercase text-[10px] tracking-widest rounded-xl flex items-center justify-center gap-2.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
                                         <div className="p-1 bg-white dark:bg-slate-800 rounded-full shadow-sm">
                                             <BadgeDollarSign className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
                                         </div>
@@ -320,7 +320,7 @@ export default function TeilsystemDetailPage() {
                                 </Link>
                             )}
                             <Link href={`/${projektId}/lager-scan?type=teilsystem&id=${id}&action=einlagerung&qr=TEILSYSTEM:${id}`}>
-                                <Button variant="outline" className="w-full h-10 border-2 border-blue-400 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 text-blue-700 dark:text-blue-400 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
+                                <Button variant="outline" className="w-full h-8 border-2 border-blue-400 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 text-blue-700 dark:text-blue-400 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
                                     <div className="p-0.5 bg-blue-100 dark:bg-slate-900 rounded-full">
                                         <ArrowLeft className="h-3 w-3 text-blue-600 dark:text-blue-400 rotate-[-90deg]" />
                                     </div>
@@ -328,7 +328,7 @@ export default function TeilsystemDetailPage() {
                                 </Button>
                             </Link>
                             <Link href={`/${projektId}/lager-scan?type=teilsystem&id=${id}&action=auslagerung&qr=TEILSYSTEM:${id}`}>
-                                <Button variant="outline" className="w-full h-10 border-2 border-red-400 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-slate-700 text-red-700 dark:text-red-400 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
+                                <Button variant="outline" className="w-full h-8 border-2 border-red-400 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-slate-700 text-red-700 dark:text-red-400 font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm border-b-4 active:border-b-2 active:translate-y-[1px]">
                                     <div className="p-0.5 bg-red-100 dark:bg-slate-900 rounded-full">
                                         <ArrowLeft className="h-3 w-3 text-red-600 dark:text-red-400 rotate-[90deg]" />
                                     </div>
@@ -368,6 +368,8 @@ export default function TeilsystemDetailPage() {
                                             <TableRow className="border-b-2 border-border">
                                                 <TableHead className="pl-4 font-black text-foreground uppercase text-[9px] tracking-widest">Nr.</TableHead>
                                                 <TableHead className="font-black text-foreground uppercase text-[9px] tracking-widest">Name</TableHead>
+                                                <TableHead className="font-black text-foreground uppercase text-[9px] tracking-widest text-center">Menge</TableHead>
+                                                <TableHead className="font-black text-foreground uppercase text-[9px] tracking-widest">Abteilung</TableHead>
                                                 <TableHead className="font-black text-foreground uppercase text-[9px] tracking-widest">Status</TableHead>
                                                 <TableHead className="font-black text-foreground uppercase text-[9px] tracking-widest text-right">Actions</TableHead>
                                             </TableRow>
@@ -378,6 +380,18 @@ export default function TeilsystemDetailPage() {
                                                     <TableCell className="font-black text-primary py-3 pl-4 text-[10px]">{pos.posNummer || '—'}</TableCell>
                                                     <TableCell className="py-3">
                                                         <span className="font-bold text-foreground text-[11px] block truncate max-w-[120px]">{pos.name}</span>
+                                                    </TableCell>
+                                                    <TableCell className="py-3 text-center">
+                                                        <span className="font-bold text-muted-foreground text-[11px]">{pos.menge} {pos.einheit || 'Stk'}</span>
+                                                    </TableCell>
+                                                    <TableCell className="py-3">
+                                                        {pos.abteilung ? (
+                                                            <div className={cn("inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-black border", getAbteilungColorClasses(pos.abteilung))}>
+                                                                {pos.abteilung}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-muted-foreground/30 text-[10px] font-black">—</span>
+                                                        )}
                                                     </TableCell>
                                                     <TableCell className="py-3"><StatusBadge status={pos.status} className="scale-75 origin-left" /></TableCell>
                                                     <TableCell className="py-3 text-right">
@@ -436,56 +450,7 @@ export default function TeilsystemDetailPage() {
                 </div>
             </div>
 
-            {/* Bottom Row: System Details (Full Width) */}
-            <Card className="shadow-sm border-2 border-border overflow-hidden rounded-3xl bg-white dark:bg-card">
-                <CardHeader className="py-3 px-6 bg-muted border-b border-border">
-                    <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">System Details</CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                        {detailFields.map((field, i) => (
-                            <div key={i} className="flex flex-col gap-1.5">
-                                <div className="flex items-center gap-2">
-                                    <field.icon className={cn("h-3.5 w-3.5 text-muted-foreground", field.color)} />
-                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">{field.label}</span>
-                                </div>
-                                <div className="pl-5.5 font-bold text-xs truncate">
-                                    {field.isLink ? (
-                                        <a href={String(field.value)} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
-                                            <span>Link öffnen</span>
-                                            <ExternalLink className="h-2.5 w-2.5" />
-                                        </a>
-                                    ) : (
-                                        <span className={cn(field.color)}>{field.value || '—'}</span>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
 
-                    <div className="mt-8 pt-6 border-t border-border">
-                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-4">
-                            <Truck className="h-4 w-4" />
-                            Zugeordnete Lieferanten (ss)
-                        </CardTitle>
-                        {assignedLieferanten.length > 0 ? (
-                            <div className="flex flex-wrap gap-2">
-                                {assignedLieferanten.map(l => (
-                                    <Link key={l.id} href={`/${projektId}/lieferanten/${l.id}`}>
-                                        <Badge variant="info" className="px-4 py-2 rounded-xl border-2 border-border bg-muted/20 text-xs font-black flex items-center gap-2 hover:bg-muted transition-all cursor-pointer">
-                                            <Truck className="h-3 w-3 text-primary" />
-                                            {l.name}
-                                            <ExternalLink className="h-3 w-3 opacity-40" />
-                                        </Badge>
-                                    </Link>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-[10px] font-bold text-muted-foreground/50 italic">Keine Lieferanten zugewiesen.</p>
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
 
             {/* Bottom Section: Dokumente (Full Width) */}
             <Card className="shadow-sm border-2 border-border rounded-3xl overflow-hidden bg-white dark:bg-card">

@@ -14,8 +14,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         const { id } = await params;
         let item = await DatabaseService.get('teilsysteme', id);
 
-        // If not found by direct ID (UUID), try to find by teilsystemNummer
-        if (!item) {
+        // Fallback: search by teilsystemNummer — but ONLY if input is not a UUID.
+        // A UUID lookup that returns null means the record doesn't exist — do NOT
+        // silently return an unrelated TS by matching its system number.
+        const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        const looksLikeUUID = UUID_REGEX.test(id);
+
+        if (!item && !looksLikeUUID) {
             const list = await DatabaseService.list<any>('teilsysteme', {
                 must: [
                     { key: 'teilsystemNummer', match: { value: id } }
@@ -48,7 +53,17 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         const { id } = await params;
         const body = await req.json();
 
-        const existing = (await DatabaseService.get('teilsysteme', id) || {}) as Record<string, unknown>;
+        const existing = await DatabaseService.get('teilsysteme', id) as Record<string, unknown> | null;
+
+        // BUG-12 FIX: If the TS doesn't exist, return 404 explicitly.
+        // Previously: `|| {}` caused upsert to proceed with partial data, silently
+        // overwriting only the fields in `body` and losing all others.
+        if (!existing) {
+            return NextResponse.json(
+                { error: 'Teilsystem nicht gefunden.' },
+                { status: 404 }
+            );
+        }
 
         // Validate workflow transition when status is changing
         if (body.status && body.status !== existing.status) {

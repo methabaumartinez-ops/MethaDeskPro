@@ -21,3 +21,33 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: 'Failed to fetch changelog' }, { status: 500 });
     }
 }
+
+export async function POST(req: Request) {
+    const { user, error } = await requireAuth();
+    if (error) return error;
+
+    try {
+        const body = await req.json();
+        
+        // Allowed only strictly formed manual entries from client, mostly for bulk imports
+        if (!body.entityId || !body.entityType || !body.summary) {
+            return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
+        }
+
+        await ChangelogService.createEntry({
+            entityType: body.entityType,
+            entityId: body.entityId,
+            projektId: body.projektId,
+            changedAt: new Date().toISOString(),
+            changedBy: `${user.vorname} ${user.nachname}`,
+            changedByEmail: user.email,
+            changedFields: body.changedFields || [],
+            summary: body.summary,
+        });
+
+        return NextResponse.json({ success: true });
+    } catch (err) {
+        console.error('[API] Changelog create error:', err);
+        return NextResponse.json({ error: 'Failed to create changelog' }, { status: 500 });
+    }
+}

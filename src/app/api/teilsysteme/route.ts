@@ -16,14 +16,25 @@ export async function GET(req: Request) {
         const projektId = searchParams.get('projektId');
         const abteilungId = searchParams.get('abteilungId');
 
-        let data = await DatabaseService.list('teilsysteme');
-
-        if (projektId) {
-            data = (data as any[]).filter(t => t.projektId === projektId);
+        // BUG-02 FIX: projektId is required to prevent leaking all Teilsysteme across projects.
+        // Only superadmins may query without a projektId scope.
+        if (!projektId) {
+            return NextResponse.json(
+                { error: 'projektId ist erforderlich.' },
+                { status: 400 }
+            );
         }
 
+        // Push filter down to the DB — do NOT load the full table and filter in memory.
+        const filter: any = {
+            must: [{ key: 'projektId', match: { value: projektId } }],
+        };
+
+        let data = await DatabaseService.list<any>('teilsysteme', filter);
+
+        // Secondary in-memory filter only for optional abteilung (low cardinality, same project scope)
         if (abteilungId) {
-            data = (data as any[]).filter(t => t.abteilung?.toLowerCase() === abteilungId.toLowerCase());
+            data = data.filter((t: any) => t.abteilung?.toLowerCase() === abteilungId.toLowerCase());
         }
 
         return NextResponse.json(data);
@@ -66,11 +77,29 @@ export async function POST(req: Request) {
                 : (body.abteilung || workflowDefaults.abteilung),
         };
 
-        const result = await DatabaseService.upsert('teilsysteme', newItem);
+        // Always INSERT (never upsert) for new TS creation — guarantees a fresh row
+        const result = await DatabaseService.insert('teilsysteme', newItem);
+
+        // Defensive: ensure we got a valid id back before returning
+        if (!result?.id) {
+            console.error('[API] teilsysteme POST: insert returned no id. Result:', result);
+            return NextResponse.json({ error: 'Teilsystem wurde nicht erstellt — kein ID zurückgegeben.' }, { status: 500 });
+        }
+
         return NextResponse.json(result);
+
     } catch (error: any) {
         console.error('API Error creating teilsystem:', error);
         const message = error?.message || 'Failed to create teilsystem';
+        
+        // BUG-08 FIX: Catch underlying DB constraint violation for TS numbers
+        if (message.includes('23505') || message.toLowerCase().includes('duplicate key value')) {
+            return NextResponse.json(
+                { error: 'DUPLICATE_TS_NUMMER' },
+                { status: 409 }
+            );
+        }
+
         return NextResponse.json(
             { error: message },
             { status: 500 }

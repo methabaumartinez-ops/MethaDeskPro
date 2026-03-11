@@ -1,4 +1,5 @@
 // src/lib/services/ifcImportService.ts
+import 'server-only'; // BUG-10 FIX: Prevent accidental client-bundle inclusion
 
 import { IfcAPI } from 'web-ifc';
 import path from 'path';
@@ -55,9 +56,14 @@ export class IFCImportService {
         const checksum = this.calculateChecksum(buffer);
         const schema = api.GetModelSchema(modelID);
 
-        // Check if already exists by checksum
+        // BUG-03 FIX: Scope checksum lookup by projektId to prevent cross-project IFC collision.
+        // Without projektId, an IFC imported in Project A would return alreadyExists=true
+        // for Project B, incorrectly linking the Teilsystem from Project A.
         const existing = await DatabaseService.list<Teilsystem>('teilsysteme', {
-            must: [{ key: 'ifcChecksum', match: { value: checksum } }]
+            must: [
+                { key: 'ifcChecksum', match: { value: checksum } },
+                { key: 'projektId',   match: { value: projektId } },
+            ]
         });
 
         if (existing.length > 0) {

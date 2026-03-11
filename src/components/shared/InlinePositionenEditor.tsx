@@ -5,8 +5,8 @@ import { toast } from '@/lib/toast';
 import { PositionService } from '@/lib/services/positionService';
 import { SubPositionService } from '@/lib/services/subPositionService';
 import { LagerortService } from '@/lib/services/lagerortService';
-import { Position, Unterposition, ItemStatus, Lagerort } from '@/types';
-import { POS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses } from '@/lib/config/statusConfig';
+import { Position, Unterposition, ItemStatus, Lagerort, ABTEILUNGEN_CONFIG } from '@/types';
+import { POS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses, getAbteilungColorClasses } from '@/lib/config/statusConfig';
 import { cn } from '@/lib/utils';
 import { ChevronRight, ChevronDown, Plus, Save, Trash2, Loader2, Package, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -209,13 +209,13 @@ export function InlinePositionenEditor({ teilsystemId, projektId }: Props) {
             ) : (
                 <div className="border-2 border-border rounded-xl overflow-hidden flex flex-col min-h-0">
                     {/* Column Headers — sticky inside the scroll container */}
-                    <div className="grid grid-cols-[32px_60px_1fr_70px_60px_70px_100px_110px_36px] gap-1 px-3 py-2 bg-muted/60 border-b border-border text-[10px] font-black uppercase tracking-wider text-muted-foreground flex-shrink-0">
+                    <div className="grid grid-cols-[32px_60px_1fr_70px_60px_110px_100px_110px_36px] gap-1 px-3 py-2 bg-muted/60 border-b border-border text-[10px] font-black uppercase tracking-wider text-muted-foreground flex-shrink-0">
                         <div></div>
                         <div>Nr</div>
                         <div>Bezeichnung</div>
                         <div>Menge</div>
                         <div>Einh.</div>
-                        <div>Gew. kg</div>
+                        <div>Abteilung</div>
                         <div>Status</div>
                         <div className="flex items-center gap-0.5"><MapPin className="h-3 w-3" />Lagerort</div>
                         <div></div>
@@ -230,7 +230,7 @@ export function InlinePositionenEditor({ teilsystemId, projektId }: Props) {
                                 <React.Fragment key={pos.id}>
                                     {/* Position Row */}
                                     <div className={cn(
-                                        "grid grid-cols-[32px_60px_1fr_70px_60px_70px_100px_110px_36px] gap-1 px-3 py-1.5 items-center border-b border-border/50 transition-colors",
+                                        "grid grid-cols-[32px_60px_1fr_70px_60px_110px_100px_110px_36px] gap-1 px-3 py-1.5 items-center border-b border-border/50 transition-colors",
                                         pos._deleted ? "bg-red-50 opacity-50" : "hover:bg-muted/20",
                                         pos._new ? "bg-green-50/50" : ""
                                     )}>
@@ -241,7 +241,14 @@ export function InlinePositionenEditor({ teilsystemId, projektId }: Props) {
                                         <input className={cn(inputBase, "font-bold")} value={pos.name} onChange={e => updatePos(pos.id, 'name', e.target.value)} placeholder="Bezeichnung..." />
                                         <input className={inputBase} type="number" step="0.01" value={pos.menge} onChange={e => updatePos(pos.id, 'menge', Number(e.target.value))} />
                                         <input className={inputBase} value={pos.einheit} onChange={e => updatePos(pos.id, 'einheit', e.target.value)} />
-                                        <input className={inputBase} type="number" step="0.1" value={pos.gewicht || ''} onChange={e => updatePos(pos.id, 'gewicht', Number(e.target.value) || undefined)} />
+                                        <select
+                                            className={cn(selectBase, "text-[10px]", getAbteilungColorClasses(pos.abteilung))}
+                                            value={pos.abteilung || ''}
+                                            onChange={e => updatePos(pos.id, 'abteilung', e.target.value || undefined)}
+                                        >
+                                            <option value="">— Abt.</option>
+                                            {ABTEILUNGEN_CONFIG.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
+                                        </select>
                                         <select className={cn(selectBase, getStatusColorClasses(pos.status))} value={pos.status} onChange={e => updatePos(pos.id, 'status', e.target.value)}>
                                             {STATUS_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                                         </select>
@@ -268,7 +275,7 @@ export function InlinePositionenEditor({ teilsystemId, projektId }: Props) {
                                                 </div>
                                             ) : childUPos.map(upos => (
                                                 <div key={upos.id} className={cn(
-                                                    "grid grid-cols-[32px_60px_1fr_70px_60px_70px_100px_110px_36px] gap-1 px-3 py-1 items-center border-b border-border/30",
+                                                    "grid grid-cols-[32px_60px_1fr_70px_60px_110px_100px_110px_36px] gap-1 px-3 py-1 items-center border-b border-border/30",
                                                     upos._deleted ? "bg-red-50 opacity-50" : "",
                                                     upos._new ? "bg-green-50/30" : ""
                                                 )}>
@@ -279,7 +286,14 @@ export function InlinePositionenEditor({ teilsystemId, projektId }: Props) {
                                                     <input className={cn(inputBase, "h-7 text-[10px]")} value={upos.name} onChange={e => updateUPos(upos.id, 'name', e.target.value)} placeholder="Teil-Bezeichnung..." />
                                                     <input className={cn(inputBase, "h-7 text-[10px]")} type="number" step="0.01" value={upos.menge} onChange={e => updateUPos(upos.id, 'menge', Number(e.target.value))} />
                                                     <input className={cn(inputBase, "h-7 text-[10px]")} value={upos.einheit} onChange={e => updateUPos(upos.id, 'einheit', e.target.value)} />
-                                                    <input className={cn(inputBase, "h-7 text-[10px]")} type="number" step="0.1" value={upos.gewicht || ''} onChange={e => updateUPos(upos.id, 'gewicht', Number(e.target.value) || undefined)} />
+                                                    <select
+                                                        className={cn(selectBase, "h-7 text-[10px]", getAbteilungColorClasses(upos.abteilung))}
+                                                        value={upos.abteilung || ''}
+                                                        onChange={e => updateUPos(upos.id, 'abteilung', e.target.value || undefined)}
+                                                    >
+                                                        <option value="">— Abt.</option>
+                                                        {ABTEILUNGEN_CONFIG.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
+                                                    </select>
                                                     <select className={cn(selectBase, "h-7 text-[10px]", getStatusColorClasses(upos.status))} value={upos.status} onChange={e => updateUPos(upos.id, 'status', e.target.value)}>
                                                         {STATUS_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                                                     </select>

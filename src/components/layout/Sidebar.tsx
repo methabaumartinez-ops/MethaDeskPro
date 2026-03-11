@@ -94,6 +94,8 @@ export function Sidebar({ projektId, className }: { projektId: string; className
         {
             title: 'Projekte',
             icon: Layers,
+            href: `/${projektId}`,
+            pageKey: 'projekt-uebersicht',
             subItems: [
                 {
                     title: 'Bauleitung',

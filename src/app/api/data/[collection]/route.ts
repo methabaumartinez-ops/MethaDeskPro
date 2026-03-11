@@ -66,10 +66,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ collect
             id: body.id || uuidv4(),
         };
 
-        const result = await DatabaseService.upsert(collection, newItem);
+        // BUG-07 FIX: Use insert() instead of upsert() for creation.
+        // upsert() would silently overwrite an existing record if the client
+        // accidentally sends a duplicate ID. insert() fails on conflict, which is correct.
+        const result = await DatabaseService.insert(collection, newItem);
+
+        const skipChangelog = new URL(req.url).searchParams.get('skipChangelog') === 'true';
 
         // Track creation of Positionen and Unterpositionen
-        if (user && collection === 'positionen' && newItem.teilsystemId) {
+        if (user && collection === 'positionen' && newItem.teilsystemId && !skipChangelog) {
             await ChangelogService.createEntry({
                 entityType: 'teilsystem',
                 entityId: newItem.teilsystemId,
@@ -81,7 +86,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ collect
                 summary: `Position hinzugefügt: ${newItem.posNummer || ''} – ${newItem.name || ''}`,
             });
         }
-        if (user && collection === 'unterpositionen' && newItem.positionId) {
+        if (user && collection === 'unterpositionen' && newItem.positionId && !skipChangelog) {
             // Also log to the parent position's history
             const pos = await DatabaseService.get<any>('positionen', newItem.positionId);
             const tsId = pos?.teilsystemId || newItem.teilsystemId;
@@ -111,9 +116,19 @@ export async function POST(req: Request, { params }: { params: Promise<{ collect
         }
 
         return NextResponse.json(result);
-    } catch (error) {
+    } catch (error: any) {
         const { collection } = await params;
         console.error(`API Error creating item in ${collection}:`, error);
+
+        const message = error?.message || '';
+        // BUG-08 FIX: Catch underlying DB constraint violation
+        if (message.includes('23505') || message.toLowerCase().includes('duplicate key value')) {
+            return NextResponse.json(
+                { error: 'DUPLICATE_TS_NUMMER' },
+                { status: 409 }
+            );
+        }
+
         return NextResponse.json(
             { error: `Failed to create item in ${collection}` },
             { status: 500 }
@@ -130,6 +145,18 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ colle
         const { collection } = await params;
         if (!ALLOWED_COLLECTIONS.includes(collection)) {
             return NextResponse.json({ error: 'Collection not accessible' }, { status: 403 });
+        }
+
+        // BUG-06 FIX: Block generic DELETE for hierarchical entities.
+        // These entities have child records (unterpositionen, dokumente, Drive files) that must be
+        // cleaned up via proper cascade logic in their dedicated endpoints.
+        // Allowing simple delete here would create orphan rows and Drive file leaks.
+        const HIERARCHICAL_COLLECTIONS = ['teilsysteme', 'positionen', 'unterpositionen'];
+        if (HIERARCHICAL_COLLECTIONS.includes(collection)) {
+            return NextResponse.json(
+                { error: `Direkte Loeschung von '${collection}' ueber die generische Route ist nicht erlaubt. Bitte den spezifischen Endpunkt verwenden.` },
+                { status: 405 }
+            );
         }
 
         const { searchParams } = new URL(req.url);

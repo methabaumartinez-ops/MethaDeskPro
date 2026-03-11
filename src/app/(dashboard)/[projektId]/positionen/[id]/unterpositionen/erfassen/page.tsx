@@ -107,35 +107,32 @@ export default function UnterpositionErfassenPage() {
                 backHref={`/${projektId}/positionen/${positionId}`}
             />
 
-            {/* Context Header - Parent Position */}
-            <div className="bg-white/50 backdrop-blur-sm p-5 rounded-2xl shadow-sm border border-border/60 flex items-center gap-6">
-                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                    <Package className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                    <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Parent Position</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <span className="text-xl font-black text-foreground tracking-tight">{position?.posNummer || '—'}</span>
-                        <div className="h-4 w-px bg-border/60" />
-                        <span className="text-xl font-bold text-foreground/80 tracking-tight">{position?.name}</span>
-                    </div>
-                </div>
-            </div>
+            {/* Context Header removed in favor of readonly form fields */}
 
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <Card className="border-none shadow-xl">
-                    <CardHeader className="border-b bg-muted/30 py-4 px-6">
-                        <CardTitle className="text-sm font-black uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                            <ClipboardList className="h-4 w-4" />
-                            Unterpositions-Details
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-6">
-                        <input type="hidden" {...register('positionId')} />
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+                    {/* Left Column: Information */}
+                    <div className="lg:col-span-3 lg:col-start-1 space-y-6">
+                        <Card className="shadow-xl border-none">
+                            <CardHeader className="bg-muted/30 border-b border-border py-4 px-6">
+                                <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                                    <ClipboardList className="h-5 w-5 text-primary" />
+                                    Unterpositions-Informationen
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-6">
+                                <input type="hidden" {...register('positionId')} />
 
-                        <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                                <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                                    {/* Context Row */}
+                                    <div className="md:col-span-12 space-y-1.5 mb-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Zugeordnete Position</label>
+                                        <div className="flex h-10 w-full items-center gap-3 rounded-xl border border-input bg-muted/50 px-3 py-2 text-sm font-bold text-foreground cursor-not-allowed">
+                                            <span className="text-primary tracking-widest uppercase">{position?.posNummer || '—'}</span>
+                                            <div className="h-4 w-px bg-border"></div>
+                                            <span>{position?.name || 'Wird geladen...'}</span>
+                                        </div>
+                                    </div>
                             {/* Row 1: Number & Name */}
                             <div className="md:col-span-2">
                                 <Input
@@ -233,16 +230,21 @@ export default function UnterpositionErfassenPage() {
                             </div>
                         </div>
                     </CardContent>
-                    <CardFooter className="border-t bg-muted/20 px-6 py-4 flex justify-end gap-3">
-                        <Link href={`/${projektId}/positionen/${positionId}`}>
-                            <Button type="button" variant="ghost" className="font-bold">Abbrechen</Button>
-                        </Link>
-                        <Button type="submit" className="font-black gap-2 min-w-[200px] shadow-lg shadow-primary/20 hover:scale-105 transition-all" disabled={isSubmitting}>
-                            <Save className="h-4 w-4" />
-                            {isSubmitting ? 'Speichert...' : 'Unterposition speichern'}
+                        </Card>
+                    </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-6 border-t border-border">
+                    <Link href={`/${projektId}/positionen/${positionId}`}>
+                        <Button type="button" variant="outline" className="font-bold h-11 px-8">
+                            Abbrechen
                         </Button>
-                    </CardFooter>
-                </Card>
+                    </Link>
+                    <Button type="submit" className="bg-orange-600 hover:bg-orange-700 text-white font-black px-10 h-11 text-sm shadow-xl shadow-primary/20 hover:scale-105 transition-transform gap-2" disabled={isSubmitting}>
+                        <Save className="h-4 w-4" />
+                        {isSubmitting ? 'Wird gespeichert...' : 'Unterposition speichern'}
+                    </Button>
+                </div>
             </form>
         </div>
     );

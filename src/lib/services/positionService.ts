@@ -22,13 +22,13 @@ export const PositionService = {
                     if (!res.ok) throw new Error('Failed to fetch positions');
                     return await res.json();
     },
-    async createPosition(position: Partial<Position>): Promise<Position> {
+    async createPosition(position: Partial<Position>, skipChangelog = false): Promise<Position> {
         const payload = {
             ...position,
             status: position.status || STATUS_DEFAULTS.POSITION.status,
             abteilung: STATUS_DEFAULTS.POSITION.abteilung as any
         };
-        const res = await fetch('/api/data/positionen', {
+        const res = await fetch(`/api/data/positionen${skipChangelog ? '?skipChangelog=true' : ''}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)

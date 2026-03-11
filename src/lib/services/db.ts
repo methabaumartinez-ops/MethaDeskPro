@@ -165,6 +165,20 @@ export class DatabaseService {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // INSERT (create only — fails if duplicate id)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    static async insert<T extends { id?: string }>(collectionName: string, item: T): Promise<T> {
+        if (this.useSupabase) return SupabaseDatabaseService.insert<T>(collectionName, item);
+        // Mock mode: insert behaves same as upsert (no conflict in mock store)
+        if (this.useMock) return this.upsert<T>(collectionName, item);
+        throw new Error(
+            `[DatabaseService] No active database backend. ` +
+            `Set USE_SUPABASE=true in environment variables.`
+        );
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // DELETE BY FILTER
     // ─────────────────────────────────────────────────────────────────────────
 

@@ -11,6 +11,11 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog, DialogContent, DialogHeader, DialogTitle,
+    DialogDescription, DialogFooter
+} from '@/components/ui/dialog';
+import { AlertTriangle, ExternalLink } from 'lucide-react';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { EmployeeService } from '@/lib/services/employeeService';
 import { SubunternehmerService } from '@/lib/services/subunternehmerService';
@@ -103,6 +108,13 @@ export default function TeilsystemErfassenPage() {
     /** Stores selected IFC positions/unterpos for import after TS creation */
     const [pendingIfcImport, setPendingIfcImport] = React.useState<IfcPreviewResult | null>(null);
 
+    /** Duplicate warning: holds the conflicting TS found during submit */
+    const [duplicateWarning, setDuplicateWarning] = React.useState<{
+        teilsystemNummer: string;
+        name: string;
+        id: string;
+    } | null>(null);
+
     const [docDragActive, setDocDragActive] = React.useState(false);
     const [dokumenteFiles, setDokumenteFiles] = React.useState<File[]>([]);
     const docInputRef = React.useRef<HTMLInputElement>(null);
@@ -179,50 +191,88 @@ export default function TeilsystemErfassenPage() {
     }, [abteilungParam, setValue]);
 
     const onSubmit = async (data: TeilsystemValues) => {
-        const resolveName = (id: string) => {
-            const m = mitarbeiter.find(x => x.id === id);
-            return m ? `${m.vorname} ${m.nachname}` : id;
-        };
-
         const { SubsystemService } = await import('@/lib/services/subsystemService');
         const { ProjectService } = await import('@/lib/services/projectService');
 
         try {
-            // Check for unique system number
-            const isUnique = await SubsystemService.isSystemnummerUnique(projektId, data.teilsystemNummer);
-            if (!isUnique) {
-                setError('teilsystemNummer', { type: 'manual', message: 'Diese System-Nummer existiert bereits in diesem Projekt' });
+            // BUG-14 FIX: Uniqueness check is now FAIL-CLOSED.
+            // If the API call fails (network error, timeout), we abort creation with visible error
+            // instead of silently proceeding and potentially creating duplicate TS numbers.
+            let uniqueCheckPassed = false;
+            try {
+                const allTS = await SubsystemService.getTeilsysteme(projektId);
+                const conflict = allTS.find((s: any) => s.teilsystemNummer === data.teilsystemNummer);
+                if (conflict) {
+                    // Show explicit blocking popup — duplicate policy is hard stop
+                    setDuplicateWarning({
+                        teilsystemNummer: conflict.teilsystemNummer,
+                        name: conflict.name || '—',
+                        id: conflict.id,
+                    });
+                    setError('teilsystemNummer', { type: 'manual', message: 'Diese System-Nummer existiert bereits in diesem Projekt' });
+                    return;
+                }
+                uniqueCheckPassed = true;
+            } catch (uniqueErr) {
+                // BUG-14 FIX: Do NOT proceed if uniqueness check fails. Fail closed.
+                console.error('[erfassen] Uniqueness check failed — aborting creation to prevent duplicates:', uniqueErr);
+                toast.error('Eindeutigkeitspruefung fehlgeschlagen. Bitte erneut versuchen.');
                 return;
             }
+            if (!uniqueCheckPassed) return; // defensive guard
 
-            // Use already-uploaded IFC URL from auto-import, or upload fresh
+            // BUG-13 FIX: Only use the already-uploaded IFC URL (from handleAutoImport preview).
+            // Do NOT upload a fresh IFC file here — the 'fresh upload' path would create a Drive
+            // orphan if the TS creation fails after the upload. The IFC from the preview flow
+            // (uploadedIfcUrl) is acceptable because handleAutoImport already triggered the upload
+            // and the user explicitly previewed it. Fresh-file attachment without preview
+            // is intentionally deferred: if the user just attached a file without clicking
+            // 'Analyse/Import', the IFC is not uploaded to Drive until after TS creation succeeds.
             let ifcUrlFinal = uploadedIfcUrl || undefined;
-            if (!ifcUrlFinal && fileInputRef.current?.files?.[0]) {
-                const file = fileInputRef.current.files[0];
-                try {
-                    ifcUrlFinal = await ProjectService.uploadImage(file, projektId, 'ifc');
-                } catch (uploadErr: any) {
-                    console.error('IFC upload failed:', uploadErr);
-                    throw new Error(`IFC Upload fehlgeschlagen: ${uploadErr.message || String(uploadErr)}`);
-                }
-            }
 
             const sub = subunternehmerList.find(s => s.id === data.subunternehmerId);
 
+            // Auto-generación de comentario inicial en Bemerkung
+            const creationDateStr = new Date().toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const finalBemerkung = data.bemerkung
+                ? `[Erstellt am ${creationDateStr} durch ${data.eroeffnetDurch}]\n\n${data.bemerkung}`
+                : `[Erstellt am ${creationDateStr} durch ${data.eroeffnetDurch}]`;
+
             const created = await SubsystemService.createTeilsystem({
                 ...data,
+                bemerkung: finalBemerkung,
                 projektId,
                 eroeffnetAm: isoToGermanDate(data.eroeffnetAm),
                 montagetermin: isoToGermanDate(data.montagetermin),
                 montageterminProvisional: data.montagetermin ? true : undefined,
                 lieferfrist: isoToGermanDate(data.lieferfrist),
                 abgabePlaner: isoToGermanDate(data.abgabePlaner),
-                eroeffnetDurch: resolveName(data.eroeffnetDurch),
+                eroeffnetDurch: data.eroeffnetDurch,
                 subunternehmerId: data.subunternehmerId,
                 subunternehmerName: sub ? sub.name : undefined,
                 status: data.status as any,
+                // IFC URL will be set after post-creation upload if fresh file was attached
                 ifcUrl: ifcUrlFinal
             } as any);
+
+            // Guard: creation must return a valid ID
+            if (!created?.id) {
+                throw new Error('Teilsystem wurde nicht erstellt — Server hat keine ID zurueckgegeben. Bitte erneut versuchen.');
+            }
+
+            // BUG-13 FIX: Upload fresh IFC file ONLY AFTER successful TS creation.
+            // This prevents Drive orphan files if TS creation fails.
+            if (!ifcUrlFinal && selectedFileObj) {
+                try {
+                    ifcUrlFinal = await ProjectService.uploadImage(selectedFileObj, projektId, 'ifc');
+                    // Link the freshly uploaded IFC to the newly created TS
+                    await SubsystemService.updateTeilsystem(created.id, { ifcUrl: ifcUrlFinal } as any);
+                } catch (uploadErr: any) {
+                    // Upload failed but TS was created — log and continue without IFC
+                    console.error('Post-creation IFC upload failed:', uploadErr);
+                    toast.error(`IFC Upload fehlgeschlagen (TS wurde trotzdem gespeichert): ${uploadErr.message || String(uploadErr)}`);
+                }
+            }
 
             // If we have pending IFC positions from preview, import them now
             if (pendingIfcImport && created?.id) {
@@ -246,7 +296,7 @@ export default function TeilsystemErfassenPage() {
                             weight: Number(p.weight || 0),
                             ifcMeta: { psets: p.rawPsets, dimensions: { length: p.length, width: p.width, height: p.height }, ok: p.ok, uk: p.uk },
                             groupingMethod: p.ifcType === 'Fallback' ? 'FALLBACK_GROUP' : 'REAL_PARENT',
-                        } as any);
+                        } as any, true);
                         expressIdToPositionId.set(p.expressID, posCreated.id);
                     } catch (e: any) {
                         console.error(`Position import failed: ${p.name}`, e);
@@ -270,10 +320,26 @@ export default function TeilsystemErfassenPage() {
                             gewicht: u.gewicht,
                             ifcMeta: { psets: u.rawPsets, dimensions: u.dimensions, ok: u.ok, uk: u.uk, area: u.area, color: u.color, remark: u.remark },
                             status: 'offen',
-                        } as any);
+                        } as any, true);
                     } catch (e: any) {
                         console.error(`Unterposition import failed: ${u.name}`, e);
                     }
+                }
+
+                // Escribimos una unica linea de changelog agrupada para el Teilsystem
+                try {
+                    await fetch('/api/changelog', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            entityType: 'teilsystem',
+                            entityId: created.id,
+                            projektId,
+                            summary: `IFC Import: ${pendingIfcImport.positionen.length} Positionen und ${pendingIfcImport.unterpositionen.length} Unterpositionen automatisch hinzugefügt.`
+                        })
+                    });
+                } catch(e) {
+                    console.error('Failed to write bulk changelog', e);
                 }
             }
             // If IFC was uploaded but no preview was done, trigger extraction
@@ -332,7 +398,16 @@ export default function TeilsystemErfassenPage() {
             router.push(`/${projektId}/teilsysteme/${created.id}`);
         } catch (error: any) {
             console.error("Failed to create teilsystem", error);
-            toast.error(`Fehler beim Speichern: ${error?.message || String(error)}`);
+            if (error?.message === 'DUPLICATE_TS_NUMMER' || String(error).includes('DUPLICATE_TS_NUMMER')) {
+                setDuplicateWarning({
+                    teilsystemNummer: data.teilsystemNummer || 'Unbekannt',
+                    name: data.name || 'Neues System',
+                    id: '', // Empty ID as fallback since it's not provided by DUPLICATE exception
+                });
+                setError('teilsystemNummer', { type: 'manual', message: 'Diese System-Nummer existiert bereits in diesem Projekt' });
+            } else {
+                toast.error(`Fehler beim Speichern: ${error?.message || String(error)}`);
+            }
         }
     };
 
@@ -552,6 +627,57 @@ export default function TeilsystemErfassenPage() {
                 backHref={`/${projektId}/teilsysteme`}
             />
 
+            {/* ─── Duplicate System Number Warning ─── */}
+            <Dialog open={!!duplicateWarning} onOpenChange={(open) => { if (!open) setDuplicateWarning(null); }}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-amber-600">
+                            <AlertTriangle className="h-5 w-5 shrink-0" />
+                            System-Nummer bereits vergeben
+                        </DialogTitle>
+                        <DialogDescription className="pt-2 text-sm leading-relaxed">
+                            Die System-Nummer{' '}
+                            <span className="font-bold text-foreground">
+                                {duplicateWarning?.teilsystemNummer}
+                            </span>{' '}
+                            wird bereits von einem bestehenden Teilsystem in diesem Projekt verwendet:
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {duplicateWarning && (
+                        <div className="rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 px-4 py-3 text-sm space-y-1">
+                            <p className="font-black text-amber-800 dark:text-amber-300 text-[11px] uppercase tracking-widest">Bestehendes Teilsystem</p>
+                            <p className="text-sm font-semibold text-foreground">{duplicateWarning.name}</p>
+                            <p className="text-xs text-muted-foreground font-mono">#{duplicateWarning.teilsystemNummer}</p>
+                        </div>
+                    )}
+
+                    <p className="text-sm text-muted-foreground">
+                        Jede System-Nummer muss innerhalb eines Projekts eindeutig sein. Bitte waehlen Sie eine andere Nummer oder oeffnen Sie das bestehende Teilsystem.
+                    </p>
+
+                    <DialogFooter className="gap-2 sm:justify-between">
+                        <Button
+                            variant="outline"
+                            onClick={() => setDuplicateWarning(null)}
+                        >
+                            Abbrechen
+                        </Button>
+                        <Button
+                            className="gap-2"
+                            onClick={() => {
+                                if (duplicateWarning) {
+                                    router.push(`/${projektId}/teilsysteme/${duplicateWarning.id}`);
+                                }
+                            }}
+                        >
+                            <ExternalLink className="h-4 w-4" />
+                            Bestehendes TS oeffnen
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
                     {/* Left Column: Form Data */}
@@ -622,19 +748,13 @@ export default function TeilsystemErfassenPage() {
 
                                     {/* Row 3: People & Warehouse */}
                                     <div className="md:col-span-4">
-                                        <Controller
-                                            name="eroeffnetDurch"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <SearchableSelect
-                                                    label="Eröffnet durch *"
-                                                    options={mitarbeiterOptions}
-                                                    value={field.value}
-                                                    onChange={field.onChange}
-                                                    error={errors.eroeffnetDurch?.message}
-                                                />
-                                            )}
-                                        />
+                                        <div className="space-y-1.5">
+                                            <label className="text-sm font-semibold text-foreground ml-1">Eroeffnet durch *</label>
+                                            <div className="flex h-10 w-full items-center rounded-xl border border-input bg-muted/50 px-3 py-2 text-sm font-bold text-foreground cursor-not-allowed">
+                                                {watch('eroeffnetDurch') || 'Wird geladen...'}
+                                            </div>
+                                            <input type="hidden" {...register('eroeffnetDurch')} />
+                                        </div>
                                     </div>
                                     <div className="md:col-span-4">
                                         <Controller
@@ -866,9 +986,23 @@ export default function TeilsystemErfassenPage() {
 
                 {/* Bottom Action Row */}
                 <div className="flex justify-end gap-3 pt-6 border-t border-border">
-                    <Link href={`/${projektId}/teilsysteme`}>
-                        <Button type="button" variant="outline" className="font-bold h-11 px-8">Abbrechen</Button>
-                    </Link>
+                    <Button 
+                        type="button" 
+                        variant="outline" 
+                        className="font-bold h-11 px-8"
+                        onClick={async () => {
+                            if (uploadedIfcUrl) {
+                                fetch('/api/drive/delete', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ url: uploadedIfcUrl })
+                                }).catch(e => console.error('Cleanup failed:', e));
+                            }
+                            router.push(`/${projektId}/teilsysteme`);
+                        }}
+                    >
+                        Abbrechen
+                    </Button>
                     <Button type="submit" className="font-black px-12 h-11 text-sm shadow-xl shadow-primary/20 hover:scale-105 transition-all gap-2" disabled={isSubmitting}>
                         <Save className="h-4 w-4" />
                         {isSubmitting

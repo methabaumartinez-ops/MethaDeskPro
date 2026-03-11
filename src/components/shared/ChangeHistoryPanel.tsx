@@ -42,7 +42,7 @@ interface ChangeHistoryPanelProps {
     className?: string;
 }
 
-const VISIBLE_COUNT = 5;
+const VISIBLE_COUNT = 3;
 
 export function ChangeHistoryPanel({ entityId, className }: ChangeHistoryPanelProps) {
     const [entries, setEntries] = useState<ChangelogEntry[]>([]);
@@ -87,47 +87,54 @@ export function ChangeHistoryPanel({ entityId, className }: ChangeHistoryPanelPr
                         </p>
                     </div>
                 ) : (
-                    <div className="divide-y divide-border/30 overflow-y-auto max-h-[280px]">
-                        {visible.map((entry) => {
-                            const dateStr = format(new Date(entry.changedAt), 'dd.MM.yy', { locale: de });
-                            // Short name: "F.Martinez"
-                            const nameParts = entry.changedBy.trim().split(' ');
-                            const shortName = nameParts.length >= 2
-                                ? `${nameParts[0][0]}.${nameParts.slice(1).join(' ')}`
-                                : entry.changedBy;
+                    <div className="flex flex-col flex-1 overflow-hidden">
+                        <div 
+                            className="divide-y divide-border/30 overflow-y-auto max-h-[96px]"
+                            style={{ scrollbarWidth: 'thin' }}
+                        >
+                            {visible.map((entry) => {
+                                const dateStr = format(new Date(entry.changedAt), 'dd.MM.yy', { locale: de });
+                                // Short name: "F.Martinez"
+                                const nameParts = entry.changedBy.trim().split(' ');
+                                const shortName = nameParts.length >= 2
+                                    ? `${nameParts[0][0]}.${nameParts.slice(1).join(' ')}`
+                                    : entry.changedBy;
 
-                            const rows = (entry.changedFields && entry.changedFields.length > 0)
-                                ? entry.changedFields.map((f, i) => ({ key: `${entry.id}-${i}`, label: getFieldLabel(entry.entityType, f.field, f.label), before: renderValue(f.before), after: renderValue(f.after) }))
-                                : [{ key: entry.id, label: '', before: '', after: entry.summary || 'Änderung erfasst' }];
+                                const rows = (entry.changedFields && entry.changedFields.length > 0)
+                                    ? entry.changedFields.map((f, i) => ({ key: `${entry.id}-${i}`, label: getFieldLabel(entry.entityType, f.field, f.label), before: renderValue(f.before), after: renderValue(f.after) }))
+                                    : [{ key: entry.id, label: '', before: '', after: entry.summary || 'Änderung erfasst' }];
 
-                            return rows.map(row => (
-                                <div key={row.key} className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-muted/30 transition-colors text-[10px]">
-                                    <span className="font-black text-primary shrink-0">{shortName}</span>
-                                    <span className="text-muted-foreground/50 shrink-0">{dateStr}</span>
-                                    {row.label && (
-                                        <>
-                                            <span className="font-bold text-muted-foreground shrink-0">{row.label}:</span>
-                                            <span className="text-red-500/70 line-through shrink-0 max-w-[60px] truncate">{row.before}</span>
-                                            <span className="text-muted-foreground/40 shrink-0">→</span>
-                                            <span className="font-bold text-foreground truncate">{row.after}</span>
-                                        </>
-                                    )}
-                                    {!row.label && (
-                                        <span className="text-muted-foreground italic truncate">{row.after}</span>
-                                    )}
-                                </div>
-                            ));
-                        })}
+                                return rows.map(row => (
+                                    <div key={row.key} className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-muted/30 transition-colors text-[10px]">
+                                        <span className="font-black text-primary shrink-0">{shortName}</span>
+                                        <span className="text-muted-foreground/50 shrink-0">{dateStr}</span>
+                                        {row.label && (
+                                            <>
+                                                <span className="font-bold text-muted-foreground shrink-0">{row.label}:</span>
+                                                <span className="text-red-500/70 line-through shrink-0 max-w-[60px] truncate">{row.before}</span>
+                                                <span className="text-muted-foreground/40 shrink-0">→</span>
+                                                <span className="font-bold text-foreground truncate">{row.after}</span>
+                                            </>
+                                        )}
+                                        {!row.label && (
+                                            <span className="text-muted-foreground italic truncate">{row.after}</span>
+                                        )}
+                                    </div>
+                                ));
+                            })}
+                        </div>
                         {hasMore && (
-                            <button
-                                onClick={() => setExpanded(e => !e)}
-                                className="w-full py-1.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary hover:bg-muted/20 transition-colors flex items-center justify-center gap-1"
-                            >
-                                {expanded
-                                    ? <><ChevronUp className="h-3 w-3" /> Weniger</>
-                                    : <><ChevronDown className="h-3 w-3" /> {entries.length - VISIBLE_COUNT} weitere</>
-                                }
-                            </button>
+                            <div className="shrink-0 border-t border-border/50 bg-muted/10">
+                                <button
+                                    onClick={() => setExpanded(e => !e)}
+                                    className="w-full py-2 text-[9px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary hover:bg-muted/20 transition-colors flex items-center justify-center gap-1"
+                                >
+                                    {expanded
+                                        ? <><ChevronUp className="h-3 w-3" /> Weniger</>
+                                        : <><ChevronDown className="h-3 w-3" /> {entries.length - VISIBLE_COUNT} weitere</>
+                                    }
+                                </button>
+                            </div>
                         )}
                     </div>
                 )}

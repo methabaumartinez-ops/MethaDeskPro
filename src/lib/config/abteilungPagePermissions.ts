@@ -13,6 +13,7 @@
 import type { AbteilungId } from '@/types';
 
 export type PageKey =
+  | 'projekt-uebersicht'
   | 'dashboard-builder'
   | 'my-dashboard'
   | 'bauleitung'
@@ -33,6 +34,7 @@ export type PageKey =
   | 'fuhrpark';
 
 export const PAGE_LABELS: Record<PageKey, string> = {
+  'projekt-uebersicht': 'Projekt Übersicht',
   'dashboard-builder': 'Dashboard Builder',
   'my-dashboard': 'My Dashboard',
   'bauleitung': 'Bauleitung',
@@ -57,17 +59,17 @@ export const ALL_PAGES: PageKey[] = Object.keys(PAGE_LABELS) as PageKey[];
 
 /** Default permissions (hardcoded fallback — also initial seed for DB) */
 export const DEFAULT_ABT_PERMISSIONS: Record<string, PageKey[]> = {
-  planung: ['dashboard-builder', 'my-dashboard', 'bauleitung', 'analyse', 'produktion', 'planung', 'tabellen'],
-  einkauf: ['dashboard-builder', 'my-dashboard', 'einkauf', 'tabellen'],
-  avor: ['dashboard-builder', 'my-dashboard', 'avor', 'tabellen'],
-  schlosserei: ['dashboard-builder', 'my-dashboard', 'produktion', 'schlosserei', 'tabellen'],
-  blech: ['dashboard-builder', 'my-dashboard', 'produktion', 'blech', 'tabellen'],
-  werkhof: ['dashboard-builder', 'my-dashboard', 'werkhof-bestellungen', 'lagerort', 'qr-scan'],
-  montage: ['dashboard-builder', 'my-dashboard', 'ausfuehrung', 'tabellen'],
-  bau: ['dashboard-builder', 'my-dashboard', 'bauleitung', 'ausfuehrung', 'tabellen'],
-  zimmerei: ['dashboard-builder', 'my-dashboard', 'ausfuehrung', 'tabellen'],
-  subunternehmer: ['dashboard-builder', 'my-dashboard', 'tabellen'],
-  unternehmer: ['dashboard-builder', 'my-dashboard', 'tabellen'],
+  planung: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'bauleitung', 'analyse', 'produktion', 'planung', 'tabellen'],
+  einkauf: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'einkauf', 'tabellen'],
+  avor: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'avor', 'tabellen'],
+  schlosserei: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'produktion', 'schlosserei', 'tabellen'],
+  blech: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'produktion', 'blech', 'tabellen'],
+  werkhof: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'werkhof-bestellungen', 'lagerort', 'qr-scan'],
+  montage: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'ausfuehrung', 'tabellen'],
+  bau: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'bauleitung', 'ausfuehrung', 'tabellen'],
+  zimmerei: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'ausfuehrung', 'tabellen'],
+  subunternehmer: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'tabellen'],
+  unternehmer: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'tabellen'],
 };
 
 // ─── Storage keys ─────────────────────────────────────────────────────────────

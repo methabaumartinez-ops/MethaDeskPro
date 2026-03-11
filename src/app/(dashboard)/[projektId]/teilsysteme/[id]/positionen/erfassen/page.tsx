@@ -145,29 +145,34 @@ export default function PositionErfassenPage() {
                 backHref={`/${projektId}/teilsysteme/${teilsystemId}`}
             />
 
-            {/* Context Header - Secondary info about the Teilsystem */}
-            <div className="bg-white/50 backdrop-blur-sm p-4 rounded-2xl border border-border/60 flex items-center gap-4 px-6 -mt-2">
-                <div className="flex flex-col">
-                    <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em]">Zugeordnetes Teilsystem</span>
-                    <div className="flex items-baseline gap-2 mt-0.5">
-                        <span className="text-xl font-black text-foreground tracking-tight">
-                            {(teilsystem?.teilsystemNummer || teilsystemId || '').replace(/^ts\s?/i, '')}
-                        </span>
-                        <span className="text-xl font-bold text-foreground/80 tracking-tight">{teilsystem?.name}</span>
-                    </div>
-                </div>
-            </div>
+            {/* Context Header removed in favor of readonly form fields */}
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
                     {/* Left Column: Information */}
-                    <div className="lg:col-span-3 h-full flex flex-col">
-                        <Card className="shadow-sm border-none flex-1">
-                            <CardContent className="p-6 pt-5">
+                    <div className="lg:col-span-3 space-y-6">
+                        <Card className="shadow-xl border-none">
+                            <CardHeader className="bg-muted/30 border-b border-border py-4 px-6">
+                                <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                                    <ClipboardList className="h-5 w-5 text-primary" />
+                                    Positions-Informationen
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-6">
                                 <input type="hidden" {...register('teilsystemId')} />
                                 <input type="hidden" {...register('abteilung')} />
 
                                 <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                                    {/* Context Row */}
+                                    <div className="md:col-span-12 space-y-1.5 mb-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Zugeordnetes Teilsystem</label>
+                                        <div className="flex h-10 w-full items-center gap-3 rounded-xl border border-input bg-muted/50 px-3 py-2 text-sm font-bold text-foreground cursor-not-allowed">
+                                            <span className="text-primary tracking-widest uppercase">{(teilsystem?.teilsystemNummer || teilsystemId || '').replace(/^ts\s?/i, '')}</span>
+                                            <div className="h-4 w-px bg-border"></div>
+                                            <span>{teilsystem?.name || 'Wird geladen...'}</span>
+                                        </div>
+                                    </div>
+
                                     {/* Row 1: Designation (Wide) */}
                                     <div className="md:col-span-9">
                                         <Input
@@ -275,7 +280,7 @@ export default function PositionErfassenPage() {
                                     <div className="md:col-span-12 space-y-1.5">
                                         <label className="text-sm font-semibold text-foreground ml-1">Bemerkung</label>
                                         <textarea
-                                            className="flex min-h-[96px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all hover:border-accent-foreground/30 shadow-sm"
+                                            className="flex min-h-[80px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all hover:border-accent-foreground/30 shadow-sm"
                                             placeholder="Zusätzliche Notizen zur Position..."
                                             {...register('bemerkung')}
                                         />
@@ -285,13 +290,13 @@ export default function PositionErfassenPage() {
                         </Card>
                     </div>
 
-                    {/* Right Column: File Upload - Compact size & Sticky */}
-                    <div className="space-y-6 sticky top-6 mt-1 lg:mt-[4.5rem]">
+                    {/* Right Column: File Upload */}
+                    <div className="space-y-4 sticky top-6 mt-1 lg:mt-0">
                         <Card className="shadow-none border-2 border-dashed border-border bg-muted/30 flex flex-col">
-                            <CardHeader className="bg-transparent border-b-0 pb-0 pt-4 px-4">
-                                <CardTitle className="text-sm font-black text-foreground flex items-center gap-2">
-                                    <UploadCloud className="h-4 w-4 text-primary" />
-                                    Dateien hochladen
+                            <CardHeader className="bg-transparent border-b-0 pb-0 pt-3 px-4">
+                                <CardTitle className="text-xs font-black text-foreground flex items-center gap-2">
+                                    <UploadCloud className="h-3.5 w-3.5 text-primary" />
+                                    Dokumente / Skizzen
                                 </CardTitle>
                             </CardHeader>
                             <CardContent
@@ -326,8 +331,13 @@ export default function PositionErfassenPage() {
                     </div>
                 </div>
 
-                <div className="flex justify-end pt-4 border-t border-slate-100">
-                    <Button type="submit" size="lg" className="font-black px-12 h-12 text-base shadow-xl shadow-primary/20 hover:scale-105 transition-transform" disabled={isSubmitting}>
+                <div className="flex justify-end gap-3 pt-6 border-t border-border">
+                    <Link href={`/${projektId}/teilsysteme/${teilsystemId}`}>
+                        <Button type="button" variant="outline" className="font-bold h-11 px-8">
+                            Abbrechen
+                        </Button>
+                    </Link>
+                    <Button type="submit" className="bg-orange-600 hover:bg-orange-700 text-white font-black px-10 h-11 text-sm shadow-xl shadow-primary/20 hover:scale-105 transition-transform" disabled={isSubmitting}>
                         {isSubmitting ? 'Wird gespeichert...' : 'Position speichern'}
                     </Button>
                 </div>

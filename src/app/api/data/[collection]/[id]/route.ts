@@ -54,7 +54,11 @@ export async function PUT(req: Request, { params }: { params: Promise<{ collecti
         }
 
         const body = await req.json();
-        const existing = (await DatabaseService.get(collection, id) || {}) as Record<string, unknown>;
+        const existing = await DatabaseService.get(collection, id) as Record<string, unknown> | null;
+        // BUG-12 pattern: return 404 if entity not found instead of merging with empty object
+        if (!existing) {
+            return NextResponse.json({ error: `${collection} nicht gefunden.` }, { status: 404 });
+        }
         const merged = { ...existing, ...body, id };
 
         const updated = await DatabaseService.upsert(collection, merged);
@@ -95,7 +99,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ collec
         }
 
         const body = await req.json();
-        const existing = (await DatabaseService.get(collection, id) || {}) as Record<string, unknown>;
+        const existing = await DatabaseService.get(collection, id) as Record<string, unknown> | null;
+        if (!existing) {
+            return NextResponse.json({ error: `${collection} nicht gefunden.` }, { status: 404 });
+        }
         const merged = { ...existing, ...body, id };
 
         const updated = await DatabaseService.upsert(collection, merged);

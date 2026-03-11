@@ -15,13 +15,13 @@ export const SubPositionService = {
                     return await res.json();
     },
 
-    async createUnterposition(subPosition: Partial<Unterposition>): Promise<Unterposition> {
+    async createUnterposition(subPosition: Partial<Unterposition>, skipChangelog = false): Promise<Unterposition> {
         const payload = {
             ...subPosition,
             status: subPosition.status || STATUS_DEFAULTS.UNTERPOSITION.status,
             abteilung: STATUS_DEFAULTS.UNTERPOSITION.abteilung as any
         };
-        const res = await fetch('/api/data/unterpositionen', {
+        const res = await fetch(`/api/data/unterpositionen${skipChangelog ? '?skipChangelog=true' : ''}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)

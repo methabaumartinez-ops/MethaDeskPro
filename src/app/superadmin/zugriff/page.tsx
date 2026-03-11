@@ -16,7 +16,7 @@ import { toast } from '@/lib/toast';
 // Page groups for better UI organization
 const PAGE_GROUPS: { label: string; pages: PageKey[] }[] = [
     { label: 'Dashboard', pages: ['dashboard-builder', 'my-dashboard'] },
-    { label: 'Projekte', pages: ['bauleitung', 'analyse', 'produktion', 'planung', 'avor', 'einkauf', 'schlosserei', 'blech', 'kosten', 'tabellen'] },
+    { label: 'Projekte', pages: ['projekt-uebersicht', 'bauleitung', 'analyse', 'produktion', 'planung', 'avor', 'einkauf', 'schlosserei', 'blech', 'kosten', 'tabellen'] },
     { label: 'Ausführung', pages: ['ausfuehrung'] },
     { label: 'Werkhof', pages: ['werkhof-bestellungen', 'lagerort', 'qr-scan'] },
     { label: 'Sonstiges', pages: ['fuhrpark'] },
