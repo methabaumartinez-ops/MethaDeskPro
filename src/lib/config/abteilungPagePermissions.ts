@@ -29,6 +29,7 @@ export type PageKey =
   | 'ausfuehrung'
   | 'arbeitsplan'
   | 'werkhof-bestellungen'
+  | 'werkhof-lager'
   | 'lagerort'
   | 'qr-scan'
   | 'fuhrpark';
@@ -50,6 +51,7 @@ export const PAGE_LABELS: Record<PageKey, string> = {
   'ausfuehrung': 'Ausfuehrung',
   'arbeitsplan': 'Arbeitsplan',
   'werkhof-bestellungen': 'Werkhof \u2013 Bestellungen',
+  'werkhof-lager': 'Werkhof \u2013 Lager',
   'lagerort': 'Lagerort',
   'qr-scan': 'QR Scan',
   'fuhrpark': 'Fuhrpark',
@@ -59,12 +61,12 @@ export const ALL_PAGES: PageKey[] = Object.keys(PAGE_LABELS) as PageKey[];
 
 /** Default permissions (hardcoded fallback — also initial seed for DB) */
 export const DEFAULT_ABT_PERMISSIONS: Record<string, PageKey[]> = {
-  planung: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'bauleitung', 'analyse', 'produktion', 'planung', 'tabellen'],
+  planung: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'analyse', 'produktion', 'planung', 'tabellen'],
   einkauf: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'einkauf', 'tabellen'],
   avor: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'avor', 'tabellen'],
   schlosserei: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'produktion', 'schlosserei', 'tabellen'],
   blech: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'produktion', 'blech', 'tabellen'],
-  werkhof: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'werkhof-bestellungen', 'lagerort', 'qr-scan'],
+  werkhof: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'werkhof-bestellungen', 'werkhof-lager', 'lagerort', 'qr-scan'],
   montage: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'ausfuehrung', 'tabellen'],
   bau: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'bauleitung', 'ausfuehrung', 'tabellen'],
   zimmerei: ['projekt-uebersicht', 'dashboard-builder', 'my-dashboard', 'ausfuehrung', 'tabellen'],

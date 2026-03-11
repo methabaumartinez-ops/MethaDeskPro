@@ -62,6 +62,17 @@ export function Sidebar({ projektId, className }: { projektId: string; className
     const [abtPerms, setAbtPerms] = React.useState<Record<string, PageKey[]>>({});
     React.useEffect(() => { setAbtPerms(loadAbtPermissions()); }, []);
 
+    // Auto-refresh when Seitenzugriff saves to localStorage (same tab)
+    React.useEffect(() => {
+        const onStorage = (e: StorageEvent) => {
+            if (e.key === 'methabau_abt_permissions') {
+                setAbtPerms(loadAbtPermissions());
+            }
+        };
+        window.addEventListener('storage', onStorage);
+        return () => window.removeEventListener('storage', onStorage);
+    }, []);
+
     const canSee = (pageKey?: PageKey): boolean => {
         if (!applyAbtFilter) return true;  // admin without preview sees all
         if (!pageKey) return true;          // items with no pageKey are always visible
@@ -136,6 +147,7 @@ export function Sidebar({ projektId, className }: { projektId: string; className
             icon: Warehouse,
             subItems: [
                 { title: 'Bestellungen', href: `/${projektId}/werkhof`, icon: Package, pageKey: 'werkhof-bestellungen' },
+                { title: 'Lager', href: `/${projektId}/werkhof/lager`, icon: Warehouse, pageKey: 'werkhof-lager' },
                 { title: 'Lagerort', href: `/${projektId}/lagerorte`, icon: MapPin, pageKey: 'lagerort' },
                 { title: 'QR Scan', href: `/${projektId}/lager-scan`, icon: QrCode, pageKey: 'qr-scan' },
             ]
@@ -150,16 +162,21 @@ export function Sidebar({ projektId, className }: { projektId: string; className
 
     const filterAllowed = (items: MenuItem[]): MenuItem[] => {
         return items
-            .filter(item => canSee(item.pageKey))
             .map(item => ({
                 ...item,
-                subItems: item.subItems ? filterAllowed(item.subItems) : undefined
+                subItems: item.subItems ? filterAllowed(item.subItems) : undefined,
             }))
             .filter(item => {
+                const hasVisibleChildren = item.subItems && item.subItems.length > 0;
+                const ownPageAllowed = canSee(item.pageKey);
+
                 if (item.subItems !== undefined) {
-                    return item.subItems.length > 0 || !!item.href;
+                    // Parent node: show if it has visible children (acts as group container)
+                    // OR if it has its own href AND its own pageKey is allowed (acts as standalone page)
+                    return hasVisibleChildren || (!!item.href && ownPageAllowed);
                 }
-                return true;
+                // Leaf node: show only if its pageKey is allowed
+                return ownPageAllowed;
             });
     };
 

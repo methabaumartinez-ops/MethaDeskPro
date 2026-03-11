@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     const { user } = await requireAuth();
     try {
         const body = await request.json();
-        if (!body.teilsystemId || !body.projektId || !body.mitarbeiterId || !body.datum || body.stunden == null) {
+        if (!body.projektId || !body.mitarbeiterId || !body.datum || body.stunden == null) {
             return NextResponse.json({ error: 'Pflichtfelder fehlen' }, { status: 400 });
         }
         let { stundensatz, gesamtpreis } = body;

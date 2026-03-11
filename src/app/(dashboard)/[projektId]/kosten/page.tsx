@@ -11,7 +11,7 @@ import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { EmployeeService } from '@/lib/services/employeeService';
 import { Teilsystem, Mitarbeiter, TsStunden, TsMaterialkosten, Abteilung, ABTEILUNGEN_CONFIG } from '@/types';
-import { Clock, Package2, Plus, Trash2, Download, ChevronDown, ChevronUp, DollarSign, AlertTriangle } from 'lucide-react';
+import { Clock, Package2, Plus, Trash2, Download, ChevronDown, ChevronUp, DollarSign, AlertTriangle, Building2, Layers } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useProjekt } from '@/lib/context/ProjektContext';
@@ -20,6 +20,7 @@ import { AbteilungBadge } from '@/components/shared/AbteilungBadge';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { toast } from '@/lib/toast';
 
+type KostenScope = 'projekt' | 'teilsystem';
 
 export default function KostenPage() {
     const { projektId } = useParams<{ projektId: string }>();
@@ -28,6 +29,7 @@ export default function KostenPage() {
     const tsFilter = searchParams.get('ts');
     const returnTo = searchParams.get('returnTo');
 
+    const [scope, setScope] = useState<KostenScope>(tsFilter ? 'teilsystem' : 'projekt');
     const [activeTab, setActiveTab] = useState<'stunden' | 'material'>('stunden');
     const [teilsysteme, setTeilsysteme] = useState<Teilsystem[]>([]);
     const [mitarbeiter, setMitarbeiter] = useState<Mitarbeiter[]>([]);
@@ -38,7 +40,7 @@ export default function KostenPage() {
     const [showStundenForm, setShowStundenForm] = useState(false);
     const [showMaterialForm, setShowMaterialForm] = useState(false);
     const [saving, setSaving] = useState(false);
-    
+
     // Delete confirmation state
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<{ id: string, type: 'stunden' | 'material' } | null>(null);
@@ -73,12 +75,34 @@ export default function KostenPage() {
         loadInit();
     }, [projektId]);
 
+    // Load costs when scope or selectedTs changes
     useEffect(() => {
-        if (!selectedTs) { setStunden([]); setMaterial([]); return; }
-        loadKosten();
-    }, [selectedTs]);
+        if (scope === 'projekt') {
+            loadProjektKosten();
+        } else if (scope === 'teilsystem' && selectedTs) {
+            loadTsKosten();
+        } else {
+            setStunden([]);
+            setMaterial([]);
+        }
+    }, [scope, selectedTs]);
 
-    async function loadKosten() {
+    async function loadProjektKosten() {
+        try {
+            const [s, m] = await Promise.all([
+                fetch(`/api/kosten/stunden?projektId=${projektId}`).then(r => r.ok ? r.json() : []),
+                fetch(`/api/kosten/material?projektId=${projektId}`).then(r => r.ok ? r.json() : []),
+            ]);
+            // Filter to only project-level entries (no teilsystemId)
+            setStunden(s.filter((entry: any) => !entry.teilsystemId));
+            setMaterial(m.filter((entry: any) => !entry.teilsystemId));
+        } catch {
+            setStunden([]);
+            setMaterial([]);
+        }
+    }
+
+    async function loadTsKosten() {
         if (!selectedTs) return;
         const [s, m] = await Promise.all([
             fetch(`/api/kosten/stunden?teilsystemId=${selectedTs}`).then(r => r.ok ? r.json() : []),
@@ -88,9 +112,14 @@ export default function KostenPage() {
         setMaterial(m);
     }
 
+    async function loadKosten() {
+        if (scope === 'projekt') await loadProjektKosten();
+        else await loadTsKosten();
+    }
+
     async function submitStunden(e: React.FormEvent) {
         e.preventDefault();
-        if (!selectedTs) return;
+        if (scope === 'teilsystem' && !selectedTs) return;
         setSaving(true);
         try {
             const ma = mitarbeiter.find(m => m.id === stundenForm.mitarbeiterId);
@@ -102,17 +131,20 @@ export default function KostenPage() {
                 body: JSON.stringify({
                     ...stundenForm,
                     stunden: parseFloat(stundenForm.stunden),
-                    stundensatz: ma?.stundensatz || 55, // Snapshot of current rate
+                    stundensatz: ma?.stundensatz || 55,
                     gesamtpreis: (ma?.stundensatz || 55) * parseFloat(stundenForm.stunden),
-                    teilsystemId: selectedTs,
+                    teilsystemId: scope === 'teilsystem' ? selectedTs : undefined,
                     projektId,
-                    abteilungId, // Enviar el ID del departamento
+                    abteilungId,
                     mitarbeiterName: ma ? `${ma.vorname} ${ma.nachname}` : stundenForm.mitarbeiterId,
                 }),
             });
             setStundenForm({ mitarbeiterId: '', datum: new Date().toISOString().split('T')[0], stunden: '', abteilung: '', taetigkeit: '', bemerkung: '' });
             setShowStundenForm(false);
             await loadKosten();
+            toast.success('Stunden erfasst');
+        } catch {
+            toast.error('Fehler beim Speichern');
         } finally {
             setSaving(false);
         }
@@ -120,7 +152,7 @@ export default function KostenPage() {
 
     async function submitMaterial(e: React.FormEvent) {
         e.preventDefault();
-        if (!selectedTs) return;
+        if (scope === 'teilsystem' && !selectedTs) return;
         setSaving(true);
         try {
             await fetch('/api/kosten/material', {
@@ -130,13 +162,16 @@ export default function KostenPage() {
                     ...materialForm,
                     menge: parseFloat(materialForm.menge),
                     einzelpreis: parseFloat(materialForm.einzelpreis),
-                    teilsystemId: selectedTs,
+                    teilsystemId: scope === 'teilsystem' ? selectedTs : undefined,
                     projektId,
                 }),
             });
             setMaterialForm({ bezeichnung: '', menge: '1', einheit: 'Stk', einzelpreis: '', bestelldatum: '', bemerkung: '' });
             setShowMaterialForm(false);
             await loadKosten();
+            toast.success('Material erfasst');
+        } catch {
+            toast.error('Fehler beim Speichern');
         } finally {
             setSaving(false);
         }
@@ -149,18 +184,18 @@ export default function KostenPage() {
 
     async function handleConfirmDelete() {
         if (!itemToDelete) return;
-        
+
         try {
             if (itemToDelete.type === 'stunden') {
                 await fetch(`/api/kosten/stunden/${itemToDelete.id}`, { method: 'DELETE' });
             } else {
                 await fetch(`/api/kosten/material/${itemToDelete.id}`, { method: 'DELETE' });
             }
-            toast.success('Eintrag gelöscht');
+            toast.success('Eintrag geloescht');
             await loadKosten();
         } catch (error) {
             console.error('Delete failed:', error);
-            toast.error('Fehler beim Löschen');
+            toast.error('Fehler beim Loeschen');
         } finally {
             setConfirmOpen(false);
             setItemToDelete(null);
@@ -169,9 +204,10 @@ export default function KostenPage() {
 
     function exportCsv() {
         const ts = teilsysteme.find(t => t.id === selectedTs);
+        const label = scope === 'projekt' ? 'Projekt' : (ts?.teilsystemNummer || selectedTs);
         const rows: string[] = [];
         rows.push('=== STUNDEN ===');
-        rows.push('Datum;Mitarbeiter;Stunden;Abteilung;Tätigkeit;Bemerkung');
+        rows.push('Datum;Mitarbeiter;Stunden;Abteilung;Taetigkeit;Bemerkung');
         stunden.forEach(s => rows.push(
             [s.datum, s.mitarbeiterName || s.mitarbeiterId, s.stunden, s.abteilung || '', s.taetigkeit || '', s.bemerkung || ''].join(';')
         ));
@@ -183,14 +219,16 @@ export default function KostenPage() {
         const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `Kosten_${ts?.teilsystemNummer || selectedTs}_${new Date().toISOString().split('T')[0]}.csv`;
+        a.download = `Kosten_${label}_${new Date().toISOString().split('T')[0]}.csv`;
         a.click();
     }
 
     const totalStunden = stunden.reduce((a, s) => a + (s.stunden || 0), 0);
     const totalLaborCost = stunden.reduce((a, s) => a + (s.gesamtpreis || 0), 0);
     const totalMaterial = material.reduce((a, m) => a + (m.gesamtpreis || m.einzelpreis * m.menge || 0), 0);
-    const cstsName = teilsysteme.find(t => t.id === selectedTs)?.name;
+
+    const canShowContent = scope === 'projekt' || (scope === 'teilsystem' && selectedTs);
+    const canExport = canShowContent && (stunden.length > 0 || material.length > 0);
 
     if (loading) return (
         <div className="h-64 flex items-center justify-center">
@@ -205,31 +243,74 @@ export default function KostenPage() {
                 icon={DollarSign}
                 title="Kostenerfassung"
                 backHref={returnTo ? returnTo : `/${projektId}`}
-                ctaLabel={selectedTs ? "CSV Export" : undefined}
-                ctaOnClick={selectedTs ? exportCsv : undefined}
-                ctaIcon={selectedTs ? Download : undefined}
+                ctaLabel={canExport ? "CSV Export" : undefined}
+                ctaOnClick={canExport ? exportCsv : undefined}
+                ctaIcon={canExport ? Download : undefined}
             />
 
-            {/* Teilsystem selector */}
+            {/* Scope Selector + TS Filter */}
             <Card className="border-2 border-primary/50 shadow-md bg-primary/5">
                 <CardContent className="p-4">
-                    <div className="flex flex-col sm:flex-row gap-4 items-end">
-                        <div className="flex-1">
-                            <Select
-                                label="Teilsystem auswählen"
-                                value={selectedTs}
-                                onChange={e => setSelectedTs(e.target.value)}
-                                options={[
-                                    { label: '— Teilsystem wählen —', value: '' },
-                                    ...teilsysteme.map(t => ({ label: `${t.teilsystemNummer} — ${t.name}`, value: t.id }))
-                                ]}
-                            />
+                    <div className="flex flex-col gap-4">
+                        {/* Scope toggle */}
+                        <div className="flex gap-1 bg-muted p-1 rounded-xl w-fit">
+                            <button
+                                onClick={() => { setScope('projekt'); setSelectedTs(''); }}
+                                className={cn(
+                                    'flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-black transition-all uppercase tracking-wider',
+                                    scope === 'projekt'
+                                        ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20 scale-105'
+                                        : 'text-muted-foreground hover:text-orange-600 hover:bg-orange-50'
+                                )}
+                            >
+                                <Building2 className="h-4 w-4" />
+                                Projekt
+                            </button>
+                            <button
+                                onClick={() => setScope('teilsystem')}
+                                className={cn(
+                                    'flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-black transition-all uppercase tracking-wider',
+                                    scope === 'teilsystem'
+                                        ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105'
+                                        : 'text-muted-foreground hover:text-primary hover:bg-primary/5'
+                                )}
+                            >
+                                <Layers className="h-4 w-4" />
+                                Teilsystem
+                            </button>
                         </div>
+
+                        {/* TS dropdown (only when scope is teilsystem) */}
+                        {scope === 'teilsystem' && (
+                            <div className="flex-1">
+                                <Select
+                                    label="Teilsystem auswaehlen"
+                                    value={selectedTs}
+                                    onChange={e => setSelectedTs(e.target.value)}
+                                    options={[
+                                        { label: '— Teilsystem waehlen —', value: '' },
+                                        ...teilsysteme.map(t => ({ label: `${t.teilsystemNummer} — ${t.name}`, value: t.id }))
+                                    ]}
+                                />
+                            </div>
+                        )}
+
+                        {/* Scope info badge */}
+                        {scope === 'projekt' && (
+                            <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="text-[10px] h-5 border-orange-200 bg-orange-50 text-orange-700 font-black">
+                                    <Building2 className="h-3 w-3 mr-1" />
+                                    Projektweite Kosten
+                                </Badge>
+                                <span className="text-xs text-muted-foreground">Kosten ohne Teilsystem-Zuordnung</span>
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>
 
-            {selectedTs && (
+            {/* KPI Cards */}
+            {canShowContent && (
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <Card className="border-2 border-border shadow-sm dark:bg-card">
                         <CardContent className="p-4">
@@ -265,7 +346,7 @@ export default function KostenPage() {
             )}
 
             {/* Tabs */}
-            {selectedTs && (
+            {canShowContent && (
                 <>
                     <div className="flex gap-1 bg-muted p-1 rounded-xl w-fit">
                         {(['stunden', 'material'] as const).map(tab => (
@@ -295,6 +376,9 @@ export default function KostenPage() {
                                 <CardTitle className="text-base font-black flex items-center gap-2">
                                     <Clock className="h-4 w-4 text-primary" />
                                     Stundenerfassung
+                                    {scope === 'projekt' && (
+                                        <Badge variant="outline" className="text-[9px] h-4 border-orange-200 bg-orange-50 text-orange-700 ml-1">Projekt</Badge>
+                                    )}
                                 </CardTitle>
                                 <Button onClick={() => setShowStundenForm(!showStundenForm)} size="sm" className="font-bold gap-2">
                                     {showStundenForm ? <ChevronUp className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
@@ -309,13 +393,13 @@ export default function KostenPage() {
                                             label="Mitarbeiter *"
                                             value={stundenForm.mitarbeiterId}
                                             onChange={e => setStundenForm(s => ({ ...s, mitarbeiterId: e.target.value }))}
-                                            options={[{ label: 'Mitarbeiter wählen...', value: '' }, ...mitarbeiter.map(m => ({ label: `${m.vorname} ${m.nachname}`, value: m.id }))]}
+                                            options={[{ label: 'Mitarbeiter waehlen...', value: '' }, ...mitarbeiter.map(m => ({ label: `${m.vorname} ${m.nachname}`, value: m.id }))]}
                                             required
                                         />
                                         <Input label="Datum *" type="date" value={stundenForm.datum} onChange={e => setStundenForm(s => ({ ...s, datum: e.target.value }))} required />
                                         <Input label="Stunden *" type="number" step="0.5" min="0.5" value={stundenForm.stunden} onChange={e => setStundenForm(s => ({ ...s, stunden: e.target.value }))} placeholder="z.B. 8" required />
                                         <Select label="Abteilung" value={stundenForm.abteilung} onChange={e => setStundenForm(s => ({ ...s, abteilung: e.target.value }))} options={[{ label: '— Abteilung —', value: '' }, ...ABTEILUNGEN_CONFIG.map(a => ({ label: a.name, value: a.name }))]} />
-                                        <Input label="Tätigkeit" value={stundenForm.taetigkeit} onChange={e => setStundenForm(s => ({ ...s, taetigkeit: e.target.value }))} placeholder="z.B. Schweissen, Montage..." />
+                                        <Input label="Taetigkeit" value={stundenForm.taetigkeit} onChange={e => setStundenForm(s => ({ ...s, taetigkeit: e.target.value }))} placeholder="z.B. Schweissen, Montage..." />
                                         <Input label="Bemerkung" value={stundenForm.bemerkung} onChange={e => setStundenForm(s => ({ ...s, bemerkung: e.target.value }))} />
                                         <div className="md:col-span-3 flex justify-end gap-3">
                                             <Button type="button" variant="ghost" onClick={() => setShowStundenForm(false)}>Abbrechen</Button>
@@ -329,7 +413,9 @@ export default function KostenPage() {
                                 {stunden.length === 0 ? (
                                     <div className="py-16 text-center">
                                         <Clock className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
-                                        <p className="text-sm font-bold text-muted-foreground">Keine Stundenerfassungen für dieses TS</p>
+                                        <p className="text-sm font-bold text-muted-foreground">
+                                            {scope === 'projekt' ? 'Keine Stundenerfassungen auf Projektebene' : 'Keine Stundenerfassungen fuer dieses TS'}
+                                        </p>
                                     </div>
                                 ) : (
                                     <Table>
@@ -340,7 +426,7 @@ export default function KostenPage() {
                                                 <TableHead className="font-black text-right">Stunden</TableHead>
                                                 <TableHead className="font-black text-right">Kosten</TableHead>
                                                 <TableHead className="font-black">Abteilung</TableHead>
-                                                <TableHead className="font-black">Tätigkeit</TableHead>
+                                                <TableHead className="font-black">Taetigkeit</TableHead>
                                                 <TableHead className="w-10" />
                                             </TableRow>
                                         </TableHeader>
@@ -386,6 +472,9 @@ export default function KostenPage() {
                                 <CardTitle className="text-base font-black flex items-center gap-2">
                                     <Package2 className="h-4 w-4 text-primary" />
                                     Materialkosten
+                                    {scope === 'projekt' && (
+                                        <Badge variant="outline" className="text-[9px] h-4 border-orange-200 bg-orange-50 text-orange-700 ml-1">Projekt</Badge>
+                                    )}
                                 </CardTitle>
                                 <Button onClick={() => setShowMaterialForm(!showMaterialForm)} size="sm" className="font-bold gap-2">
                                     {showMaterialForm ? <ChevronUp className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
@@ -418,7 +507,9 @@ export default function KostenPage() {
                                 {material.length === 0 ? (
                                     <div className="py-16 text-center">
                                         <Package2 className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
-                                        <p className="text-sm font-bold text-muted-foreground">Keine Materialkosten für dieses TS</p>
+                                        <p className="text-sm font-bold text-muted-foreground">
+                                            {scope === 'projekt' ? 'Keine Materialkosten auf Projektebene' : 'Keine Materialkosten fuer dieses TS'}
+                                        </p>
                                     </div>
                                 ) : (
                                     <Table>
@@ -464,28 +555,29 @@ export default function KostenPage() {
                 </>
             )}
 
-            {/* Empty state if no TS selected */}
-            {!selectedTs && !loading && (
+            {/* Empty state if TS scope but no TS selected */}
+            {scope === 'teilsystem' && !selectedTs && !loading && (
                 <Card className="border-2 border-dashed border-border dark:bg-card">
                     <CardContent className="py-20 flex flex-col items-center gap-4 text-center">
                         <div className="p-4 rounded-full bg-muted">
                             <DollarSign className="h-10 w-10 text-muted-foreground/50" />
                         </div>
                         <div>
-                            <h3 className="font-black text-foreground">Teilsystem auswählen</h3>
-                            <p className="text-sm text-muted-foreground mt-1">Wählen Sie ein Teilsystem, um die Kostenerfassung anzuzeigen.</p>
+                            <h3 className="font-black text-foreground">Teilsystem auswaehlen</h3>
+                            <p className="text-sm text-muted-foreground mt-1">Waehlen Sie ein Teilsystem, um die Kostenerfassung anzuzeigen.</p>
                         </div>
                     </CardContent>
                 </Card>
             )}
+
             {/* Delete Confirmation */}
             <ConfirmDialog
                 isOpen={confirmOpen}
                 onClose={() => setConfirmOpen(false)}
                 onConfirm={handleConfirmDelete}
-                title="Eintrag löschen?"
-                description="Möchten Sie diesen Kosten-Eintrag wirklich unwiderruflich löschen?"
-                confirmLabel="Löschen"
+                title="Eintrag loeschen?"
+                description="Moechten Sie diesen Kosten-Eintrag wirklich unwiderruflich loeschen?"
+                confirmLabel="Loeschen"
                 cancelLabel="Abbrechen"
                 variant="danger"
             />

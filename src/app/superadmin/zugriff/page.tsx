@@ -16,9 +16,10 @@ import { toast } from '@/lib/toast';
 // Page groups for better UI organization
 const PAGE_GROUPS: { label: string; pages: PageKey[] }[] = [
     { label: 'Dashboard', pages: ['dashboard-builder', 'my-dashboard'] },
-    { label: 'Projekte', pages: ['projekt-uebersicht', 'bauleitung', 'analyse', 'produktion', 'planung', 'avor', 'einkauf', 'schlosserei', 'blech', 'kosten', 'tabellen'] },
-    { label: 'Ausführung', pages: ['ausfuehrung'] },
-    { label: 'Werkhof', pages: ['werkhof-bestellungen', 'lagerort', 'qr-scan'] },
+    { label: 'Projekte', pages: ['projekt-uebersicht', 'bauleitung', 'analyse', 'produktion', 'planung', 'avor', 'einkauf', 'schlosserei', 'blech', 'kosten'] },
+    { label: 'Ausfuehrung', pages: ['ausfuehrung', 'arbeitsplan'] },
+    { label: 'Werkhof', pages: ['werkhof-bestellungen', 'werkhof-lager', 'lagerort', 'qr-scan'] },
+    { label: 'Daten', pages: ['tabellen'] },
     { label: 'Sonstiges', pages: ['fuhrpark'] },
 ];
 
@@ -177,8 +178,8 @@ export default function ZugriffPage() {
                     ))}
 
                     <p className="text-xs text-slate-500 text-center">
-                        Los cambios se aplican a todos los usuarios de esa Abteilung al recargar la página.
-                        Superadmin y Admin siempre ven todo.
+                        Aenderungen gelten fuer alle Benutzer dieser Abteilung nach Seiten-Neuladen.
+                        Superadmin und Admin sehen immer alles.
                     </p>
                 </div>
             </div>

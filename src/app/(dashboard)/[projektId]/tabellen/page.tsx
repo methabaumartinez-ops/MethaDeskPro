@@ -107,13 +107,9 @@ export default function TabellenPage() {
                         }
                         break;
                     case 'teilsysteme':
-                        const allSystems = await SubsystemService.getTeilsysteme();
-                        // Filter
-                        if (selectedProject && selectedProject !== 'all') {
-                            result = allSystems.filter(s => s.projektId === selectedProject);
-                        } else {
-                            result = allSystems;
-                        }
+                        const tsProjectFilter = (selectedProject && selectedProject !== 'all') ? selectedProject : projektId;
+                        const allSystems = await SubsystemService.getTeilsysteme(tsProjectFilter);
+                        result = allSystems;
                         // Enrich with Project Name
                         result = result.map(sys => {
                             const p = projectMap.get(sys.projektId);
@@ -128,8 +124,9 @@ export default function TabellenPage() {
                         });
                         break;
                     case 'positionen': {
+                        const posProjectFilter = (selectedProject && selectedProject !== 'all') ? selectedProject : projektId;
                         const allPos2 = await PositionService.getPositionen();
-                        const allSys2 = await SubsystemService.getTeilsysteme();
+                        const allSys2 = await SubsystemService.getTeilsysteme(posProjectFilter);
                         const sysMap2 = new Map(allSys2.map(s => [s.id, s]));
                         result = allPos2.map(pos => {
                             const sys = sysMap2.get(pos.teilsystemId);
@@ -148,7 +145,8 @@ export default function TabellenPage() {
                     case 'material':
                         const allMat = await MaterialService.getMaterial();
                         // Material links directly to Teilsystem via teilsystemId
-                        const sysRes = await SubsystemService.getTeilsysteme();
+                        const matProjectFilter = (selectedProject && selectedProject !== 'all') ? selectedProject : projektId;
+                        const sysRes = await SubsystemService.getTeilsysteme(matProjectFilter);
                         const sysMapMat = new Map(sysRes.map(s => [s.id, s]));
 
                         result = allMat.map(m => {
@@ -529,63 +527,6 @@ export default function TabellenPage() {
                                         className="h-9 w-56 bg-white border border-slate-200 rounded-xl pl-9 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all shadow-sm"
                                     />
                                 </div>
-                                {(() => {
-                                    const canEdit = isSuperAdmin || tableCanDo(userAbteilung, activeTable as TableId, 'edit');
-                                    if (!canEdit) {
-                                        return (
-                                            <Badge variant="outline" className="h-9 px-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-wider border-slate-300 text-slate-500 bg-slate-50 rounded-lg">
-                                                <Lock className="h-3 w-3" />
-                                                Nur Lesen
-                                            </Badge>
-                                        );
-                                    }
-                                    // Route map per table
-                                    const handleAdd = () => {
-                                        switch (activeTable) {
-                                            case 'mitarbeiter':
-                                                router.push(`/${projektId}/mitarbeiter/erfassen`);
-                                                break;
-                                            case 'lieferanten':
-                                                router.push(`/${projektId}/lieferanten/erfassen`);
-                                                break;
-                                            case 'teilsysteme':
-                                                router.push(`/${projektId}/teilsysteme/erfassen`);
-                                                break;
-                                            case 'positionen':
-                                                router.push(`/${projektId}/positionen/erfassen`);
-                                                break;
-                                            case 'projekte':
-                                                router.push(`/${projektId}/projekte/erfassen`);
-                                                break;
-                                            case 'fahrzeuge':
-                                                router.push(`/${projektId}/fuhrpark/erfassen`);
-                                                break;
-                                            case 'subunternehmer': {
-                                                const name = prompt('Name des Subunternehmers:');
-                                                if (name) SubunternehmerService.createSubunternehmer({ name }).then(() => window.location.reload());
-                                                return;
-                                            }
-                                            case 'unternehmer': {
-                                                const name = prompt('Name des Unternehmers:');
-                                                if (name) fetch('/api/data/unternehmer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) }).then(() => window.location.reload());
-                                                return;
-                                            }
-                                            default:
-                                                toast.info('Hinzufuegen fuer diese Tabelle noch nicht implementiert.');
-                                                return;
-                                        }
-                                    };
-                                    return (
-                                        <Button
-                                            size="sm"
-                                            className="bg-primary hover:bg-primary/90 text-white font-black uppercase text-[10px] h-9 px-4 rounded-lg shadow-md flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
-                                            onClick={handleAdd}
-                                        >
-                                            <Plus className="h-4 w-4" />
-                                            Hinzufuegen
-                                        </Button>
-                                    );
-                                })()}
                             </div>
                         </div>
 

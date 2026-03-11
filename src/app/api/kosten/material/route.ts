@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     const { user } = await requireAuth();
     try {
         const body = await request.json();
-        if (!body.teilsystemId || !body.projektId || !body.bezeichnung || body.menge == null || body.einzelpreis == null) {
+        if (!body.projektId || !body.bezeichnung || body.menge == null || body.einzelpreis == null) {
             return NextResponse.json({ error: 'Pflichtfelder fehlen' }, { status: 400 });
         }
         const entry: TsMaterialkosten = {
