@@ -77,25 +77,33 @@ export const TaskService = {
     },
 
     async syncBauTeilsysteme(projektId: string): Promise<void> {
-        const allTS = await SubsystemService.getTeilsysteme(projektId);
-        const bauTS = allTS.filter(ts => ts.abteilung === 'Bau');
+        try {
+            const allTS = await SubsystemService.getTeilsysteme(projektId);
+            const bauTS = allTS.filter(ts => ts.abteilung === 'Bau');
 
-        const existingTasks = await this.getTasks({ projektId });
+            const existingTasks = await this.getTasks({ projektId });
 
-        for (const ts of bauTS) {
-            const alreadyExists = existingTasks.some(t => t.sourceTsId === ts.id);
-            if (!alreadyExists) {
-                await this.createTask({
-                    projektId,
-                    teamId: '', 
-                    sourceTsId: ts.id,
-                    title: `TS ${ts.teilsystemNummer}: ${ts.name}`,
-                    description: ts.beschreibung || ts.bemerkung || '',
-                    status: 'Offen',
-                    priority: 'Mittel',
-                    sourceType: 'ts'
-                });
+            for (const ts of bauTS) {
+                const alreadyExists = existingTasks.some(t => t.sourceTsId === ts.id);
+                if (!alreadyExists) {
+                    try {
+                        await this.createTask({
+                            projektId,
+                            teamId: '', 
+                            sourceTsId: ts.id,
+                            title: `TS ${ts.teilsystemNummer}: ${ts.name}`,
+                            description: ts.beschreibung || ts.bemerkung || '',
+                            status: 'Offen',
+                            priority: 'Mittel',
+                            sourceType: 'ts'
+                        });
+                    } catch (err) {
+                        console.warn(`[syncBauTeilsysteme] Konnte Task fuer TS ${ts.teilsystemNummer} nicht erstellen (fehlende Berechtigung?):`, err);
+                    }
+                }
             }
+        } catch (err) {
+            console.warn('[syncBauTeilsysteme] Sync fehlgeschlagen:', err);
         }
     }
 };

@@ -97,7 +97,7 @@ export default function AusfuehrungPage() {
     const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'projektleiter' || currentUser?.role === 'mitarbeiter';
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
-    const [activeTab, setActiveTab] = useState('teilsysteme');
+    const [activeTab, setActiveTab] = useState('ts_baustelle');
 
     useEffect(() => {
         const loadData = async () => {
@@ -137,7 +137,7 @@ export default function AusfuehrungPage() {
                     const orderToEdit = best.find(b => b.id === editId);
                     if (orderToEdit) {
                         handleEditOrder(orderToEdit);
-                        setActiveTab('logistik');
+                        setActiveTab('bestellungen');
                     }
                 }
             } catch (error) {
@@ -359,9 +359,9 @@ export default function AusfuehrungPage() {
                 icon={HardHat}
                 title="Ausführung"
                 searchPlaceholder={
-                    activeTab === 'teilsysteme' ? "Suche nach Nummer o. Name..." :
-                        activeTab === 'logistik' ? "Suche nach Container o. Besteller..." :
-                            activeTab === 'teams_aufgaben' ? "Suche nach Team o. Aufgabe..." :
+                    activeTab === 'ts_baustelle' || activeTab === 'ts_alle' ? "Suche nach Nummer o. Name..." :
+                        activeTab === 'bestellungen' ? "Suche nach Container o. Besteller..." :
+                            activeTab === 'teams' || activeTab === 'aufgaben' ? "Suche nach Team o. Aufgabe..." :
                                 "Suche nach Bezeichnung o. Inventarnummer..."
                 }
                 onSearch={setSearch}
@@ -371,17 +371,17 @@ export default function AusfuehrungPage() {
                 <div className="flex justify-between items-center mb-2">
                     <TabsList className="bg-transparent p-0 gap-2 h-auto flex-wrap">
                         <TabsTrigger
-                            active={activeTab === 'teilsysteme'}
-                            onClick={() => setActiveTab('teilsysteme')}
+                            active={activeTab === 'ts_alle'}
+                            onClick={() => setActiveTab('ts_alle')}
                             className={cn(
                                 "flex items-center gap-2 font-black text-xs uppercase px-6 h-11 rounded-full border-2 transition-all",
-                                activeTab === 'teilsysteme'
+                                activeTab === 'ts_alle'
                                     ? "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-200"
                                     : "bg-white border-slate-100 text-slate-500 hover:border-orange-200 hover:text-orange-600"
                             )}
                         >
                             <Layers className="h-4 w-4" />
-                            Teilsysteme (Alle)
+                            TS Alle
                         </TabsTrigger>
                         <TabsTrigger
                             active={activeTab === 'ts_baustelle'}
@@ -397,17 +397,56 @@ export default function AusfuehrungPage() {
                             TS am Baustelle
                         </TabsTrigger>
                         <TabsTrigger
-                            active={activeTab === 'logistik'}
-                            onClick={() => setActiveTab('logistik')}
+                            active={activeTab === 'bestellungen'}
+                            onClick={() => setActiveTab('bestellungen')}
                             className={cn(
                                 "flex items-center gap-2 font-black text-xs uppercase px-6 h-11 rounded-full border-2 transition-all",
-                                activeTab === 'logistik'
+                                activeTab === 'bestellungen'
                                     ? "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-200"
                                     : "bg-white border-slate-100 text-slate-500 hover:border-orange-200 hover:text-orange-600"
                             )}
                         >
                             <Truck className="h-4 w-4" />
-                            Bestellung ({bestellungen.length})
+                            Bestellungen ({bestellungen.length})
+                        </TabsTrigger>
+                        <TabsTrigger
+                            active={activeTab === 'arbeitsplan'}
+                            onClick={() => router.push(`/${projektId}/arbeitsplan`)}
+                            className={cn(
+                                "flex items-center gap-2 font-black text-xs uppercase px-6 h-11 rounded-full border-2 transition-all",
+                                activeTab === 'arbeitsplan'
+                                    ? "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-200"
+                                    : "bg-white border-slate-100 text-slate-500 hover:border-orange-200 hover:text-orange-600"
+                            )}
+                        >
+                            <CalendarPlus className="h-4 w-4" />
+                            Arbeitsplan
+                        </TabsTrigger>
+                        <TabsTrigger
+                            active={activeTab === 'teams'}
+                            onClick={() => setActiveTab('teams')}
+                            className={cn(
+                                "flex items-center gap-2 font-black text-xs uppercase px-6 h-11 rounded-full border-2 transition-all",
+                                activeTab === 'teams'
+                                    ? "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-200"
+                                    : "bg-white border-slate-100 text-slate-500 hover:border-orange-200 hover:text-orange-600"
+                            )}
+                        >
+                            <Users className="h-4 w-4" />
+                            Teams ({teams.length})
+                        </TabsTrigger>
+                        <TabsTrigger
+                            active={activeTab === 'aufgaben'}
+                            onClick={() => setActiveTab('aufgaben')}
+                            className={cn(
+                                "flex items-center gap-2 font-black text-xs uppercase px-6 h-11 rounded-full border-2 transition-all",
+                                activeTab === 'aufgaben'
+                                    ? "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-200"
+                                    : "bg-white border-slate-100 text-slate-500 hover:border-orange-200 hover:text-orange-600"
+                            )}
+                        >
+                            <CheckSquare className="h-4 w-4" />
+                            Aufgaben ({tasks.length})
                         </TabsTrigger>
                         <TabsTrigger
                             active={activeTab === 'fahrzeuge'}
@@ -422,19 +461,6 @@ export default function AusfuehrungPage() {
                             <Car className="h-4 w-4" />
                             Fahrzeuge ({vehicles.length})
                         </TabsTrigger>
-                        <TabsTrigger
-                            active={activeTab === 'teams_aufgaben'}
-                            onClick={() => setActiveTab('teams_aufgaben')}
-                            className={cn(
-                                "flex items-center gap-2 font-black text-xs uppercase px-6 h-11 rounded-full border-2 transition-all",
-                                activeTab === 'teams_aufgaben'
-                                    ? "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-200"
-                                    : "bg-white border-slate-100 text-slate-500 hover:border-orange-200 hover:text-orange-600"
-                            )}
-                        >
-                            <Users className="h-4 w-4" />
-                            Teams & Aufgaben ({tasks.length})
-                        </TabsTrigger>
                     </TabsList>
                 </div>
 
@@ -448,7 +474,7 @@ export default function AusfuehrungPage() {
                             </div>
                         ) : (
                             <>
-                                <TabsContent active={activeTab === 'teilsysteme' || activeTab === 'ts_baustelle'} className="mt-0 h-full">
+                                <TabsContent active={activeTab === 'ts_baustelle' || activeTab === 'ts_alle'} className="mt-0 h-full">
                                     {filteredSubsystems.length > 0 ? (
                                         <div className="overflow-x-auto max-w-full">
                                             <Table>
@@ -719,7 +745,7 @@ export default function AusfuehrungPage() {
                                     )}
                                 </TabsContent>
 
-                                <TabsContent active={activeTab === 'logistik'} className="mt-0 h-full flex flex-col p-4 bg-slate-50">
+                                <TabsContent active={activeTab === 'bestellungen'} className="mt-0 h-full flex flex-col p-4 bg-slate-50">
                                     {isCreatingOrder ? (
                                         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm max-w-3xl mx-auto w-full">
                                             <div className="flex justify-between items-center mb-6">
@@ -972,49 +998,45 @@ export default function AusfuehrungPage() {
                                     )}
                                 </TabsContent>
 
-                                <TabsContent active={activeTab === 'teams_aufgaben'} className="mt-0 h-full overflow-y-auto bg-slate-50/50 p-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
-                                        {/* Teams Spalte */}
-                                        <div className="md:col-span-1 border-r border-slate-200 pr-4">
-                                            <div className="flex justify-between items-center mb-4">
-                                                <h3 className="font-black text-slate-800 flex items-center gap-2">
-                                                    <Users className="h-5 w-5 text-orange-500" />
-                                                    Teams ({teams.length})
-                                                </h3>
-                                                <Link href={`/${projektId}/teams/neu`}>
-                                                    <Button size="sm" variant="outline" className="h-8 text-[10px] uppercase font-bold text-orange-600 border-orange-200 bg-white shadow-sm hover:bg-orange-50 hover:text-orange-700">
-                                                        <Plus className="h-3 w-3 mr-1" /> Neues Team
-                                                    </Button>
-                                                </Link>
-                                            </div>
-                                            {teams.length === 0 ? (
-                                                <div className="text-sm text-center text-slate-400 font-medium bg-white p-6 rounded-xl border border-dashed border-slate-200">
-                                                    Keine Teams erstellt.
-                                                </div>
-                                            ) : (
-                                                <div className="space-y-3">
-                                                    {teams.map(team => (
-                                                        <Card
-                                                            key={team.id}
-                                                            className={cn("cursor-pointer border-2 transition-all group hover:border-orange-300", selectedTeamId === team.id ? "border-orange-500 shadow-md bg-orange-50/50" : "border-slate-100 bg-white")}
-                                                            onClick={() => setSelectedTeamId(team.id)}
-                                                        >
-                                                            <div className="p-4">
-                                                                <div className="flex justify-between items-start mb-2">
-                                                                    <h4 className="font-bold text-sm text-slate-800 tracking-tight">{team.name}</h4>
-                                                                    <div className="bg-slate-100 text-slate-500 rounded-full h-6 w-6 flex items-center justify-center text-[10px] font-bold">
-                                                                        {tasks.filter(t => t.teamId === team.id).length}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </Card>
-                                                    ))}
-                                                </div>
-                                            )}
+                                <TabsContent active={activeTab === 'teams'} className="mt-0 h-full overflow-y-auto bg-slate-50/50 p-4">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="font-black text-slate-800 flex items-center gap-2">
+                                            <Users className="h-5 w-5 text-orange-500" />
+                                            Teams ({teams.length})
+                                        </h3>
+                                        <Link href={`/${projektId}/teams/neu`}>
+                                            <Button size="sm" variant="outline" className="h-8 text-[10px] uppercase font-bold text-orange-600 border-orange-200 bg-white shadow-sm hover:bg-orange-50 hover:text-orange-700">
+                                                <Plus className="h-3 w-3 mr-1" /> Neues Team
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                    {teams.length === 0 ? (
+                                        <div className="text-sm text-center text-slate-400 font-medium bg-white p-6 rounded-xl border border-dashed border-slate-200">
+                                            Keine Teams erstellt.
                                         </div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {teams.map(team => (
+                                                <Card
+                                                    key={team.id}
+                                                    className={cn("cursor-pointer border-2 transition-all group hover:border-orange-300", selectedTeamId === team.id ? "border-orange-500 shadow-md bg-orange-50/50" : "border-slate-100 bg-white")}
+                                                    onClick={() => setSelectedTeamId(team.id)}
+                                                >
+                                                    <div className="p-4">
+                                                        <div className="flex justify-between items-start mb-2">
+                                                            <h4 className="font-bold text-sm text-slate-800 tracking-tight">{team.name}</h4>
+                                                            <div className="bg-slate-100 text-slate-500 rounded-full h-6 w-6 flex items-center justify-center text-[10px] font-bold">
+                                                                {tasks.filter(t => t.teamId === team.id).length}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </Card>
+                                            ))}
+                                        </div>
+                                    )}
+                                </TabsContent>
 
-                                        {/* Aufgaben Spalte */}
-                                        <div className="md:col-span-2 pl-2">
+                                <TabsContent active={activeTab === 'aufgaben'} className="mt-0 h-full overflow-y-auto bg-slate-50/50 p-4">
                                             <div className="flex justify-between items-center mb-4">
                                                 <h3 className="font-black text-slate-800 flex items-center gap-2">
                                                     <CheckSquare className="h-5 w-5 text-orange-500" />
@@ -1103,8 +1125,6 @@ export default function AusfuehrungPage() {
                                                         ))}
                                                 </div>
                                             )}
-                                        </div>
-                                    </div>
                                 </TabsContent>
                             </>
                         )}
