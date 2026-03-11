@@ -22,7 +22,6 @@ import { ItemQrModal } from '@/components/shared/ItemQrModal';
 import { LagerortBadge } from '@/components/shared/LagerortBadge';
 import { Badge } from '@/components/ui/badge';
 import { DocumentViewer } from '@/components/shared/DocumentViewer';
-import { TrackingTimeline } from '@/components/shared/TrackingTimeline';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { useProjekt } from '@/lib/context/ProjektContext';
 
@@ -263,108 +262,18 @@ export default function UnterpositionDetailPage() {
                 </Card>
             </div>
             {/* MAIN CONTENT AREA */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch mt-6">
-                <div className="lg:col-span-5 flex flex-col gap-6">
-                    <Card className="shadow-sm border-2 border-border overflow-hidden bg-white dark:bg-card h-full flex flex-col">
-                        <CardHeader className="py-2.5 px-4 bg-muted border-b border-border shrink-0">
-                            <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                <Badge variant="outline" className="text-[9px] h-4 border-orange-200 bg-orange-50 text-orange-700">IFC Extrakt</Badge>
-                                Technische Details
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-4 flex-1">
-                            <div className="space-y-4">
-                                {((unterposition as any).ifcMeta?.ok || (unterposition as any).ifcMeta?.uk) && (
-                                    <div className="flex gap-4 pb-2 border-b border-border">
-                                        <div className="flex flex-col flex-1">
-                                            <span className="text-[9px] font-black text-orange-600 uppercase">Höhenkote OK</span>
-                                            <span className="text-sm font-black text-foreground">{(unterposition as any).ifcMeta.ok || '—'}</span>
-                                        </div>
-                                        <div className="flex flex-col flex-1 text-right">
-                                            <span className="text-[9px] font-black text-orange-600 uppercase">Höhenkote UK</span>
-                                            <span className="text-sm font-black text-foreground">{(unterposition as any).ifcMeta.uk || '—'}</span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {(unterposition as any).ifcMeta?.dimensions && (
-                                    <div className="grid grid-cols-3 gap-2 pb-2 border-b border-border">
-                                        <div className="flex flex-col">
-                                            <span className="text-[9px] font-black text-orange-600 uppercase">Länge</span>
-                                            <span className="text-xs font-bold text-foreground">{(unterposition as any).ifcMeta.dimensions.length || '—'}</span>
-                                        </div>
-                                        <div className="flex flex-col text-center">
-                                            <span className="text-[9px] font-black text-orange-600 uppercase">Breite</span>
-                                            <span className="text-xs font-bold text-foreground">{(unterposition as any).ifcMeta.dimensions.width || '—'}</span>
-                                        </div>
-                                        <div className="flex flex-col text-right">
-                                            <span className="text-[9px] font-black text-orange-600 uppercase">Höhe/Dicke</span>
-                                            <span className="text-xs font-bold text-foreground">{(unterposition as any).ifcMeta.dimensions.height || '—'}</span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {((unterposition as any).ifcMeta?.area || (unterposition as any).ifcMeta?.color) && (
-                                    <div className="flex gap-4 pb-2 border-b border-border">
-                                        {(unterposition as any).ifcMeta.area && (
-                                            <div className="flex flex-col flex-1">
-                                                <span className="text-[9px] font-black text-orange-600 uppercase">Oberfläche</span>
-                                                <span className="text-xs font-bold text-foreground">{(unterposition as any).ifcMeta.area} m²</span>
-                                            </div>
-                                        )}
-                                        {(unterposition as any).ifcMeta.color && (
-                                            <div className="flex flex-col flex-1 text-right">
-                                                <span className="text-[9px] font-black text-orange-600 uppercase">Farbe</span>
-                                                <div className="flex items-center gap-1.5 justify-end">
-                                                    <div className="h-2.5 w-2.5 rounded-full border border-border" style={{ backgroundColor: (unterposition as any).ifcMeta.color }} />
-                                                    <span className="text-xs font-bold text-foreground">{(unterposition as any).ifcMeta.color}</span>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                <div>
-                                    <span className="text-[9px] font-black text-muted-foreground uppercase block mb-1">Hierarchy & IDs</span>
-                                    <div className="space-y-1.5">
-                                        <div className="flex gap-2 items-baseline">
-                                            <div className="h-1 w-1 rounded-full bg-orange-400 shrink-0 mt-1.5" />
-                                            <span className="text-[10px] font-bold text-muted-foreground">GlobalId: </span>
-                                            <span className="text-[10px] font-medium text-foreground truncate">{unterposition.ifcChildGlobalId || '—'}</span>
-                                        </div>
-                                        {teilsystem && (
-                                            <div className="flex gap-2 items-baseline">
-                                                <div className="h-1 w-1 rounded-full bg-orange-400 shrink-0 mt-1.5" />
-                                                <span className="text-[10px] font-bold text-muted-foreground">Teilsystem: </span>
-                                                <span className="text-[10px] font-medium text-foreground">{teilsystem.name} ({teilsystem.teilsystemNummer})</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                <div className="lg:col-span-7 flex flex-col gap-6">
-                    <TrackingTimeline
-                        entityId={id}
-                        projektId={projektId}
-                        entityType="unterposition"
-                    />
-
-                    <Card className="shadow-sm border-2 border-border overflow-hidden bg-white dark:bg-card">
-                        <CardHeader className="py-2.5 px-4 bg-muted border-b border-border text-center">
-                            <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center justify-center gap-2">
-                                <FileSpreadsheet className="h-3.5 w-3.5" />
-                                Dokumente
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                            <DocumentViewer documents={[]} />
-                        </CardContent>
-                    </Card>
-                </div>
+            <div className="mt-6">
+                <Card className="shadow-sm border-2 border-border overflow-hidden bg-white dark:bg-card">
+                    <CardHeader className="py-2.5 px-4 bg-muted border-b border-border text-center">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center justify-center gap-2">
+                            <FileSpreadsheet className="h-3.5 w-3.5" />
+                            Dokumente
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <DocumentViewer documents={[]} />
+                    </CardContent>
+                </Card>
             </div>
 
             <ItemQrModal

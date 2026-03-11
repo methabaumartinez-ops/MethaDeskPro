@@ -19,7 +19,8 @@ import { LagerortSelect } from '@/components/shared/LagerortSelect';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Position, Teilsystem, Projekt, Lagerort, Beschichtung, PlanStatus } from '@/types';
 import { POS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses } from '@/lib/config/statusConfig';
-import { ArrowLeft, Save, PlusCircle, ListTodo, ClipboardList } from 'lucide-react';
+import { ArrowLeft, Save, PlusCircle, ListTodo, ClipboardList, UploadCloud, FileType, Paperclip, FileText, X } from 'lucide-react';
+import { useRef } from 'react';
 import Link from 'next/link';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 import { ProvisionalDateInput } from '@/components/ui/provisional-date-input';
@@ -65,6 +66,68 @@ export default function PositionErfassenPage() {
     const [teilsystem, setTeilsystem] = useState<Teilsystem | null>(null);
     const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
     const [allLieferanten, setAllLieferanten] = useState<any[]>([]);
+
+    const [dragActive, setDragActive] = useState(false);
+    const [docDragActive, setDocDragActive] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<string | null>(null);
+    const [dokumenteFiles, setDokumenteFiles] = useState<File[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const docInputRef = useRef<HTMLInputElement>(null);
+
+    const handleDrag = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === "dragenter" || e.type === "dragover") {
+            setDragActive(true);
+        } else if (e.type === "dragleave") {
+            setDragActive(false);
+        }
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            const file = e.dataTransfer.files[0];
+            setSelectedFile(file.name);
+        }
+    };
+
+    const handleDocDrag = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === "dragenter" || e.type === "dragover") {
+            setDocDragActive(true);
+        } else if (e.type === "dragleave") {
+            setDocDragActive(false);
+        }
+    };
+
+    const handleDocDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDocDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            setDokumenteFiles(prev => [...prev, ...Array.from(e.dataTransfer.files)]);
+        }
+    };
+
+    const handleDocFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            setDokumenteFiles(prev => [...prev, ...Array.from(e.target.files as FileList)]);
+        }
+    };
+
+    const removeDocFile = (index: number) => {
+        setDokumenteFiles(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setSelectedFile(e.target.files[0].name);
+        }
+    };
 
     const {
         register,
@@ -281,16 +344,115 @@ export default function PositionErfassenPage() {
                                 </div>
                             </div>
                         </CardContent>
-                        <CardFooter className="border-t bg-muted/20 px-6 py-4 flex justify-end gap-3">
-                            <Link href={`/${projektId}/teilsysteme/${teilsystemId}`}>
-                                <Button type="button" variant="ghost" className="font-bold">Abbrechen</Button>
-                            </Link>
-                            <Button type="submit" className="font-bold gap-2 min-w-[160px]" disabled={isSubmitting}>
-                                <Save className="h-4 w-4" />
-                                {isSubmitting ? 'Speichert...' : 'Position speichern'}
-                            </Button>
-                        </CardFooter>
                     </Card>
+
+                    {/* Right Column: Uploads */}
+                    <div className="space-y-4 sticky top-6 mt-1 lg:mt-0">
+                        {/* IFC Upload Card */}
+                        <Card className="shadow-none border-2 border-dashed border-border bg-muted/30 flex flex-col">
+                            <CardHeader className="bg-transparent border-b-0 pb-0 pt-3 px-4">
+                                <CardTitle className="text-xs font-black text-foreground flex items-center gap-2">
+                                    <UploadCloud className="h-3.5 w-3.5 text-primary" />
+                                    IFC Modell
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent
+                                className={cn(
+                                    "flex flex-col items-center justify-center p-3 transition-colors cursor-pointer m-2 mt-1 rounded-lg border-2 border-transparent hover:bg-muted/50",
+                                    dragActive ? "bg-primary/5 border-primary border-dashed" : ""
+                                )}
+                                onDragEnter={handleDrag}
+                                onDragLeave={handleDrag}
+                                onDragOver={handleDrag}
+                                onDrop={handleDrop}
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                <div className="bg-background p-2 rounded-full shadow-sm mb-2">
+                                    <FileType className="h-5 w-5 text-primary" />
+                                </div>
+                                <h3 className="text-[11px] font-bold text-foreground mb-1">IFC hierher ziehen</h3>
+                                <p className="text-[9px] font-medium text-muted-foreground mb-3 text-center">
+                                    Nur .ifc (Max. 200MB)
+                                </p>
+                                <Button type="button" size="sm" variant="outline" className="text-[10px] font-bold border-border h-7 px-3" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}>
+                                    Wählen
+                                </Button>
+                                <input
+                                    type="file"
+                                    className="hidden"
+                                    ref={fileInputRef}
+                                    accept=".ifc"
+                                    onChange={handleFileChange}
+                                />
+                                {selectedFile && (
+                                    <div className="mt-3 w-full space-y-2">
+                                        <div className="p-1.5 bg-green-50 text-green-700 rounded text-[10px] font-bold flex items-center gap-1.5 w-full truncate border border-green-200">
+                                            <FileType className="h-3 w-3 flex-shrink-0" />
+                                            <span className="truncate">{selectedFile}</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Dokumente Upload Card */}
+                        <Card className="shadow-none border-2 border-dashed border-border bg-muted/30 flex flex-col">
+                            <CardHeader className="bg-transparent border-b-0 pb-0 pt-3 px-4">
+                                <CardTitle className="text-xs font-black text-foreground flex items-center gap-2">
+                                    <Paperclip className="h-3.5 w-3.5 text-primary" />
+                                    Dokumente / Skizzen
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent
+                                className={cn(
+                                    "flex flex-col items-center justify-center p-3 transition-colors cursor-pointer m-2 mt-1 rounded-lg border-2 border-transparent hover:bg-muted/50",
+                                    docDragActive ? "bg-primary/5 border-primary border-dashed" : ""
+                                )}
+                                onDragEnter={handleDocDrag}
+                                onDragLeave={handleDocDrag}
+                                onDragOver={handleDocDrag}
+                                onDrop={handleDocDrop}
+                                onClick={() => docInputRef.current?.click()}
+                            >
+                                <div className="bg-background p-2 rounded-full shadow-sm mb-2">
+                                    <FileText className="h-5 w-5 text-primary" />
+                                </div>
+                                <h3 className="text-[11px] font-bold text-foreground mb-1">Dateien hierher ziehen</h3>
+                                <p className="text-[9px] font-medium text-muted-foreground mb-3 text-center">
+                                    pdf, jpg, png, heic
+                                </p>
+                                <Button type="button" size="sm" variant="outline" className="text-[10px] font-bold border-border h-7 px-3" onClick={(e) => { e.stopPropagation(); docInputRef.current?.click(); }}>
+                                    Wählen
+                                </Button>
+                                <input
+                                    type="file"
+                                    className="hidden"
+                                    ref={docInputRef}
+                                    accept=".pdf,.jpg,.jpeg,.png,.heic,.doc,.docx,.xls,.xlsx"
+                                    multiple
+                                    onChange={handleDocFileChange}
+                                />
+                            </CardContent>
+
+                            {/* Uploaded Document List */}
+                            {dokumenteFiles.length > 0 && (
+                                <div className="px-3 pb-3 space-y-1.5">
+                                    {dokumenteFiles.map((file, i) => (
+                                        <div key={i} className="flex items-center justify-between p-1.5 bg-white rounded-md border border-border text-[10px] group shadow-sm">
+                                            <div className="flex items-center gap-1.5 overflow-hidden">
+                                                <FileText className="h-3 w-3 text-muted-foreground shrink-0" />
+                                                <span className="truncate font-medium">{file.name}</span>
+                                            </div>
+                                            <Button type="button" variant="ghost" size="icon" className="h-5 w-5 text-muted-foreground hover:text-red-500 hover:bg-red-50" onClick={(e) => { e.stopPropagation(); removeDocFile(i); }}>
+                                                <X className="h-3 w-3" />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                    <p className="text-[9px] text-muted-foreground italic px-1 pt-1 text-center">Dateien werden beim Speichern hochgeladen.</p>
+                                </div>
+                            )}
+                        </Card>
+                    </div>
 
                     {/* Info Card */}
                     <div className="space-y-4">
@@ -316,6 +478,27 @@ export default function PositionErfassenPage() {
                             </Card>
                         </Link>
                     </div>
+                </div>
+
+                {/* Bottom Action Row */}
+                <div className="flex justify-end gap-3 pt-6 border-t border-border mt-8">
+                    <Link href={`/${projektId}/teilsysteme/${teilsystemId}`}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="font-bold h-11 px-8"
+                        >
+                            Abbrechen
+                        </Button>
+                    </Link>
+                    <Button
+                        type="submit"
+                        className="font-bold h-11 px-8 gap-2 bg-orange-600 hover:bg-orange-700 text-white shadow-lg active:scale-95 transition-all w-full sm:w-auto"
+                        disabled={isSubmitting}
+                    >
+                        <Save className="h-4 w-4" />
+                        {isSubmitting ? 'Speichert...' : 'Position speichern'}
+                    </Button>
                 </div>
             </form>
         </div>
