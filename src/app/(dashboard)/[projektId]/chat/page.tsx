@@ -84,7 +84,7 @@ export default function ChatPage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0">
                 {/* Chat Column */}
                 <Card className="lg:col-span-8 flex flex-col overflow-hidden border-none shadow-2xl bg-white dark:bg-slate-950 relative">
-                    <CardHeader className="border-b bg-white/50 backdrop-blur-md dark:bg-slate-950/50 p-4 shrink-0">
+                    <CardHeader className="border-b bg-white dark:bg-slate-950 p-4 shrink-0">
                         <CardTitle className="flex items-center justify-between text-lg">
                             <div className="flex items-center gap-2">
                                 <AnimatedRobot className="h-8 w-8" isThinking={isLoading} />

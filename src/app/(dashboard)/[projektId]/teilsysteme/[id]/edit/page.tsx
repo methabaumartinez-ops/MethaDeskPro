@@ -901,7 +901,7 @@ export default function TeilsystemEditPage() {
             {/* IFC Extracting overlay */}
             {
                 extracting && (
-                    <div className="fixed inset-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md flex items-center justify-center">
+                    <div className="fixed inset-0 z-50 bg-white/80 dark:bg-black/80 flex items-center justify-center">
                         <div className="bg-white dark:bg-card rounded-2xl shadow-2xl border-2 border-border p-10 flex flex-col items-center gap-4">
                             <div className="w-14 h-14 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
                             <h3 className="text-lg font-black text-foreground">Analysiere IFC...</h3>

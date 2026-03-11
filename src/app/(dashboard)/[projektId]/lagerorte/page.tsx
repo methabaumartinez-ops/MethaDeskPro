@@ -217,7 +217,7 @@ export default function LagerorteSeite() {
 
             {/* QR Overlay Modal */}
             {selectedQr && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in zoom-in duration-200">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 animate-in fade-in zoom-in duration-200">
                     <Card className="border-4 border-orange-500 shadow-2xl w-full max-w-sm rounded-[3rem] overflow-hidden bg-white animate-in slide-in-from-bottom-8 duration-300">
                         <CardHeader className="border-b-2 border-orange-100 bg-orange-50/50 py-5 px-8 flex flex-row items-center justify-between">
                             <div className="flex items-center gap-3">

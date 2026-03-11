@@ -116,7 +116,7 @@ export default function TasksPage({ params }: { params: Promise<{ projektId: str
                         <Plus className="mr-2 h-4 w-4" /> Aufgabe erstellen
                     </Button>
                     {isDialogOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50">
                             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden relative animate-in fade-in zoom-in duration-200">
                                 <div className="bg-orange-50/50 p-6 border-b border-orange-100 flex justify-between items-center">
                                     <h2 className="text-xl font-black text-slate-800">Neue Aufgabe</h2>

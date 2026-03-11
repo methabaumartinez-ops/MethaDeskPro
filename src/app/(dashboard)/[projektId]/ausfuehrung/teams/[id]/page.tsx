@@ -188,7 +188,7 @@ export default function TeamDetailPage({ params }: { params: Promise<{ projektId
 
             {/* Edit Dialog - Inline Modal */}
             {isEditDialogOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50">
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative animate-in fade-in zoom-in duration-200">
                         <div className="bg-orange-50/50 p-6 border-b border-orange-100 flex justify-between items-center">
                             <h2 className="text-xl font-black text-slate-800">Team bearbeiten</h2>

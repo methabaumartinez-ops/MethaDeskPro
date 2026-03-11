@@ -629,15 +629,15 @@ export default function TeilsystemErfassenPage() {
 
             {/* ─── Duplicate System Number Warning ─── */}
             <Dialog open={!!duplicateWarning} onOpenChange={(open) => { if (!open) setDuplicateWarning(null); }}>
-                <DialogContent className="max-w-md">
+                <DialogContent className="max-w-md bg-white text-black border-2 border-orange-500 shadow-2xl p-6 rounded-none">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 text-amber-600">
+                        <DialogTitle className="flex items-center gap-2 text-orange-600 font-bold">
                             <AlertTriangle className="h-5 w-5 shrink-0" />
                             System-Nummer bereits vergeben
                         </DialogTitle>
-                        <DialogDescription className="pt-2 text-sm leading-relaxed">
+                        <DialogDescription className="pt-2 text-sm leading-relaxed text-slate-800">
                             Die System-Nummer{' '}
-                            <span className="font-bold text-foreground">
+                            <span className="font-extrabold text-black">
                                 {duplicateWarning?.teilsystemNummer}
                             </span>{' '}
                             wird bereits von einem bestehenden Teilsystem in diesem Projekt verwendet:
@@ -645,26 +645,27 @@ export default function TeilsystemErfassenPage() {
                     </DialogHeader>
 
                     {duplicateWarning && (
-                        <div className="rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 px-4 py-3 text-sm space-y-1">
-                            <p className="font-black text-amber-800 dark:text-amber-300 text-[11px] uppercase tracking-widest">Bestehendes Teilsystem</p>
-                            <p className="text-sm font-semibold text-foreground">{duplicateWarning.name}</p>
-                            <p className="text-xs text-muted-foreground font-mono">#{duplicateWarning.teilsystemNummer}</p>
+                        <div className="border-2 border-orange-500 bg-orange-50 px-4 py-3 text-sm space-y-1">
+                            <p className="font-black text-orange-900 text-[11px] uppercase tracking-widest">Bestehendes Teilsystem</p>
+                            <p className="text-sm font-semibold text-black">{duplicateWarning.name}</p>
+                            <p className="text-xs text-gray-800 font-mono">#{duplicateWarning.teilsystemNummer}</p>
                         </div>
                     )}
 
-                    <p className="text-sm text-muted-foreground">
-                        Jede System-Nummer muss innerhalb eines Projekts eindeutig sein. Bitte waehlen Sie eine andere Nummer oder oeffnen Sie das bestehende Teilsystem.
+                    <p className="text-sm text-slate-700 font-medium">
+                        Jede System-Nummer muss innerhalb eines Projekts eindeutig sein. Bitte wählen Sie eine andere Nummer oder öffnen Sie das bestehende Teilsystem.
                     </p>
 
                     <DialogFooter className="gap-2 sm:justify-between">
                         <Button
                             variant="outline"
+                            className="bg-white hover:bg-slate-100 text-black border-2 border-slate-300 font-bold"
                             onClick={() => setDuplicateWarning(null)}
                         >
                             Abbrechen
                         </Button>
                         <Button
-                            className="gap-2"
+                            className="gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold"
                             onClick={() => {
                                 if (duplicateWarning) {
                                     router.push(`/${projektId}/teilsysteme/${duplicateWarning.id}`);
@@ -1016,7 +1017,7 @@ export default function TeilsystemErfassenPage() {
 
             {/* IFC Extracting/Importing overlay */}
             {(extracting || importingAuto || analyzing) && (
-                <div className="fixed inset-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md flex items-center justify-center">
+                <div className="fixed inset-0 z-50 bg-white/80 dark:bg-black/80 flex items-center justify-center">
                     <div className="bg-white dark:bg-card rounded-2xl shadow-2xl border-2 border-border p-10 flex flex-col items-center gap-4">
                         <div className="w-14 h-14 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
                         <h3 className="text-lg font-black text-foreground">

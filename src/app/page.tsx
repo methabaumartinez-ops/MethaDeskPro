@@ -62,7 +62,7 @@ export default function LandingPage() {
         </div>
       </main>
 
-      <footer className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-t border-slate-100 dark:border-slate-800 py-3 flex flex-row items-center justify-between px-8 z-[60]">
+      <footer className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 py-3 flex flex-row items-center justify-between px-8 z-[60]">
         <Signature />
         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider opacity-60">
           © {new Date().getFullYear()} METHABAU AG. v1.3

@@ -171,7 +171,7 @@ export default function ProjektePage() {
                                 )}>
                                     {/* Archiving spinner overlay */}
                                     {archivingId === p.id && (
-                                        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/80 dark:bg-card/80 backdrop-blur-sm rounded-xl gap-2">
+                                        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white dark:bg-card rounded-xl gap-2">
                                             <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
                                             <span className="text-xs font-black text-orange-500 uppercase tracking-widest">Archivierung läuft...</span>
                                         </div>
@@ -362,7 +362,7 @@ export default function ProjektePage() {
 
             </main>
 
-            <footer className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-t border-slate-100 dark:border-slate-800 py-3 flex flex-row items-center justify-between px-8 z-[60]">
+            <footer className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 py-3 flex flex-row items-center justify-between px-8 z-[60]">
                 <Signature />
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider opacity-60">
                     © {new Date().getFullYear()} METHABAU AG. v1.3
@@ -374,7 +374,7 @@ export default function ProjektePage() {
                 previewUrl && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-10">
                         <div
-                            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300"
+                            className="absolute inset-0 bg-slate-900/40 animate-in fade-in duration-300"
                             onClick={() => setPreviewUrl(null)}
                         />
                         <div className="relative bg-white dark:bg-card w-full h-full max-w-5xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col animate-in zoom-in slide-in-from-bottom-4 duration-300">

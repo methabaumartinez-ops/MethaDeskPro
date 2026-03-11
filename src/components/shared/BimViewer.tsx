@@ -355,7 +355,7 @@ export function BimViewer({ modelName = 'IFC Modell', modelUrl }: { modelName?: 
                         <div className="flex flex-col items-center justify-center w-full h-full relative overflow-hidden">
                             <div className="relative mb-6">
                                 <div className={`absolute inset-0 bg-primary/15 rounded-full blur-2xl ${isRotating ? 'animate-pulse scale-150' : ''}`} />
-                                <div className={`relative w-40 h-40 border-2 border-dashed border-slate-200 rounded-full flex items-center justify-center bg-white/50 ${isRotating ? 'animate-spin' : ''}`}
+                                <div className={`relative w-40 h-40 border-2 border-dashed border-slate-200 rounded-full flex items-center justify-center bg-white ${isRotating ? 'animate-spin' : ''}`}
                                     style={{ animationDuration: '10s' }}>
                                     <Layers className="h-16 w-16 text-primary/40" />
                                 </div>
@@ -369,7 +369,7 @@ export function BimViewer({ modelName = 'IFC Modell', modelUrl }: { modelName?: 
                 </CardContent>
 
                 {/* Footer */}
-                <div className="absolute bottom-0 inset-x-0 p-3 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm border-t border-border flex justify-between items-center text-[10px] text-slate-500 dark:text-slate-400 z-10">
+                <div className="absolute bottom-0 inset-x-0 p-3 bg-slate-50 dark:bg-slate-900 border-t border-border flex justify-between items-center text-[10px] text-slate-500 dark:text-slate-400 z-10">
                     <div className="flex items-center gap-4">
                         <span>Vers. 2.4.1</span>
                         <span>LOD 300</span>

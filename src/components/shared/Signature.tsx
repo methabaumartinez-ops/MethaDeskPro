@@ -8,7 +8,7 @@ export function Signature() {
             href="https://www.agentia-automate.ch/de"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 group hover:opacity-80 transition-all py-1.5 px-3 rounded-xl bg-white/50 backdrop-blur-sm border border-slate-200/50 shadow-sm w-fit"
+            className="flex items-center gap-2 group hover:opacity-80 transition-all py-1.5 px-3 rounded-xl bg-white border border-slate-200 shadow-sm w-fit"
         >
             <span className="text-[10px] font-black uppercase tracking-wider text-primary/80 whitespace-nowrap">
                 Powered by

@@ -89,7 +89,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                         <div
                             key={t.id}
                             className={cn(
-                                "flex items-start gap-4 p-4 rounded-2xl border-2 shadow-lg backdrop-blur-md animate-in slide-in-from-right-full duration-300",
+                                "flex items-start gap-4 p-4 rounded-2xl border-2 shadow-lg animate-in slide-in-from-right-full duration-300",
                                 v.bg,
                                 v.border
                             )}

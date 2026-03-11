@@ -52,7 +52,7 @@ export default function EinkaufLayout({
             {/* Mobile Sidebar Overlay */}
             {isMobileMenuOpen && (
                 <div
-                    className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm lg:hidden pointer-events-auto"
+                    className="fixed inset-0 z-50 bg-slate-900/50 lg:hidden pointer-events-auto"
                     onClick={() => setIsMobileMenuOpen(false)}
                 />
             )}

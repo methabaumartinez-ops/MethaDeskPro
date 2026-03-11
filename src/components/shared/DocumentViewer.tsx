@@ -46,7 +46,7 @@ export function DocumentViewer({ documents = [], title = "Dokumente & Pläne" }:
     return (
         <div className={cn(
             "transition-all duration-300",
-            isExpanded ? "fixed inset-0 z-50 bg-background/80 backdrop-blur-md p-4 flex items-center justify-center" : "h-full w-full"
+            isExpanded ? "fixed inset-0 z-50 bg-background p-4 flex items-center justify-center" : "h-full w-full"
         )}>
             <Card className={cn(
                 "h-full w-full bg-white shadow-xl overflow-hidden flex flex-col",
@@ -74,10 +74,10 @@ export function DocumentViewer({ documents = [], title = "Dokumente & Pläne" }:
                             {/* Navigation Arrows */}
                             {documents.length > 1 && (
                                 <>
-                                    <Button variant="ghost" size="icon" className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-7 w-7 rounded-full bg-white/50 backdrop-blur-sm border border-border" onClick={prevDoc}>
+                                    <Button variant="ghost" size="icon" className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-7 w-7 rounded-full bg-white border border-border shadow-sm" onClick={prevDoc}>
                                         <ChevronLeft className="h-4 w-4" />
                                     </Button>
-                                    <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-7 w-7 rounded-full bg-white/50 backdrop-blur-sm border border-border" onClick={nextDoc}>
+                                    <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-7 w-7 rounded-full bg-white border border-border shadow-sm" onClick={nextDoc}>
                                         <ChevronRight className="h-4 w-4" />
                                     </Button>
                                 </>

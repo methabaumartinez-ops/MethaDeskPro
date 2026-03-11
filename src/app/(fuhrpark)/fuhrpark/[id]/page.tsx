@@ -467,10 +467,10 @@ export default function FahrzeugDetailPage() {
                                 <span>FAB: {fahrzeug.fabrikat || 'N/A'}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="text-white border-white/20 bg-white/5 backdrop-blur-sm text-[10px]">
+                                <Badge variant="outline" className="text-white border-white/20 bg-white/10 text-[10px]">
                                     HD VIEW
                                 </Badge>
-                                {fahrzeug.baujahr && <Badge variant="outline" className="text-white border-white/20 bg-white/5 backdrop-blur-sm text-[10px]">{fahrzeug.baujahr}</Badge>}
+                                {fahrzeug.baujahr && <Badge variant="outline" className="text-white border-white/20 bg-white/10 text-[10px]">{fahrzeug.baujahr}</Badge>}
                             </div>
                         </div>
 

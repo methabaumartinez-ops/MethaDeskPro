@@ -431,16 +431,16 @@ export default function TeilsystemDetailPage() {
                             <div className="bg-orange-600 text-white p-2 rounded-xl shadow-lg ring-4 ring-orange-600/20">
                                 <Video className="h-4 w-4" />
                             </div>
-                            <Badge className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-md text-slate-800 dark:text-slate-200 border-none px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider shadow-md">
+                            <Badge className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-none px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider shadow-md">
                                 Model Viewer
                             </Badge>
                         </div>
 
                         <div className="absolute top-4 right-4 z-10 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button variant="secondary" size="icon" className="h-9 w-9 rounded-xl bg-white/90 backdrop-blur-md shadow-sm border-none hover:bg-white text-slate-600">
+                            <Button variant="secondary" size="icon" className="h-9 w-9 rounded-xl bg-white shadow-sm border-none hover:bg-slate-100 text-slate-600">
                                 <Maximize2 className="h-3.5 w-3.5" />
                             </Button>
-                            <Button variant="secondary" size="icon" className="h-9 w-9 rounded-xl bg-white/90 backdrop-blur-md shadow-sm border-none hover:bg-white text-slate-600">
+                            <Button variant="secondary" size="icon" className="h-9 w-9 rounded-xl bg-white shadow-sm border-none hover:bg-slate-100 text-slate-600">
                                 <ExternalLink className="h-3.5 w-3.5" />
                             </Button>
                         </div>

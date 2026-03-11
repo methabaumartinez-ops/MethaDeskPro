@@ -97,7 +97,7 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
                     <div key={a.id} className="fixed inset-0 z-[500] flex items-center justify-center p-4">
                         {/* Blur backdrop */}
                         <div
-                            className="absolute inset-0 bg-black/30 backdrop-blur-sm animate-in fade-in duration-200"
+                            className="absolute inset-0 bg-black/30 animate-in fade-in duration-200"
                             onClick={() => dismiss(a.id)}
                         />
                         {/* Modal */}

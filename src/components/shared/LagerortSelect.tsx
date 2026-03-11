@@ -118,7 +118,7 @@ export const LagerortSelect = forwardRef<HTMLSelectElement, LagerortSelectProps>
                 />
 
                 {isModalOpen && (
-                    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm animate-in fade-in flex items-center justify-center p-4">
+                    <div className="fixed inset-0 z-50 bg-background/80 animate-in fade-in flex items-center justify-center p-4">
                         <div className="bg-card shadow-2xl rounded-2xl border-2 border-border w-full max-w-lg overflow-hidden animate-in zoom-in-95 fill-mode-forwards">
                             <div className="p-6 border-b border-border space-y-2">
                                 <div className="flex items-center justify-between">

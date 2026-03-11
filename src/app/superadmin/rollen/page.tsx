@@ -22,20 +22,19 @@ const ALL_ROLES: { value: UserRole; label: string; color: string }[] = [
     { value: 'mitarbeiter', label: 'Mitarbeiter', color: 'bg-slate-500' },
 ];
 
-// Inline-style color map for ABTEILUNGEN_CONFIG (Tailwind dynamic classes don’t work at build time)
 const ABT_COLORS: Record<string, { bg: string; border: string; icon: string }> = {
-    blue: { bg: 'rgba(59,130,246,0.15)', border: 'rgba(59,130,246,0.3)', icon: '#3b82f6' },
-    sky: { bg: 'rgba(14,165,233,0.15)', border: 'rgba(14,165,233,0.3)', icon: '#0ea5e9' },
-    teal: { bg: 'rgba(20,184,166,0.15)', border: 'rgba(20,184,166,0.3)', icon: '#14b8a6' },
-    warning: { bg: 'rgba(234,179,8,0.15)', border: 'rgba(234,179,8,0.3)', icon: '#eab308' },
-    info: { bg: 'rgba(99,102,241,0.15)', border: 'rgba(99,102,241,0.3)', icon: '#6366f1' },
-    gray: { bg: 'rgba(107,114,128,0.15)', border: 'rgba(107,114,128,0.3)', icon: '#9ca3af' },
-    orange: { bg: 'rgba(249,115,22,0.15)', border: 'rgba(249,115,22,0.3)', icon: '#f97316' },
-    violet: { bg: 'rgba(139,92,246,0.15)', border: 'rgba(139,92,246,0.3)', icon: '#8b5cf6' },
-    success: { bg: 'rgba(34,197,94,0.15)', border: 'rgba(34,197,94,0.3)', icon: '#22c55e' },
-    error: { bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.3)', icon: '#ef4444' },
-    default: { bg: 'rgba(100,116,139,0.15)', border: 'rgba(100,116,139,0.3)', icon: '#94a3b8' },
-    outline: { bg: 'rgba(148,163,184,0.10)', border: 'rgba(148,163,184,0.25)', icon: '#94a3b8' },
+    blue: { bg: '#dbeafe', border: '#93c5fd', icon: '#3b82f6' },
+    sky: { bg: '#e0f2fe', border: '#7dd3fc', icon: '#0ea5e9' },
+    teal: { bg: '#ccfbf1', border: '#5eead4', icon: '#14b8a6' },
+    warning: { bg: '#fef9c3', border: '#fde047', icon: '#eab308' },
+    info: { bg: '#e0e7ff', border: '#a5b4fc', icon: '#6366f1' },
+    gray: { bg: '#f3f4f6', border: '#d1d5db', icon: '#9ca3af' },
+    orange: { bg: '#ffedd5', border: '#fdba74', icon: '#f97316' },
+    violet: { bg: '#ede9fe', border: '#c4b5fd', icon: '#8b5cf6' },
+    success: { bg: '#dcfce7', border: '#86efac', icon: '#22c55e' },
+    error: { bg: '#fee2e2', border: '#fca5a5', icon: '#ef4444' },
+    default: { bg: '#f1f5f9', border: '#cbd5e1', icon: '#94a3b8' },
+    outline: { bg: '#f8fafc', border: '#e2e8f0', icon: '#94a3b8' },
 };
 
 // Map Abteilung -> suggested roles
@@ -133,9 +132,11 @@ export default function SuperadminRollenPage() {
     if (currentUser?.role !== 'superadmin') return null;
 
     return (
-        <div className="min-h-screen text-white pb-10">
+        <div className="min-h-screen text-gray-900 pb-10 relative" style={{ backgroundImage: "url('/construction_bg.png')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
+            <div className="absolute inset-0 pointer-events-none z-0" style={{ backgroundColor: 'rgba(255,255,255,0.91)' }} />
+            <div className="relative z-10">
             {/* Header */}
-            <div className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-sm px-8 py-6">
+            <div className="border-b border-gray-200 bg-white px-8 py-6">
                 <div className="max-w-6xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         {/* Shield icon — matches sidebar visual language */}
@@ -146,13 +147,10 @@ export default function SuperadminRollenPage() {
                             <Shield className="h-6 w-6" style={{ color: '#ff6b35' }} />
                         </div>
                         <div>
-                            <h1
-                                className="text-2xl font-black tracking-tight"
-                                style={{ backgroundImage: 'linear-gradient(90deg, #fff 0%, #ff6b35 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
-                            >
+                            <h1 className="text-2xl font-black tracking-tight text-gray-900">
                                 Rollenverwaltung
                             </h1>
-                            <p className="text-sm text-slate-400 font-medium">Rollen nach Abteilung und Mitarbeiter verwalten</p>
+                            <p className="text-sm text-gray-500 font-medium">Rollen nach Abteilung und Mitarbeiter verwalten</p>
                         </div>
                     </div>
                     <button
@@ -170,7 +168,7 @@ export default function SuperadminRollenPage() {
 
             <div className="max-w-6xl mx-auto px-8 py-8 space-y-6">
                 {/* View Toggle */}
-                <div className="flex bg-slate-900 border border-slate-800 rounded-2xl p-1 w-fit gap-1">
+                <div className="flex bg-white border border-gray-200 rounded-2xl p-1 w-fit gap-1">
                     {(['abteilung', 'worker'] as const).map(mode => (
                         <button
                             key={mode}
@@ -178,7 +176,7 @@ export default function SuperadminRollenPage() {
                             className="px-5 py-2 rounded-xl text-sm font-bold transition-all"
                             style={viewMode === mode
                                 ? { background: '#ff6b35', color: '#fff', boxShadow: '0 4px 14px rgba(255,107,53,0.35)' }
-                                : { color: '#94a3b8' }
+                                : { color: '#64748b' }
                             }
                         >
                             {mode === 'abteilung' ? 'Nach Abteilung' : 'Nach Mitarbeiter'}
@@ -188,16 +186,16 @@ export default function SuperadminRollenPage() {
 
                 {/* Stats bar */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-                        <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1">Gesamt</p>
-                        <p className="text-3xl font-black text-white">{users.length}</p>
-                        <p className="text-xs text-slate-500 font-medium mt-1">Benutzer</p>
+                    <div className="bg-white border border-gray-200 rounded-2xl p-4">
+                        <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-1">Gesamt</p>
+                        <p className="text-3xl font-black text-gray-900">{users.length}</p>
+                        <p className="text-xs text-gray-400 font-medium mt-1">Benutzer</p>
                     </div>
                     {['superadmin', 'admin', 'projektleiter'].map(role => (
-                        <div key={role} className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-                            <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1">{roleInfo(role as UserRole)?.label}</p>
-                            <p className="text-3xl font-black text-white">{users.filter(u => u.role === role).length}</p>
-                            <p className="text-xs text-slate-500 font-medium mt-1">Benutzer</p>
+                        <div key={role} className="bg-white border border-gray-200 rounded-2xl p-4">
+                            <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-1">{roleInfo(role as UserRole)?.label}</p>
+                            <p className="text-3xl font-black text-gray-900">{users.filter(u => u.role === role).length}</p>
+                            <p className="text-xs text-gray-400 font-medium mt-1">Benutzer</p>
                         </div>
                     ))}
                 </div>
@@ -215,9 +213,9 @@ export default function SuperadminRollenPage() {
                             const suggestedRoles = ABTEILUNG_ROLES[abt.id] || [];
 
                             return (
-                                <div key={abt.id} className="rounded-2xl border border-slate-800 bg-slate-900/30 overflow-hidden">
+                                <div key={abt.id} className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">
                                     <button
-                                        className="w-full flex items-center justify-between px-6 py-4 bg-slate-900/50 hover:bg-slate-800 transition-colors"
+                                        className="w-full flex items-center justify-between px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors"
                                         onClick={() => setExpandedAbt(prev => {
                                             const next = new Set(prev);
                                             isOpen ? next.delete(abt.id) : next.add(abt.id);
@@ -235,8 +233,8 @@ export default function SuperadminRollenPage() {
                                                 <Users className="h-4 w-4" style={{ color: ABT_COLORS[abt.color]?.icon ?? '#94a3b8' }} />
                                             </div>
                                             <div className="text-left">
-                                                <p className="font-bold text-white text-sm">{abt.name}</p>
-                                                <p className="text-xs text-slate-400">{abtUsers.length} Mitarbeiter</p>
+                                                <p className="font-bold text-gray-900 text-sm">{abt.name}</p>
+                                                <p className="text-xs text-gray-500">{abtUsers.length} Mitarbeiter</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3">
@@ -252,7 +250,7 @@ export default function SuperadminRollenPage() {
                                     </button>
 
                                     {isOpen && (
-                                        <div className="bg-slate-900/50 divide-y divide-slate-800">
+                                        <div className="bg-gray-50 divide-y divide-gray-100">
                                             {abtUsers.length === 0 ? (
                                                 <p className="px-8 py-4 text-sm text-slate-500 italic">Keine Mitarbeiter in dieser Abteilung</p>
                                             ) : (
@@ -274,8 +272,8 @@ export default function SuperadminRollenPage() {
 
                         {/* Ohne Abteilung */}
                         {(byAbteilung['_ohne'] || []).length > 0 && (
-                            <div className="rounded-2xl border border-slate-800 bg-slate-900/30 overflow-hidden">
-                                <div className="flex items-center justify-between px-6 py-4 bg-slate-900/50">
+                            <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">
+                                <div className="flex items-center justify-between px-6 py-4 bg-gray-50">
                                     <div className="flex items-center gap-3">
                                         <div
                                             className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
@@ -284,12 +282,12 @@ export default function SuperadminRollenPage() {
                                             <Users className="h-4 w-4" style={{ color: '#94a3b8' }} />
                                         </div>
                                         <div>
-                                            <p className="font-bold text-white text-sm">Ohne Abteilung</p>
-                                            <p className="text-xs text-slate-400">{byAbteilung['_ohne'].length} Mitarbeiter</p>
+                                            <p className="font-bold text-gray-900 text-sm">Ohne Abteilung</p>
+                                            <p className="text-xs text-gray-500">{byAbteilung['_ohne'].length} Mitarbeiter</p>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="bg-slate-900/50 divide-y divide-slate-800">
+                                <div className="bg-gray-50 divide-y divide-gray-100">
                                     {byAbteilung['_ohne'].map(u => (
                                         <UserRoleRow
                                             key={u.id}
@@ -305,9 +303,9 @@ export default function SuperadminRollenPage() {
                     </div>
                 ) : (
                     /* ─── BY WORKER ───── */
-                    <div className="rounded-2xl border border-slate-800 bg-slate-900/30 overflow-hidden">
+                    <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">
                         {/* Header — same visual weight as department accordion headers */}
-                        <div className="flex items-center justify-between px-6 py-4 bg-slate-900/50">
+                        <div className="flex items-center justify-between px-6 py-4 bg-gray-50">
                             <div className="flex items-center gap-3">
                                 <div
                                     className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
@@ -316,19 +314,19 @@ export default function SuperadminRollenPage() {
                                     <Users className="h-4 w-4" style={{ color: '#ff6b35' }} />
                                 </div>
                                 <div>
-                                    <p className="font-bold text-white text-sm">Alle Mitarbeiter</p>
-                                    <p className="text-xs text-slate-400">{users.length} Mitarbeiter</p>
+                                    <p className="font-bold text-gray-900 text-sm">Alle Mitarbeiter</p>
+                                    <p className="text-xs text-gray-500">{users.length} Mitarbeiter</p>
                                 </div>
                             </div>
                         </div>
                         {/* Column labels */}
-                        <div className="grid grid-cols-[2fr_1fr_1.5fr] gap-4 px-6 py-2.5 border-y border-slate-800 bg-slate-900/80">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Mitarbeiter</span>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Abteilung</span>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Rolle</span>
+                        <div className="grid grid-cols-[2fr_1fr_1.5fr] gap-4 px-6 py-2.5 border-y border-gray-200 bg-gray-50">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Mitarbeiter</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Abteilung</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Rolle</span>
                         </div>
                         {/* Rows */}
-                        <div className="divide-y divide-slate-800 bg-slate-900/50">
+                        <div className="divide-y divide-gray-100 bg-white">
                             {users
                                 .slice()
                                 .sort((a, b) => `${a.nachname} ${a.vorname}`.localeCompare(`${b.nachname} ${b.vorname}`, 'de'))
@@ -348,9 +346,9 @@ export default function SuperadminRollenPage() {
                 )}
             </div>
         </div>
+        </div>
     );
 }
-
 // ─── Sub-component ──────────────────────────────────────────────────────────
 
 function UserRoleRow({
@@ -370,14 +368,14 @@ function UserRoleRow({
     const abtLabel = ABTEILUNGEN_CONFIG.find(a => a.id === user.abteilung)?.name || '–';
 
     return (
-        <div className="grid grid-cols-[2fr_1fr_1.5fr] gap-4 items-center px-6 py-4 hover:bg-slate-800/40 transition-colors" style={{ background: 'transparent' }}>
+        <div className="grid grid-cols-[2fr_1fr_1.5fr] gap-4 items-center px-6 py-4 hover:bg-gray-50 transition-colors">
             <div>
-                <p className="font-bold text-white text-sm">{user.vorname} {user.nachname}</p>
-                <p className="text-xs text-slate-400">{user.email}</p>
+                <p className="font-bold text-gray-900 text-sm">{user.vorname} {user.nachname}</p>
+                <p className="text-xs text-gray-500">{user.email}</p>
             </div>
             <div>
                 {showAbteilung && (
-                    <span className="text-xs font-semibold text-slate-300">{abtLabel}</span>
+                    <span className="text-xs font-semibold text-gray-700">{abtLabel}</span>
                 )}
             </div>
             <div className="flex items-center gap-2">
@@ -388,12 +386,7 @@ function UserRoleRow({
                     value={user.role}
                     disabled={saving}
                     onChange={(e) => onRoleChange(e.target.value as UserRole)}
-                    className="flex-1 text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-orange-500 disabled:opacity-50 cursor-pointer font-semibold"
-                    style={{
-                        background: 'rgba(15,23,42,0.95)',
-                        border: '1px solid rgba(51,65,85,0.7)',
-                        color: '#e2e8f0',
-                    }}
+                    className="flex-1 text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-orange-500 disabled:opacity-50 cursor-pointer font-semibold border border-gray-200 bg-white text-gray-900"
                 >
                     {ALL_ROLES.map(r => (
                         <option key={r.value} value={r.value} style={{ background: '#0f172a', color: '#e2e8f0' }}>
@@ -406,3 +399,5 @@ function UserRoleRow({
         </div>
     );
 }
+
+

@@ -18,25 +18,19 @@ export default async function SuperadminLayout({ children }: { children: React.R
     }
 
     return (
-        <div 
-            className="flex min-h-screen relative overflow-hidden"
-            style={{
-                backgroundImage: "url('/construction_bg.png')",
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-            }}
-        >
-            {/* Overlay oscuro para legibilidad */}
-            <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-0" />
-            
-            <div className="flex w-full z-10">
-                <SuperadminSidebar />
-                <main className="flex-1 overflow-auto">
-                    {children}
-                </main>
-            </div>
+        <div className="flex min-h-screen bg-white">
+            <SuperadminSidebar />
+            <main
+                className="flex-1 overflow-auto"
+                style={{
+                    backgroundImage: "url('/construction_bg.png')",
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                }}
+            >
+                {children}
+            </main>
         </div>
     );
 }
-

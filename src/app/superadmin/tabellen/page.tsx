@@ -103,9 +103,11 @@ export default function TabellenPermissionsPage() {
     }, [searchTerm]);
 
     return (
-        <div className="min-h-screen text-white pb-10">
+        <div className="min-h-screen text-gray-900 pb-10 relative" style={{ backgroundImage: "url('/construction_bg.png')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
+            <div className="absolute inset-0 pointer-events-none z-0" style={{ backgroundColor: 'rgba(255,255,255,0.91)' }} />
+            <div className="relative z-10">
             {/* Header */}
-            <div className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-sm px-8 py-6">
+            <div className="border-b border-gray-200 bg-white px-8 py-6">
                 <div className="max-w-5xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg shrink-0"
@@ -113,11 +115,10 @@ export default function TabellenPermissionsPage() {
                             <TableIcon className="h-6 w-6" style={{ color: '#ff6b35' }} />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-black tracking-tight"
-                                style={{ backgroundImage: 'linear-gradient(90deg,#fff 0%,#ff6b35 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                            <h1 className="text-2xl font-black tracking-tight text-gray-900">
                                 Tabellen-Berechtigungen
                             </h1>
-                            <p className="text-sm text-slate-400 font-medium">Welche Tabellen darf jede Abteilung lesen, edtiieren oder loeschen?</p>
+                            <p className="text-sm text-gray-500 font-medium">Welche Tabellen darf jede Abteilung lesen, edtiieren oder loeschen?</p>
                         </div>
                     </div>
                     <button
@@ -134,7 +135,7 @@ export default function TabellenPermissionsPage() {
             <div className="max-w-5xl mx-auto px-8 py-8 flex gap-6">
                 {/* Left: Abteilung list */}
                 <div className="w-52 shrink-0 space-y-1">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-3 px-2">Abteilungen</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-3 px-2">Abteilungen</p>
                     {ABTEILUNGEN_CONFIG.map(abt => {
                         const count = countEnabled(abt.id);
                         const isActive = abt.id === activeAbt;
@@ -142,12 +143,12 @@ export default function TabellenPermissionsPage() {
                             <button
                                 key={abt.id}
                                 onClick={() => setActiveAbt(abt.id)}
-                                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all ${isActive ? 'text-white' : 'text-slate-400 bg-slate-900/20 hover:bg-slate-800 hover:text-white'}`}
-                                style={isActive ? { background: 'rgba(255,107,53,0.12)', border: '1px solid rgba(255,107,53,0.25)' } : {}}
+                                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all ${isActive ? 'text-gray-900 font-bold' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
+                                style={isActive ? { background: '#FFF7F2', border: '1px solid #FF6B2C', color: '#000000' } : {}}
                             >
                                 <span className="font-semibold">{abt.name}</span>
-                                <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${isActive ? 'text-white' : 'bg-white/10 text-slate-500'}`}
-                                    style={isActive ? { background: 'rgba(255,107,53,0.35)' } : {}}>
+                                <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${isActive ? 'text-gray-900' : 'bg-gray-100 text-gray-500'}`}
+                                    style={isActive ? { background: 'rgba(255,107,53,0.2)', color: '#000000' } : {}}>
                                     {count}/{maxPerms}
                                 </span>
                             </button>
@@ -159,7 +160,7 @@ export default function TabellenPermissionsPage() {
                 <div className="flex-1 space-y-4">
                     {/* Abteilung header + global actions */}
                     <div className="flex items-center justify-between">
-                        <p className="font-black text-white text-lg">{activeAbtConfig?.name}</p>
+                        <p className="font-black text-gray-900 text-lg">{activeAbtConfig?.name}</p>
                         <div className="flex items-center gap-4">
                             {/* Search Input */}
                             <div className="relative group">
@@ -169,21 +170,21 @@ export default function TabellenPermissionsPage() {
                                     placeholder="Tabellen suchen..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="h-9 w-64 bg-slate-900/60 border border-slate-700 rounded-xl pl-9 pr-4 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#ff6b35]/50 focus:border-[#ff6b35] transition-all"
+                                    className="h-9 w-64 bg-white border border-gray-200 rounded-xl pl-9 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"
                                 />
                             </div>
 
                             <div className="flex gap-2">
                                 <button onClick={() => setAllForAbt(true)}
-                                    className="px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
+                                    className="px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 text-xs font-bold text-gray-700 border border-gray-200 transition-all">
                                     Alle aktivieren
                                 </button>
                                 <button onClick={() => setAllForAbt(false)}
-                                    className="px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
+                                    className="px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 text-xs font-bold text-gray-700 border border-gray-200 transition-all">
                                     Alle deaktivieren
                                 </button>
                                 <button onClick={resetToDefault}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/40 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 transition-all">
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 text-xs font-bold text-gray-700 border border-gray-200 transition-all">
                                     <RotateCcw className="h-3 w-3" />
                                     Standard
                                 </button>
@@ -196,7 +197,7 @@ export default function TabellenPermissionsPage() {
                         {ALL_PERMS.map(p => (
                             <div key={p} className="flex items-center gap-1.5">
                                 <div className="h-2 w-2 rounded-full" style={{ background: PERM_COLORS[p] }} />
-                                <span className="text-[10px] font-bold text-slate-400">{PERM_LABELS[p]}</span>
+                                <span className="text-[10px] font-bold text-gray-500">{PERM_LABELS[p]}</span>
                             </div>
                         ))}
                     </div>
@@ -215,12 +216,12 @@ export default function TabellenPermissionsPage() {
                                 const noneEnabled = ALL_PERMS.every(p => !tablePerms[p]);
 
                                 return (
-                                    <div key={tableId} className="rounded-2xl border border-slate-800 bg-slate-900/40 overflow-hidden">
+                                    <div key={tableId} className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">
                                         {/* Table header row */}
-                                        <div className="flex items-center justify-between px-5 py-3 bg-slate-900 border-b border-slate-800">
+                                        <div className="flex items-center justify-between px-5 py-3 bg-gray-50 border-b border-gray-200">
                                             <div className="flex items-center gap-3">
-                                                <TableIcon className="h-4 w-4 text-slate-500" />
-                                                <span className="font-bold text-white text-sm">{TABLE_LABELS[tableId]}</span>
+                                                <TableIcon className="h-4 w-4 text-gray-400" />
+                                                <span className="font-bold text-gray-900 text-sm">{TABLE_LABELS[tableId]}</span>
                                             </div>
                                             {/* Quick toggle: all on/off for this table */}
                                             <button
@@ -237,21 +238,21 @@ export default function TabellenPermissionsPage() {
                                         </div>
 
                                         {/* Permission toggles */}
-                                        <div className="grid grid-cols-4 divide-x divide-slate-800 bg-slate-900/50">
+                                        <div className="grid grid-cols-4 divide-x divide-gray-100 bg-white">
                                             {ALL_PERMS.map(perm => {
                                                 const enabled = tablePerms[perm];
                                                 return (
                                                     <button
                                                         key={perm}
                                                         onClick={() => toggle(tableId, perm)}
-                                                        className="flex flex-col items-center gap-2 px-4 py-3.5 hover:bg-slate-800 transition-colors"
+                                                        className="flex flex-col items-center gap-2 px-4 py-3.5 hover:bg-gray-50 transition-colors"
                                                     >
                                                         {/* Color dot + toggle pill */}
-                                                        <div className={`relative h-5 w-9 rounded-full transition-all ${!enabled ? 'bg-slate-700' : ''}`}
+                                                        <div className={`relative h-5 w-9 rounded-full transition-all ${!enabled ? 'bg-gray-200' : ''}`}
                                                             style={enabled ? { background: PERM_COLORS[perm] } : {}}>
                                                             <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${enabled ? 'left-[18px]' : 'left-0.5'}`} />
                                                         </div>
-                                                        <span className={`text-[10px] font-bold transition-colors ${enabled ? 'text-white' : 'text-slate-600'}`}>
+                                                        <span className={`text-[10px] font-bold transition-colors ${enabled ? 'text-gray-900' : 'text-gray-400'}`}>
                                                             {PERM_LABELS[perm]}
                                                         </span>
                                                     </button>
@@ -264,11 +265,12 @@ export default function TabellenPermissionsPage() {
                         )}
                     </div>
 
-                    <p className="text-xs text-slate-500 text-center pt-2">
+                    <p className="text-xs text-gray-500 text-center pt-2">
                         Superadmin und Admin haben immer vollen Zugriff auf alle Tabellen.
                     </p>
                 </div>
             </div>
+        </div>
         </div>
     );
 }

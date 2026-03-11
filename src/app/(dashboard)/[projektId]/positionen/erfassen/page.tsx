@@ -198,7 +198,7 @@ export default function PositionErfassenPage() {
             />
 
             {/* Context Header - Secondary info about the Teilsystem */}
-            <div className="bg-white/50 backdrop-blur-sm p-4 rounded-2xl border border-border/60 flex items-center gap-4 px-6 -mt-2">
+            <div className="bg-white p-4 rounded-2xl border border-border flex items-center gap-4 px-6 -mt-2">
                 <div className="flex flex-col">
                     <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em]">Zugeordnetes Teilsystem</span>
                     <div className="flex items-baseline gap-2 mt-0.5">

@@ -140,7 +140,7 @@
 /* Custom utility classes */
 @layer utilities {
   .glass {
-    @apply bg-white/60 dark:bg-slate-950/70 backdrop-blur-xl border border-white/20 dark:border-slate-800;
+    @apply bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 shadow-sm;
   }
 
   .shadow-soft {

@@ -214,7 +214,7 @@ export function ItemQrModal({
     };
 
     return (
-        <div className="fixed inset-0 z-[150] bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm animate-in fade-in duration-300 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[150] bg-slate-900/60 dark:bg-black/80 animate-in fade-in duration-300 flex items-center justify-center p-4">
             <div className="relative bg-white dark:bg-card w-full max-w-sm rounded-[2.5rem] shadow-2xl border-2 border-primary/20 p-8 flex flex-col items-center gap-6 animate-in zoom-in slide-in-from-bottom-4 duration-300">
                 <button
                     onClick={onClose}

@@ -13,14 +13,15 @@ import { cn } from '@/lib/utils';
 // ── Types ────────────────────────────────────────────────────────────────────
 type ExtractedPosition = {
     tempId: string;
-    posNr: string;
+    teilsystemNummer: string;
+    positionsNummer: string;
     name: string;
     beschreibung: string;
     menge: number;
     einheit: string;
     expressID: number;
     ifcType: string;
-    weight?: number;
+    gewichtTotal?: number;
     length?: string;
     width?: string;
     height?: string;
@@ -32,13 +33,15 @@ type ExtractedPosition = {
 type ExtractedUnterposition = {
     tempId: string;
     parentExpressID: number;
-    posNummer: string;
+    unterpositionsNummer: string;
+    groupHash: string;
     name: string;
     beschreibung: string;
     menge: number;
     einheit: string;
     material: string;
-    gewicht: number;
+    gewichtEinheit: number;
+    gewichtGesamt: number;
     dimensions?: any;
     rawPsets?: any;
     ok?: string | number | null;
@@ -124,112 +127,32 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
     // ── Import logic ──────────────────────────────────────────────────────────
     const handleImport = async () => {
         setImporting(true);
-        const log: string[] = [];
+        setImportLog(["Iniciando importación masiva..."]);
 
         try {
-            // Anti-confusion rule: Group check
-            for (const p of selectedPos) {
-                const overlaps = selectedUPos.find(u => u.posNummer === p.posNummer);
-                if (overlaps) {
-                    log.push(`⚠️ WARNUNG: Position ${p.posNummer} hat die gleiche ID wie ein Teil.`);
-                }
-            }
+            // Enlazar subposiciones a su padre explícitamente mediante parentTempId en el JSON
+            const mappedSubPositions = selectedUPos.map(u => ({
+                ...u,
+                parentTempId: selectedPos.find(p => p.expressID === u.parentExpressID)?.tempId || null
+            })).filter(u => u.parentTempId !== null);
 
-            // Map expressID → real DB positionId
-            const expressIdToPositionId = new Map<number, string>();
+            const payload = {
+                projektId,
+                positionen: selectedPos,
+                unterpositionen: mappedSubPositions
+            };
 
-            // 1. Create Positionen
-            for (let i = 0; i < selectedPos.length; i++) {
-                const p = selectedPos[i];
-                try {
-                    const created = await PositionService.createPosition({
-                        teilsystemId,
-                        projektId,
-                        posNummer: p.posNr || String(i + 1).padStart(3, '0'),
-                        name: p.name,
-                        beschreibung: p.beschreibung,
-                        menge: Number(p.menge),
-                        einheit: p.einheit || 'Stk',
-                        status: 'offen',
-                        weight: Number(p.weight || 0),
-                        ifcMeta: {
-                            psets: p.rawPsets,
-                            dimensions: { length: p.length, width: p.width, height: p.height },
-                            ok: p.ok,
-                            uk: p.uk
-                        },
-                        groupingMethod: p.ifcType === 'Fallback' ? 'FALLBACK_GROUP' : 'REAL_PARENT',
-                    } as any);
-                    expressIdToPositionId.set(p.expressID, created.id);
-                    log.push(`✅ Position: ${p.posNr || ''} ${p.name}`);
-                } catch (e: any) {
-                    log.push(`❌ Position: ${p.name} — ${e.message}`);
-                }
-            }
+            const res = await fetch('/api/ifc-bulk-import', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
 
-            // 2. Create Unterpositionen (link to parent)
-            for (const u of selectedUPos) {
-                const parentPositionId = expressIdToPositionId.get(u.parentExpressID);
-                if (!parentPositionId && u.parentExpressID !== 0) {
-                    log.push(`⚠️ Unterposition: ${u.name} — parent nicht importiert, übersprungen`);
-                    continue;
-                }
+            const data = await res.json();
+            
+            if (!res.ok) throw new Error(data.error || 'Error del servidor en importación masiva');
 
-                const targetPosId = parentPositionId || expressIdToPositionId.get(0);
-
-                try {
-                    await SubPositionService.createUnterposition({
-                        positionId: targetPosId,
-                        teilsystemId,
-                        projektId,
-                        posNummer: u.posNummer || '001',
-                        name: u.name,
-                        beschreibung: u.beschreibung,
-                        menge: Number(u.menge),
-                        einheit: u.einheit || 'Stk',
-                        material: u.material,
-                        gewicht: u.gewicht,
-                        ifcMeta: {
-                            psets: u.rawPsets,
-                            dimensions: u.dimensions,
-                            ok: u.ok,
-                            uk: u.uk,
-                            area: u.area,
-                            color: u.color,
-                            remark: u.remark
-                        },
-                        status: 'offen',
-                    } as any);
-                    log.push(`✅ Unterposition: ${u.posNummer || ''} ${u.name}`);
-                } catch (e: any) {
-                    log.push(`❌ Unterposition: ${u.name} — ${e.message}`);
-                }
-            }
-
-            // 3. Create Material (via data API)
-            for (const mat of selectedMat) {
-                try {
-                    const res = await fetch('/api/data/material', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            teilsystemId,
-                            projektId,
-                            name: mat.name,
-                            hersteller: mat.hersteller || '—',
-                            menge: Number(mat.menge),
-                            einheit: mat.einheit,
-                            status: 'offen',
-                        }),
-                    });
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    log.push(`✅ Material: ${mat.name}`);
-                } catch (e: any) {
-                    log.push(`❌ Material: ${mat.name} — ${e.message}`);
-                }
-            }
-
-            setImportLog(log);
+            setImportLog(data.log || ['Importación completada exitosamente']);
             setDone(true);
         } catch (e: any) {
             setImportLog([`❌ Kritischer Fehler: ${e.message}`]);
@@ -243,7 +166,7 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
     if (done) {
         const errors = importLog.filter(l => l.startsWith('❌'));
         return (
-            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
                 <div className="bg-white dark:bg-card rounded-2xl shadow-2xl border-2 border-border w-full max-w-lg p-8 flex flex-col items-center gap-4">
                     <div className={`text-5xl ${errors.length === 0 ? 'text-green-500' : 'text-orange-500'}`}>
                         {errors.length === 0 ? '✅' : '⚠️'}
@@ -273,7 +196,7 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
     ];
 
     return (
-        <div className="fixed inset-0 z-[150] bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[150] bg-slate-900/60 dark:bg-black/80 flex items-center justify-center p-4 animate-in fade-in duration-300">
             <div className="relative bg-white dark:bg-card w-full max-w-5xl h-[85vh] rounded-[2.5rem] shadow-2xl border-2 border-primary/20 flex flex-col overflow-hidden animate-in zoom-in slide-in-from-bottom-8 duration-500">
 
                 {/* Header */}
@@ -329,7 +252,7 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
                         {/* ── Positionen ── */}
                         {activeTab === 'positionen' && (
                             <Table>
-                                <TableHeader className="sticky top-0 bg-muted/50 backdrop-blur-md z-10">
+                                <TableHeader className="sticky top-0 bg-slate-50 z-10">
                                     <TableRow className="border-b-2 border-border/50">
                                         <TableHead className="w-12 text-center">
                                             <input type="checkbox"
@@ -367,8 +290,8 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
                                                     onChange={e => setPositions(prev => prev.map((x, j) => j === i ? { ...x, selected: e.target.checked } : x))}
                                                 />
                                             </TableCell>
-                                            <TableCell className="font-black text-xs text-slate-500">
-                                                {p.posNr}
+                                            <TableCell className="font-black text-xs text-slate-500 whitespace-nowrap">
+                                                {p.teilsystemNummer}/{p.positionsNummer}
                                             </TableCell>
                                             <TableCell className="font-bold text-sm">
                                                 <EditCell value={p.name}
@@ -382,8 +305,8 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex items-center justify-end gap-1.5 font-black text-sm">
-                                                    <EditCell value={p.weight || 0} type="number"
-                                                        onChange={v => setPositions(prev => prev.map((x, j) => j === i ? { ...x, weight: parseFloat(v) || 0 } : x))}
+                                                    <EditCell value={p.gewichtTotal || 0} type="number"
+                                                        onChange={v => setPositions(prev => prev.map((x, j) => j === i ? { ...x, gewichtTotal: parseFloat(v) || 0 } : x))}
                                                     />
                                                     <span className="text-[10px] text-muted-foreground uppercase">kg</span>
                                                 </div>
@@ -402,7 +325,7 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
                         {/* ── Unterpositionen ── */}
                         {activeTab === 'unterpositionen' && (
                             <Table>
-                                <TableHeader className="sticky top-0 bg-muted/50 backdrop-blur-md z-10">
+                                <TableHeader className="sticky top-0 bg-slate-50 z-10">
                                     <TableRow className="border-b-2 border-border/50">
                                         <TableHead className="w-12 text-center">
                                             <input type="checkbox"
@@ -441,7 +364,7 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
                                                     />
                                                 </TableCell>
                                                 <TableCell className="font-black text-xs text-slate-500">
-                                                    {u.posNummer}
+                                                    {u.unterpositionsNummer || <span className="opacity-40 italic font-mono text-[9px]">N/A (AUX)</span>}
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex flex-col">
@@ -453,8 +376,8 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <div className="flex items-center justify-end gap-1.5 font-black text-sm">
-                                                        <EditCell value={u.gewicht || 0} type="number"
-                                                            onChange={v => setUnterpos(prev => prev.map((x, j) => j === i ? { ...x, gewicht: parseFloat(v) || 0 } : x))}
+                                                        <EditCell value={u.gewichtGesamt || 0} type="number"
+                                                            onChange={v => setUnterpos(prev => prev.map((x, j) => j === i ? { ...x, gewichtGesamt: parseFloat(v) || 0 } : x))}
                                                         />
                                                         <span className="text-[10px] text-muted-foreground uppercase">kg</span>
                                                     </div>
@@ -482,7 +405,7 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
                         {/* ── Material ── */}
                         {activeTab === 'material' && (
                             <Table>
-                                <TableHeader className="sticky top-0 bg-muted/50 backdrop-blur-md z-10">
+                                <TableHeader className="sticky top-0 bg-slate-50 z-10">
                                     <TableRow className="border-b-2 border-border/50">
                                         <TableHead className="w-12 text-center">
                                             <input type="checkbox"
@@ -567,7 +490,7 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
                         <div className="flex flex-col">
                             <span className="text-[10px] font-black text-primary uppercase tracking-widest leading-none mb-1">Gesamtgewicht</span>
                             <span className="text-lg font-black text-foreground tracking-tighter leading-none">
-                                {selectedPos.reduce((sum, p) => sum + (Number(p.weight) || 0) * Number(p.menge), 0).toFixed(2)} <span className="text-sm">kg</span>
+                                {selectedPos.reduce((sum, p) => sum + (Number(p.gewichtTotal) || 0) * Number(p.menge), 0).toFixed(2)} <span className="text-sm">kg</span>
                             </span>
                         </div>
                     </div>
@@ -608,7 +531,7 @@ export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImpor
 
                 {/* Raw JSON Viewer Overlay */}
                 {showRawJson && (
-                    <div className="absolute inset-0 z-[200] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-12 animate-in fade-in duration-300" onClick={() => setShowRawJson(null)}>
+                    <div className="absolute inset-0 z-[200] bg-slate-900/60 flex items-center justify-center p-12 animate-in fade-in duration-300" onClick={() => setShowRawJson(null)}>
                         <div className="bg-white dark:bg-card w-full max-w-2xl max-h-full rounded-[2.5rem] shadow-2xl border-2 border-border flex flex-col overflow-hidden animate-in zoom-in duration-300" onClick={e => e.stopPropagation()}>
                             <div className="px-8 py-6 border-b border-border bg-muted/30 flex items-center justify-between">
                                 <h3 className="font-black text-foreground uppercase tracking-widest text-sm">IFC Raw Psets (JSON)</h3>

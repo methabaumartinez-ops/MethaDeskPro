@@ -157,7 +157,7 @@ export function ReservierungModal({ isOpen, onClose, onSave, fahrzeug, projektId
     ];
 
     return (
-        <div className="fixed inset-0 z-[150] bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[150] bg-slate-900/60 dark:bg-black/80 flex items-center justify-center p-4 animate-in fade-in duration-300">
             <div className="relative bg-white dark:bg-card w-full max-w-lg rounded-[2.5rem] shadow-2xl border-2 border-primary/20 flex flex-col overflow-hidden animate-in zoom-in slide-in-from-bottom-8 duration-500">
 
                 {/* Header */}

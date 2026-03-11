@@ -106,7 +106,7 @@ export default function WelcomePage() {
                             {/* ACTION 1: PROJECTS */}
                             <div className="flex flex-col items-center gap-6">
                                 <Card
-                                    className="w-full group relative overflow-hidden bg-slate-900/50 border border-slate-800 shadow-xl hover:border-primary/30 transition-all duration-500 cursor-pointer rounded-2xl backdrop-blur-sm"
+                                    className="w-full group relative overflow-hidden bg-slate-900 border border-slate-800 shadow-xl hover:border-primary/30 transition-all duration-500 cursor-pointer rounded-2xl"
                                     onClick={() => handleNavigate('/projekte')}
                                 >
                                     <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-700" />
@@ -134,7 +134,7 @@ export default function WelcomePage() {
                             {/* ACTION 2: DASHBOARD */}
                             <div className="flex flex-col items-center gap-6">
                                 <Card
-                                    className="w-full group relative overflow-hidden bg-slate-900/50 border border-slate-800 shadow-xl hover:border-primary/30 transition-all duration-500 cursor-pointer rounded-2xl backdrop-blur-sm"
+                                    className="w-full group relative overflow-hidden bg-slate-900 border border-slate-800 shadow-xl hover:border-primary/30 transition-all duration-500 cursor-pointer rounded-2xl"
                                     onClick={() => handleNavigate(`/${firstProjectId}/my-dashboard`)}
                                 >
                                     <div className="absolute bottom-0 right-0 w-28 h-28 bg-primary/10 blur-2xl rounded-full -mb-14 -mr-14" />
@@ -168,13 +168,13 @@ export default function WelcomePage() {
                 {/* Mobile Sidebar Overlay */}
                 {isMobileMenuOpen && (
                     <div
-                        className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm lg:hidden pointer-events-auto mt-16"
+                        className="fixed inset-0 z-50 bg-slate-900/50 lg:hidden pointer-events-auto mt-16"
                         onClick={() => setIsMobileMenuOpen(false)}
                     />
                 )}
             </div>
 
-            <footer className="py-6 bg-slate-950/40 backdrop-blur-sm self-stretch flex flex-row items-end justify-between px-8 relative w-full flex-shrink-0 z-20 border-t border-slate-800/50">
+            <footer className="py-6 bg-slate-950 self-stretch flex flex-row items-end justify-between px-8 relative w-full flex-shrink-0 z-20 border-t border-slate-800">
                 <Signature />
                 <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest opacity-80">
                     © {new Date().getFullYear()} METHABAU AG. v1.4

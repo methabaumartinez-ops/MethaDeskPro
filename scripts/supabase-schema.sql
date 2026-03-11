@@ -67,13 +67,18 @@ CREATE TABLE IF NOT EXISTS positionen (
     abteilung TEXT,
     menge NUMERIC,
     einheit TEXT,
+    gewicht NUMERIC,
     material TEXT,
     lieferant TEXT,
     preis NUMERIC,
     lieferfrist TEXT,
     bemerkung TEXT,
+    "groupingMethod" TEXT,
+    "groupingKey" TEXT,
+    "ifcMeta" JSONB,
     created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now()
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE ("teilsystemId", "nummer")
 );
 CREATE INDEX IF NOT EXISTS idx_positionen_teilsystem ON positionen("teilsystemId");
 CREATE INDEX IF NOT EXISTS idx_positionen_projekt ON positionen("projektId");
@@ -91,13 +96,17 @@ CREATE TABLE IF NOT EXISTS unterpositionen (
     abteilung TEXT,
     menge NUMERIC,
     einheit TEXT,
+    gewicht NUMERIC,
     material TEXT,
     lieferant TEXT,
     preis NUMERIC,
     lieferfrist TEXT,
     bemerkung TEXT,
+    "groupHash" TEXT,
+    "ifcMeta" JSONB,
     created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now()
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE ("positionId", "groupHash")
 );
 CREATE INDEX IF NOT EXISTS idx_unterpositionen_position ON unterpositionen("positionId");
 

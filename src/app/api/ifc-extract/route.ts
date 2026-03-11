@@ -26,10 +26,12 @@ function extractFileId(url: string): string | null {
 }
 
 function safeGetPropValue(prop: any): string | number | null {
-    if (!prop || !prop.value) return null;
-    const v = prop.value;
-    if (typeof v === 'string' || typeof v === 'number') return v;
-    if (v.value !== undefined) return v.value;
+    if (prop === undefined || prop === null) return null;
+    if (typeof prop === 'string' || typeof prop === 'number') return prop;
+    if (prop.value !== undefined) {
+        if (typeof prop.value === 'string' || typeof prop.value === 'number') return prop.value;
+        if (prop.value && prop.value.value !== undefined) return prop.value.value;
+    }
     return null;
 }
 
@@ -110,11 +112,28 @@ export async function POST(req: NextRequest) {
             try { return await ifcApi.properties.getPropertySets(modelID, id, true, true); }
             catch { return []; }
         };
-        const findPset = (psets: any[], name: string) => psets.find(p => safeGetPropValue(p.Name) === name);
+        const findPset = (psets: any[], name: string) => 
+            psets.find(p => String(safeGetPropValue(p.Name) || '').trim().toLowerCase() === name.toLowerCase());
+            
         const getPsetProp = (pset: any, propName: string) => {
             if (!pset || !pset.HasProperties) return null;
-            const prop = pset.HasProperties.find((p: any) => safeGetPropValue(p.Name) === propName);
+            const prop = pset.HasProperties.find((p: any) => 
+                String(safeGetPropValue(p.Name) || '').trim().toLowerCase() === propName.toLowerCase()
+            );
             return prop ? safeGetPropValue(prop.NominalValue) : null;
+        };
+
+        const getAnyPsetProp = (psets: any[], targetPset: string, propName: string) => {
+            const pset = findPset(psets, targetPset);
+            let val = getPsetProp(pset, propName);
+            if (val !== null && val !== undefined && val !== '') return val;
+            
+            // Fallback search across everything
+            for (const p of psets) {
+                val = getPsetProp(p, propName);
+                if (val !== null && val !== undefined && val !== '') return val;
+            }
+            return null;
         };
 
         const getSimplifiedPsets = (psets: any[]) => {
@@ -283,66 +302,127 @@ export async function POST(req: NextRequest) {
 
         for (const pid of pIds) {
             const e = elementsMap.get(pid);
-            const mPset = findPset(e.psets, PSET_MONTAGETEIL);
+            
+            const rawPosNr = String(getAnyPsetProp(e.psets, PSET_MONTAGETEIL, "Montageteil Position-Nr.") || e.name || `POS-${pid}`).trim();
+            const rawName = String(getAnyPsetProp(e.psets, PSET_MONTAGETEIL, "Montageteil Name") || e.name || `Assembly ${pid}`).trim();
+            const rawGewicht = Number(getAnyPsetProp(e.psets, PSET_MONTAGETEIL, "Gewicht") || 0);
+
+            // Exact Regex para TS/POS (e.g. 2114/200 -> TS: 2114, POS: 200)
+            const match = rawPosNr.match(/^([^\/]+)\/(.+)$/);
+            const tsPrefix = match ? match[1].trim() : "UNBEKANNT";
+            const finalPosNr = match ? match[2].trim() : rawPosNr;
+
+            if (!match) warnings.push(`Formato inválido en Position ${rawPosNr} (ID: ${pid}). Se requiere "TS/POS".`);
+
+            // Normalize Name (Remove TS Prefix if present)
+            const tsPrefixRegex = new RegExp(`^${tsPrefix}\\s+`);
+            const normalizedName = rawName.replace(tsPrefixRegex, "").trim();
+
             extractedPositions.push({
                 tempId: `pos-${pid}`,
-                posNr: String(getPsetProp(mPset, "Montageteil Position-Nr.") || e.name || `POS-${pid}`).trim(),
-                name: String(getPsetProp(mPset, "Montageteil Name") || e.name || `Assembly ${pid}`).trim(),
+                expressID: pid,
+                teilsystemNummer: tsPrefix,
+                positionsNummer: finalPosNr,
+                rawPositionsnummer: rawPosNr,
+                name: normalizedName,
                 beschreibung: `Baugruppe (ID: ${pid})`,
                 menge: 1,
-                expressID: pid,
+                einheit: "Stk",
                 ifcType: "IfcElementAssembly",
-                weight: Number(getPsetProp(mPset, "Gewicht") || 0),
-                length: getPsetProp(mPset, "Länge"),
-                width: getPsetProp(mPset, "Breite"),
-                height: getPsetProp(mPset, "Höhe"),
-                ok: getPsetProp(mPset, FIELD_OK),
-                uk: getPsetProp(mPset, FIELD_UK),
-                rawPsets: e.rawPsets
+                gewichtTotal: rawGewicht,
+                groupingMethod: 'REAL_PARENT',
+                ifcMeta: {
+                    psets: e.rawPsets,
+                    dimensions: { 
+                        length: getAnyPsetProp(e.psets, PSET_MONTAGETEIL, "Länge"), 
+                        width: getAnyPsetProp(e.psets, PSET_MONTAGETEIL, "Breite"), 
+                        height: getAnyPsetProp(e.psets, PSET_MONTAGETEIL, "Höhe") 
+                    },
+                    ok: getAnyPsetProp(e.psets, PSET_MONTAGETEIL, FIELD_OK),
+                    uk: getAnyPsetProp(e.psets, PSET_MONTAGETEIL, FIELD_UK)
+                }
             });
         }
+
+        const N = (val: any) => val ? (Math.round(Number(val) * 1000) / 1000).toFixed(3) : "0.000";
 
         for (const [cid, pid] of childToParentMap) {
             const e = elementsMap.get(cid);
             const sB = findPset(e.psets, PSET_STAHLBLECH);
             const sT = findPset(e.psets, PSET_STAHLTRAEGER);
             const weldPset = findPset(e.psets, PSET_WELD);
+            const currentPset = sB || sT || weldPset;
 
-            const uposNr = String(getPsetProp(sB, "Einzelteil POS") || getPsetProp(sT, "Einzelteil POS") || e.tag || `UPOS-${cid}`).trim();
+            const rawUntPos = String(getAnyPsetProp(e.psets, PSET_STAHLBLECH, "Einzelteil POS") || 
+                                     getAnyPsetProp(e.psets, PSET_STAHLTRAEGER, "Einzelteil POS") || e.tag || "").trim();
+            const untMatch = rawUntPos.match(/^([^\/]+)\/(.+)$/);
+            let unterpositionsNummer = untMatch ? untMatch[2].trim() : rawUntPos;
 
-            const existing = extractedUnterpositions.find(u => u.uposNr === uposNr && u.parentExpressID === pid);
-            if (existing) { existing.menge += 1; }
+            const typeCode = String(e.typeCode);
+            const name = String(e.name || "Bauteil").trim().toLowerCase();
+            const mat = String(getAnyPsetProp(e.psets, PSET_STAHLBLECH, "MATERIAL") || getAnyPsetProp(e.psets, PSET_STAHLTRAEGER, "MATERIAL") || "Unbekannt").trim();
+            let unitWgt = Number(getAnyPsetProp(e.psets, PSET_STAHLBLECH, "GEWICHT") || getAnyPsetProp(e.psets, PSET_STAHLTRAEGER, "GEWICHT") || getAnyPsetProp(e.psets, PSET_MONTAGETEIL, "Gewicht") || 0);
+
+            const lenRaw = getAnyPsetProp(e.psets, PSET_STAHLTRAEGER, "LÄNGE") || getAnyPsetProp(e.psets, PSET_STAHLBLECH, "LÄNGE");
+            const widRaw = getAnyPsetProp(e.psets, PSET_STAHLBLECH, "BREITE") || getAnyPsetProp(e.psets, PSET_STAHLTRAEGER, "BREITE");
+            const thkRaw = getAnyPsetProp(e.psets, PSET_STAHLBLECH, "DICKE") || getAnyPsetProp(e.psets, PSET_STAHLTRAEGER, "STEGDICKE");
+
+            const len = N(lenRaw);
+            const wid = N(widRaw);
+            const thk = N(thkRaw);
+
+            if (unitWgt === 0) {
+                const volRaw = getAnyPsetProp(e.psets, PSET_STAHLBLECH, "Volumen") || getAnyPsetProp(e.psets, PSET_STAHLTRAEGER, "Volumen") || getAnyPsetProp(e.psets, PSET_MONTAGETEIL, "Volumen");
+                if (volRaw && Number(volRaw) > 0) {
+                    unitWgt = Number(volRaw) * 7850;
+                } else {
+                    const l = Number(lenRaw || 0); const w = Number(widRaw || 0); const t = Number(thkRaw || 0);
+                    if (l > 0 && w > 0 && t > 0) {
+                        unitWgt = (l / 1000) * (w / 1000) * (t / 1000) * 7850;
+                    }
+                }
+            }
+
+            let hash = "";
+
+            if (typeCode === "156" || e.typeCode === IFCFASTENER || e.typeCode === IFCMECHANICALFASTENER) {
+                // Ignore fastener for untpos generation
+                unterpositionsNummer = "";
+                hash = `FASTENER|${name}|${mat}|${unitWgt.toFixed(2)}`;
+            } 
             else {
-                const mat = String(getPsetProp(sB, "MATERIAL") || getPsetProp(sT, "MATERIAL") || "").trim();
-                const d = [];
-                const prof = getPsetProp(sT, "PROFIL") || getPsetProp(sB, "PROFIL") || getPsetProp(sT, "Profil");
-                const len = getPsetProp(sT, "LÄNGE") || getPsetProp(sB, "LÄNGE") || getPsetProp(sT, "Länge");
-                if (prof) d.push(`P: ${prof}`); if (len) d.push(`L: ${len}`); if (mat) d.push(`M: ${mat}`);
+                hash = `GEO|${typeCode}|${unterpositionsNummer}|${mat}|${len}|${wid}|${thk}`;
+            }
 
-                const currentPset = sB || sT || weldPset;
+            const existing = extractedUnterpositions.find(u => 
+                u.parentExpressID === pid && u.groupHash === hash
+            );
 
+            if (existing) { 
+                existing.menge += 1; 
+                existing.gewichtGesamt = existing.gewichtEinheit * existing.menge;
+            } else {
                 extractedUnterpositions.push({
                     tempId: `upos-${cid}`,
                     parentExpressID: pid,
-                    uposNr,
+                    groupHash: hash,
+                    unterpositionsNummer: unterpositionsNummer,
                     name: String(e.name || "Bauteil").trim(),
-                    beschreibung: d.join(' | '),
                     menge: 1,
                     einheit: "Stk",
                     material: mat,
-                    weight: Number(getPsetProp(sB, "GEWICHT") || getPsetProp(sT, "GEWICHT") || 0),
+                    gewichtEinheit: unitWgt,
+                    gewichtGesamt: unitWgt,
                     expressID: cid,
-                    rawPsets: e.rawPsets,
                     ifcType: weldPset ? "WELD" : "Part",
-                    ok: getPsetProp(currentPset, FIELD_OK),
-                    uk: getPsetProp(currentPset, FIELD_UK),
-                    area: getPsetProp(currentPset, FIELD_AREA),
-                    color: getPsetProp(currentPset, FIELD_COLOR),
-                    remark: getPsetProp(currentPset, FIELD_REMARK),
-                    dimensions: {
-                        length: len,
-                        width: getPsetProp(sB, "BREITE") || getPsetProp(sT, "BREITE"),
-                        height: getPsetProp(sB, "HÖHE") || getPsetProp(sT, "HÖHE")
+                    ifcMeta: {
+                        psets: e.rawPsets,
+                        dimensions: {
+                            length: lenRaw,
+                            width: widRaw
+                        },
+                        ok: getPsetProp(currentPset, FIELD_OK),
+                        uk: getPsetProp(currentPset, FIELD_UK),
                     }
                 });
             }
@@ -368,7 +448,7 @@ export async function POST(req: NextRequest) {
                 const dup = extractedPositions[indices[k]];
                 // Sum quantities and weight
                 primary.menge = (primary.menge || 1) + (dup.menge || 1);
-                primary.weight = (primary.weight || 0) + (dup.weight || 0);
+                primary.gewichtTotal = (primary.gewichtTotal || 0) + (dup.gewichtTotal || 0);
 
                 // Re-map child Unterpositionen from duplicate → primary
                 for (const u of extractedUnterpositions) {
@@ -389,16 +469,16 @@ export async function POST(req: NextRequest) {
         for (const p of consolidatedPositions) {
             if (!extractedUnterpositions.some(u => u.parentExpressID === p.expressID)) {
                 extractedUnterpositions.push({
-                    tempId: `upos-self-${p.expressID}`, parentExpressID: p.expressID, uposNr: p.posNr,
-                    name: p.name, beschreibung: "Self-piece", menge: 1, einheit: "Stk", material: "", weight: 0, expressID: p.expressID
+                    tempId: `upos-self-${p.expressID}`, parentExpressID: p.expressID, unterpositionsNummer: p.positionsNummer, groupHash: `SELF|${p.expressID}`,
+                    name: p.name, beschreibung: "Self-piece", menge: 1, einheit: "Stk", material: "", gewichtEinheit: 0, gewichtGesamt: 0, ifcMeta: p.ifcMeta, expressID: p.expressID
                 });
             }
         }
 
         return NextResponse.json({
             tsInfo,
-            positionen: consolidatedPositions.map(p => ({ ...p, posNummer: p.posNr, einheit: "Stk" })),
-            unterpositionen: extractedUnterpositions.map(u => ({ ...u, posNummer: u.uposNr, gewicht: u.weight })),
+            positionen: consolidatedPositions,
+            unterpositionen: extractedUnterpositions,
             materiale: [],
             warnings,
             debugLogs,

@@ -23,13 +23,13 @@ export function DocumentPreviewModal({ isOpen, onClose, url, title }: DocumentPr
     return (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 md:p-8">
             <div
-                className="absolute inset-0 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-300"
+                className="absolute inset-0 bg-slate-900/80 animate-in fade-in duration-300"
                 onClick={onClose}
             />
 
             <div className="relative bg-white dark:bg-slate-950 border-2 border-border/50 rounded-[2.5rem] shadow-2xl w-full h-full flex flex-col overflow-hidden animate-in zoom-in-95 fade-in duration-300 ring-8 ring-white/5">
                 {/* Header */}
-                <div className="flex items-center justify-between px-8 py-5 border-b border-border/50 shrink-0 bg-white/50 dark:bg-slate-950/50 backdrop-blur-sm">
+                <div className="flex items-center justify-between px-8 py-5 border-b border-border shrink-0 bg-white dark:bg-slate-950">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-orange-500 rounded-2xl shadow-lg ring-4 ring-orange-500/20">
                             <FileText className="h-5 w-5 text-white" />
