@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { deleteFileFromDrive } from '@/lib/services/googleDriveService';
 import { extractDriveFileId } from '@/lib/services/server/deleteHelpers';
-import { requireAuth } from '@/lib/auth/serverSession';
+import { requireAuth } from '@/lib/helpers/requireAuth';
 
 export async function POST(req: Request) {
     try {
