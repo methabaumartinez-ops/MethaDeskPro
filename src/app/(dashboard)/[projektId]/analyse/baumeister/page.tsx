@@ -98,7 +98,7 @@ export default function BaumeisterAnalysePage() {
         const laborCost = calcStundenCost(stunden);
 
         // 2. Tasks distribution
-        const openTasks = tasks.filter(t => t.status !== 'Erledigt' && t.status !== 'Abgerechnet' && t.status !== 'Abgeschlossen').length;
+        const openTasks = tasks.filter(t => (t.status as string) !== 'Erledigt' && (t.status as string) !== 'Abgerechnet' && (t.status as string) !== 'Abgeschlossen').length;
         
         const tasksByStatus = tasks.reduce((acc, t) => {
             const st = t.status || 'Offen';

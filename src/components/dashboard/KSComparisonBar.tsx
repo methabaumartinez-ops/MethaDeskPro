@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { Progress } from "@/components/ui/progress";
 
 interface KSComparisonBarProps {
     ks1Value: number;
@@ -9,6 +8,7 @@ interface KSComparisonBarProps {
     title?: string;
     label1?: string;
     label2?: string;
+    formatValue?: (v: number) => string;
 }
 
 export function KSComparisonBar({ 
@@ -16,7 +16,8 @@ export function KSComparisonBar({
     ks2Value, 
     title = "KS Verteilung",
     label1 = "KS 1 (Baumeister)",
-    label2 = "KS 2 (Produktion)"
+    label2 = "KS 2 (Produktion)",
+    formatValue
 }: KSComparisonBarProps) {
     const total = ks1Value + ks2Value;
     const ks1Percentage = total > 0 ? (ks1Value / total) * 100 : 0;
@@ -43,10 +44,10 @@ export function KSComparisonBar({
             <div className="flex justify-between items-center text-[10px] font-bold mt-1">
                 <div className="flex items-center gap-1.5">
                     <div className="w-2 h-2 rounded-full bg-slate-400" />
-                    <span className="text-slate-600">{label1} ({ks1Percentage.toFixed(0)}%)</span>
+                    <span className="text-slate-600">{label1} ({formatValue ? formatValue(ks1Value) : Math.round(ks1Percentage) + '%'})</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                    <span className="text-slate-600">({ks2Percentage.toFixed(0)}%) {label2}</span>
+                    <span className="text-slate-600">({formatValue ? formatValue(ks2Value) : Math.round(ks2Percentage) + '%'}) {label2}</span>
                     <div className="w-2 h-2 rounded-full bg-orange-500" />
                 </div>
             </div>

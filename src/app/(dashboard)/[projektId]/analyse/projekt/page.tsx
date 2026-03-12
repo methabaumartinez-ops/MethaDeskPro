@@ -137,14 +137,14 @@ export default function ProjektAnalysePage() {
         const ks2ProgressPerc = ks2Ts.length > 0 ? (ks2Verbaut / ks2Ts.length) * 100 : 0;
 
         // 3. Operational Risk (Tasks)
-        const openTasksArray = tasks.filter(t => t.status !== 'Erledigt' && t.status !== 'Abgerechnet' && t.status !== 'fertig');
-        const criticalTasksArray = tasks.filter(t => t.status === 'Blockiert' || t.status === 'Ueberfaellig' || t.status === 'Verzoegert');
+        const openTasksArray = tasks.filter(t => (t.status as string) !== 'Erledigt' && (t.status as string) !== 'Abgerechnet' && (t.status as string) !== 'fertig');
+        const criticalTasksArray = tasks.filter(t => (t.status as string) === 'Blockiert' || (t.status as string) === 'Ueberfaellig' || (t.status as string) === 'Verzoegert');
         
         const openTasksKs1 = openTasksArray.filter(t => getKS(t) === 'KS 1 Baumeister').length;
         const openTasksKs2 = openTasksArray.filter(t => getKS(t) === 'KS 2 Produktion').length;
 
         const tasksByStatus = tasks.reduce((acc, t) => {
-            let st = t.status || 'Offen';
+            let st = (t.status as string) || 'Offen';
             if (st === 'Blockiert' || st === 'Ueberfaellig' || st === 'Verzoegert') st = 'Überfällig';
             acc[st] = (acc[st] || 0) + 1;
             return acc;
@@ -177,7 +177,7 @@ export default function ProjektAnalysePage() {
         
         const costsByAbteilung = targetAbteilungen.map(abt => {
             const abtHrs = stunden.filter(s => s.abteilung === abt);
-            const abtMat = materialkosten.filter(m => m.abteilung === abt);
+            const abtMat = materialkosten.filter(m => (m as any).abteilung === abt);
             return {
                 name: abt,
                 value: calcStundenCost(abtHrs) + calcMatCost(abtMat),
@@ -188,7 +188,7 @@ export default function ProjektAnalysePage() {
         const tasksByAbteilung = targetAbteilungen.map(abt => {
             return {
                 name: abt,
-                value: tasks.filter(t => t.abteilung === abt && t.status !== 'Erledigt' && t.status !== 'Abgerechnet').length,
+                value: tasks.filter(t => (t as any).abteilung === abt && (t.status as string) !== 'Erledigt' && (t.status as string) !== 'Abgerechnet').length,
                 color: '#3b82f6' // blue-500
             };
         }).filter(item => item.value > 0);
@@ -202,8 +202,8 @@ export default function ProjektAnalysePage() {
         }).sort((a, b) => b.totalCost - a.totalCost).slice(0, 5); // Top 5
 
         const topOverdueTasks = [...tasks]
-            .filter(t => !['Erledigt', 'Abgerechnet', 'fertig'].includes(t.status || ''))
-            .sort((a, b) => new Date(a.faelligAm || 0).getTime() - new Date(b.faelligAm || 0).getTime())
+            .filter(t => !['Erledigt', 'Abgerechnet', 'fertig'].includes(t.status as string || ''))
+            .sort((a, b) => new Date((a as any).dueDate || 0).getTime() - new Date((b as any).dueDate || 0).getTime())
             .slice(0, 5);
 
         return {
@@ -449,12 +449,12 @@ export default function ProjektAnalysePage() {
                                     {analytics.topOverdueTasks.map((t, i) => (
                                         <tr key={i} className="hover:bg-slate-50/50 transition-colors group text-sm">
                                             <td className="px-5 py-3 font-bold text-slate-700 flex flex-col gap-1">
-                                                <span>{t.titel}</span>
+                                                <span>{t.title}</span>
                                                 <span className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">{t.status}</span>
                                             </td>
-                                            <td className="px-5 py-3 text-xs text-slate-600">{t.abteilung || '—'}</td>
+                                            <td className="px-5 py-3 text-xs text-slate-600">{(t as any).abteilung || '—'}</td>
                                             <td className="px-5 py-3 font-black text-slate-800 text-right">
-                                                {t.faelligAm ? new Date(t.faelligAm).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—'}
+                                                {(t as any).dueDate ? new Date((t as any).dueDate).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—'}
                                             </td>
                                         </tr>
                                     ))}

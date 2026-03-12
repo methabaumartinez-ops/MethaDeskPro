@@ -1,0 +1,21 @@
+.next/types/app/(dashboard)/[projektId]/analyse/ausfuehrung/page.ts(2,24): error TS2307: Cannot find module '../../../../../../../src/app/(dashboard)/[projektId]/analyse/ausfuehrung/page.js' or its corresponding type declarations.
+.next/types/app/(dashboard)/[projektId]/analyse/ausfuehrung/page.ts(5,29): error TS2307: Cannot find module '../../../../../../../src/app/(dashboard)/[projektId]/analyse/ausfuehrung/page.js' or its corresponding type declarations.
+.next/types/app/(dashboard)/[projektId]/analyse/bauleitung/page.ts(2,24): error TS2307: Cannot find module '../../../../../../../src/app/(dashboard)/[projektId]/analyse/bauleitung/page.js' or its corresponding type declarations.
+.next/types/app/(dashboard)/[projektId]/analyse/bauleitung/page.ts(5,29): error TS2307: Cannot find module '../../../../../../../src/app/(dashboard)/[projektId]/analyse/bauleitung/page.js' or its corresponding type declarations.
+src/app/(dashboard)/[projektId]/analyse/projekt/page.tsx(141,82): error TS2367: This comparison appears to be unintentional because the types '"offen" | "in_arbeit" | "fertig" | "Offen" | "In Arbeit" | "Erledigt" | "Abgerechnet" | "blockiert"' and '"Ueberfaellig"' have no overlap.
+src/app/(dashboard)/[projektId]/analyse/projekt/page.tsx(141,113): error TS2367: This comparison appears to be unintentional because the types '"offen" | "in_arbeit" | "fertig" | "Offen" | "In Arbeit" | "Erledigt" | "Abgerechnet" | "blockiert"' and '"Verzoegert"' have no overlap.
+src/app/(dashboard)/[projektId]/analyse/projekt/page.tsx(148,39): error TS2367: This comparison appears to be unintentional because the types '"offen" | "in_arbeit" | "fertig" | "Offen" | "In Arbeit" | "Erledigt" | "Abgerechnet" | "blockiert"' and '"Ueberfaellig"' have no overlap.
+src/app/(dashboard)/[projektId]/analyse/projekt/page.tsx(148,64): error TS2367: This comparison appears to be unintentional because the types '"offen" | "in_arbeit" | "fertig" | "Offen" | "In Arbeit" | "Erledigt" | "Abgerechnet" | "blockiert"' and '"Verzoegert"' have no overlap.
+src/app/(dashboard)/[projektId]/analyse/projekt/page.tsx(148,85): error TS2322: Type '"Überfällig"' is not assignable to type 'TaskStatus'.
+src/app/(dashboard)/[projektId]/analyse/projekt/page.tsx(180,57): error TS2339: Property 'abteilung' does not exist on type 'TsMaterialkosten'.
+src/app/(dashboard)/[projektId]/analyse/projekt/page.tsx(191,44): error TS2339: Property 'abteilung' does not exist on type 'Task'.
+src/app/(dashboard)/[projektId]/analyse/projekt/page.tsx(206,40): error TS2339: Property 'faelligAm' does not exist on type 'Task'.
+src/app/(dashboard)/[projektId]/analyse/projekt/page.tsx(206,79): error TS2339: Property 'faelligAm' does not exist on type 'Task'.
+src/app/(dashboard)/[projektId]/analyse/projekt/page.tsx(328,29): error TS2322: Type '{ ks1Value: number; ks2Value: number; title: string; formatValue: (v: any) => string; }' is not assignable to type 'IntrinsicAttributes & KSComparisonBarProps'.
+  Property 'formatValue' does not exist on type 'IntrinsicAttributes & KSComparisonBarProps'.
+src/app/(dashboard)/[projektId]/analyse/projekt/page.tsx(334,29): error TS2322: Type '{ ks1Value: number; ks2Value: number; title: string; formatValue: (v: any) => any; }' is not assignable to type 'IntrinsicAttributes & KSComparisonBarProps'.
+  Property 'formatValue' does not exist on type 'IntrinsicAttributes & KSComparisonBarProps'.
+src/app/(dashboard)/[projektId]/analyse/projekt/page.tsx(452,58): error TS2551: Property 'titel' does not exist on type 'Task'. Did you mean 'title'?
+src/app/(dashboard)/[projektId]/analyse/projekt/page.tsx(455,97): error TS2339: Property 'abteilung' does not exist on type 'Task'.
+src/app/(dashboard)/[projektId]/analyse/projekt/page.tsx(457,52): error TS2339: Property 'faelligAm' does not exist on type 'Task'.
+src/app/(dashboard)/[projektId]/analyse/projekt/page.tsx(457,75): error TS2339: Property 'faelligAm' does not exist on type 'Task'.
