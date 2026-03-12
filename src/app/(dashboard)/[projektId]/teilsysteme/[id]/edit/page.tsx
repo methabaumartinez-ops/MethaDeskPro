@@ -23,7 +23,7 @@ import { LagerortService } from '@/lib/services/lagerortService';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { LagerortSelect } from '@/components/shared/LagerortSelect';
 import { Teilsystem, Lieferant, Lagerort } from '@/types';
-import { ArrowLeft, Save, Calendar as CalendarIcon, UploadCloud, FileType, Truck, X, Search, Plus, Paperclip, FileText, Loader2, Trash2, Edit, ClipboardList, Layers } from 'lucide-react';
+import { ArrowLeft, Save, Calendar as CalendarIcon, UploadCloud, FileType, Truck, X, Search, Plus, Paperclip, FileText, Loader2, Trash2, Edit, ClipboardList, Layers, Download } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { ProjectService } from '@/lib/services/projectService';
@@ -112,6 +112,10 @@ export default function TeilsystemEditPage() {
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [ifcExtractData, setIfcExtractData] = useState<IfcExtractResult | null>(null);
     const [extracting, setExtracting] = useState(false);
+    const [selectedFileObj, setSelectedFileObj] = useState<File | null>(null);
+    const [analyzing, setAnalyzing] = useState(false);
+    const [importingAuto, setImportingAuto] = useState(false);
+    const [uploadedIfcUrl, setUploadedIfcUrl] = useState<string | null>(null);
     const [allLieferanten, setAllLieferanten] = useState<Lieferant[]>([]);
     const [subunternehmerList, setSubunternehmerList] = useState<any[]>([]);
     const [lieferantenSearch, setLieferantenSearch] = useState('');
@@ -242,7 +246,99 @@ export default function TeilsystemEditPage() {
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
-            setSelectedFileName(e.target.files[0].name);
+            const file = e.target.files[0];
+            setSelectedFileName(file.name);
+            setSelectedFileObj(file);
+            setUploadedIfcUrl(null); // Reset so re-upload works
+        }
+    };
+
+    const handleAnalyze = async (file: File) => {
+        if (!projektId) return;
+        setAnalyzing(true);
+        try {
+            let url = uploadedIfcUrl;
+            if (!url) {
+                url = await ProjectService.uploadImage(file, projektId, 'ifc');
+                setUploadedIfcUrl(url);
+            }
+
+            const res = await fetch('/api/ifc-metadata', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url, filename: file.name, projektId }),
+            });
+
+            if (res.ok) {
+                const result = await res.json();
+                if (result.metadata) {
+                    const meta = result.metadata;
+                    if (meta.teilsystemNummer) setValue('teilsystemNummer', meta.teilsystemNummer);
+                    if (meta.name) setValue('name', meta.name);
+
+                    if (result.rawMetadata) {
+                        const raw = result.rawMetadata;
+                        const blocks: string[] = [];
+                        if (raw.Gebäude) blocks.push(`Gebäude: ${raw.Gebäude}`);
+                        if (raw.Geschoss) blocks.push(`Geschoss: ${raw.Geschoss}`);
+                        if (raw.Abschnitt) blocks.push(`Abschnitt: ${raw.Abschnitt}`);
+                        if (blocks.length > 0) setValue('beschreibung', blocks.join(' | '));
+                    } else if (meta.beschreibung) {
+                        setValue('beschreibung', meta.beschreibung);
+                    }
+
+                    if (meta.bemerkung) setValue('bemerkung', meta.bemerkung);
+                    toast.success('IFC-Metadaten erfolgreich extrahiert');
+                }
+            }
+        } catch (err) {
+            console.error('Analysis failed', err);
+            toast.error('Analyse fehlgeschlagen');
+        } finally {
+            setAnalyzing(false);
+        }
+    };
+
+    const handleAutoImport = async (e?: React.MouseEvent) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        if (!selectedFileObj || !projektId) return;
+
+        setImportingAuto(true);
+        try {
+            // 1. Upload to Drive if not already uploaded
+            let url = uploadedIfcUrl;
+            if (!url) {
+                url = await ProjectService.uploadImage(selectedFileObj, projektId, 'ifc');
+                setUploadedIfcUrl(url);
+            }
+
+            // 2. Extract positions via ifc-extract
+            setExtracting(true);
+            const extractRes = await fetch('/api/ifc-extract', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    url: url,
+                    teilsystemId: id,
+                    projektId
+                }),
+            });
+
+            if (extractRes.ok) {
+                const extractData = await extractRes.json();
+                setIfcExtractData(extractData);
+            } else {
+                toast.error('IFC Extraktion fehlgeschlagen');
+            }
+        } catch (error: any) {
+            console.error('Auto-import failed', error);
+            toast.error(`Extraktion fehlgeschlagen: ${error.message}`);
+        } finally {
+            setImportingAuto(false);
+            setExtracting(false);
         }
     };
 
@@ -261,7 +357,10 @@ export default function TeilsystemEditPage() {
         e.stopPropagation();
         setDragActive(false);
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            setSelectedFileName(e.dataTransfer.files[0].name);
+            const file = e.dataTransfer.files[0];
+            setSelectedFileName(file.name);
+            setSelectedFileObj(file);
+            setUploadedIfcUrl(null);
             if (fileInputRef.current) {
                 fileInputRef.current.files = e.dataTransfer.files;
             }
@@ -696,9 +795,33 @@ export default function TeilsystemEditPage() {
                                     onChange={handleFileChange}
                                 />
                                 {selectedFileName && (
-                                    <div className="mt-3 p-1.5 bg-green-50 text-green-700 rounded text-[10px] font-bold flex items-center gap-1.5 w-full truncate border border-green-200">
-                                        <FileType className="h-3 w-3 flex-shrink-0" />
-                                        <span className="truncate">{selectedFileName}</span>
+                                    <div className="mt-3 w-full space-y-2">
+                                        <div className="p-1.5 bg-green-50 text-green-700 rounded text-[10px] font-bold flex items-center gap-1.5 w-full truncate border border-green-200">
+                                            <FileType className="h-3 w-3 flex-shrink-0" />
+                                            <span className="truncate">{selectedFileName}</span>
+                                        </div>
+
+                                        {selectedFileObj && selectedFileName.toLowerCase().endsWith('.ifc') && (
+                                            <div className="flex flex-col gap-1.5" onClick={(e) => e.stopPropagation()}>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    className="w-full text-[9px] font-bold h-7"
+                                                    onClick={(e) => { e.stopPropagation(); handleAnalyze(selectedFileObj); }}
+                                                    disabled={analyzing}
+                                                >
+                                                    {analyzing ? 'Analysiere...' : 'Erneut analysieren'}
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    className="w-full bg-orange-600 hover:bg-orange-700 text-white text-[9px] font-black uppercase tracking-wider h-8 shadow-sm"
+                                                    onClick={(e) => handleAutoImport(e)}
+                                                    disabled={importingAuto || extracting || analyzing}
+                                                >
+                                                    {importingAuto ? 'Import...' : 'Extrahieren'}
+                                                </Button>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </CardContent>
@@ -898,18 +1021,24 @@ export default function TeilsystemEditPage() {
 
             </form >
 
-            {/* IFC Extracting overlay */}
-            {
-                extracting && (
-                    <div className="fixed inset-0 z-50 bg-white/80 dark:bg-black/80 flex items-center justify-center">
-                        <div className="bg-white dark:bg-card rounded-2xl shadow-2xl border-2 border-border p-10 flex flex-col items-center gap-4">
-                            <div className="w-14 h-14 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                            <h3 className="text-lg font-black text-foreground">Analysiere IFC...</h3>
-                            <p className="text-sm text-muted-foreground">Positionen, Unterpositionen und Material werden extrahiert</p>
-                        </div>
+            {/* IFC Extracting/Analyzing overlay */}
+            {(extracting || importingAuto || analyzing) && (
+                <div className="fixed inset-0 z-50 bg-white/80 dark:bg-black/80 flex items-center justify-center">
+                    <div className="bg-white dark:bg-card rounded-2xl shadow-2xl border-2 border-border p-10 flex flex-col items-center gap-4">
+                        <div className="w-14 h-14 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                        <h3 className="text-lg font-black text-foreground">
+                            {analyzing ? 'Analysiere Modell...' : (importingAuto ? 'IFC wird extrahiert...' : 'Extrahiere Positionen...')}
+                        </h3>
+                        <p className="text-sm text-muted-foreground text-center">
+                            {analyzing
+                                ? 'Metadaten werden fuer das Formular extrahiert.'
+                                : (importingAuto
+                                    ? 'Daten werden aus dem IFC gelesen.'
+                                    : 'Positionen, Unterpositionen und Material werden extrahiert')}
+                        </p>
                     </div>
-                )
-            }
+                </div>
+            )}
 
             {/* IFC Import Modal */}
             {

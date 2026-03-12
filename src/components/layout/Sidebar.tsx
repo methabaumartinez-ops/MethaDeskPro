@@ -264,7 +264,9 @@ function NavItem({
         return false;
     };
 
-    const isActive = item.href ? pathname === item.href : isAnySubActive(item);
+    const isExactActive = item.href ? pathname === item.href : false;
+    const isInActivePath = isExactActive || isAnySubActive(item);
+    const isActive = isExactActive;
 
     // When entering from project selection, only "Projekte" starts open at depth 0
     const computeInitialOpen = () => {
@@ -275,37 +277,41 @@ function NavItem({
         if (item.title === 'Produktion') {
             return false;
         }
-        return isActive || isAnySubActive(item);
+        return isInActivePath;
     };
 
     const [isOpen, setIsOpen] = React.useState(computeInitialOpen);
 
     // Update expansion if pathname changes to a child
     React.useEffect(() => {
-        if (isAnySubActive(item) && item.title !== 'Produktion') {
+        if (isInActivePath) {
             setIsOpen(true);
         }
     }, [pathname]);
 
     const Icon = item.icon;
 
+    // Orange breadcrumb: item is in the active path but not the exact leaf
+    const isBreadcrumb = isInActivePath && !isExactActive && hasSubItems;
+    // Exact leaf active (solid primary background)
+    const isLeafActive = isExactActive && !hasSubItems;
+
     const content = (
         <div
             className={cn(
-                'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-all group',
-                item.href && !hasSubItems ? 'cursor-pointer' : '',
-                !hasSubItems ? 'cursor-pointer' : '', // If it's a folder, leave cursor default but arrow gets pointer
-                item.href ? 'cursor-pointer' : '', // Link parents get pointer
-                isActive && !hasSubItems
+                'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-all group cursor-pointer',
+                isLeafActive
                     ? 'bg-primary text-primary-foreground shadow-sm'
-                    : 'text-muted-foreground hover:bg-accent hover:text-foreground dark:text-slate-400 dark:hover:text-slate-100',
-                isActive && hasSubItems ? 'text-foreground font-bold' : '',
+                    : isExactActive && hasSubItems
+                        ? 'font-bold'
+                        : 'text-muted-foreground hover:bg-accent hover:text-foreground dark:text-slate-400 dark:hover:text-slate-100',
                 depth > 0 ? 'py-1.5 font-medium' : ''
             )}
+            style={isInActivePath && !isLeafActive ? { color: '#FF6B00' } : undefined}
         >
-            {Icon && <Icon className={cn('shrink-0', depth === 0 ? 'h-4 w-4' : 'h-3.5 w-3.5', isActive && !hasSubItems ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-foreground')} />}
+            {Icon && <Icon className={cn('shrink-0', depth === 0 ? 'h-4 w-4' : 'h-3.5 w-3.5')} style={isInActivePath && !isLeafActive ? { color: '#FF6B00' } : undefined} />}
             {!Icon && depth > 0 && <div className="w-1" />}
-            <span className="flex-1 truncate">{item.title === 'Ausfuehrung' ? 'Ausführung' : item.title}</span>
+            <span className="flex-1 truncate" style={isInActivePath && !isLeafActive ? { color: '#FF6B00' } : undefined}>{item.title === 'Ausfuehrung' ? 'Ausführung' : item.title}</span>
             {hasSubItems && (
                 <button
                     type="button"
@@ -328,10 +334,10 @@ function NavItem({
             {item.href && !hasSubItems ? (
                 <Link href={item.href}>{content}</Link>
             ) : item.href && hasSubItems ? (
-                // Parent that is ALSO a link
+                // Parent that is ALSO a link — click navigates AND opens dropdown
                 <div className="flex flex-col">
                     <div className="flex items-center">
-                        <Link href={item.href} className="flex-1">{content}</Link>
+                        <Link href={item.href} className="flex-1" onClick={() => setIsOpen(true)}>{content}</Link>
                     </div>
                     {isOpen && (
                         <div className={cn("ml-4 mt-1 flex flex-col gap-1 border-l pl-2 animate-in slide-in-from-left-2")}>
@@ -348,9 +354,9 @@ function NavItem({
                     )}
                 </div>
             ) : (
-                // Just a folder
+                // Just a folder — click toggles dropdown
                 <>
-                    {content}
+                    <div onClick={() => setIsOpen(!isOpen)}>{content}</div>
                     {isOpen && (
                         <div className={cn("ml-4 mt-1 flex flex-col gap-1 border-l pl-2 animate-in slide-in-from-left-2", depth === 0 ? "ml-6" : "")}>
                             {item.subItems?.map(sub => (
