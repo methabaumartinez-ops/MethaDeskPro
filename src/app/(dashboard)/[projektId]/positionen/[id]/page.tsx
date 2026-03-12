@@ -17,7 +17,6 @@ import { ItemQrModal } from '@/components/shared/ItemQrModal';
 import { ProjectService } from '@/lib/services/projectService';
 import { LagerortBadge } from '@/components/shared/LagerortBadge';
 import DokumentePanel from '@/components/shared/DokumentePanel';
-import { TrackingTimeline } from '@/components/shared/TrackingTimeline';
 import { useSearchParams, useParams, useRouter, usePathname } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -208,6 +207,38 @@ export default function PositionDetailPage() {
                                     <Badge variant="outline" className="font-bold text-[9px] h-4 bg-orange-50 text-orange-700 border-orange-200">{position.beschichtung}</Badge>
                                 </div>
                             )}
+                            {/* ── METHABAU fields ── */}
+                            {position.teileart && (
+                                <div className="px-4 py-2 flex items-center justify-between hover:bg-orange-50/50 transition-colors">
+                                    <span className="text-[9px] font-bold text-orange-600 uppercase tracking-tight">Teileart</span>
+                                    <Badge variant="outline" className="font-bold text-[9px] h-5 bg-orange-50 text-orange-700 border-orange-200">{position.teileart}</Badge>
+                                </div>
+                            )}
+                            {position.materialProp && (
+                                <div className="px-4 py-2 flex items-center justify-between hover:bg-orange-50/50 transition-colors">
+                                    <span className="text-[9px] font-bold text-orange-600 uppercase tracking-tight">Werkstoff</span>
+                                    <span className="text-xs font-black text-foreground">{position.materialProp}</span>
+                                </div>
+                            )}
+                            {/* IFC Dimensions from ifcMeta.dimensions */}
+                            {(position.ifcMeta as any)?.dimensions?.laenge != null && (
+                                <div className="px-4 py-2 flex items-center justify-between hover:bg-orange-50/50 transition-colors">
+                                    <span className="text-[9px] font-bold text-orange-600 uppercase tracking-tight">Laenge</span>
+                                    <span className="text-xs font-black text-foreground">{(position.ifcMeta as any).dimensions.laenge} mm</span>
+                                </div>
+                            )}
+                            {(position.ifcMeta as any)?.dimensions?.breite != null && (
+                                <div className="px-4 py-2 flex items-center justify-between hover:bg-orange-50/50 transition-colors">
+                                    <span className="text-[9px] font-bold text-orange-600 uppercase tracking-tight">Breite</span>
+                                    <span className="text-xs font-black text-foreground">{(position.ifcMeta as any).dimensions.breite} mm</span>
+                                </div>
+                            )}
+                            {(position.ifcMeta as any)?.dimensions?.hoehe != null && (
+                                <div className="px-4 py-2 flex items-center justify-between hover:bg-orange-50/50 transition-colors">
+                                    <span className="text-[9px] font-bold text-orange-600 uppercase tracking-tight">Hoehe</span>
+                                    <span className="text-xs font-black text-foreground">{(position.ifcMeta as any).dimensions.hoehe} mm</span>
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
@@ -324,9 +355,6 @@ export default function PositionDetailPage() {
                 </CardContent>
             </Card>
 
-            <div className="h-10" />
-
-
             {/* MAIN CONTENT AREA: Details on the Left, Timeline/Docs on the Right */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                 {/* Left Side: Advanced IFC Metadata & IFC Details (5 cols) */}
@@ -339,68 +367,66 @@ export default function PositionDetailPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-4 flex-1">
-                            <div className="space-y-4">
-                                {(position.ifcMeta as any)?.ok || (position.ifcMeta as any)?.uk ? (
-                                    <div className="flex gap-4 pb-2 border-b border-border">
-                                        <div className="flex flex-col flex-1">
-                                            <span className="text-[9px] font-black text-orange-600 uppercase">Höhenkote OK</span>
-                                            <span className="text-sm font-black text-foreground">{(position.ifcMeta as any).ok || '—'}</span>
-                                        </div>
-                                        <div className="flex flex-col flex-1 text-right">
-                                            <span className="text-[9px] font-black text-orange-600 uppercase">Höhenkote UK</span>
-                                            <span className="text-sm font-black text-foreground">{(position.ifcMeta as any).uk || '—'}</span>
-                                        </div>
+                            <div className="divide-y divide-border">
+                                {/* Gewicht */}
+                                {position.gewicht != null && (
+                                    <div className="py-2 flex items-center justify-between">
+                                        <span className="text-[9px] font-black text-orange-600 uppercase tracking-tight">Gewicht</span>
+                                        <span className="text-xs font-black text-foreground">{position.gewicht} kg</span>
                                     </div>
-                                ) : null}
-
-                                {(position.ifcMeta as any)?.dimensions ? (
-                                    <div className="grid grid-cols-3 gap-2 pb-2 border-b border-border">
-                                        <div className="flex flex-col">
-                                            <span className="text-[9px] font-black text-orange-600 uppercase">Länge</span>
-                                            <span className="text-xs font-bold text-foreground">{(position.ifcMeta as any).dimensions.length || '—'}</span>
-                                        </div>
-                                        <div className="flex flex-col text-center">
-                                            <span className="text-[9px] font-black text-orange-600 uppercase">Breite</span>
-                                            <span className="text-xs font-bold text-foreground">{(position.ifcMeta as any).dimensions.width || '—'}</span>
-                                        </div>
-                                        <div className="flex flex-col text-right">
-                                            <span className="text-[9px] font-black text-orange-600 uppercase">Höhe/Dicke</span>
-                                            <span className="text-xs font-bold text-foreground">{(position.ifcMeta as any).dimensions.height || '—'}</span>
-                                        </div>
+                                )}
+                                {/* Werkstoff */}
+                                {position.materialProp && (
+                                    <div className="py-2 flex items-center justify-between">
+                                        <span className="text-[9px] font-black text-orange-600 uppercase tracking-tight">Werkstoff</span>
+                                        <span className="text-xs font-black text-foreground">{position.materialProp}</span>
                                     </div>
-                                ) : null}
-
-                                {(position.ifcMeta as any)?.area || (position.ifcMeta as any)?.color ? (
-                                    <div className="flex gap-4 pb-2 border-b border-border">
-                                        {(position.ifcMeta as any).area && (
-                                            <div className="flex flex-col flex-1">
-                                                <span className="text-[9px] font-black text-orange-600 uppercase">Oberfläche</span>
-                                                <span className="text-xs font-bold text-foreground">{(position.ifcMeta as any).area} m²</span>
-                                            </div>
-                                        )}
-                                        {(position.ifcMeta as any).color && (
-                                            <div className="flex flex-col flex-1 text-right">
-                                                <span className="text-[9px] font-black text-orange-600 uppercase">Farbe</span>
-                                                <div className="flex items-center gap-1.5 justify-end">
-                                                    <div className="h-2.5 w-2.5 rounded-full border border-border" style={{ backgroundColor: (position.ifcMeta as any).color }} />
-                                                    <span className="text-xs font-bold text-foreground">{(position.ifcMeta as any).color}</span>
-                                                </div>
-                                            </div>
-                                        )}
+                                )}
+                                {/* Teileart */}
+                                {position.teileart && (
+                                    <div className="py-2 flex items-center justify-between">
+                                        <span className="text-[9px] font-black text-orange-600 uppercase tracking-tight">Teileart</span>
+                                        <Badge variant="outline" className="font-bold text-[9px] h-5 bg-orange-50 text-orange-700 border-orange-200">{position.teileart}</Badge>
                                     </div>
-                                ) : null}
-
-                                <div>
-                                    <span className="text-[9px] font-black text-muted-foreground uppercase block mb-1">METHABAU Info</span>
-                                    <div className="space-y-1.5">
-                                        {position.beschreibung?.split(' | ').map((line, idx) => (
-                                            <div key={idx} className="flex gap-2 items-baseline">
-                                                <div className="h-1 w-1 rounded-full bg-orange-400 shrink-0 mt-1.5" />
-                                                <span className="text-[10px] font-medium text-foreground leading-tight">{line}</span>
-                                            </div>
-                                        ))}
+                                )}
+                                {/* IFC-Masse aus METHABAU (IFCPROPERTYSINGLEVALUE) */}
+                                {(position.ifcMeta as any)?.dimensions?.laenge != null && (
+                                    <div className="py-2 flex items-center justify-between">
+                                        <span className="text-[9px] font-black text-orange-600 uppercase tracking-tight">Laenge</span>
+                                        <span className="text-xs font-black text-foreground">{(position.ifcMeta as any).dimensions.laenge} mm</span>
                                     </div>
-                                </div>
+                                )}
+                                {(position.ifcMeta as any)?.dimensions?.breite != null && (
+                                    <div className="py-2 flex items-center justify-between">
+                                        <span className="text-[9px] font-black text-orange-600 uppercase tracking-tight">Breite</span>
+                                        <span className="text-xs font-black text-foreground">{(position.ifcMeta as any).dimensions.breite} mm</span>
+                                    </div>
+                                )}
+                                {(position.ifcMeta as any)?.dimensions?.hoehe != null && (
+                                    <div className="py-2 flex items-center justify-between">
+                                        <span className="text-[9px] font-black text-orange-600 uppercase tracking-tight">Hoehe</span>
+                                        <span className="text-xs font-black text-foreground">{(position.ifcMeta as any).dimensions.hoehe} mm</span>
+                                    </div>
+                                )}
+                                {(position.ifcMeta as any)?.dimensions?.blechdicke != null && (
+                                    <div className="py-2 flex items-center justify-between">
+                                        <span className="text-[9px] font-black text-orange-600 uppercase tracking-tight">Blechdicke</span>
+                                        <span className="text-xs font-black text-foreground">{(position.ifcMeta as any).dimensions.blechdicke} mm</span>
+                                    </div>
+                                )}
+                                {(position.ifcMeta as any)?.dimensions?.oberflaecheGesamt != null && (
+                                    <div className="py-2 flex items-center justify-between">
+                                        <span className="text-[9px] font-black text-orange-600 uppercase tracking-tight">Oberflaeche ges.</span>
+                                        <span className="text-xs font-black text-foreground">{(position.ifcMeta as any).dimensions.oberflaecheGesamt}</span>
+                                    </div>
+                                )}
+                                {/* Fallback: No IFC data at all */}
+                                {!position.gewicht && !position.materialProp && !position.teileart &&
+                                    !(position.ifcMeta as any)?.dimensions && (
+                                    <div className="py-8 text-center text-[10px] text-muted-foreground/60 italic">
+                                        Keine IFC-Daten vorhanden
+                                    </div>
+                                )}
                             </div>
                         </CardContent>
                     </Card>
@@ -408,12 +434,6 @@ export default function PositionDetailPage() {
 
                 {/* Right Side: Timeline and Documents (7 cols) */}
                 <div className="lg:col-span-7 flex flex-col gap-6">
-                    <TrackingTimeline
-                        entityId={id}
-                        projektId={projektId}
-                        entityType="position"
-                    />
-
                     <Card className="shadow-sm border-2 border-border overflow-hidden bg-white dark:bg-card">
                         <CardHeader className="py-2.5 px-4 bg-muted border-b border-border">
                             <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">

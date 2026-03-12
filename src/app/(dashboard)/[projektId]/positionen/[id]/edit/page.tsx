@@ -40,6 +40,7 @@ const PLAN_STATUS: { value: PlanStatus; label: string }[] = [
 ];
 
 const positionSchema = z.object({
+    posNummer: z.string().optional(),
     name: z.string().min(3, 'Bezeichnung muss mindestens 3 Zeichen lang sein'),
     menge: z.coerce.number().min(0.01),
     einheit: z.string().min(1, 'Einheit ist erforderlich'),
@@ -100,6 +101,7 @@ export default function PositionEditPage() {
                 if (data) {
                     setPosition(data);
                     reset({
+                        posNummer: data.posNummer || '',
                         name: data.name,
                         menge: data.menge,
                         einheit: data.einheit,
@@ -311,7 +313,10 @@ export default function PositionEditPage() {
                         <CardContent className="p-6">
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
                                 {/* Row 1: Designation - full width */}
-                                <div className="md:col-span-12">
+                                <div className="md:col-span-3">
+                                    <Input label="Pos. Nummer" placeholder="z.B. P-001" {...register('posNummer')} error={errors.posNummer?.message} className="font-bold" />
+                                </div>
+                                <div className="md:col-span-9">
                                     <Input label="Bezeichnung *" {...register('name')} error={errors.name?.message} className="font-bold" />
                                 </div>
 

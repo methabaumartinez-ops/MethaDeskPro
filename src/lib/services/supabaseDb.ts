@@ -60,6 +60,36 @@ export class SupabaseDatabaseService {
             );
             CREATE INDEX IF NOT EXISTS idx_tmh_worker ON team_membership_history("workerId");
             CREATE INDEX IF NOT EXISTS idx_tmh_team ON team_membership_history("teamId");`,
+        lagerorte: `
+            CREATE TABLE IF NOT EXISTS public.lagerorte (
+                id TEXT PRIMARY KEY,
+                "projektId" TEXT NOT NULL,
+                bezeichnung TEXT NOT NULL,
+                beschreibung TEXT,
+                "qrCode" TEXT,
+                bereich TEXT,
+                "planUrl" TEXT,
+                "createdAt" TIMESTAMPTZ DEFAULT now(),
+                "updatedAt" TIMESTAMPTZ DEFAULT now()
+            );
+            CREATE INDEX IF NOT EXISTS idx_lagerorte_projektid ON public.lagerorte("projektId");`,
+        lagerbewegungen: `
+            CREATE TABLE IF NOT EXISTS public.lagerbewegungen (
+                id TEXT PRIMARY KEY,
+                "entityType" TEXT NOT NULL,
+                "entityId" TEXT NOT NULL,
+                "vonLagerortId" TEXT,
+                "nachLagerortId" TEXT NOT NULL,
+                typ TEXT NOT NULL,
+                "durchgefuehrtVon" TEXT,
+                "durchgefuehrtVonName" TEXT,
+                zeitpunkt TIMESTAMPTZ DEFAULT now(),
+                bemerkung TEXT,
+                "projektId" TEXT,
+                "createdAt" TIMESTAMPTZ DEFAULT now()
+            );
+            CREATE INDEX IF NOT EXISTS idx_lagerbewegungen_entityid ON public.lagerbewegungen("entityId");
+            CREATE INDEX IF NOT EXISTS idx_lagerbewegungen_projektid ON public.lagerbewegungen("projektId");`,
     };
 
     /**

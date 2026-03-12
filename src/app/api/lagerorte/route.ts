@@ -16,8 +16,9 @@ export async function GET(request: NextRequest) {
         const lagerorte = await DatabaseService.list<Lagerort>('lagerorte', filter);
         return NextResponse.json(lagerorte);
     } catch (error: any) {
-        console.error('[API lagerorte] GET error:', error);
-        return NextResponse.json({ error: 'Fehler beim Laden der Lagerorte' }, { status: 500 });
+        // If table is missing or DB unreachable, return empty list instead of crashing the page
+        console.warn('[API lagerorte] GET warning (returning []):', error?.message ?? error);
+        return NextResponse.json([]);
     }
 }
 

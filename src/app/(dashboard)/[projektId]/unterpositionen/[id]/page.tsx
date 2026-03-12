@@ -212,6 +212,50 @@ export default function UnterpositionDetailPage() {
                                 <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight">IFC Typ</span>
                                 <span className="text-xs font-bold text-foreground">{unterposition.ifcType || 'n/a'}</span>
                             </div>
+                            {/* ── METHABAU fields ── */}
+                            {unterposition.teileart && (
+                                <div className="px-4 py-2 flex items-center justify-between hover:bg-orange-50/50 transition-colors">
+                                    <span className="text-[9px] font-bold text-orange-600 uppercase tracking-tight">Teileart</span>
+                                    <Badge variant="outline" className="font-bold text-[9px] h-5 bg-orange-50 text-orange-700 border-orange-200">{unterposition.teileart}</Badge>
+                                </div>
+                            )}
+                            {unterposition.materialProp && (
+                                <div className="px-4 py-2 flex items-center justify-between hover:bg-orange-50/50 transition-colors">
+                                    <span className="text-[9px] font-bold text-orange-600 uppercase tracking-tight">Werkstoff</span>
+                                    <span className="text-xs font-black text-foreground">{unterposition.materialProp}</span>
+                                </div>
+                            )}
+                            {/* Dimensions from JSONB column */}
+                            {unterposition.dimensions?.laenge != null && (
+                                <div className="px-4 py-2 flex items-center justify-between hover:bg-orange-50/50 transition-colors">
+                                    <span className="text-[9px] font-bold text-orange-600 uppercase tracking-tight">Laenge</span>
+                                    <span className="text-xs font-black text-foreground">{unterposition.dimensions.laenge} mm</span>
+                                </div>
+                            )}
+                            {unterposition.dimensions?.breite != null && (
+                                <div className="px-4 py-2 flex items-center justify-between hover:bg-orange-50/50 transition-colors">
+                                    <span className="text-[9px] font-bold text-orange-600 uppercase tracking-tight">Breite</span>
+                                    <span className="text-xs font-black text-foreground">{unterposition.dimensions.breite} mm</span>
+                                </div>
+                            )}
+                            {unterposition.dimensions?.hoehe != null && (
+                                <div className="px-4 py-2 flex items-center justify-between hover:bg-orange-50/50 transition-colors">
+                                    <span className="text-[9px] font-bold text-orange-600 uppercase tracking-tight">Hoehe</span>
+                                    <span className="text-xs font-black text-foreground">{unterposition.dimensions.hoehe} mm</span>
+                                </div>
+                            )}
+                            {unterposition.dimensions?.blechdicke != null && (
+                                <div className="px-4 py-2 flex items-center justify-between hover:bg-orange-50/50 transition-colors">
+                                    <span className="text-[9px] font-bold text-orange-600 uppercase tracking-tight">Blechdicke</span>
+                                    <span className="text-xs font-black text-foreground">{unterposition.dimensions.blechdicke} mm</span>
+                                </div>
+                            )}
+                            {unterposition.dimensions?.oberflaecheGesamt != null && (
+                                <div className="px-4 py-2 flex items-center justify-between hover:bg-orange-50/50 transition-colors">
+                                    <span className="text-[9px] font-bold text-orange-600 uppercase tracking-tight">Oberflaeche gesamt</span>
+                                    <span className="text-xs font-black text-foreground">{unterposition.dimensions.oberflaecheGesamt} m²</span>
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                 </Card>

@@ -252,34 +252,30 @@ export default function FuhrparkPage() {
                             {/* ORANGE CATEGORY MENU - ENSURING VISIBILITY */}
                             <div className="bg-[#FF6B35]/5 p-1 rounded-2xl border-2 border-[#FF6B35]/20 h-14 flex items-center">
                                 <div className="flex gap-2 overflow-x-auto w-full px-2 scrollbar-hide py-1">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
+                                    <button
                                         className={cn(
-                                            "rounded-xl whitespace-nowrap text-xs font-black transition-all h-9 px-5",
+                                            "inline-flex items-center justify-center whitespace-nowrap rounded-xl text-[11px] font-black transition-all h-8 px-4 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
                                             selectedKategorie === 'Alle'
-                                                ? "bg-[#FF6B35] text-white shadow-md shadow-[#FF6B35]/20 hover:bg-[#FF6B35]"
-                                                : "text-[#FF6B35] hover:bg-[#FF6B35]/10"
+                                                ? "bg-orange-500 text-white shadow-md shadow-orange-500/20 hover:bg-orange-600 border-transparent"
+                                                : "bg-orange-50 text-orange-500 border border-orange-200 hover:bg-orange-100"
                                         )}
                                         onClick={() => setSelectedKategorie('Alle')}
                                     >
                                         Alle
-                                    </Button>
+                                    </button>
                                     {Object.entries(KATEGORIE_LABELS).map(([key, label]) => (
-                                        <Button
+                                        <button
                                             key={key}
-                                            variant="ghost"
-                                            size="sm"
                                             className={cn(
-                                                "rounded-xl whitespace-nowrap text-xs font-black transition-all h-9 px-5",
+                                                "inline-flex items-center justify-center whitespace-nowrap rounded-xl text-[11px] font-black transition-all h-8 px-4 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
                                                 selectedKategorie === key
-                                                    ? "bg-[#FF6B35] text-white shadow-md shadow-[#FF6B35]/20 hover:bg-[#FF6B35]"
-                                                    : "text-[#FF6B35] hover:bg-[#FF6B35]/10"
+                                                    ? "bg-orange-500 text-white shadow-md shadow-orange-500/20 hover:bg-orange-600 border-transparent"
+                                                    : "bg-orange-50 text-orange-500 border border-orange-200 hover:bg-orange-100"
                                             )}
                                             onClick={() => setSelectedKategorie(key)}
                                         >
                                             {label}
-                                        </Button>
+                                        </button>
                                     ))}
                                 </div>
                             </div>

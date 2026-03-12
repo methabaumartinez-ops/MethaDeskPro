@@ -1,552 +1,361 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { StatusBadge } from '@/components/shared/StatusBadge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Check, X, Package, Layers, FileText, ListTodo, Loader2, FileStack, ChevronRight } from 'lucide-react';
-import { PositionService } from '@/lib/services/positionService';
-import { SubPositionService } from '@/lib/services/subPositionService';
-import { cn } from '@/lib/utils';
-
-// ── Types ────────────────────────────────────────────────────────────────────
-type ExtractedPosition = {
-    tempId: string;
-    teilsystemNummer: string;
-    positionsNummer: string;
-    name: string;
-    beschreibung: string;
-    menge: number;
-    einheit: string;
-    expressID: number;
-    ifcType: string;
-    gewichtTotal?: number;
-    length?: string;
-    width?: string;
-    height?: string;
-    rawPsets?: any;
-    ok?: string | number | null;
-    uk?: string | number | null;
-};
-
-type ExtractedUnterposition = {
-    tempId: string;
-    parentExpressID: number;
-    unterpositionsNummer: string;
-    groupHash: string;
-    name: string;
-    beschreibung: string;
-    menge: number;
-    einheit: string;
-    material: string;
-    gewichtEinheit: number;
-    gewichtGesamt: number;
-    dimensions?: any;
-    rawPsets?: any;
-    ok?: string | number | null;
-    uk?: string | number | null;
-    area?: string | number | null;
-    color?: string | number | null;
-    remark?: string | number | null;
-};
-
-type ExtractedMaterial = {
-    tempId: string;
-    name: string;
-    hersteller: string;
-    menge: number;
-    einheit: string;
-};
-
-export type IfcExtractResult = {
-    tsInfo?: {
-        nummer?: string;
-        name?: string;
-        building?: string;
-        section?: string;
-        floor?: string;
-    };
-    positionen: any[];
-    unterpositionen: any[];
-    materiale: any[];
-    warnings?: string[];
-    debugLogs?: string[];
-    summary: { totalPositionen: number; totalUnterpositionen: number; totalMateriale: number };
-};
-
-export type IfcPreviewResult = {
-    positionen: any[];
-    unterpositionen: any[];
-    materiale: any[];
-    tsInfo?: IfcExtractResult['tsInfo'];
-};
+import { X, Upload, Loader2, Check, AlertTriangle, FileArchive, Search } from 'lucide-react';
+import { toast } from '@/lib/toast';
 
 type Props = {
-    data: IfcExtractResult;
-    teilsystemId: string;
     projektId: string;
     onClose: () => void;
-    onImported: () => void;
-    /** When true, confirm button passes data back instead of saving to DB */
+    onImported?: () => void;
+    // Retrocompatibility props
+    data?: any;
+    teilsystemId?: string;
     previewMode?: boolean;
-    onPreviewConfirm?: (result: IfcPreviewResult) => void;
+    onPreviewConfirm?: (result: any) => void;
 };
 
-type Tab = 'positionen' | 'unterpositionen' | 'material';
+// Exported for backward compatibility with erfassen/page.tsx
+export type IfcExtractResult = any;
+export type IfcPreviewResult = any;
 
-// ── Helper: editable cell ────────────────────────────────────────────────────
-function EditCell({ value, onChange, type = 'text' }: { value: string | number; onChange: (v: string) => void; type?: string }) {
-    return (
-        <input
-            type={type}
-            className="w-full bg-transparent border-b border-border focus:border-primary outline-none text-xs font-semibold py-0.5 px-1 text-slate-900"
-            value={value}
-            onChange={e => onChange(e.target.value)}
-        />
-    );
-}
+type ParsedHierarchy = {
+    teilsystem: any;
+    positionen: any[];
+    unterpositionen: any[];
+};
 
-// ── Main Component ────────────────────────────────────────────────────────────
-export function IfcImportModal({ data, teilsystemId, projektId, onClose, onImported, previewMode, onPreviewConfirm }: Props) {
-    const [activeTab, setActiveTab] = useState<Tab>('positionen');
-    const [importing, setImporting] = useState(false);
-    const [done, setDone] = useState(false);
-    const [importLog, setImportLog] = useState<string[]>([]);
-    const [showRawJson, setShowRawJson] = useState<any>(null);
+export function IfcImportModal({ projektId, onClose, onImported }: Props) {
+    const router = useRouter();
+    const [step, setStep] = useState<1 | 2>(1);
+    const [file, setFile] = useState<File | null>(null);
+    const [status, setStatus] = useState<'idle' | 'analyzing' | 'saving' | 'success' | 'error'>('idle');
+    const [errorMsg, setErrorMsg] = useState('');
 
-    // Local mutable copies
-    const [positions, setPositions] = useState((data.positionen || []).map(p => ({ ...p, selected: true })));
-    const [unterpos, setUnterpos] = useState((data.unterpositionen || []).map(u => ({ ...u, selected: true })));
-    const [materials, setMaterials] = useState((data.materiale || []).map(m => ({ ...m, selected: true })));
+    // State for Step 2: The parsed Hierarchy
+    const [hierarchy, setHierarchy] = useState<ParsedHierarchy | null>(null);
+    
+    // Selection state for checkboxes. Stores signatures of explicitly *deselected* items.
+    // We assume everything is selected by default initially.
+    const [deselectedNodes, setDeselectedNodes] = useState<Set<string>>(new Set());
 
-    const selectedPos = positions.filter(p => p.selected);
-    const selectedUPos = unterpos.filter(u => u.selected);
-    const selectedMat = materials.filter(m => m.selected);
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            setFile(e.target.files[0]);
+            setStatus('idle');
+            setErrorMsg('');
+        }
+    };
 
-    // ── Import logic ──────────────────────────────────────────────────────────
-    const handleImport = async () => {
-        setImporting(true);
-        setImportLog(["Iniciando importación masiva..."]);
+    /**
+     * STEP 1: Upload and Analyze (Parse JSON only)
+     */
+    const handleAnalyze = async () => {
+        if (!file) return;
+        setStatus('analyzing');
+        
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('projektId', projektId);
+
+            const res = await fetch('/api/ifc-analyze-hierarchy', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!res.ok) {
+                const text = await res.text();
+                let errorMessage = 'Verbindungsfehler oder Serverfehler (Kein JSON empfangen).';
+                try {
+                    const errorJson = JSON.parse(text);
+                    errorMessage = errorJson.error || errorMessage;
+                } catch {
+                    console.error('HTML Error Response:', text.substring(0, 500));
+                }
+                throw new Error(errorMessage);
+            }
+
+            const bodyResponse = await res.json();
+
+            setHierarchy(bodyResponse.data);
+            setStatus('idle');
+            setStep(2); // Move to Step 2!
+        } catch (e: any) {
+            setStatus('error');
+            setErrorMsg(e.message);
+        }
+    };
+
+    /**
+     * STEP 2: Review Checkboxes logic
+     */
+    const togglePosition = (posSignature: string, isCurrentlySelected: boolean) => {
+        const newDeselected = new Set(deselectedNodes);
+        
+        if (isCurrentlySelected) {
+            // Deselecting Parent: Add parent and all children
+            newDeselected.add(posSignature);
+            hierarchy?.unterpositionen.forEach(unt => {
+                if (unt.signature.startsWith(posSignature + '|')) {
+                    newDeselected.add(unt.signature);
+                }
+            });
+        } else {
+            // Selecting Parent: Remove parent and all children (reset them to true)
+            newDeselected.delete(posSignature);
+            hierarchy?.unterpositionen.forEach(unt => {
+                if (unt.signature.startsWith(posSignature + '|')) {
+                    newDeselected.delete(unt.signature);
+                }
+            });
+        }
+        
+        setDeselectedNodes(newDeselected);
+    };
+
+    const toggleUnterposition = (untSignature: string, isCurrentlySelected: boolean) => {
+        const newDeselected = new Set(deselectedNodes);
+        if (isCurrentlySelected) {
+            newDeselected.add(untSignature);
+        } else {
+            newDeselected.delete(untSignature);
+        }
+        setDeselectedNodes(newDeselected);
+    };
+
+    /**
+     * STEP 3: Final Submission (Save to DB)
+     */
+    const handleFinalImport = async () => {
+        if (!hierarchy) return;
+        setStatus('saving');
+
+        // Filter arrays based on selected true
+        const filteredPositionen = hierarchy.positionen.filter(p => !deselectedNodes.has(p.signature));
+        const filteredUnterpositionen = hierarchy.unterpositionen.filter(u => !deselectedNodes.has(u.signature));
+
+        const payload = {
+            teilsystem: hierarchy.teilsystem,
+            positionen: filteredPositionen,
+            unterpositionen: filteredUnterpositionen
+        };
 
         try {
-            // Enlazar subposiciones a su padre explícitamente mediante parentTempId en el JSON
-            const mappedSubPositions = selectedUPos.map(u => ({
-                ...u,
-                parentTempId: selectedPos.find(p => p.expressID === u.parentExpressID)?.tempId || null
-            })).filter(u => u.parentTempId !== null);
-
-            const payload = {
-                projektId,
-                positionen: selectedPos,
-                unterpositionen: mappedSubPositions
-            };
-
-            const res = await fetch('/api/ifc-bulk-import', {
+            const res = await fetch('/api/ifc-save-hierarchy', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
 
-            const data = await res.json();
-            
-            if (!res.ok) throw new Error(data.error || 'Error del servidor en importación masiva');
+            if (!res.ok) {
+                const text = await res.text();
+                let errorMessage = 'Speichern fehlgeschlagen (Kein JSON empfangen).';
+                try {
+                    const errorJson = JSON.parse(text);
+                    errorMessage = errorJson.error || errorMessage;
+                } catch {
+                    console.error('HTML Error Response:', text.substring(0, 500));
+                }
+                throw new Error(errorMessage);
+            }
 
-            setImportLog(data.log || ['Importación completada exitosamente']);
-            setDone(true);
+            const data = await res.json();
+
+            setStatus('success');
+            router.refresh();
+            if (onImported) onImported();
+            
+            setTimeout(() => {
+                onClose();
+            }, 1000);
         } catch (e: any) {
-            setImportLog([`❌ Kritischer Fehler: ${e.message}`]);
-            setDone(true);
-        } finally {
-            setImporting(false);
+            setStatus('error');
+            setErrorMsg(e.message);
         }
     };
 
-    // ── Done Screen ───────────────────────────────────────────────────────────
-    if (done) {
-        const errors = importLog.filter(l => l.startsWith('❌'));
-        return (
-            <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-                <div className="bg-white dark:bg-card rounded-2xl shadow-2xl border-2 border-border w-full max-w-lg p-8 flex flex-col items-center gap-4">
-                    <div className={`text-5xl ${errors.length === 0 ? 'text-green-500' : 'text-orange-500'}`}>
-                        {errors.length === 0 ? '✅' : '⚠️'}
-                    </div>
-                    <h2 className="text-xl font-black text-foreground">Import abgeschlossen</h2>
-                    <div className="w-full bg-muted/50 rounded-xl p-4 max-h-64 overflow-y-auto space-y-1">
-                        {importLog.map((l, i) => (
-                            <p key={i} className="text-xs font-mono">{l}</p>
-                        ))}
-                    </div>
-                    <Button
-                        className="bg-orange-500 hover:bg-orange-600 text-white font-black rounded-full px-8"
-                        onClick={() => { onImported(); onClose(); }}
-                    >
-                        Fertig
-                    </Button>
-                </div>
-            </div>
-        );
-    }
-
-    // ── Main Modal ────────────────────────────────────────────────────────────
-    const tabs: { id: Tab; label: string; icon: React.ReactNode; count: number; selected: number }[] = [
-        { id: 'positionen', label: 'Positionen', icon: <Layers className="h-4 w-4" />, count: positions.length, selected: selectedPos.length },
-        { id: 'unterpositionen', label: 'Unterpos.', icon: <FileStack className="h-4 w-4" />, count: unterpos.length, selected: selectedUPos.length },
-        { id: 'material', label: 'Material', icon: <Package className="h-4 w-4" />, count: materials.length, selected: selectedMat.length },
-    ];
-
     return (
-        <div className="fixed inset-0 z-[150] bg-slate-900/60 dark:bg-black/80 flex items-center justify-center p-4 animate-in fade-in duration-300">
-            <div className="relative bg-white dark:bg-card w-full max-w-5xl h-[85vh] rounded-[2.5rem] shadow-2xl border-2 border-primary/20 flex flex-col overflow-hidden animate-in zoom-in slide-in-from-bottom-8 duration-500">
-
-                {/* Header */}
-                <div className="flex items-center justify-between px-10 py-6 border-b border-border bg-muted/30">
-                    <div className="flex-1">
-                        <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-1 block">IFC ANALYSE</span>
-                        <h2 className="text-2xl font-black text-foreground tracking-tight">Extrahierte Daten importieren</h2>
-                        {data.tsInfo && (
-                            <div className="mt-2 flex flex-wrap gap-2">
-                                {data.tsInfo.nummer && <Badge variant="info" className="text-[10px] font-black rounded-full px-3">SYSTEM: {data.tsInfo.nummer}</Badge>}
-                                {data.tsInfo.building && <Badge variant="outline" className="text-[10px] font-black border-primary/30 text-primary rounded-full px-3">GEBÄUDE: {data.tsInfo.building}</Badge>}
-                                {data.tsInfo.floor && <Badge variant="outline" className="text-[10px] font-black rounded-full px-3">GESCHOSS: {data.tsInfo.floor}</Badge>}
-                                {data.tsInfo.section && <Badge variant="outline" className="text-[10px] font-black rounded-full px-3">ABSCHNITT: {data.tsInfo.section}</Badge>}
-                            </div>
-                        )}
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-400 hover:text-slate-600"
-                    >
+        <div className="fixed inset-0 z-[150] bg-black/60 flex items-center justify-center p-4">
+            <div className="bg-white rounded-none shadow-2xl border-2 border-orange-500 w-full max-w-4xl flex flex-col max-h-[85vh] overflow-hidden">
+                
+                {/* Header: White Background, Black text, Orange Border */}
+                <div className="flex items-center justify-between px-6 py-4 border-b-2 border-orange-500 bg-white">
+                    <h2 className="text-xl font-bold text-black uppercase tracking-widest">
+                        {step === 1 ? 'IFC Import (Schritt 1: Modell hochladen)' : 'IFC Import (Schritt 2: Daten überprüfen)'}
+                    </h2>
+                    <button onClick={onClose} disabled={status === 'analyzing' || status === 'saving'} className="p-2 text-black hover:bg-orange-100 transition-colors cursor-pointer">
                         <X className="h-6 w-6" />
                     </button>
                 </div>
+                
+                {/* Main Body */}
+                <div className="flex-1 overflow-hidden bg-white flex flex-col">
+                    {/* Status Modals Overlaying step content */}
+                    {status === 'success' && (
+                        <div className="flex-1 flex flex-col items-center justify-center py-12">
+                            <Check className="h-20 w-20 text-orange-500 mb-6" />
+                            <p className="text-2xl font-bold text-black uppercase">Import erfolgreich!</p>
+                            <p className="text-sm font-bold text-black mt-2">Die Seite wird aktualisiert...</p>
+                        </div>
+                    )}
 
-                {/* Summary pills */}
-                <div className="flex gap-4 px-10 py-4 border-b border-border bg-background/50">
-                    {tabs.map(t => (
-                        <button
-                            key={t.id}
-                            onClick={() => setActiveTab(t.id)}
-                            className={cn(
-                                "flex items-center gap-2.5 px-6 py-2.5 rounded-2xl text-xs font-black transition-all",
-                                activeTab === t.id
-                                    ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-105'
-                                    : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
-                            )}
-                        >
-                            {t.icon}
-                            <span className="uppercase tracking-widest">{t.label}</span>
-                            <span className={cn(
-                                "ml-1 px-2 py-0.5 rounded-lg text-[10px] font-black",
-                                activeTab === t.id ? 'bg-white/20 text-white' : 'bg-background text-foreground'
-                            )}>
-                                {t.selected}/{t.count}
-                            </span>
-                        </button>
-                    ))}
+                    {(status === 'analyzing' || status === 'saving') && (
+                        <div className="flex-1 flex flex-col items-center justify-center py-12">
+                            <Loader2 className="h-12 w-12 animate-spin text-orange-500 mb-6" />
+                            <p className="text-xl font-bold text-black uppercase tracking-wider">
+                                {status === 'analyzing' ? 'Modell wird analysiert...' : 'Daten werden gespeichert...'}
+                            </p>
+                            <p className="text-sm font-bold text-orange-500 mt-2">Bitte haben Sie einen Moment Geduld.</p>
+                        </div>
+                    )}
+
+                    {status === 'error' && (
+                        <div className="flex-1 border-2 border-black m-6 p-6 bg-white flex flex-col items-center justify-center">
+                            <AlertTriangle className="h-12 w-12 text-black mb-4" />
+                            <p className="text-xl font-bold text-black uppercase tracking-wider">Fehler aufgetreten</p>
+                            <p className="text-sm font-bold text-orange-500 mt-4 text-center break-all">{errorMsg}</p>
+                            <Button className="mt-6 bg-black text-white rounded-none uppercase font-bold px-8 hover:bg-gray-800" onClick={() => { setStatus('idle'); setErrorMsg(''); }}>
+                                Erneut versuchen
+                            </Button>
+                        </div>
+                    )}
+
+                    {/* Step 1: File Upload */}
+                    {step === 1 && status === 'idle' && (
+                        <div className="p-8 flex-1 overflow-y-auto w-full max-w-xl mx-auto flex flex-col items-center justify-center gap-6">
+                            <div className="border-4 border-dashed border-orange-500 p-10 w-full flex flex-col items-center justify-center bg-white transition-colors hover:bg-orange-50">
+                                <FileArchive className="h-16 w-16 text-black mb-4" />
+                                <input
+                                    type="file"
+                                    accept=".ifc"
+                                    onChange={handleFileChange}
+                                    className="text-sm font-bold text-black file:mr-4 file:py-2 file:px-6 file:border-2 file:border-orange-500 file:text-sm file:font-bold file:bg-white file:text-black hover:file:bg-orange-500 hover:file:text-white transition-all cursor-pointer w-full text-center"
+                                />
+                                {file && <p className="mt-6 text-sm font-bold text-orange-500 bg-orange-100 px-4 py-1 border border-orange-500">Datei: {file.name}</p>}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Step 2: Tree Review */}
+                    {step === 2 && hierarchy && status === 'idle' && (
+                        <div className="flex-1 flex flex-col overflow-hidden bg-white">
+                            <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center gap-3">
+                                <Search className="w-5 h-5 text-orange-500" />
+                                <p className="text-sm font-bold text-black">
+                                    <span className="text-orange-500">{hierarchy.positionen.length}</span> Positionen und <span className="text-orange-500">{hierarchy.unterpositionen.length}</span> Teil(e) gefunden.
+                                </p>
+                            </div>
+
+                            {/* Internal Scrollable Area max-h-[60vh] */}
+                            <div className="flex-1 overflow-y-auto max-h-[60vh] p-6 space-y-4">
+                                {hierarchy.positionen.map((pos) => {
+                                    const isPosSelected = !deselectedNodes.has(pos.signature);
+                                    const children = hierarchy.unterpositionen.filter(u => u.signature.startsWith(pos.signature + '|'));
+                                    
+                                    return (
+                                        <div key={pos.signature} className="border-2 border-orange-500 bg-white shadow-sm p-4">
+                                            {/* Parent Row */}
+                                            <div className="flex items-center gap-4 border-b-2 border-black pb-2 mb-2">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={isPosSelected}
+                                                    onChange={() => togglePosition(pos.signature, isPosSelected)}
+                                                    className="w-5 h-5 accent-orange-500 cursor-pointer"
+                                                />
+                                                <div className="flex-1">
+                                                    <p className="text-base font-black text-black uppercase cursor-pointer" onClick={() => togglePosition(pos.signature, isPosSelected)}>
+                                                        {pos.name}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Menge: {pos.menge} {pos.einheit}</p>
+                                                </div>
+                                            </div>
+
+                                            {/* Children Rows */}
+                                            {children.length > 0 && (
+                                                <div className="pl-8 pt-2 space-y-2">
+                                                    {children.map(unt => {
+                                                        const isUntSelected = !deselectedNodes.has(unt.signature);
+                                                        return (
+                                                            <div key={unt.signature} className="flex items-center gap-3 py-1 hover:bg-orange-50">
+                                                                <input 
+                                                                    type="checkbox" 
+                                                                    checked={isUntSelected}
+                                                                    disabled={!isPosSelected} // Disable child if parent is unchecked
+                                                                    onChange={() => toggleUnterposition(unt.signature, isUntSelected)}
+                                                                    className="w-4 h-4 accent-orange-500 cursor-pointer disabled:opacity-50"
+                                                                />
+                                                                <div className="flex-1 flex justify-between items-center cursor-pointer" onClick={() => isPosSelected && toggleUnterposition(unt.signature, isUntSelected)}>
+                                                                    <p className={`text-sm font-bold truncate ${!isPosSelected ? 'text-gray-400' : 'text-black'}`}>
+                                                                        {unt.name}
+                                                                    </p>
+                                                                    <div className="flex gap-4 text-xs font-bold text-gray-500 min-w-40 justify-end">
+                                                                        <span>{unt.materialProp || '-'}</span>
+                                                                        {unt.gewichtKg ? <span>{Number(unt.gewichtKg).toFixed(2)} kg</span> : null}
+                                                                        <span>x {unt.menge}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                            {children.length === 0 && (
+                                                <p className="pl-8 text-xs text-gray-400 font-bold tracking-wider italic">Keine Unterpositionen.</p>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
-                {/* Table content */}
-                <div className="flex-1 overflow-auto px-6">
-                    <div className="rounded-3xl border-2 border-border/50 overflow-hidden my-4 bg-background shadow-inner">
-                        {/* ── Positionen ── */}
-                        {activeTab === 'positionen' && (
-                            <Table>
-                                <TableHeader className="sticky top-0 bg-slate-50 z-10">
-                                    <TableRow className="border-b-2 border-border/50">
-                                        <TableHead className="w-12 text-center">
-                                            <input type="checkbox"
-                                                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                                                checked={positions.every(p => p.selected)}
-                                                onChange={e => setPositions(prev => prev.map(p => ({ ...p, selected: e.target.checked })))}
-                                            />
-                                        </TableHead>
-                                        <TableHead className="font-black text-[10px] text-muted-foreground uppercase tracking-widest w-16">#</TableHead>
-                                        <TableHead className="font-black text-[10px] text-muted-foreground uppercase tracking-widest w-60">Bezeichnung</TableHead>
-                                        <TableHead className="font-black text-[10px] text-muted-foreground uppercase tracking-widest">Beschreibung</TableHead>
-                                        <TableHead className="font-black text-[10px] text-muted-foreground uppercase tracking-widest w-32 text-right">Gewicht</TableHead>
-                                        <TableHead className="font-black text-[10px] text-muted-foreground uppercase tracking-widest w-12 text-center">Info</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {positions.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={6} className="text-center py-20 bg-muted/5">
-                                                <div className="flex flex-col items-center gap-3 opacity-20">
-                                                    <Layers className="h-12 w-12" />
-                                                    <p className="text-sm font-black uppercase tracking-widest">Keine Positionen gefunden</p>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : positions.map((p, i) => (
-                                        <TableRow key={p.tempId} className={cn(
-                                            "border-b border-border/40 transition-colors",
-                                            p.selected ? "bg-primary/[0.02] hover:bg-primary/[0.04]" : "opacity-40 grayscale-[0.5] hover:opacity-60"
-                                        )}>
-                                            <TableCell className="text-center">
-                                                <input type="checkbox"
-                                                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                                                    checked={p.selected}
-                                                    onChange={e => setPositions(prev => prev.map((x, j) => j === i ? { ...x, selected: e.target.checked } : x))}
-                                                />
-                                            </TableCell>
-                                            <TableCell className="font-black text-xs text-slate-500 whitespace-nowrap">
-                                                {p.teilsystemNummer}/{p.positionsNummer}
-                                            </TableCell>
-                                            <TableCell className="font-bold text-sm">
-                                                <EditCell value={p.name}
-                                                    onChange={v => setPositions(prev => prev.map((x, j) => j === i ? { ...x, name: v } : x))}
-                                                />
-                                            </TableCell>
-                                            <TableCell className="text-xs text-muted-foreground">
-                                                <EditCell value={p.beschreibung}
-                                                    onChange={v => setPositions(prev => prev.map((x, j) => j === i ? { ...x, beschreibung: v } : x))}
-                                                />
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex items-center justify-end gap-1.5 font-black text-sm">
-                                                    <EditCell value={p.gewichtTotal || 0} type="number"
-                                                        onChange={v => setPositions(prev => prev.map((x, j) => j === i ? { ...x, gewichtTotal: parseFloat(v) || 0 } : x))}
-                                                    />
-                                                    <span className="text-[10px] text-muted-foreground uppercase">kg</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted" onClick={() => setShowRawJson(p.rawPsets)}>
-                                                    <FileText className="h-4 w-4 text-muted-foreground" />
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                {/* Footer Controls */}
+                <div className="px-6 py-4 border-t-2 border-orange-500 flex justify-between bg-white items-center">
+                    <div>
+                        {step === 2 && status === 'idle' && (
+                            <Button 
+                                variant="outline" 
+                                onClick={() => { setStep(1); setHierarchy(null); setDeselectedNodes(new Set()); }}
+                                className="border-0 text-gray-500 font-bold hover:bg-transparent hover:text-black hover:underline px-0 shadow-none uppercase h-10"
+                            >
+                                Zurück zur Auswahl
+                            </Button>
                         )}
-
-                        {/* ── Unterpositionen ── */}
-                        {activeTab === 'unterpositionen' && (
-                            <Table>
-                                <TableHeader className="sticky top-0 bg-slate-50 z-10">
-                                    <TableRow className="border-b-2 border-border/50">
-                                        <TableHead className="w-12 text-center">
-                                            <input type="checkbox"
-                                                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                                                checked={unterpos.every(u => u.selected)}
-                                                onChange={e => setUnterpos(prev => prev.map(u => ({ ...u, selected: e.target.checked })))}
-                                            />
-                                        </TableHead>
-                                        <TableHead className="font-black text-[10px] text-muted-foreground uppercase tracking-widest w-16">#</TableHead>
-                                        <TableHead className="font-black text-[10px] text-muted-foreground uppercase tracking-widest w-72">Bezeichnung</TableHead>
-                                        <TableHead className="font-black text-[10px] text-muted-foreground uppercase tracking-widest w-32 text-right">Gewicht</TableHead>
-                                        <TableHead className="font-black text-[10px] text-muted-foreground uppercase tracking-widest w-12 text-center">Info</TableHead>
-                                        <TableHead className="font-black text-[10px] text-muted-foreground uppercase tracking-widest">Parent Element</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {unterpos.length === 0 ? (
-                                        <TableRow><TableCell colSpan={6} className="text-center py-20 bg-muted/5">
-                                            <div className="flex flex-col items-center gap-3 opacity-20">
-                                                <FileStack className="h-12 w-12" />
-                                                <p className="text-sm font-black uppercase tracking-widest">Keine Teile gefunden</p>
-                                            </div>
-                                        </TableCell></TableRow>
-                                    ) : unterpos.map((u, i) => {
-                                        const parent = positions.find(p => p.expressID === u.parentExpressID);
-                                        return (
-                                            <TableRow key={u.tempId} className={cn(
-                                                "border-b border-border/40 transition-colors",
-                                                u.selected ? "bg-primary/[0.02] hover:bg-primary/[0.04]" : "opacity-40 grayscale-[0.5] hover:opacity-60"
-                                            )}>
-                                                <TableCell className="text-center">
-                                                    <input type="checkbox"
-                                                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                                                        checked={u.selected}
-                                                        onChange={e => setUnterpos(prev => prev.map((x, j) => j === i ? { ...x, selected: e.target.checked } : x))}
-                                                    />
-                                                </TableCell>
-                                                <TableCell className="font-black text-xs text-slate-500">
-                                                    {u.unterpositionsNummer || <span className="opacity-40 italic font-mono text-[9px]">N/A (AUX)</span>}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex flex-col">
-                                                        <EditCell value={u.name}
-                                                            onChange={v => setUnterpos(prev => prev.map((x, j) => j === i ? { ...x, name: v } : x))}
-                                                        />
-                                                        <span className="text-[9px] text-muted-foreground uppercase font-black px-1 tracking-tight">{u.beschreibung}</span>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    <div className="flex items-center justify-end gap-1.5 font-black text-sm">
-                                                        <EditCell value={u.gewichtGesamt || 0} type="number"
-                                                            onChange={v => setUnterpos(prev => prev.map((x, j) => j === i ? { ...x, gewichtGesamt: parseFloat(v) || 0 } : x))}
-                                                        />
-                                                        <span className="text-[10px] text-muted-foreground uppercase">kg</span>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-center">
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted" onClick={() => setShowRawJson(u.rawPsets)}>
-                                                        <FileText className="h-4 w-4 text-muted-foreground" />
-                                                    </Button>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="h-1.5 w-1.5 rounded-full bg-primary/40 shrink-0" />
-                                                        <span className="text-[10px] font-black text-muted-foreground/80 truncate block uppercase tracking-tight">
-                                                            {parent?.name || (u.parentExpressID === 0 ? "AUTO-GROUP" : `#${u.parentExpressID}`)}
-                                                        </span>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
-                                </TableBody>
-                            </Table>
-                        )}
-
-                        {/* ── Material ── */}
-                        {activeTab === 'material' && (
-                            <Table>
-                                <TableHeader className="sticky top-0 bg-slate-50 z-10">
-                                    <TableRow className="border-b-2 border-border/50">
-                                        <TableHead className="w-12 text-center">
-                                            <input type="checkbox"
-                                                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                                                checked={materials.every(m => m.selected)}
-                                                onChange={e => setMaterials(prev => prev.map(m => ({ ...m, selected: e.target.checked })))}
-                                            />
-                                        </TableHead>
-                                        <TableHead className="font-black text-[10px] text-muted-foreground uppercase tracking-widest">Material</TableHead>
-                                        <TableHead className="font-black text-[10px] text-muted-foreground uppercase tracking-widest">Hersteller</TableHead>
-                                        <TableHead className="font-black text-[10px] text-muted-foreground uppercase tracking-widest w-32">Menge</TableHead>
-                                        <TableHead className="font-black text-[10px] text-muted-foreground uppercase tracking-widest w-24">Einheit</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {materials.length === 0 ? (
-                                        <TableRow><TableCell colSpan={5} className="text-center py-20 bg-muted/5">
-                                            <div className="flex flex-col items-center gap-3 opacity-20">
-                                                <Package className="h-12 w-12" />
-                                                <p className="text-sm font-black uppercase tracking-widest">Keine Materialien gefunden</p>
-                                            </div>
-                                        </TableCell></TableRow>
-                                    ) : materials.map((m, i) => (
-                                        <TableRow key={m.tempId} className={cn(
-                                            "border-b border-border/40 transition-colors",
-                                            m.selected ? "bg-primary/[0.02] hover:bg-primary/[0.04]" : "opacity-40 grayscale-[0.5] hover:opacity-60"
-                                        )}>
-                                            <TableCell className="text-center">
-                                                <input type="checkbox"
-                                                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                                                    checked={m.selected}
-                                                    onChange={e => setMaterials(prev => prev.map((x, j) => j === i ? { ...x, selected: e.target.checked } : x))}
-                                                />
-                                            </TableCell>
-                                            <TableCell className="font-bold text-sm">
-                                                <EditCell value={m.name}
-                                                    onChange={v => setMaterials(prev => prev.map((x, j) => j === i ? { ...x, name: v } : x))}
-                                                />
-                                            </TableCell>
-                                            <TableCell className="text-xs text-muted-foreground font-medium">
-                                                <EditCell value={m.hersteller}
-                                                    onChange={v => setMaterials(prev => prev.map((x, j) => j === i ? { ...x, hersteller: v } : x))}
-                                                />
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="font-black text-sm">
-                                                    <EditCell value={m.menge} type="number"
-                                                        onChange={v => setMaterials(prev => prev.map((x, j) => j === i ? { ...x, menge: parseFloat(v) || 1 } : x))}
-                                                    />
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="text-[10px] font-black uppercase text-muted-foreground">
-                                                    <EditCell value={m.einheit}
-                                                        onChange={v => setMaterials(prev => prev.map((x, j) => j === i ? { ...x, einheit: v } : x))}
-                                                    />
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        )}
-                    </div>
-                </div>
-
-                {/* Footer */}
-                <div className="px-10 py-6 border-t border-border bg-muted/30 flex items-center justify-between">
-                    <div className="text-xs text-muted-foreground font-semibold flex items-center gap-6">
-                        <div className="flex items-center gap-3">
-                            <Badge variant="outline" className="h-7 rounded-lg px-2.5 font-black text-foreground bg-background border-2 border-border/50">
-                                {selectedPos.length} POS.
-                            </Badge>
-                            <Badge variant="outline" className="h-7 rounded-lg px-2.5 font-black text-foreground bg-background border-2 border-border/50">
-                                {selectedUPos.length} TEILE
-                            </Badge>
-                            <Badge variant="outline" className="h-7 rounded-lg px-2.5 font-black text-foreground bg-background border-2 border-border/50">
-                                {selectedMat.length} MAT.
-                            </Badge>
-                        </div>
-                        <div className="h-8 w-px bg-border/50 mx-2" />
-                        <div className="flex flex-col">
-                            <span className="text-[10px] font-black text-primary uppercase tracking-widest leading-none mb-1">Gesamtgewicht</span>
-                            <span className="text-lg font-black text-foreground tracking-tighter leading-none">
-                                {selectedPos.reduce((sum, p) => sum + (Number(p.gewichtTotal) || 0) * Number(p.menge), 0).toFixed(2)} <span className="text-sm">kg</span>
-                            </span>
-                        </div>
                     </div>
                     <div className="flex gap-4">
-                        <button
-                            onClick={onClose}
-                            className="px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-slate-600 transition-colors"
+                        <Button 
+                            variant="outline" 
+                            className="border-2 border-black text-black font-bold hover:bg-black hover:text-white rounded-none h-12 px-8 uppercase" 
+                            onClick={onClose} 
+                            disabled={status === 'analyzing' || status === 'saving'}
                         >
-                            Abbrechen
-                        </button>
-                        <Button
-                            onClick={() => {
-                                if (previewMode && onPreviewConfirm) {
-                                    onPreviewConfirm({
-                                        positionen: selectedPos,
-                                        unterpositionen: selectedUPos,
-                                        materiale: selectedMat,
-                                        tsInfo: data.tsInfo,
-                                    });
-                                    onClose();
-                                } else {
-                                    handleImport();
-                                }
-                            }}
-                            disabled={importing || (selectedPos.length === 0 && selectedUPos.length === 0 && selectedMat.length === 0)}
-                            className="bg-orange-500 hover:bg-orange-600 text-white font-black rounded-2xl h-12 px-10 flex items-center gap-3 shadow-xl shadow-orange-500/20 transition-all hover:scale-105 active:scale-95"
-                        >
-                            {importing ? (
-                                <><Loader2 className="h-5 w-5 animate-spin" /> <span className="uppercase tracking-[0.2em] text-[10px]">Importiere...</span></>
-                            ) : previewMode ? (
-                                <><Check className="h-5 w-5" /> <span className="uppercase tracking-[0.2em] text-[10px]">Uebernehmen</span></>
-                            ) : (
-                                <><Check className="h-5 w-5" /> <span className="uppercase tracking-[0.2em] text-[10px]">Import Bestaetigen</span></>
-                            )}
+                            {step === 2 ? 'Schliessen' : 'Abbrechen'}
                         </Button>
+                        
+                        {step === 1 ? (
+                            <Button 
+                                onClick={handleAnalyze} 
+                                disabled={!file || status !== 'idle'}
+                                className="border-2 border-orange-500 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-none h-12 px-8 uppercase shadow-none"
+                            >
+                                Modell analysieren
+                            </Button>
+                        ) : (
+                            <Button 
+                                onClick={handleFinalImport} 
+                                disabled={status !== 'idle'}
+                                className="border-2 border-orange-500 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-none h-12 px-8 uppercase shadow-none"
+                            >
+                                {hierarchy?.positionen.filter(p => !deselectedNodes.has(p.signature)).length} Positionen importieren
+                            </Button>
+                        )}
                     </div>
                 </div>
 
-                {/* Raw JSON Viewer Overlay */}
-                {showRawJson && (
-                    <div className="absolute inset-0 z-[200] bg-slate-900/60 flex items-center justify-center p-12 animate-in fade-in duration-300" onClick={() => setShowRawJson(null)}>
-                        <div className="bg-white dark:bg-card w-full max-w-2xl max-h-full rounded-[2.5rem] shadow-2xl border-2 border-border flex flex-col overflow-hidden animate-in zoom-in duration-300" onClick={e => e.stopPropagation()}>
-                            <div className="px-8 py-6 border-b border-border bg-muted/30 flex items-center justify-between">
-                                <h3 className="font-black text-foreground uppercase tracking-widest text-sm">IFC Raw Psets (JSON)</h3>
-                                <button onClick={() => setShowRawJson(null)} className="p-2 rounded-full hover:bg-muted">
-                                    <X className="h-5 w-5 text-muted-foreground" />
-                                </button>
-                            </div>
-                            <div className="flex-1 overflow-auto p-8 bg-muted/20">
-                                <pre className="text-[10px] font-mono whitespace-pre-wrap leading-relaxed">
-                                    {JSON.stringify(showRawJson, null, 2)}
-                                </pre>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     );

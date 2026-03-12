@@ -285,7 +285,7 @@ export default function UnterpositionEditPage() {
                         </CardHeader>
                         <CardContent className="p-6 space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <Input label="Unt.Pos *" {...register('posNummer')} error={errors.posNummer?.message} className="h-11 font-bold" />
+                                <Input label="Pos. Nummer *" {...register('posNummer')} error={errors.posNummer?.message} className="h-11 font-bold" />
                                 <div className="md:col-span-3">
                                     <Input label="Bezeichnung *" {...register('name')} error={errors.name?.message} className="h-11 font-bold" />
                                 </div>

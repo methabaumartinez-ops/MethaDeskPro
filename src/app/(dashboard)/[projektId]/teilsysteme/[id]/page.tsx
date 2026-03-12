@@ -243,7 +243,7 @@ export default function TeilsystemDetailPage() {
             </div>
 
             {/* TOP ROW: Termine, Bemerkung, Aenderungshistorie, Aktionen — shared geometry system */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch ${(item.teileart || item.gewicht) ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}>
 
                 {/* ─── 1) Termine u. Fristen ─── */}
                 <Card className="border-2 border-border shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card flex flex-col">
@@ -341,6 +341,34 @@ export default function TeilsystemDetailPage() {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* ─── 5) IFC / METHABAU ─── (only when data exists) */}
+                {(item.teileart || item.gewicht != null) && (
+                    <Card className="border-2 border-orange-200 shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card flex flex-col">
+                        <CardHeader className="py-2.5 px-4 bg-orange-50 dark:bg-orange-950/30 border-b border-orange-200 shrink-0">
+                            <CardTitle className="text-[10px] font-black uppercase tracking-widest text-orange-600 flex items-center gap-2">
+                                <Badge variant="outline" className="text-[8px] h-4 border-orange-300 bg-orange-100 text-orange-700 font-black">IFC</Badge>
+                                METHABAU
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0 flex-1">
+                            <div className="divide-y divide-border">
+                                {item.teileart && (
+                                    <div className="px-4 py-2 flex items-center justify-between hover:bg-muted/5 transition-colors">
+                                        <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight">Teileart</span>
+                                        <Badge variant="outline" className="font-bold text-[9px] h-5 bg-orange-50 text-orange-700 border-orange-200">{item.teileart}</Badge>
+                                    </div>
+                                )}
+                                {item.gewicht != null && (
+                                    <div className="px-4 py-2 flex items-center justify-between hover:bg-muted/5 transition-colors">
+                                        <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight">Gewicht</span>
+                                        <span className="text-xs font-black text-foreground">{item.gewicht} kg</span>
+                                    </div>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
             </div>
 
 

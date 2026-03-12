@@ -223,6 +223,11 @@ export default function TeilsystemEditPage() {
                             setSelectedFileName('Modell vorhanden');
                         }
                     }
+                    
+                    // Allow React Hook Form to flush the values before enabling the Abteilung auto-overwrite
+                    setTimeout(() => {
+                        initialLoadDone.current = true;
+                    }, 50);
                 } else {
                     router.push(`/${projektId}/teilsysteme`);
                 }
@@ -236,8 +241,10 @@ export default function TeilsystemEditPage() {
         loadItem();
     }, [id, projektId, setValue, router]);
 
+    const initialLoadDone = React.useRef(false);
+
     useEffect(() => {
-        if (currentAbteilung) {
+        if (currentAbteilung && initialLoadDone.current) {
             const ksValue = getKSFromAbteilung(currentAbteilung);
             setValue('ks', ksValue, { shouldValidate: true, shouldDirty: true });
         }
@@ -500,7 +507,7 @@ export default function TeilsystemEditPage() {
         try {
             await SubsystemService.deleteTeilsystem(id);
             toast.success("Teilsystem gelöscht");
-            router.push(`/${projektId}`);
+            router.push(`/${projektId}/teilsysteme`);
         } catch (error) {
             console.error("Failed to delete", error);
             toast.error("Fehler beim Löschen des Teilsystems");
@@ -582,8 +589,7 @@ export default function TeilsystemEditPage() {
                                     <Input
                                         label="KS"
                                         placeholder="1"
-                                        disabled
-                                        className="bg-muted/50 font-bold"
+                                        className="font-bold"
                                         {...register('ks')}
                                         error={errors.ks?.message}
                                     />

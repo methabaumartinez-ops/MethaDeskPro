@@ -171,6 +171,9 @@ export interface Teilsystem {
   lieferantenNames?: string[];
   subunternehmerId?: string;
   subunternehmerName?: string;
+  // IFC METHABAU fields
+  teileart?: string;          // Teileart from METHABAU PSet (e.g. Baugruppe, Bleche)
+  gewicht?: number;           // Global weight (kg) from METHABAU PSet  
   createdAt?: string;
   updatedAt?: string;
 }
@@ -206,9 +209,12 @@ export interface Position {
   groupingMethod?: 'REAL_PARENT' | 'FALLBACK_GROUP' | 'AUTO_GROUP';
   groupingKey?: string;
   ifcParentGlobalId?: string;
-  ifcMeta?: any; // psets + summary
+  ifcMeta?: any; // psets + summary + dimensions JSON
   ifcUrl?: string;
   ifcFileName?: string;
+  // IFC METHABAU fields
+  teileart?: string;          // Teileart from METHABAU PSet
+  materialProp?: string;      // Werkstoff from METHABAU PSet
   status: ItemStatus;
   createdAt?: string;
   updatedAt?: string;
@@ -244,7 +250,15 @@ export interface Unterposition {
   bemerkung?: string;
   materialProp?: string;
   oberflaecheProp?: string;
-  dimensions?: { laenge_mm?: number; breite_mm?: number; staerke_mm?: number;[key: string]: any };
+  teileart?: string;
+  dimensions?: { 
+    laenge?: number; 
+    breite?: number; 
+    hoehe?: number; 
+    blechdicke?: number; 
+    oberflaecheGesamt?: number; 
+    [key: string]: any 
+  };
   gewichtKg?: number;
   ifcChildGlobalId?: string;
   ifcType?: string;
