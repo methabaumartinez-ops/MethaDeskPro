@@ -12,6 +12,7 @@ import { ITEM_STATUS_OPTIONS, ABTEILUNGEN_CONFIG, ItemStatus, Abteilung } from '
 import { cn, isMontageterminProvisional, getAppUrl } from '@/lib/utils';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { getStatusColorClasses, getAbteilungColorClasses } from '@/lib/config/statusConfig';
+import { KSBadge } from '@/components/shared/KSBadge';
 import { AbteilungWarningModal } from './AbteilungWarningModal';
 import { AbteilungBadge } from '@/components/shared/AbteilungBadge';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
@@ -155,9 +156,7 @@ export function TeilsystemTable({
 
                                     {/* 2b. KS */}
                                     <TableCell className="p-4">
-                                        <span className="text-xs font-semibold text-slate-600">
-                                            {item.ks === '1' ? 'Baumeister' : item.ks === '2' ? 'Produktion' : item.ks === '3' ? 'Extern' : String(item.ks || '').replace(/^\d+\s*/, '').trim() || '—'}
-                                        </span>
+                                        <KSBadge ks={item.ks ? String(item.ks) : undefined} abteilungFallback={item.abteilung} />
                                     </TableCell>
 
                                     {/* 3. Lieferdatum */}

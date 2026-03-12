@@ -3,6 +3,7 @@ import { DatabaseService } from '@/lib/services/db';
 import { v4 as uuidv4 } from 'uuid';
 import { requireAuth } from '@/lib/helpers/requireAuth';
 import { getCreationDefaults } from '@/lib/workflow/workflowEngine';
+import { getKSFromAbteilung } from '@/lib/config/ksConfig';
 
 export const dynamic = 'force-dynamic';
 
@@ -76,6 +77,11 @@ export async function POST(req: Request) {
                 ? workflowDefaults.abteilung
                 : (body.abteilung || workflowDefaults.abteilung),
         };
+
+        // Derive KS from the finalized abteilung
+        if (newItem.abteilung) {
+            (newItem as any).ks = getKSFromAbteilung(newItem.abteilung);
+        }
 
         // Always INSERT (never upsert) for new TS creation — guarantees a fresh row
         const result = await DatabaseService.insert('teilsysteme', newItem);

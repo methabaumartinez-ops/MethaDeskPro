@@ -133,21 +133,7 @@ export function SuperadminSidebar() {
                     );
                 })}
 
-                {/* ── App links ───────────────────────────────── */}
-                <div className="pt-3">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 px-2 mb-2">App</p>
-                    <Link
-                        href="/projekte"
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all group text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                    >
-                        <LayoutList className="h-4 w-4 shrink-0 text-gray-400 group-hover:text-gray-700 transition-colors" />
-                        <div className="flex-1 min-w-0">
-                            <p className="font-semibold leading-none">Projekte</p>
-                            <p className="text-[10px] mt-0.5 text-gray-400">Zur Projektliste</p>
-                        </div>
-                        <ChevronRight className="h-3 w-3 shrink-0 text-gray-300" />
-                    </Link>
-                </div>
+
 
                 {/* ── Preview-Abteilung section ───────────────── */}
                 <div className="pt-4">

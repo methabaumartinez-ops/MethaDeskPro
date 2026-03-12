@@ -1,6 +1,7 @@
 import { Teilsystem, Position } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 import { STATUS_DEFAULTS } from '@/lib/config/statusConfig';
+import { getKSFromAbteilung } from '@/lib/config/ksConfig';
 
 export const SubsystemService = {
     async getTeilsysteme(projektId?: string, abteilungId?: string): Promise<Teilsystem[]> {
@@ -37,7 +38,8 @@ export const SubsystemService = {
             ...item, 
             id: item.id || uuidv4(),
             status: item.status || STATUS_DEFAULTS.TEILSYSTEM.status,
-            abteilung: defaultAbteilung
+            abteilung: defaultAbteilung,
+            ks: getKSFromAbteilung(defaultAbteilung as string)
         };
         const res = await fetch('/api/teilsysteme', {
             method: 'POST',
@@ -52,10 +54,15 @@ export const SubsystemService = {
     },
 
     async updateTeilsystem(id: string, updates: Partial<Teilsystem>): Promise<Teilsystem> {
+        const payload: Partial<Teilsystem> = { ...updates };
+        if (payload.abteilung) {
+            payload.ks = getKSFromAbteilung(payload.abteilung as string);
+        }
+
         const res = await fetch(`/api/teilsysteme/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updates)
+            body: JSON.stringify(payload)
         });
         if (!res.ok) {
             const error = await res.json().catch(() => ({}));

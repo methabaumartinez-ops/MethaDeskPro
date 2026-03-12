@@ -5,6 +5,7 @@ import { TsMaterialkosten } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 import { requireAuth } from '@/lib/helpers/requireAuth';
 import { ChangelogService } from '@/lib/services/changelogService';
+import { SubsystemService } from '@/lib/services/subsystemService';
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
@@ -32,10 +33,23 @@ export async function POST(request: NextRequest) {
         if (!body.projektId || !body.bezeichnung || body.menge == null || body.einzelpreis == null) {
             return NextResponse.json({ error: 'Pflichtfelder fehlen' }, { status: 400 });
         }
+        let inheritedKs: string | undefined = undefined;
+        if (body.teilsystemId) {
+            try {
+                const ts = await SubsystemService.getTeilsystemById(body.teilsystemId);
+                if (ts && ts.ks) {
+                    inheritedKs = String(ts.ks);
+                }
+            } catch (e) {
+                console.error('[kosten/material] Failed to fetch TS to inherit KS', e);
+            }
+        }
+
         const entry: TsMaterialkosten = {
             ...body,
             id: uuidv4(),
             gesamtpreis: body.menge * body.einzelpreis,
+            ks: inheritedKs,
             createdAt: new Date().toISOString(),
         };
         const created = await DatabaseService.upsert('ts_materialkosten', entry);

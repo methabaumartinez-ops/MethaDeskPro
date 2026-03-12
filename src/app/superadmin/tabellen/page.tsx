@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Shield, Save, RotateCcw, Check, Table as TableIcon, ToggleLeft, ToggleRight, Search } from 'lucide-react';
+import { Shield, Save, RotateCcw, Check, Table as TableIcon, ToggleLeft, ToggleRight, Search, ChevronLeft } from 'lucide-react';
 import { ABTEILUNGEN_CONFIG } from '@/types';
 import {
     ALL_TABLES,
@@ -107,8 +107,12 @@ export default function TabellenPermissionsPage() {
             <div className="absolute inset-0 pointer-events-none z-0" style={{ backgroundColor: 'rgba(255,255,255,0.91)' }} />
             <div className="relative z-10">
             {/* Header */}
-            <div className="border-b border-gray-200 bg-white px-8 py-6">
-                <div className="max-w-5xl mx-auto flex items-center justify-between">
+            <div className="border-b border-gray-200 bg-white px-6 py-4 flex items-center gap-6">
+                <a href="/projekte" className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all text-white shrink-0" style={{ background: '#ff6b35', boxShadow: '0 4px 14px rgba(255,107,53,0.35)' }}>
+                    <ChevronLeft className="h-4 w-4" />
+                    Zu Projekten
+                </a>
+                <div className="flex-1 w-full max-w-5xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg shrink-0"
                             style={{ background: 'rgba(255,107,53,0.15)', border: '1px solid rgba(255,107,53,0.3)' }}>

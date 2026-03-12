@@ -74,12 +74,14 @@ export default function WerkhofLagerPage() {
             ]);
             // Load all positions, then filter to this project's TS
             const allPos = await PositionService.getPositionen();
-            const tsIds = new Set(ts.map(t => t.id));
-            const pos = allPos.filter(p => p.teilsystemId && tsIds.has(p.teilsystemId));
-            setLagerorte(lo);
-            setBewegungen(bew);
-            setBestellungen(best);
-            setTeilsysteme(ts);
+            const safeTs = ts || [];
+            const tsIds = new Set(safeTs.map(t => t.id));
+            const safeAllPos = allPos || [];
+            const pos = safeAllPos.filter(p => p.teilsystemId && tsIds.has(p.teilsystemId));
+            setLagerorte(lo || []);
+            setBewegungen(bew || []);
+            setBestellungen(best || []);
+            setTeilsysteme(safeTs);
             setPositionen(pos);
         } catch (err) {
             console.error('Lager: load error', err);
@@ -88,28 +90,35 @@ export default function WerkhofLagerPage() {
         }
     }
 
+    const safeLagerorte = lagerorte || [];
+    const safeBewegungen = bewegungen || [];
+    const safeBestellungen = bestellungen || [];
+    const safeTeilsysteme = teilsysteme || [];
+    const safePositionen = positionen || [];
+
     // KPIs
-    const totalLagerorte = lagerorte.length;
-    const totalBewegungen = bewegungen.length;
-    const einlagerungen = bewegungen.filter(b => b.typ === 'einlagerung').length;
-    const auslagerungen = bewegungen.filter(b => b.typ === 'auslagerung').length;
-    const offeneBestellungen = bestellungen.filter(b => b.status !== 'versendet' && b.status !== 'geliefert').length;
+    const totalLagerorte = safeLagerorte.length;
+    const totalBewegungen = safeBewegungen.length;
+    const einlagerungen = safeBewegungen.filter(b => b?.typ === 'einlagerung').length;
+    const auslagerungen = safeBewegungen.filter(b => b?.typ === 'auslagerung').length;
+    const offeneBestellungen = safeBestellungen.filter(b => b?.status && b.status !== 'versendet' && b.status !== 'geliefert').length;
 
     // Resolve entity name
     function resolveEntityName(entityId: string, entityType: string): string {
+        if (!entityId) return '—';
         if (entityType === 'position') {
-            const pos = positionen.find(p => p.id === entityId);
-            return pos ? pos.name : entityId.slice(0, 8);
+            const pos = safePositionen.find(p => p.id === entityId);
+            return pos?.name || entityId.slice(0, 8);
         }
-        const ts = teilsysteme.find(t => t.id === entityId);
-        return ts ? `${ts.teilsystemNummer} ${ts.name}` : entityId.slice(0, 8);
+        const ts = safeTeilsysteme.find(t => t.id === entityId);
+        return ts ? `${ts.teilsystemNummer || ''} ${ts.name || ''}`.trim() : entityId.slice(0, 8);
     }
 
     // Resolve lagerort name
     function resolveLagerortName(id?: string): string {
         if (!id) return '—';
-        const lo = lagerorte.find(l => l.id === id);
-        return lo ? lo.bezeichnung : id.slice(0, 8);
+        const lo = safeLagerorte.find(l => l.id === id);
+        return lo?.bezeichnung || id.slice(0, 8);
     }
 
     // Submit Eingang
@@ -170,12 +179,12 @@ export default function WerkhofLagerPage() {
     // Position options for selects
     const entityOptions = [
         { label: '— Element waehlen —', value: '' },
-        ...positionen.map(p => ({ label: `Pos: ${p.name}`, value: p.id })),
+        ...safePositionen.map(p => ({ label: `Pos: ${p?.name || 'Unbenannt'}`, value: p?.id || '' })),
     ];
 
     const lagerortOptions = [
         { label: '— Lagerort waehlen —', value: '' },
-        ...lagerorte.map(l => ({ label: l.bezeichnung, value: l.id })),
+        ...safeLagerorte.map(l => ({ label: l?.bezeichnung || 'Unbenannt', value: l?.id || '' })),
     ];
 
     if (loading) return (
@@ -279,15 +288,15 @@ export default function WerkhofLagerPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
-                            {lagerorte.length === 0 ? (
+                            {safeLagerorte.length === 0 ? (
                                 <div className="py-12 text-center">
                                     <MapPin className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
                                     <p className="text-sm font-bold text-muted-foreground">Keine Lagerorte definiert</p>
                                 </div>
                             ) : (
                                 <div className="divide-y divide-border max-h-[400px] overflow-y-auto">
-                                    {lagerorte.map(lo => {
-                                        const itemCount = bewegungen.filter(b => b.nachLagerortId === lo.id && b.typ === 'einlagerung').length;
+                                    {safeLagerorte.map(lo => {
+                                        const itemCount = safeBewegungen.filter(b => b?.nachLagerortId === lo.id && b?.typ === 'einlagerung').length;
                                         return (
                                             <div key={lo.id} className="px-5 py-3 hover:bg-muted/30 transition-colors flex items-center justify-between">
                                                 <div className="flex items-center gap-3">
@@ -329,15 +338,15 @@ export default function WerkhofLagerPage() {
                                 </div>
                             ) : (
                                 <div className="divide-y divide-border max-h-[400px] overflow-y-auto">
-                                    {bestellungen
-                                        .filter(b => b.status !== 'versendet' && b.status !== 'geliefert')
+                                    {safeBestellungen
+                                        .filter(b => b?.status && b.status !== 'versendet' && b.status !== 'geliefert')
                                         .slice(0, 10)
                                         .map(b => (
                                             <div key={b.id} className="px-5 py-3 hover:bg-muted/30 transition-colors flex items-center justify-between">
                                                 <div>
-                                                    <p className="text-sm font-black text-foreground">{b.containerBez}</p>
+                                                    <p className="text-sm font-black text-foreground">{b.containerBez || 'Ohne Bezeichnung'}</p>
                                                     <p className="text-[10px] text-muted-foreground font-bold">
-                                                        {b.items.length} Positionen · {b.bestelltVon}
+                                                        {b.items?.length || 0} Positionen · {b.bestelltVon || 'Unbekannt'}
                                                     </p>
                                                 </div>
                                                 <span className={cn(
@@ -347,7 +356,7 @@ export default function WerkhofLagerPage() {
                                                     b.status === 'bereit' ? "bg-emerald-100 text-emerald-800 border-emerald-200" :
                                                     "bg-slate-100 text-slate-600 border-slate-200"
                                                 )}>
-                                                    {b.status.replace('_', ' ')}
+                                                    {(b.status || '').replace('_', ' ')}
                                                 </span>
                                             </div>
                                         ))}
@@ -365,7 +374,7 @@ export default function WerkhofLagerPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
-                            {bewegungen.length === 0 ? (
+                            {safeBewegungen.length === 0 ? (
                                 <div className="py-12 text-center">
                                     <ArrowRightLeft className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
                                     <p className="text-sm font-bold text-muted-foreground">Keine Lagerbewegungen vorhanden</p>
@@ -382,10 +391,10 @@ export default function WerkhofLagerPage() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {bewegungen.slice(0, 8).map(b => (
+                                        {safeBewegungen.slice(0, 8).map(b => (
                                             <TableRow key={b.id} className="hover:bg-muted/30">
                                                 <TableCell className="font-bold text-sm">
-                                                    {new Date(b.zeitpunkt).toLocaleString('de-CH', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                                    {b.zeitpunkt ? new Date(b.zeitpunkt).toLocaleString('de-CH', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—'}
                                                 </TableCell>
                                                 <TableCell>
                                                     <span className={cn(
@@ -457,7 +466,7 @@ export default function WerkhofLagerPage() {
 
                     <CardContent className="p-0">
                         {(() => {
-                            const eingaenge = bewegungen.filter(b => b.typ === 'einlagerung');
+                            const eingaenge = safeBewegungen.filter(b => b?.typ === 'einlagerung');
                             return eingaenge.length === 0 ? (
                                 <div className="py-16 text-center">
                                     <ArrowDownToLine className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
@@ -547,7 +556,7 @@ export default function WerkhofLagerPage() {
 
                     <CardContent className="p-0">
                         {(() => {
-                            const ausgaenge = bewegungen.filter(b => b.typ === 'auslagerung');
+                            const ausgaenge = safeBewegungen.filter(b => b?.typ === 'auslagerung');
                             return ausgaenge.length === 0 ? (
                                 <div className="py-16 text-center">
                                     <ArrowUpFromLine className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
@@ -597,7 +606,7 @@ export default function WerkhofLagerPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
-                        {bewegungen.length === 0 ? (
+                        {safeBewegungen.length === 0 ? (
                             <div className="py-16 text-center">
                                 <ArrowRightLeft className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
                                 <p className="text-sm font-bold text-muted-foreground">Keine Lagerbewegungen vorhanden</p>
@@ -617,10 +626,10 @@ export default function WerkhofLagerPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {bewegungen.map(b => (
+                                    {safeBewegungen.map(b => (
                                         <TableRow key={b.id} className="hover:bg-muted/30">
                                             <TableCell className="font-bold text-sm">
-                                                {new Date(b.zeitpunkt).toLocaleString('de-CH', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                                {b.zeitpunkt ? new Date(b.zeitpunkt).toLocaleString('de-CH', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—'}
                                             </TableCell>
                                             <TableCell>
                                                 <span className={cn(

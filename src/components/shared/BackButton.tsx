@@ -19,19 +19,15 @@ export function BackButton({ href, className, label = 'Zurück' }: BackButtonPro
         if (href) {
             router.push(href);
         } else {
-            // Check if there is history, otherwise fallback to a safe route is handled by the caller or we can provide a default
-            if (typeof window !== 'undefined' && window.history.length > 1) {
-                router.back();
+            // Derive hierarchical parent from the current URL pathname.
+            // Never use browser history to avoid landing on unrelated pages.
+            const pathParts = window.location.pathname.split('/').filter(Boolean);
+            if (pathParts.length > 1) {
+                // Navigate to the parent segment (e.g. /projId/teilsysteme/123 → /projId/teilsysteme)
+                const parentPath = '/' + pathParts.slice(0, -1).join('/');
+                router.push(parentPath);
             } else {
-                // Default fallback if no history and no href
-                // Since this is used in [projektId] dashboard, we usually want to go to the project dashboard
-                const pathParts = window.location.pathname.split('/');
-                if (pathParts.length > 1) {
-                    const projektId = pathParts[1];
-                    router.push(`/${projektId}/ausfuehrung`); // Sensible default for this app
-                } else {
-                    router.push('/projekte');
-                }
+                router.push('/projekte');
             }
         }
     };

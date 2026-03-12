@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { useProjekt } from '@/lib/context/ProjektContext';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 import { AbteilungBadge } from '@/components/shared/AbteilungBadge';
+import { KSBadge } from '@/components/shared/KSBadge';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { toast } from '@/lib/toast';
 
@@ -425,6 +426,7 @@ export default function KostenPage() {
                                                 <TableHead className="font-black">Mitarbeiter</TableHead>
                                                 <TableHead className="font-black text-right">Stunden</TableHead>
                                                 <TableHead className="font-black text-right">Kosten</TableHead>
+                                                <TableHead className="font-black">KS</TableHead>
                                                 <TableHead className="font-black">Abteilung</TableHead>
                                                 <TableHead className="font-black">Taetigkeit</TableHead>
                                                 <TableHead className="w-10" />
@@ -438,6 +440,9 @@ export default function KostenPage() {
                                                     <TableCell className="font-black text-right text-primary">{s.stunden}h</TableCell>
                                                     <TableCell className="font-bold text-right text-slate-600 text-xs">
                                                         {s.gesamtpreis ? `${s.gesamtpreis.toFixed(2)} CHF` : '—'}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <KSBadge ks={s.ks} abteilungFallback={s.abteilung} />
                                                     </TableCell>
                                                     <TableCell>
                                                         <AbteilungBadge abteilung={s.abteilung || '—'} />
@@ -456,7 +461,7 @@ export default function KostenPage() {
                                                 <TableCell className="font-black text-right text-slate-800">
                                                     {stunden.reduce((acc, s) => acc + (s.gesamtpreis || 0), 0).toLocaleString('de-CH', { minimumFractionDigits: 2 })} CHF
                                                 </TableCell>
-                                                <TableCell colSpan={2} />
+                                                <TableCell colSpan={3} />
                                             </TableRow>
                                         </TableBody>
                                     </Table>
@@ -519,6 +524,7 @@ export default function KostenPage() {
                                                 <TableHead className="font-black text-right">Menge</TableHead>
                                                 <TableHead className="font-black text-right">Einzelpreis</TableHead>
                                                 <TableHead className="font-black text-right">Gesamt</TableHead>
+                                                <TableHead className="font-black">KS</TableHead>
                                                 <TableHead className="font-black">Bestelldatum</TableHead>
                                                 <TableHead className="w-10" />
                                             </TableRow>
@@ -532,6 +538,9 @@ export default function KostenPage() {
                                                         <TableCell className="text-right text-muted-foreground">{m.menge} {m.einheit}</TableCell>
                                                         <TableCell className="text-right text-muted-foreground">{m.einzelpreis.toFixed(2)}</TableCell>
                                                         <TableCell className="text-right font-black text-primary">{gesamt.toFixed(2)} CHF</TableCell>
+                                                        <TableCell>
+                                                            <KSBadge ks={m.ks} />
+                                                        </TableCell>
                                                         <TableCell className="text-muted-foreground text-sm">{m.bestelldatum || '—'}</TableCell>
                                                         <TableCell>
                                                             <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground/50 hover:text-red-600" onClick={() => handleDeleteClick(m.id, 'material')}>
@@ -544,7 +553,7 @@ export default function KostenPage() {
                                             <TableRow className="bg-muted/50">
                                                 <TableCell colSpan={3} className="font-black uppercase text-xs text-muted-foreground tracking-wider">Total Materialkosten</TableCell>
                                                 <TableCell className="text-right font-black text-primary">{totalMaterial.toLocaleString('de-CH', { minimumFractionDigits: 2 })} CHF</TableCell>
-                                                <TableCell colSpan={2} />
+                                                <TableCell colSpan={3} />
                                             </TableRow>
                                         </TableBody>
                                     </Table>

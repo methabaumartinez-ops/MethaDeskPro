@@ -45,6 +45,13 @@ type MenuItem = {
     subItems?: MenuItem[];
 };
 
+// Global helper to determine if any sub-item is active based on the current pathname
+const isAnySubActive = (item: MenuItem, pathname: string): boolean => {
+    if (item.href && pathname === item.href) return true;
+    if (item.subItems) return item.subItems.some(sub => isAnySubActive(sub, pathname));
+    return false;
+};
+
 export function Sidebar({ projektId, className }: { projektId: string; className?: string; forceProjectSelection?: boolean }) {
     const pathname = usePathname();
     const { currentUser } = useProjekt();
@@ -92,6 +99,29 @@ export function Sidebar({ projektId, className }: { projektId: string; className
         }
     }, []);
 
+    // Accordion State Management for top-level routing
+    const [expandedTopLevel, setExpandedTopLevel] = React.useState<string | null>(null);
+
+    // Sync expanded root node with active route (pathname)
+    React.useEffect(() => {
+        // Find which top-level menu item contains the active route
+        const expectedTop = menuItems.find(item => isAnySubActive(item, pathname));
+        if (expectedTop) {
+            setExpandedTopLevel(expectedTop.title);
+        }
+    }, [pathname]);
+
+    // Used by NavItem to toggle root items manually (accordion behavior limits one)
+    const handleTopLevelToggle = (title: string, wasExpanded: boolean) => {
+        if (wasExpanded) {
+            // Close if clicking the already open one
+            setExpandedTopLevel(null);
+        } else {
+             // Open current and close others
+            setExpandedTopLevel(title);
+        }
+    };
+
     const menuItems: MenuItem[] = [
         {
             title: 'Dashboard Builder',
@@ -112,9 +142,16 @@ export function Sidebar({ projektId, className }: { projektId: string; className
                     title: 'Bauleitung',
                     href: `/${projektId}/produktion/bauleitung`,
                     icon: Briefcase,
-                    pageKey: 'bauleitung',
+                    pageKey: 'bauleitung'
+                },
+                {
+                    title: 'Analyse',
+                    icon: Activity,
+                    pageKey: 'analyse',
                     subItems: [
-                        { title: 'Analyse', href: `/${projektId}/analyse`, icon: Activity, pageKey: 'analyse' },
+                        { title: 'Projekt', href: `/${projektId}/analyse/projekt`, icon: Briefcase, pageKey: 'analyse-projekt' },
+                        { title: 'Produktion', href: `/${projektId}/analyse/produktion`, icon: Factory, pageKey: 'analyse-produktion' },
+                        { title: 'Baumeister', href: `/${projektId}/analyse/baumeister`, icon: Hammer, pageKey: 'analyse-ausfuehrung' },
                     ]
                 },
                 {
@@ -211,6 +248,8 @@ export function Sidebar({ projektId, className }: { projektId: string; className
                         pathname={pathname}
                         depth={0}
                         forceOnlyProjekte={forceOnlyProjekte}
+                        forceExpanded={expandedTopLevel === item.title}
+                        onToggle={(wasExpanded: boolean) => handleTopLevelToggle(item.title, wasExpanded)}
                     />
                 ))}
 
@@ -225,6 +264,8 @@ export function Sidebar({ projektId, className }: { projektId: string; className
                                 pathname={pathname}
                                 depth={0}
                                 forceOnlyProjekte={false}
+                                forceExpanded={expandedTopLevel === item.title}
+                                onToggle={(wasExpanded: boolean) => handleTopLevelToggle(item.title, wasExpanded)}
                             />
                         ))}
                     </>
@@ -249,45 +290,55 @@ function NavItem({
     pathname,
     depth,
     forceOnlyProjekte,
+    forceExpanded, // Handed down by parent ONLY for depth 0 to enforce single accordion
+    onToggle
 }: {
     item: MenuItem;
     pathname: string;
     depth: number;
     forceOnlyProjekte?: boolean;
+    forceExpanded?: boolean;
+    onToggle?: (wasExpanded: boolean) => void;
 }) {
     const hasSubItems = item.subItems && item.subItems.length > 0;
 
-    // Check if any subitem is active
-    const isAnySubActive = (it: MenuItem): boolean => {
-        if (it.href && pathname === it.href) return true;
-        if (it.subItems) return it.subItems.some(isAnySubActive);
-        return false;
-    };
-
     const isExactActive = item.href ? pathname === item.href : false;
-    const isInActivePath = isExactActive || isAnySubActive(item);
+    const isInActivePath = isExactActive || isAnySubActive(item, pathname);
     const isActive = isExactActive;
 
     // When entering from project selection, only "Projekte" starts open at depth 0
+    // If not controlled by parent, determine local state.
     const computeInitialOpen = () => {
         if (forceOnlyProjekte && depth === 0) {
             return item.title === 'Projekte';
         }
-        // "Produktion" should be closed by default on initial load
         if (item.title === 'Produktion') {
             return false;
         }
         return isInActivePath;
     };
 
-    const [isOpen, setIsOpen] = React.useState(computeInitialOpen);
+    const [localIsOpen, setLocalIsOpen] = React.useState(computeInitialOpen);
 
-    // Update expansion if pathname changes to a child
+    // Determines actual expansion state considering parent overrides
+    const isOpen = depth === 0 && forceExpanded !== undefined ? forceExpanded : localIsOpen;
+
+    // Update internal expansion for nested items if pathname changes
     React.useEffect(() => {
-        if (isInActivePath) {
-            setIsOpen(true);
+        if (depth > 0 && isInActivePath) {
+            setLocalIsOpen(true);
         }
-    }, [pathname]);
+    }, [pathname, depth, isInActivePath]);
+
+    const handleToggleNode = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (depth === 0 && onToggle) {
+             onToggle(isOpen);
+        } else {
+             setLocalIsOpen(!localIsOpen);
+        }
+    };
 
     const Icon = item.icon;
 
@@ -315,11 +366,7 @@ function NavItem({
             {hasSubItems && (
                 <button
                     type="button"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setIsOpen(!isOpen);
-                    }}
+                    onClick={handleToggleNode}
                     className="p-1.5 -mr-1.5 rounded-md hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-all flex items-center justify-center shadow-sm cursor-pointer"
                     aria-label={isOpen ? "Menü einklappen" : "Menü ausklappen"}
                 >
@@ -337,7 +384,13 @@ function NavItem({
                 // Parent that is ALSO a link — click navigates AND opens dropdown
                 <div className="flex flex-col">
                     <div className="flex items-center">
-                        <Link href={item.href} className="flex-1" onClick={() => setIsOpen(true)}>{content}</Link>
+                        <Link href={item.href} className="flex-1" onClick={() => {
+                            if (depth === 0 && onToggle) {
+                                onToggle(false); // Force open on parent link click
+                            } else {
+                                setLocalIsOpen(true);
+                            }
+                        }}>{content}</Link>
                     </div>
                     {isOpen && (
                         <div className={cn("ml-4 mt-1 flex flex-col gap-1 border-l pl-2 animate-in slide-in-from-left-2")}>
@@ -356,7 +409,13 @@ function NavItem({
             ) : (
                 // Just a folder — click toggles dropdown
                 <>
-                    <div onClick={() => setIsOpen(!isOpen)}>{content}</div>
+                    <div onClick={() => {
+                        if (depth === 0 && onToggle) {
+                            onToggle(isOpen);
+                        } else {
+                            setLocalIsOpen(!localIsOpen);
+                        }
+                    }}>{content}</div>
                     {isOpen && (
                         <div className={cn("ml-4 mt-1 flex flex-col gap-1 border-l pl-2 animate-in slide-in-from-left-2", depth === 0 ? "ml-6" : "")}>
                             {item.subItems?.map(sub => (

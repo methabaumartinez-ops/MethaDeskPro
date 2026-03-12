@@ -31,6 +31,7 @@ import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 import { useProjekt } from '@/lib/context/ProjektContext';
 import { ABTEILUNGEN_CONFIG } from '@/types';
 import { TS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses, getAbteilungColorClasses, PLANNER_ROLES } from '@/lib/config/statusConfig';
+import { getKSFromAbteilung } from '@/lib/config/ksConfig';
 import { getCreationDefaults } from '@/lib/workflow/workflowEngine';
 import { ProvisionalDateInput } from '@/components/ui/provisional-date-input';
 
@@ -611,9 +612,7 @@ export default function TeilsystemErfassenPage() {
 
     useEffect(() => {
         if (currentAbteilung) {
-            let ksValue = '2';
-            if (currentAbteilung === 'Bau') ksValue = '1';
-            else if (currentAbteilung === 'Unternehmer') ksValue = '3';
+            const ksValue = getKSFromAbteilung(currentAbteilung);
             setValue('ks', ksValue, { shouldValidate: true, shouldDirty: true });
         }
     }, [currentAbteilung, setValue]);
@@ -705,9 +704,14 @@ export default function TeilsystemErfassenPage() {
                                         <Input
                                             label="KS"
                                             placeholder="1"
+                                            disabled
+                                            className="bg-muted/50 font-bold"
                                             {...register('ks')}
                                             error={errors.ks?.message}
                                         />
+                                        <p className="text-[9px] font-black text-orange-600 mt-0.5 ml-1 uppercase">
+                                            {watch('ks') === '1' ? 'Baumeister' : watch('ks') === '2' ? 'Produktion' : watch('ks') === '3' ? 'Extern' : ''}
+                                        </p>
                                     </div>
                                     <div className="md:col-span-9">
                                         <Input

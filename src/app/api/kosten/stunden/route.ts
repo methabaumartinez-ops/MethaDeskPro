@@ -5,6 +5,7 @@ import { TsStunden, Mitarbeiter } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 import { requireAuth } from '@/lib/helpers/requireAuth';
 import { ChangelogService } from '@/lib/services/changelogService';
+import { getKSFromAbteilung } from '@/lib/config/ksConfig';
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
@@ -43,6 +44,7 @@ export async function POST(request: NextRequest) {
             ...body,
             stundensatz,
             gesamtpreis,
+            ks: getKSFromAbteilung(body.abteilung),
             id: uuidv4(),
             createdAt: new Date().toISOString()
         };

@@ -6,6 +6,7 @@ import { ProjectService } from '@/lib/services/projectService';
 import { deleteTeilsystemWithCascade, deletePositionWithCascade } from '@/lib/services/server/deleteHelpers';
 import { requireAuth } from '@/lib/helpers/requireAuth';
 import { ChangelogService, detectChanges, buildSummary } from '@/lib/services/changelogService';
+import { getKSFromAbteilung } from '@/lib/config/ksConfig';
 
 
 const ALLOWED_COLLECTIONS = [
@@ -59,7 +60,13 @@ export async function PUT(req: Request, { params }: { params: Promise<{ collecti
         if (!existing) {
             return NextResponse.json({ error: `${collection} nicht gefunden.` }, { status: 404 });
         }
-        const merged = { ...existing, ...body, id };
+        const merged: any = { ...existing, ...body, id };
+
+        // Auto-derive KS for KS-aware collections
+        const KS_AWARE_COLLECTIONS = ['teilsysteme', 'kosten', 'ausfuehrung_tasks', 'tasks', 'fahrzeuge'];
+        if (KS_AWARE_COLLECTIONS.includes(collection) && merged.abteilung !== undefined) {
+            merged.ks = getKSFromAbteilung(merged.abteilung);
+        }
 
         const updated = await DatabaseService.upsert(collection, merged);
 
@@ -103,7 +110,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ collec
         if (!existing) {
             return NextResponse.json({ error: `${collection} nicht gefunden.` }, { status: 404 });
         }
-        const merged = { ...existing, ...body, id };
+        const merged: any = { ...existing, ...body, id };
+
+        // Auto-derive KS for KS-aware collections
+        const KS_AWARE_COLLECTIONS = ['teilsysteme', 'kosten', 'ausfuehrung_tasks', 'tasks', 'fahrzeuge'];
+        if (KS_AWARE_COLLECTIONS.includes(collection) && merged.abteilung !== undefined) {
+            merged.ks = getKSFromAbteilung(merged.abteilung);
+        }
 
         const updated = await DatabaseService.upsert(collection, merged);
 

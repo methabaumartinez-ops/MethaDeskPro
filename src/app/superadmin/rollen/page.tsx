@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Shield, Users, RefreshCw, ChevronDown, ChevronRight } from 'lucide-react';
+import { Shield, Users, RefreshCw, ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useProjekt } from '@/lib/context/ProjektContext';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/lib/toast';
@@ -136,8 +136,12 @@ export default function SuperadminRollenPage() {
             <div className="absolute inset-0 pointer-events-none z-0" style={{ backgroundColor: 'rgba(255,255,255,0.91)' }} />
             <div className="relative z-10">
             {/* Header */}
-            <div className="border-b border-gray-200 bg-white px-8 py-6">
-                <div className="max-w-6xl mx-auto flex items-center justify-between">
+            <div className="border-b border-gray-200 bg-white px-6 py-4 flex items-center gap-6">
+                <a href="/projekte" className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all text-white shrink-0" style={{ background: '#ff6b35', boxShadow: '0 4px 14px rgba(255,107,53,0.35)' }}>
+                    <ChevronLeft className="h-4 w-4" />
+                    Zu Projekten
+                </a>
+                <div className="flex-1 w-full max-w-6xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         {/* Shield icon — matches sidebar visual language */}
                         <div

@@ -92,7 +92,7 @@ export default function ProjectOverviewPage() {
             {/* 1. Project Header Section */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 {/* BLOCK 1: Image */}
-                <Card className="relative flex flex-col items-center justify-center overflow-hidden border-none shadow-md min-h-[220px] bg-slate-100 dark:bg-slate-800">
+                <Card className="relative flex flex-col items-center justify-center overflow-hidden border border-orange-500 shadow-md min-h-[220px] bg-slate-100 dark:bg-slate-800">
                      {project.imageUrl ? (
                          <img src={getProjectImage(project)} alt={project.projektname} className="absolute inset-0 object-cover w-full h-full" />
                      ) : (
@@ -101,7 +101,7 @@ export default function ProjectOverviewPage() {
                 </Card>
 
                 {/* BLOCK 2: Project Number & Name */}
-                <Card className="flex flex-col items-center justify-center p-6 text-center bg-white border-none shadow-md dark:bg-slate-900/60">
+                <Card className="flex flex-col items-center justify-center p-6 text-center bg-white border border-orange-500 shadow-md dark:bg-slate-900/60">
                      <div className="px-6 py-2 mb-4 text-lg font-bold border rounded-full bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-700 shadow-sm">
                          {project.projektname}
                      </div>
@@ -114,7 +114,7 @@ export default function ProjectOverviewPage() {
                 </Card>
 
                 {/* BLOCK 3: Responsible Roles */}
-                <Card className="flex flex-col p-6 bg-white border-none shadow-md dark:bg-slate-900/60">
+                <Card className="flex flex-col p-6 bg-white border border-orange-500 shadow-md dark:bg-slate-900/60">
                      <h3 className="pb-3 mb-4 text-xs font-black tracking-widest uppercase border-b text-slate-400 border-border/50">Projektverantwortliche</h3>
                      <div className="flex flex-col justify-center flex-1 space-y-4">
                          <div className="flex items-center justify-between">
@@ -141,60 +141,60 @@ export default function ProjectOverviewPage() {
             <h3 className="px-2 mt-8 text-sm font-black tracking-widest uppercase text-slate-500">Produktionsanalyse</h3>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {/* Total TS */}
-                <Card className="border-none shadow-sm dark:bg-slate-900/40">
+                <Card className="bg-white border border-orange-500 shadow-sm dark:bg-slate-900/60">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-medium text-slate-500">Total Teilsysteme</p>
                                 <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{totalTS}</p>
                             </div>
-                            <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400">
-                                <Layers className="w-6 h-6" />
+                            <div className="text-slate-400">
+                                <Layers className="w-8 h-8" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
                 
                 {/* Offen */}
-                <Card className="border-none shadow-sm dark:bg-slate-900/40">
+                <Card className="bg-white border border-orange-500 shadow-sm dark:bg-slate-900/60">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-medium text-green-600 dark:text-green-500">Offen</p>
                                 <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{countOffen}</p>
                             </div>
-                            <div className="p-3 text-green-500 bg-green-100 rounded-xl dark:bg-green-900/30">
-                                <CircleDashed className="w-6 h-6" />
+                            <div className="text-green-500">
+                                <CircleDashed className="w-8 h-8" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
                 
                 {/* In Arbeit */}
-                <Card className="border-none shadow-sm dark:bg-slate-900/40">
+                <Card className="bg-white border border-orange-500 shadow-sm dark:bg-slate-900/60">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-medium text-blue-600 dark:text-blue-500">In Arbeit</p>
                                 <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{countInArbeit}</p>
                             </div>
-                            <div className="p-3 text-blue-500 bg-blue-100 rounded-xl dark:bg-blue-900/30">
-                                <Wrench className="w-6 h-6" />
+                            <div className="text-blue-500">
+                                <Wrench className="w-8 h-8" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
                 
                 {/* Fertig */}
-                <Card className="border-none shadow-sm dark:bg-slate-900/40">
+                <Card className="bg-white border border-orange-500 shadow-sm dark:bg-slate-900/60">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Fertig</p>
                                 <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{countFertig}</p>
                             </div>
-                            <div className="p-3 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-500">
-                                <CheckCircle2 className="w-6 h-6" />
+                            <div className="text-slate-500">
+                                <CheckCircle2 className="w-8 h-8" />
                             </div>
                         </div>
                     </CardContent>
@@ -205,12 +205,10 @@ export default function ProjectOverviewPage() {
             <div className="grid grid-cols-1 gap-6 mt-6 lg:grid-cols-2">
                 
                 {/* Visual Status Breakdown */}
-                <Card className="flex flex-col border-none shadow-md overflow-hidden bg-white dark:bg-slate-900/60">
+                <Card className="flex flex-col border border-orange-500 shadow-md overflow-hidden bg-white dark:bg-slate-900/60">
                     <CardHeader className="bg-slate-50 dark:bg-slate-800/50 border-b border-border/50 py-4">
                         <div className="flex items-center gap-2">
-                            <div className="p-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
-                                <Layers className="w-4 h-4 text-[#ff6b35]" />
-                            </div>
+                            <Layers className="w-5 h-5 text-orange-500" />
                             <CardTitle className="text-base font-bold text-slate-700 dark:text-slate-300">TS Übersicht nach Status</CardTitle>
                         </div>
                     </CardHeader>
@@ -251,13 +249,11 @@ export default function ProjectOverviewPage() {
                 </Card>
 
                 {/* Workers / Teams Involved */}
-                <Card className="flex flex-col border-none shadow-md overflow-hidden bg-white dark:bg-slate-900/60">
+                <Card className="flex flex-col border border-orange-500 shadow-md overflow-hidden bg-white dark:bg-slate-900/60">
                     <CardHeader className="bg-slate-50 dark:bg-slate-800/50 border-b border-border/50 py-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <div className="p-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
-                                    <Users className="w-4 h-4 text-blue-500" />
-                                </div>
+                                <Users className="w-5 h-5 text-orange-500" />
                                 <CardTitle className="text-base font-bold text-slate-700 dark:text-slate-300">Beteiligtes Personal</CardTitle>
                             </div>
                             <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-black text-xs px-2.5 py-1 rounded-full">

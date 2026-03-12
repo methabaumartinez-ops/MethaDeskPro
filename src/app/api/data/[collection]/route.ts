@@ -3,6 +3,7 @@ import { DatabaseService } from '@/lib/services/db';
 import { v4 as uuidv4 } from 'uuid';
 import { requireAuth } from '@/lib/helpers/requireAuth';
 import { ChangelogService } from '@/lib/services/changelogService';
+import { getKSFromAbteilung, KSCategory } from '@/lib/config/ksConfig';
 
 const ALLOWED_COLLECTIONS = [
     'projekte', 'teilsysteme', 'positionen', 'unterpositionen',
@@ -61,10 +62,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ collect
 
         const body = await req.json();
 
-        const newItem = {
+        const newItem: any = {
             ...body,
             id: body.id || uuidv4(),
         };
+
+        // Automatically derive KS from Abteilung for specific collections
+        const KS_AWARE_COLLECTIONS = ['teilsysteme', 'kosten', 'ausfuehrung_tasks', 'tasks', 'fahrzeuge'];
+        if (KS_AWARE_COLLECTIONS.includes(collection) && newItem.abteilung) {
+            newItem.ks = getKSFromAbteilung(newItem.abteilung);
+        }
 
         // BUG-07 FIX: Use insert() instead of upsert() for creation.
         // upsert() would silently overwrite an existing record if the client

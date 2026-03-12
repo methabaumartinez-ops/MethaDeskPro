@@ -19,6 +19,8 @@ interface ModuleActionBannerProps {
     icon: React.ElementType;
     /** Module title, e.g. "Teilsysteme u. BKP" */
     title: string;
+    /** Optional subtitle */
+    subtitle?: string;
     /** Items for the autocomplete dropdown */
     items?: AutocompleteItem[];
     /** Called when an autocomplete suggestion is selected */
@@ -57,6 +59,7 @@ export function ModuleActionBanner({
     showBackButton = true,
     backHref,
     children,
+    subtitle,
 }: ModuleActionBannerProps) {
     const { projektId } = useParams() as { projektId: string };
     const router = useRouter();
@@ -169,8 +172,11 @@ export function ModuleActionBanner({
                 <div className="p-2 bg-white/10 rounded-lg shrink-0">
                     <Icon className="h-5 w-5 text-orange-500" />
                 </div>
-                <div className="flex items-center h-full">
+                <div className="flex flex-col justify-center h-full">
                     <span className="text-xl font-black text-white leading-none tracking-tight">{title}</span>
+                    {subtitle && (
+                        <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest leading-none mt-1">{subtitle}</span>
+                    )}
                 </div>
             </div>
 

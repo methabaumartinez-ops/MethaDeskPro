@@ -26,6 +26,7 @@ import Link from 'next/link';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { cn, cleanBemerkung, getAppUrl, isMontageTerminBauleiter } from '@/lib/utils';
+import { KSBadge } from '@/components/shared/KSBadge';
 import { QRCodeSVG } from 'qrcode.react';
 
 import { QRCodeSection } from '@/components/shared/QRCodeSection';
@@ -49,7 +50,7 @@ export default function TeilsystemDetailPage() {
         if (from === 'avor') router.push(`/${projektId}/produktion/avor`);
         else if (from === 'planner' || from === 'planung') router.push(`/${projektId}/produktion/planung`);
         else if (from === 'einkauf') router.push(`/${projektId}/produktion/einkauf`);
-        else router.back();
+        else router.push(`/${projektId}/teilsysteme`);
     };
     const id = params?.id as string;
     const { can, role } = usePermissions();
@@ -135,7 +136,7 @@ export default function TeilsystemDetailPage() {
 
     const detailFields = [
         { label: 'System-Nr.', value: item.teilsystemNummer, icon: Hash },
-        { label: 'KS / Kostenstelle', value: item.ks === '1' ? '1 Baumeister' : item.ks === '2' ? '2 Produktion' : item.ks === '3' ? '3 Extern' : item.ks, icon: Briefcase },
+        { label: 'Kostenstelle', value: item.ks, icon: Briefcase },
         { label: 'Bezeichnung', value: item.name, icon: FileText },
         { label: 'Gebäude', value: (item as any).gebäude || (item.beschreibung?.match(/Gebäude: (.*?)(?: \||$)/)?.[1]), icon: MapPin },
         { label: 'Abschnitt', value: (item as any).abschnitt || (item.beschreibung?.match(/Abschnitt: (.*?)(?: \||$)/)?.[1]), icon: MapPin },
@@ -227,6 +228,8 @@ export default function TeilsystemDetailPage() {
                             </Badge>
                         );
                     })()}
+
+                    <KSBadge ks={item.ks ? String(item.ks) : undefined} abteilungFallback={item.abteilung} className="px-5 py-1.5 text-sm rounded-xl shadow-md border-b-4 flex items-center justify-center font-bold tracking-tight h-[34px]" />
 
                     <StatusBadge status={item.status} className={cn('px-5 py-1.5 text-sm rounded-xl shadow-md border-b-4', getStatusBorderRing(item.status))} />
 

@@ -99,7 +99,7 @@ export default function PositionDetailPage() {
             {/* Header / Navigation Section */}
             <div className="flex justify-between items-center -mt-2 mb-2 px-2">
                 <div className="flex items-center gap-4">
-                    <Button variant="metha-orange" onClick={() => router.back()} className="h-9 px-6 font-black uppercase text-[10px] tracking-widest shadow-lg rounded-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                    <Button variant="metha-orange" onClick={() => router.push(`/${projektId}/teilsysteme/${position.teilsystemId}`)} className="h-9 px-6 font-black uppercase text-[10px] tracking-widest shadow-lg rounded-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
                         <ArrowLeft className="h-4 w-4" />
                         Zurück
                     </Button>

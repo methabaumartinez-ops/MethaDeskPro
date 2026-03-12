@@ -4,6 +4,7 @@ import { deleteTeilsystemWithCascade } from '@/lib/services/server/deleteHelpers
 import { requireAuth } from '@/lib/helpers/requireAuth';
 import { ChangelogService, detectChanges, buildSummary } from '@/lib/services/changelogService';
 import { validateTransition } from '@/lib/workflow/workflowEngine';
+import { getKSFromAbteilung } from '@/lib/config/ksConfig';
 
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -80,7 +81,11 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
             }
         }
 
-        const updatedData = { ...existing, ...body, id };
+        const updatedData: any = { ...existing, ...body, id };
+        if (updatedData.abteilung !== undefined) {
+            updatedData.ks = getKSFromAbteilung(updatedData.abteilung);
+        }
+
         const result = await DatabaseService.upsert('teilsysteme', updatedData);
 
         // Record structured change history (silent on failure)

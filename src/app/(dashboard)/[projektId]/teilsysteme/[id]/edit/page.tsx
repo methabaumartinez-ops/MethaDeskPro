@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { useProjekt } from '@/lib/context/ProjektContext';
 import { ABTEILUNGEN_CONFIG } from '@/types';
 import { TS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses, getAbteilungColorClasses } from '@/lib/config/statusConfig';
+import { getKSFromAbteilung } from '@/lib/config/ksConfig';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { EmployeeService } from '@/lib/services/employeeService';
@@ -237,9 +238,7 @@ export default function TeilsystemEditPage() {
 
     useEffect(() => {
         if (currentAbteilung) {
-            let ksValue = '2';
-            if (currentAbteilung === 'Bau') ksValue = '1';
-            else if (currentAbteilung === 'Unternehmer') ksValue = '3';
+            const ksValue = getKSFromAbteilung(currentAbteilung);
             setValue('ks', ksValue, { shouldValidate: true, shouldDirty: true });
         }
     }, [currentAbteilung, setValue]);
@@ -583,6 +582,8 @@ export default function TeilsystemEditPage() {
                                     <Input
                                         label="KS"
                                         placeholder="1"
+                                        disabled
+                                        className="bg-muted/50 font-bold"
                                         {...register('ks')}
                                         error={errors.ks?.message}
                                     />

@@ -417,6 +417,7 @@ export interface TsStunden {
   gesamtpreis?: number;     // stunden * stundensatz
   abteilung?: Abteilung | string;
   abteilungId?: AbteilungId | string;
+  ks?: string;
   taetigkeit?: string;       // z.B. "Montage", "Schweissen", "Planung"
   bemerkung?: string;
   createdAt?: string;
@@ -433,6 +434,7 @@ export interface TsMaterialkosten {
   einheit: string;
   einzelpreis: number;       // CHF
   gesamtpreis?: number;     // berechnet: menge * einzelpreis
+  ks?: string;
   bestelldatum?: string;
   lieferdatum?: string;
   rechnungsnummer?: string;
@@ -519,6 +521,7 @@ export interface Fahrzeug {
   kaufjahr?: string;
   geprueftBis?: string;
   abgaswartung?: string;
+  ks?: string;
   status: FahrzeugStatus;
   bemerkung?: string;
   imageUrl?: string;
@@ -608,6 +611,7 @@ export interface Task {
   title: string;
   description?: string | null;
   status: TaskStatus;
+  ks?: string;
   priority?: TaskPriority | null;
   dueDate?: string | null;
   scheduledDate?: string | null;
