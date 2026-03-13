@@ -166,6 +166,8 @@ export interface Teilsystem {
   documentUrl?: string;
   lagerortId?: string;
   abteilung?: Abteilung;
+  verantwortlicherId?: string;
+  verantwortlicherName?: string;
   status: ItemStatus;
   lieferantenIds?: string[];
   lieferantenNames?: string[];
@@ -215,6 +217,8 @@ export interface Position {
   // IFC METHABAU fields
   teileart?: string;          // Teileart from METHABAU PSet
   materialProp?: string;      // Werkstoff from METHABAU PSet
+  verantwortlicherId?: string;
+  verantwortlicherName?: string;
   status: ItemStatus;
   createdAt?: string;
   updatedAt?: string;
@@ -229,7 +233,8 @@ export interface Unterposition {
   positionId: string;
   teilsystemId?: string;
   projektId?: string;
-  posNummer?: string;
+  posNummer?: string;       // legacy / IFC import
+  untPosNummer?: string;    // Eigene Nummer der Unterposition (Kind von Position)
   name: string;
   beschreibung?: string;
   menge: number;
@@ -265,6 +270,8 @@ export interface Unterposition {
   rawPsets?: any;
   ifcUrl?: string;
   ifcFileName?: string;
+  verantwortlicherId?: string;  // ID del Mitarbeiter responsable
+  verantwortlicherName?: string; // Nombre pre-calculado del responsable
   status: ItemStatus;
   createdAt?: string;
   updatedAt?: string;

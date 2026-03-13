@@ -82,7 +82,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         }
 
         const updatedData: any = { ...existing, ...body, id };
-        if (updatedData.abteilung !== undefined) {
+        // Only auto-derive KS from Abteilung when the caller has NOT explicitly sent a KS value.
+        // This preserves the user's manual selection from the dropdown.
+        if (updatedData.abteilung !== undefined && (body.ks === undefined || body.ks === null)) {
             updatedData.ks = getKSFromAbteilung(updatedData.abteilung);
         }
 

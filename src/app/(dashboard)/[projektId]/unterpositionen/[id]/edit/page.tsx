@@ -14,8 +14,8 @@ import { Button } from '@/components/ui/button';
 import { SubPositionService } from '@/lib/services/subPositionService';
 import { LagerortService } from '@/lib/services/lagerortService';
 import { LagerortSelect } from '@/components/shared/LagerortSelect';
-import { Unterposition, Lagerort, Beschichtung, PlanStatus, ABTEILUNGEN_CONFIG } from '@/types';
-import { POS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses, getAbteilungColorClasses } from '@/lib/config/statusConfig';
+import { Unterposition, Lagerort, Beschichtung, ABTEILUNGEN_CONFIG } from '@/types';
+import { UNTPOS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses, getAbteilungColorClasses } from '@/lib/config/statusConfig';
 import { ArrowLeft, Save, UploadCloud, FileType, Paperclip, FileText, Loader2, X, Search, Plus, Loader, Trash2, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -29,22 +29,14 @@ import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 const BESCHICHTUNGEN: Beschichtung[] = [
     'feuerverzinkt', 'pulverbeschichtet', 'nasslackiert', 'eloxiert', 'kunststoffbeschichtet', 'unbehandelt', 'andere'
 ];
-const PLAN_STATUS: { value: PlanStatus; label: string }[] = [
-    { value: 'offen', label: 'Offen' },
-    { value: 'in_bearbeitung', label: 'In Bearbeitung' },
-    { value: 'freigegeben', label: 'Freigegeben' },
-    { value: 'fertig', label: 'Fertig' },
-    { value: 'geaendert', label: 'Geändert' },
-    { value: 'abgeschlossen', label: 'Abgeschlossen' },
-];
+
 
 const unterpositionSchema = z.object({
-    posNummer: z.string().min(1, 'Positionsnummer ist erforderlich'),
+    untPosNummer: z.string().optional(),
     name: z.string().min(3, 'Bezeichnung muss mindestens 3 Zeichen lang sein'),
     menge: z.coerce.number().min(0.01),
     einheit: z.string().min(1, 'Einheit ist erforderlich'),
     status: z.string().min(1, 'Status ist erforderlich'),
-    planStatus: z.string().min(1, 'Plan Status ist erforderlich'),
     abteilung: z.string().optional(),
     beschichtung: z.string().optional(),
     gewicht: z.coerce.number().optional(),
@@ -99,12 +91,11 @@ export default function UnterpositionEditPage() {
                 if (data) {
                     setUnterposition(data);
                     reset({
-                        posNummer: data.posNummer || '',
+                        untPosNummer: data.untPosNummer || '',
                         name: data.name,
                         menge: data.menge,
                         einheit: data.einheit,
                         status: data.status as any,
-                        planStatus: data.planStatus || 'offen',
                         abteilung: (data as any).abteilung || '',
                         beschichtung: data.beschichtung || '',
                         gewicht: data.gewicht,
@@ -234,7 +225,6 @@ export default function UnterpositionEditPage() {
             await SubPositionService.updateUnterposition(id, {
                 ...data,
                 status: data.status as any,
-                planStatus: data.planStatus as any,
                 abteilung: data.abteilung as any,
                 beschichtung: data.beschichtung as any,
                 ifcUrl: uploadedIfcUrl,
@@ -290,47 +280,35 @@ export default function UnterpositionEditPage() {
                                 Unterpositions-Informationen
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-6 space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <Input label="Pos. Nummer *" {...register('posNummer')} error={errors.posNummer?.message} className="h-11 font-bold" />
+                        <CardContent className="p-6 space-y-5">
+                            {/* Fila 1: PosNr (1) + Bezeichnung (3) */}
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+                                <Input label="UntPos Nummer" {...register('untPosNummer')} error={errors.untPosNummer?.message} className="h-11 font-bold" />
                                 <div className="md:col-span-3">
                                     <Input label="Bezeichnung *" {...register('name')} error={errors.name?.message} className="h-11 font-bold" />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-3 gap-4">
+
+                            {/* Fila 2: Menge + Einheit + Gewicht + UntPos Status — 4 cols iguales */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
                                 <Input label="Menge *" type="number" step="0.01" {...register('menge')} error={errors.menge?.message} className="h-11" />
                                 <Input label="Einheit" placeholder="Stk, m, m²" {...register('einheit')} error={errors.einheit?.message} className="h-11" />
                                 <Input label="Gewicht (kg)" type="number" step="0.1" {...register('gewicht')} placeholder="Optional" className="h-11" />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
                                 <Select
-                                    label="Pos Status *"
-                                    options={[
-                                        { value: 'offen', label: 'Offen' },
-                                        { value: 'bestellt', label: 'Bestellt' },
-                                        { value: 'in_produktion', label: 'In Produktion' },
-                                        { value: 'fertig', label: 'Fertig' },
-                                        { value: 'geliefert', label: 'Geliefert' },
-                                        { value: 'verbaut', label: 'Verbaut' },
-                                        { value: 'abgeschlossen', label: 'Abgeschlossen' },
-                                    ]}
+                                    label="UntPos Status *"
+                                    options={UNTPOS_ALLOWED_STATUSES.map(st => ({ value: STATUS_UI_CONFIG[st].value, label: STATUS_UI_CONFIG[st].label }))}
                                     {...register('status')}
                                     error={errors.status?.message}
                                     className={cn('h-11 font-bold', getStatusColorClasses(watch('status')))}
                                 />
-                                <Select
-                                    label="Plan Status *"
-                                    options={PLAN_STATUS.map(p => ({ value: p.value, label: p.label }))}
-                                    {...register('planStatus')}
-                                    error={errors.planStatus?.message}
-                                    className={cn('h-11 font-bold', getStatusColorClasses(watch('planStatus')))}
-                                />
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+
+                            {/* Fila 3: Abteilung + Beschichtung + Lagerort + Lieferant — 4 cols iguales */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
                                 <Select
                                     label="Abteilung"
                                     options={[
-                                        { value: '', label: '— Bitte wählen —' },
+                                        { value: '', label: '— Bitte waehlen —' },
                                         ...ABTEILUNGEN_CONFIG.map(a => ({ value: a.name, label: a.name }))
                                     ]}
                                     {...register('abteilung')}
@@ -339,14 +317,12 @@ export default function UnterpositionEditPage() {
                                 <Select
                                     label="Beschichtung"
                                     options={[
-                                        { value: '', label: '— Keine Beschichtung —' },
+                                        { value: '', label: 'Keine Beschichtung' },
                                         ...BESCHICHTUNGEN.map(b => ({ value: b, label: b }))
                                     ]}
                                     {...register('beschichtung')}
                                     className="h-11"
                                 />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
                                 <LagerortSelect
                                     projektId={projektId}
                                     lagerorte={lagerorte}
@@ -354,8 +330,6 @@ export default function UnterpositionEditPage() {
                                     {...register('lagerortId')}
                                     className="h-11"
                                 />
-                            </div>
-                            <div>
                                 <Controller
                                     name="lieferantId"
                                     control={control}
@@ -373,10 +347,12 @@ export default function UnterpositionEditPage() {
                                     )}
                                 />
                             </div>
+
+                            {/* Fila 4: Bemerkung — ancho completo */}
                             <div className="space-y-1.5">
-                                <label className="text-sm font-semibold text-foreground ml-1">Bemerkung</label>
+                                <label className="text-xs font-semibold text-foreground ml-1">Bemerkung</label>
                                 <textarea
-                                    className="flex min-h-[100px] w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all hover:border-accent"
+                                    className="flex min-h-[80px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all hover:border-accent"
                                     {...register('bemerkung')}
                                 />
                             </div>

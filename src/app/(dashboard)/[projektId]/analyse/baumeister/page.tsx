@@ -11,7 +11,7 @@ import { TaskService } from '@/lib/services/taskService';
 import { Teilsystem, TsStunden, Mitarbeiter, ItemStatus } from '@/types';
 import { Task, TaskStatus } from '@/types/ausfuehrung';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
-import { getKSFromAbteilung } from '@/lib/config/ksConfig';
+import { getKSFromAbteilung, ksValueToLabel } from '@/lib/config/ksConfig';
 import { KSBadge } from '@/components/shared/KSBadge';
 import { StatusDonutChart } from '@/components/dashboard/StatusDonutChart';
 
@@ -61,15 +61,18 @@ export default function BaumeisterAnalysePage() {
                     EmployeeService.getMitarbeiter()
                 ]);
                 
-                // KS 1 Baumeister (Ausführung, Bauleitung)
-                const isKS1 = (item: any) => (item.ks || getKSFromAbteilung(item.abteilung)) === 'KS 1 Baumeister';
+                // KS 1 Baumeister (Ausfuehrung, Bauleitung)
+                const isKS1 = (item: any) => {
+                    const ksRaw = item.ks || getKSFromAbteilung(item.abteilung);
+                    return ksValueToLabel(ksRaw) === 'KS 1 Baumeister';
+                };
                 
                 setSubsystems(subs.filter(isKS1));
                 setStunden(hrs.filter(isKS1));
                 
                 const executionTasks = rawTasks.filter(t => {
                     const ts = subs.find(s => s.id === t.teilsystemId || s.id === t.sourceTsId);
-                    return isKS1(ts || {}) || getKSFromAbteilung(t.ks as any) === 'KS 1 Baumeister';
+                    return isKS1(ts || {}) || ksValueToLabel(getKSFromAbteilung(t.ks as any)) === 'KS 1 Baumeister';
                 });
                 
                 setTasks(executionTasks);

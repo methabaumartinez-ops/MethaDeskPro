@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Position, Unterposition, Teilsystem, Lagerort } from '@/types';
+import { Position, Unterposition, Teilsystem, Lagerort, Mitarbeiter } from '@/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit, Plus, FileSpreadsheet, ListTodo, Printer, Share2, ShieldCheck, X, Download, MapPin, BadgeDollarSign } from 'lucide-react';
@@ -42,6 +42,9 @@ export default function PositionDetailPage() {
     const [loading, setLoading] = useState(true);
     const [showQrModal, setShowQrModal] = useState(false);
     const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
+    const [mitarbeiter, setMitarbeiter] = useState<Mitarbeiter[]>([]);
+    const [verantwortlicherId, setVerantwortlicherId] = useState<string>('');
+    const [savingVerantwortlicher, setSavingVerantwortlicher] = useState(false);
     const { activeProjekt } = useProjekt();
     const router = useRouter();
 
@@ -65,6 +68,12 @@ export default function PositionDetailPage() {
                     setProject(projectData);
                     if (loData) setLagerorte(loData);
                 }
+                // Cargar Mitarbeiter
+                const mitRes = await fetch('/api/data/mitarbeiter');
+                if (mitRes.ok) {
+                    const mitData = await mitRes.json();
+                    setMitarbeiter(Array.isArray(mitData) ? mitData : []);
+                }
             } catch (error) {
                 console.error("Failed to load position data", error);
             } finally {
@@ -73,6 +82,30 @@ export default function PositionDetailPage() {
         };
         load();
     }, [id, params.projektId, projektId]);
+
+    // Sync verantwortlicherId al cargar position
+    React.useEffect(() => {
+        if (position) setVerantwortlicherId(position.verantwortlicherId || '');
+    }, [position]);
+
+    const handleVerantwortlicherChange = async (newId: string) => {
+        if (savingVerantwortlicher) return;
+        setSavingVerantwortlicher(true);
+        setVerantwortlicherId(newId);
+        try {
+            const mit = mitarbeiter.find(m => m.id === newId);
+            const name = mit ? `${mit.vorname} ${mit.nachname}` : '';
+            await PositionService.updatePosition(id, {
+                verantwortlicherId: newId || undefined,
+                verantwortlicherName: name || undefined,
+            } as any);
+            setPosition(prev => prev ? { ...prev, verantwortlicherId: newId, verantwortlicherName: name } : prev);
+        } catch (e) {
+            console.error('Fehler beim Speichern des Verantwortlichen', e);
+        } finally {
+            setSavingVerantwortlicher(false);
+        }
+    };
 
     if (loading) return <div className="p-10 text-center">Laden...</div>;
     if (!position) return (
@@ -126,9 +159,34 @@ export default function PositionDetailPage() {
                         )}
                     </div>
                     <span className="text-[10px] font-black text-orange-600 uppercase tracking-[0.2em]">POSITION</span>
-                    <div className="flex flex-col md:flex-row items-center md:items-baseline gap-1 md:gap-3">
+                    <div className="flex flex-col md:flex-row items-center md:items-center gap-2 md:gap-3 flex-wrap">
                         <span className="text-3xl font-black text-foreground tracking-tight select-none">{position.posNummer || '—'}</span>
                         <h1 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">{position.name}</h1>
+                        {!isReadOnly && mitarbeiter.length > 0 && (
+                            <div className="flex items-center gap-1.5 ml-0 md:ml-2">
+                                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest whitespace-nowrap">Zustaendig</span>
+                                <select
+                                    value={verantwortlicherId}
+                                    onChange={e => handleVerantwortlicherChange(e.target.value)}
+                                    disabled={savingVerantwortlicher}
+                                    className={cn(
+                                        'h-8 px-2 rounded-lg border-2 border-orange-200 bg-orange-50 text-orange-800 text-[11px] font-bold',
+                                        'focus:outline-none focus:ring-2 focus:ring-orange-400 transition-all',
+                                        savingVerantwortlicher && 'opacity-60 cursor-wait'
+                                    )}
+                                >
+                                    <option value="">— Nicht zugewiesen —</option>
+                                    {mitarbeiter.map(m => (
+                                        <option key={m.id} value={m.id}>{m.vorname} {m.nachname}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+                        {isReadOnly && position.verantwortlicherName && (
+                            <span className="text-sm font-bold text-orange-700 bg-orange-50 border border-orange-200 px-3 py-1 rounded-lg">
+                                {position.verantwortlicherName}
+                            </span>
+                        )}
                     </div>
                 </div>
 

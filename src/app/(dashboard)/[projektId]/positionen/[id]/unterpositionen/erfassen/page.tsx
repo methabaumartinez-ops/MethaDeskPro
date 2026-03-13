@@ -14,8 +14,8 @@ import { SubPositionService } from '@/lib/services/subPositionService';
 import { PositionService } from '@/lib/services/positionService';
 import { LagerortService } from '@/lib/services/lagerortService';
 import { LagerortSelect } from '@/components/shared/LagerortSelect';
-import { Unterposition, Position, Teilsystem, Lagerort, Beschichtung, PlanStatus } from '@/types';
-import { POS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses } from '@/lib/config/statusConfig';
+import { Unterposition, Position, Teilsystem, Lagerort, Beschichtung, ABTEILUNGEN_CONFIG } from '@/types';
+import { POS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses, getAbteilungColorClasses } from '@/lib/config/statusConfig';
 import { ArrowLeft, Save, PlusCircle, ClipboardList, Package, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
@@ -26,23 +26,16 @@ import { SearchableSelect } from '@/components/ui/searchable-select';
 const BESCHICHTUNGEN: Beschichtung[] = [
     'feuerverzinkt', 'pulverbeschichtet', 'nasslackiert', 'eloxiert', 'kunststoffbeschichtet', 'unbehandelt', 'andere'
 ];
-const PLAN_STATUS: { value: PlanStatus; label: string }[] = [
-    { value: 'offen', label: 'Offen' },
-    { value: 'in_bearbeitung', label: 'In Bearbeitung' },
-    { value: 'freigegeben', label: 'Freigegeben' },
-    { value: 'fertig', label: 'Fertig' },
-    { value: 'geaendert', label: 'Geändert' },
-    { value: 'abgeschlossen', label: 'Abgeschlossen' },
-];
+
 
 const subPositionSchema = z.object({
-    posNummer: z.string().min(1, 'Positionsnummer ist erforderlich'),
+    untPosNummer: z.string().optional(),
     name: z.string().min(3, 'Bezeichnung muss mindestens 3 Zeichen lang sein'),
     menge: z.coerce.number().min(0.01),
     einheit: z.string().min(1, 'Einheit ist erforderlich'),
     positionId: z.string().min(1),
     status: z.string().min(1, 'Status ist erforderlich'),
-    planStatus: z.string().min(1, 'Plan Status ist erforderlich'),
+    abteilung: z.string().optional(),
     beschichtung: z.string().optional(),
     gewicht: z.coerce.number().optional(),
     lagerortId: z.string().optional(),
@@ -61,7 +54,7 @@ export default function UnterpositionErfassenPage() {
 
     const { register, handleSubmit, watch, control, formState: { errors, isSubmitting } } = useForm<SubPositionValues>({
         resolver: zodResolver(subPositionSchema),
-        defaultValues: { status: 'offen', planStatus: 'offen', einheit: 'Stk', positionId: positionId || '' }
+        defaultValues: { status: 'offen', einheit: 'Stk', positionId: positionId || '' }
     });
 
     useEffect(() => {
@@ -83,7 +76,7 @@ export default function UnterpositionErfassenPage() {
             await SubPositionService.createUnterposition({
                 ...data,
                 status: data.status as any,
-                planStatus: data.planStatus as any,
+                abteilung: data.abteilung as any,
                 beschichtung: data.beschichtung as any,
             });
             toast.success("Unterposition erstellt");
@@ -133,20 +126,20 @@ export default function UnterpositionErfassenPage() {
 
                                 {/* Row 1: Number & Name */}
                                 <div className="md:col-span-2">
-                                    <Input label="Unt.Pos *" placeholder="z.B. 10.1.1" {...register('posNummer')} error={errors.posNummer?.message} />
+                                    <Input label="UntPos Nr." placeholder="z.B. 10.1.1" {...register('untPosNummer')} error={errors.untPosNummer?.message} />
                                 </div>
                                 <div className="md:col-span-10">
                                     <Input label="Bezeichnung *" placeholder="z.B. Detail Fenster Typ A" {...register('name')} error={errors.name?.message} />
                                 </div>
 
-                                {/* Row 2: Qty & Status */}
-                                <div className="md:col-span-2">
+                                {/* Fila 2: 4 columnas iguales */}
+                                <div className="md:col-span-3">
                                     <Input label="Menge *" type="number" step="0.01" {...register('menge')} error={errors.menge?.message} />
                                 </div>
-                                <div className="md:col-span-2">
+                                <div className="md:col-span-3">
                                     <Input label="Einheit" placeholder="Stk, m, m\u00b2" {...register('einheit')} error={errors.einheit?.message} />
                                 </div>
-                                <div className="md:col-span-2">
+                                <div className="md:col-span-3">
                                     <Input label="Gewicht (kg)" type="number" step="0.1" {...register('gewicht')} placeholder="Optional" />
                                 </div>
                                 <div className="md:col-span-3">
@@ -158,25 +151,26 @@ export default function UnterpositionErfassenPage() {
                                         className={cn('font-bold', getStatusColorClasses(watch('status')))}
                                     />
                                 </div>
+                                {/* Fila 3: Abteilung, Beschichtung, Lagerort, Lieferant — 4 cols iguales */}
                                 <div className="md:col-span-3">
                                     <Select
-                                        label="Plan Status *"
-                                        options={PLAN_STATUS.map(p => ({ value: p.value, label: p.label }))}
-                                        {...register('planStatus')}
-                                        error={errors.planStatus?.message}
-                                        className={cn('font-bold', getStatusColorClasses(watch('planStatus')))}
+                                        label="Abteilung"
+                                        options={[
+                                            { value: '', label: '— Bitte waehlen —' },
+                                            ...ABTEILUNGEN_CONFIG.map(a => ({ value: a.name, label: a.name }))
+                                        ]}
+                                        {...register('abteilung')}
+                                        className={cn('font-bold', getAbteilungColorClasses(watch('abteilung')))}
                                     />
                                 </div>
-
-                                {/* Row 3: Coating, Location, Supplier */}
-                                <div className="md:col-span-4">
+                                <div className="md:col-span-3">
                                     <Select
                                         label="Beschichtung"
                                         options={[{ value: '', label: 'Keine Beschichtung' }, ...BESCHICHTUNGEN.map(b => ({ value: b, label: b }))]}
                                         {...register('beschichtung')}
                                     />
                                 </div>
-                                <div className="md:col-span-4">
+                                <div className="md:col-span-3">
                                     <LagerortSelect
                                         projektId={projektId}
                                         lagerorte={lagerorte}
@@ -184,7 +178,7 @@ export default function UnterpositionErfassenPage() {
                                         {...register('lagerortId')}
                                     />
                                 </div>
-                                <div className="md:col-span-4">
+                                <div className="md:col-span-3">
                                     <Controller
                                         name="lieferantId"
                                         control={control}

@@ -78,8 +78,8 @@ export async function POST(req: Request) {
                 : (body.abteilung || workflowDefaults.abteilung),
         };
 
-        // Derive KS from the finalized abteilung
-        if (newItem.abteilung) {
+        // Derive KS from the finalized abteilung — only if no explicit KS was sent by the client
+        if (newItem.abteilung && (newItem.ks === undefined || newItem.ks === null || newItem.ks === '')) {
             (newItem as any).ks = getKSFromAbteilung(newItem.abteilung);
         }
 

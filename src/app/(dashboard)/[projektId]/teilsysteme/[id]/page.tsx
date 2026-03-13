@@ -14,7 +14,7 @@ import { ProjectService } from '@/lib/services/projectService';
 import { PositionService } from '@/lib/services/positionService';
 import { LagerortService } from '@/lib/services/lagerortService';
 import { SupplierService } from '@/lib/services/supplierService';
-import { Teilsystem, Position, Projekt, Lagerort, Lieferant, ABTEILUNGEN_CONFIG } from '@/types';
+import { Teilsystem, Position, Projekt, Lagerort, Lieferant, ABTEILUNGEN_CONFIG, Mitarbeiter } from '@/types';
 import { getStatusStyle, getStatusDateColor, getStatusPillClasses, getStatusBorderRing, getAbteilungColorClasses } from '@/lib/config/statusConfig';
 import {
     ArrowLeft, Edit, ListTodo, Plus, FileText, Truck,
@@ -69,6 +69,9 @@ export default function TeilsystemDetailPage() {
     const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
     const [assignedLieferanten, setAssignedLieferanten] = useState<Lieferant[]>([]);
     const [previewDoc, setPreviewDoc] = useState<{ url: string, title: string } | null>(null);
+    const [mitarbeiter, setMitarbeiter] = useState<Mitarbeiter[]>([]);
+    const [verantwortlicherId, setVerantwortlicherId] = useState<string>('');
+    const [savingVerantwortlicher, setSavingVerantwortlicher] = useState(false);
 
     useEffect(() => {
         const loadData = async () => {
@@ -100,6 +103,13 @@ export default function TeilsystemDetailPage() {
                 if (ks) setProject(ks);
                 if (pos) setPositionen(pos);
                 if (lo) setLagerorte(lo);
+
+                // Cargar Mitarbeiter
+                const mitRes = await fetch('/api/data/mitarbeiter');
+                if (mitRes.ok) {
+                    const mitData = await mitRes.json();
+                    setMitarbeiter(Array.isArray(mitData) ? mitData : []);
+                }
             } catch (error) {
                 console.error("Failed to load details:", error);
             } finally {
@@ -108,6 +118,30 @@ export default function TeilsystemDetailPage() {
         };
         loadData();
     }, [id, params?.projektId, projektId]);
+
+    // Sync verantwortlicherId al cargar item
+    React.useEffect(() => {
+        if (item) setVerantwortlicherId(item.verantwortlicherId || '');
+    }, [item]);
+
+    const handleVerantwortlicherChange = async (newId: string) => {
+        if (savingVerantwortlicher) return;
+        setSavingVerantwortlicher(true);
+        setVerantwortlicherId(newId);
+        try {
+            const mit = mitarbeiter.find(m => m.id === newId);
+            const name = mit ? `${mit.vorname} ${mit.nachname}` : '';
+            await SubsystemService.updateTeilsystem(id, {
+                verantwortlicherId: newId || undefined,
+                verantwortlicherName: name || undefined,
+            } as any);
+            setItem(prev => prev ? { ...prev, verantwortlicherId: newId, verantwortlicherName: name } : prev);
+        } catch (e) {
+            console.error('Fehler beim Speichern des Verantwortlichen', e);
+        } finally {
+            setSavingVerantwortlicher(false);
+        }
+    };
 
 
     if (loading) return (
@@ -173,9 +207,34 @@ export default function TeilsystemDetailPage() {
             <div className="flex flex-col md:grid md:grid-cols-[1fr_auto_auto_1fr] items-center bg-card py-4 px-6 rounded-2xl shadow-sm border-2 border-border gap-6">
                 <div className="space-y-1 w-full text-center md:text-left">
                     <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">TEILSYSTEM</span>
-                    <div className="flex flex-col md:flex-row items-center md:items-baseline gap-1 md:gap-2">
+                <div className="flex flex-col md:flex-row items-center md:items-center gap-2 md:gap-2 flex-wrap">
                         <span className="text-xl font-black text-foreground tracking-tight select-none">{(item.teilsystemNummer || '').replace(/^ts\s?/i, '')}</span>
                         <h1 className="text-lg md:text-xl font-bold text-foreground tracking-tight">{item.name}</h1>
+                        {!isReadOnly && mitarbeiter.length > 0 && (
+                            <div className="flex items-center gap-1.5 ml-0 md:ml-2">
+                                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest whitespace-nowrap">Zustaendig</span>
+                                <select
+                                    value={verantwortlicherId}
+                                    onChange={e => handleVerantwortlicherChange(e.target.value)}
+                                    disabled={savingVerantwortlicher}
+                                    className={cn(
+                                        'h-8 px-2 rounded-lg border-2 border-primary/20 bg-primary/5 text-primary text-[11px] font-bold',
+                                        'focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all',
+                                        savingVerantwortlicher && 'opacity-60 cursor-wait'
+                                    )}
+                                >
+                                    <option value="">— Nicht zugewiesen —</option>
+                                    {mitarbeiter.map(m => (
+                                        <option key={m.id} value={m.id}>{m.vorname} {m.nachname}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+                        {isReadOnly && (item as any).verantwortlicherName && (
+                            <span className="text-sm font-bold text-primary bg-primary/5 border border-primary/20 px-3 py-1 rounded-lg">
+                                {(item as any).verantwortlicherName}
+                            </span>
+                        )}
                     </div>
                 </div>
 

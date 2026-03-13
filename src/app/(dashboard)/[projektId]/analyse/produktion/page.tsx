@@ -10,7 +10,7 @@ import { EmployeeService } from '@/lib/services/employeeService';
 import { PositionService } from '@/lib/services/positionService';
 import { Teilsystem, TsStunden, TsMaterialkosten, Mitarbeiter, Position, ItemStatus } from '@/types';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
-import { getKSFromAbteilung } from '@/lib/config/ksConfig';
+import { getKSFromAbteilung, ksValueToLabel } from '@/lib/config/ksConfig';
 import { KSBadge } from '@/components/shared/KSBadge';
 import { WorkloadBarChart } from '@/components/dashboard/WorkloadBarChart';
 import { StatusDonutChart } from '@/components/dashboard/StatusDonutChart';
@@ -63,11 +63,14 @@ export default function ProduktionAnalysePage() {
                 ]);
                 
                 // Filter specifically for KS 2 Produktion
-                const isKS2 = (item: any) => (item.ks || getKSFromAbteilung(item.abteilung)) === 'KS 2 Produktion';
+                const isKS2 = (item: any) => {
+                    const ksRaw = item.ks || getKSFromAbteilung(item.abteilung);
+                    return ksValueToLabel(ksRaw) === 'KS 2 Produktion';
+                };
                 
                 const prodHrs = hrs.filter(isKS2);
                 const prodMat = mat.filter(m => {
-                    if (m.ks) return m.ks === 'KS 2 Produktion';
+                    if (m.ks) return ksValueToLabel(m.ks) === 'KS 2 Produktion';
                     const parentTs = subs.find(ts => ts.id === m.teilsystemId);
                     return isKS2(parentTs || {});
                 });

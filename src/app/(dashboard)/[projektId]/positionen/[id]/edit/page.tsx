@@ -51,7 +51,6 @@ const positionSchema = z.object({
     gewicht: z.coerce.number().optional(),
     lagerortId: z.string().optional(),
     lieferantId: z.string().optional(),
-    montagetermin: z.string().optional(),
     bemerkung: z.string().optional(),
     ifcUrl: z.string().optional(),
 });
@@ -113,7 +112,6 @@ export default function PositionEditPage() {
                         gewicht: data.gewicht,
                         lagerortId: data.lagerortId || '',
                         lieferantId: data.lieferantId || '',
-                        montagetermin: data.montagetermin || '',
                         bemerkung: data.bemerkung || '',
                         ifcUrl: data.ifcUrl || '',
                     } as any);
@@ -315,26 +313,32 @@ export default function PositionEditPage() {
                         </CardHeader>
                         <CardContent className="p-6">
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
-                                {/* Row 1: Designation - full width */}
-                                <div className="md:col-span-3">
+                                {/* Fila 1: PosNr + Bezeichnung + Plan Status */}
+                                <div className="md:col-span-2">
                                     <Input label="Pos. Nummer" placeholder="z.B. P-001" {...register('posNummer')} error={errors.posNummer?.message} className="font-bold" />
                                 </div>
-                                <div className="md:col-span-9">
+                                <div className="md:col-span-7">
                                     <Input label="Bezeichnung *" {...register('name')} error={errors.name?.message} className="font-bold" />
                                 </div>
+                                <div className="md:col-span-3">
+                                    <Select
+                                        label="Plan Status *"
+                                        options={PLAN_STATUS.map(p => ({ value: p.value, label: p.label }))}
+                                        {...register('planStatus')}
+                                        error={errors.planStatus?.message}
+                                        className={cn('font-bold', getStatusColorClasses(watch('planStatus')))}
+                                    />
+                                </div>
 
-                                {/* Row 2: Quantities & Status */}
-                                <div className="md:col-span-2">
+                                {/* Fila 2: Menge, Einheit, Gewicht, Pos Status — 4 columnas iguales */}
+                                <div className="md:col-span-3">
                                     <Input label="Menge *" type="number" step="0.01" {...register('menge')} error={errors.menge?.message} />
                                 </div>
-                                <div className="md:col-span-2">
+                                <div className="md:col-span-3">
                                     <Input label="Einheit" placeholder="Stk, m, m²" {...register('einheit')} error={errors.einheit?.message} />
                                 </div>
-                                <div className="md:col-span-2">
-                                    <Input label="Gewicht (kg)" type="number" step="0.1" {...register('gewicht')} placeholder="Optional" />
-                                </div>
                                 <div className="md:col-span-3">
-                                    <Input label="Montagetermin" placeholder="z.B. nach Absprache" {...register('montagetermin')} />
+                                    <Input label="Gewicht (kg)" type="number" step="0.1" {...register('gewicht')} placeholder="Optional" />
                                 </div>
                                 <div className="md:col-span-3">
                                     <Select
@@ -349,28 +353,19 @@ export default function PositionEditPage() {
                                     />
                                 </div>
 
-                                {/* Row 3: Plan-Status, Beschichtung, Lagerort */}
-                                <div className="md:col-span-4">
-                                    <Select
-                                        label="Plan Status *"
-                                        options={PLAN_STATUS.map(p => ({ value: p.value, label: p.label }))}
-                                        {...register('planStatus')}
-                                        error={errors.planStatus?.message}
-                                        className={cn('font-bold', getStatusColorClasses(watch('planStatus')))}
-                                    />
-                                </div>
-                                <div className="md:col-span-4">
+                                {/* Fila 3: Abteilung, Beschichtung, Lagerort, Lieferant — 4 columnas iguales */}
+                                <div className="md:col-span-3">
                                     <Select
                                         label="Abteilung"
                                         options={[
-                                            { value: '', label: '— Bitte wählen —' },
+                                            { value: '', label: '— Bitte waehlen —' },
                                             ...ABTEILUNGEN_CONFIG.map(a => ({ value: a.name, label: a.name }))
                                         ]}
                                         {...register('abteilung')}
                                         className={cn('font-bold', getAbteilungColorClasses(watch('abteilung')))}
                                     />
                                 </div>
-                                <div className="md:col-span-4">
+                                <div className="md:col-span-3">
                                     <Select
                                         label="Beschichtung"
                                         options={[
@@ -380,7 +375,7 @@ export default function PositionEditPage() {
                                         {...register('beschichtung')}
                                     />
                                 </div>
-                                <div className="md:col-span-4">
+                                <div className="md:col-span-3">
                                     <LagerortSelect
                                         projektId={projektId}
                                         lagerorte={lagerorte}
@@ -388,7 +383,7 @@ export default function PositionEditPage() {
                                         {...register('lagerortId')}
                                     />
                                 </div>
-                                <div className="md:col-span-12">
+                                <div className="md:col-span-3">
                                     <Controller
                                         name="lieferantId"
                                         control={control}
@@ -407,11 +402,11 @@ export default function PositionEditPage() {
                                     />
                                 </div>
 
-                                {/* Row 4: Remarks - full width */}
+                                {/* Fila 4: Bemerkung — ancho completo */}
                                 <div className="md:col-span-12 space-y-1.5">
-                                    <label className="text-sm font-semibold text-foreground ml-1">Bemerkung</label>
+                                    <label className="text-xs font-semibold text-foreground ml-1">Bemerkung</label>
                                     <textarea
-                                        className="flex min-h-[100px] w-full rounded-2xl border border-input bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all hover:border-accent"
+                                        className="flex min-h-[80px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all hover:border-accent"
                                         {...register('bemerkung')}
                                     />
                                 </div>

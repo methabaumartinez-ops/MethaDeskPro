@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { useProjekt } from '@/lib/context/ProjektContext';
 import { ABTEILUNGEN_CONFIG } from '@/types';
 import { TS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses, getAbteilungColorClasses } from '@/lib/config/statusConfig';
-import { getKSFromAbteilung } from '@/lib/config/ksConfig';
+import { getKSFromAbteilung, KS_OPTIONS, getKSSelectClasses } from '@/lib/config/ksConfig';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 import { SubsystemService } from '@/lib/services/subsystemService';
 import { EmployeeService } from '@/lib/services/employeeService';
@@ -574,7 +574,7 @@ export default function TeilsystemEditPage() {
                                 Teilsystem-Informationen
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-6">
+                        <CardContent className="p-6 space-y-5">
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
                                 {/* Row 1: System Identifiers & Name */}
                                 <div className="md:col-span-2">
@@ -585,19 +585,19 @@ export default function TeilsystemEditPage() {
                                         error={errors.teilsystemNummer?.message}
                                     />
                                 </div>
-                                <div className="md:col-span-1">
-                                    <Input
+                                <div className="md:col-span-2">
+                                    <Select
                                         label="KS"
-                                        placeholder="1"
-                                        className="font-bold"
+                                        options={[
+                                            { label: 'Bitte waehlen...', value: '' },
+                                            ...KS_OPTIONS
+                                        ]}
                                         {...register('ks')}
                                         error={errors.ks?.message}
+                                        className={cn('font-bold', getKSSelectClasses(watch('ks')))}
                                     />
-                                    <p className="text-[9px] font-black text-orange-600 mt-0.5 ml-1 uppercase">
-                                        {watch('ks') === '1' ? 'Baumeister' : watch('ks') === '2' ? 'Produktion' : watch('ks') === '3' ? 'Extern' : ''}
-                                    </p>
                                 </div>
-                                <div className="md:col-span-6">
+                                <div className="md:col-span-5">
                                     <Input
                                         label="Bezeichnung *"
                                         placeholder="z.B. Baukran"
@@ -640,9 +640,9 @@ export default function TeilsystemEditPage() {
 
 
 
-                            {/* Row 3: Department & Status */}
-                            <div className="grid grid-cols-1 md:grid-cols-12 gap-5 mt-2">
-                                <div className="md:col-span-4">
+                            {/* Row 2: Status + Lagerort + Person — 4 columnas iguales */}
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+                                <div>
                                     <Select
                                         label="TS Status *"
                                         options={statusOptions}
@@ -651,7 +651,7 @@ export default function TeilsystemEditPage() {
                                         className={cn('font-bold', getStatusColorClasses(watch('status')))}
                                     />
                                 </div>
-                                <div className="md:col-span-4">
+                                <div>
                                     <Select
                                         label="Plan Status *"
                                         options={planStatusOptions}
@@ -660,7 +660,7 @@ export default function TeilsystemEditPage() {
                                         className={cn('font-bold', getStatusColorClasses(watch('planStatus')))}
                                     />
                                 </div>
-                                <div className="md:col-span-4">
+                                <div>
                                     <LagerortSelect
                                         projektId={projektId}
                                         lagerorte={lagerorte}
@@ -669,13 +669,9 @@ export default function TeilsystemEditPage() {
                                         error={errors.lagerortId?.message}
                                     />
                                 </div>
-                            </div>
-
-                            {/* Row 4: People */}
-                            <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
-                                <div className="md:col-span-4">
+                                <div>
                                     <Select
-                                        label="Eröffnet durch"
+                                        label="Eroeffnet durch"
                                         options={mitarbeiterOptions}
                                         {...register('eroeffnetDurch')}
                                     />
@@ -721,24 +717,21 @@ export default function TeilsystemEditPage() {
                             </div>
 
                             {/* Row 4: Beschreibung & WEMA Link */}
-                            <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-                                <div className="md:col-span-8 space-y-1">
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                                <div className="md:col-span-8 space-y-1.5">
                                     <label className="text-xs font-semibold text-foreground ml-1">Beschreibung</label>
                                     <textarea
-                                        className="flex min-h-[36px] w-full rounded-lg border border-input bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-accent"
+                                        className="flex min-h-[72px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-accent"
                                         placeholder="Kurze Beschreibung..."
                                         {...register('beschreibung')}
                                     />
                                 </div>
-                                <div className="md:col-span-4 flex items-end">
-                                    <div className="w-full">
-                                        <Input
-                                            label="WEMA Link"
-                                            placeholder="Pfad / URL"
-                                            className="h-9"
-                                            {...register('wemaLink')}
-                                        />
-                                    </div>
+                                <div className="md:col-span-4">
+                                    <Input
+                                        label="WEMA Link"
+                                        placeholder="Pfad / URL"
+                                        {...register('wemaLink')}
+                                    />
                                 </div>
                             </div>
 

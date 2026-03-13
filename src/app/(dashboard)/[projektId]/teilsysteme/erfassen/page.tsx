@@ -31,7 +31,7 @@ import { IfcHierarchyPreviewModal, type IFCHierarchyData } from '@/components/sh
 import { useProjekt } from '@/lib/context/ProjektContext';
 import { ABTEILUNGEN_CONFIG } from '@/types';
 import { TS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses, getAbteilungColorClasses, PLANNER_ROLES } from '@/lib/config/statusConfig';
-import { getKSFromAbteilung } from '@/lib/config/ksConfig';
+import { getKSFromAbteilung, KS_OPTIONS, getKSSelectClasses } from '@/lib/config/ksConfig';
 import { getCreationDefaults } from '@/lib/workflow/workflowEngine';
 import { ProvisionalDateInput } from '@/components/ui/provisional-date-input';
 
@@ -706,17 +706,17 @@ export default function TeilsystemErfassenPage() {
                                             error={errors.teilsystemNummer?.message}
                                         />
                                     </div>
-                                    <div className="md:col-span-1">
-                                        <Input
+                                    <div className="md:col-span-2">
+                                        <Select
                                             label="KS"
-                                            placeholder="1"
-                                            className="font-bold"
+                                            options={[
+                                                { label: 'Bitte waehlen...', value: '' },
+                                                ...KS_OPTIONS
+                                            ]}
                                             {...register('ks')}
                                             error={errors.ks?.message}
+                                            className={cn('font-bold', getKSSelectClasses(watch('ks')))}
                                         />
-                                        <p className="text-[9px] font-black text-orange-600 mt-0.5 ml-1 uppercase">
-                                            {watch('ks') === '1' ? 'Baumeister' : watch('ks') === '2' ? 'Produktion' : watch('ks') === '3' ? 'Extern' : ''}
-                                        </p>
                                     </div>
                                     <div className="md:col-span-9">
                                         <Input

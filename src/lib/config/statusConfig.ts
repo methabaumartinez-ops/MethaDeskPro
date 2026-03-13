@@ -24,8 +24,20 @@ export const POS_ALLOWED_STATUSES: ItemStatus[] = [
     'fertig'
 ];
 
-// Reusing same logic for Unterpositionen based on rules
-export const UPOS_ALLOWED_STATUSES = POS_ALLOWED_STATUSES;
+// Status propio para Unterpositionen (independiente de Pos y TS)
+export const UNTPOS_ALLOWED_STATUSES: ItemStatus[] = [
+    'offen',
+    'in_arbeit',
+    'bestellt',
+    'geliefert',
+    'verbaut',
+    'nachbearbeitung',
+    'fertig',
+    'abgeschlossen',
+];
+
+// Alias de compatibilidad (legacy)
+export const UPOS_ALLOWED_STATUSES = UNTPOS_ALLOWED_STATUSES;
 
 // ============================================================
 // STATUS UI CONFIGURATION (Colors and Labels)
