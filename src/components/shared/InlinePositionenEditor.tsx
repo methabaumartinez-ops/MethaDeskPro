@@ -178,8 +178,8 @@ export function InlinePositionenEditor({ teilsystemId, projektId }: Props) {
         </div>
     );
 
-    const inputBase = "h-8 px-2 text-xs border border-input rounded-md bg-background focus:outline-none focus:ring-1 focus:ring-primary transition-colors font-medium text-foreground";
-    const selectBase = "h-8 px-1 text-xs border border-input rounded-md bg-background focus:outline-none focus:ring-1 focus:ring-primary font-bold";
+    const inputBase = "h-8 px-2 text-xs border border-input rounded-lg bg-background focus:outline-none focus:ring-1 focus:ring-primary transition-colors font-medium text-foreground";
+    const selectBase = "h-8 px-1 text-xs border border-input rounded-lg bg-background focus:outline-none focus:ring-1 focus:ring-primary font-bold";
 
     return (
         <div className="flex flex-col gap-3 min-h-0">

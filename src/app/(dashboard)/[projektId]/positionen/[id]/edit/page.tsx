@@ -17,7 +17,7 @@ import { SubsystemService } from '@/lib/services/subsystemService';
 import { SupplierService } from '@/lib/services/supplierService';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Position, Teilsystem, Lagerort, Beschichtung, PlanStatus, ABTEILUNGEN_CONFIG } from '@/types';
-import { POS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses } from '@/lib/config/statusConfig';
+import { POS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses, getAbteilungColorClasses } from '@/lib/config/statusConfig';
 import { ArrowLeft, Save, UploadCloud, FileType, Paperclip, FileText, Loader2, X, Search, Plus, Loader, Trash2, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 import { useSmartBack } from '@/lib/navigation/useSmartBack';
@@ -46,6 +46,7 @@ const positionSchema = z.object({
     einheit: z.string().min(1, 'Einheit ist erforderlich'),
     status: z.string().min(1, 'Status ist erforderlich'),
     planStatus: z.string().min(1, 'Plan Status ist erforderlich'),
+    abteilung: z.string().optional(),
     beschichtung: z.string().optional(),
     gewicht: z.coerce.number().optional(),
     lagerortId: z.string().optional(),
@@ -107,6 +108,7 @@ export default function PositionEditPage() {
                         einheit: data.einheit,
                         status: data.status as any,
                         planStatus: data.planStatus || 'offen',
+                        abteilung: (data as any).abteilung || '',
                         beschichtung: data.beschichtung || '',
                         gewicht: data.gewicht,
                         lagerortId: data.lagerortId || '',
@@ -242,6 +244,7 @@ export default function PositionEditPage() {
                 ...data,
                 status: data.status as any,
                 planStatus: data.planStatus as any,
+                abteilung: data.abteilung as any,
                 beschichtung: data.beschichtung as any,
                 ifcUrl: uploadedIfcUrl,
                 ifcFileName: selectedFileName || undefined
@@ -354,6 +357,17 @@ export default function PositionEditPage() {
                                         {...register('planStatus')}
                                         error={errors.planStatus?.message}
                                         className={cn('font-bold', getStatusColorClasses(watch('planStatus')))}
+                                    />
+                                </div>
+                                <div className="md:col-span-4">
+                                    <Select
+                                        label="Abteilung"
+                                        options={[
+                                            { value: '', label: '— Bitte wählen —' },
+                                            ...ABTEILUNGEN_CONFIG.map(a => ({ value: a.name, label: a.name }))
+                                        ]}
+                                        {...register('abteilung')}
+                                        className={cn('font-bold', getAbteilungColorClasses(watch('abteilung')))}
                                     />
                                 </div>
                                 <div className="md:col-span-4">

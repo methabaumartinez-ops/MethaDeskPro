@@ -97,7 +97,7 @@ export const SearchableSelect = ({ label, options, value, onChange, error, place
     const dropdownContent = isOpen && dropdownPos ? ReactDOM.createPortal(
         <div
             ref={dropdownRef}
-            className="fixed z-[200] rounded-md border border-slate-200 bg-white shadow-lg animate-in fade-in-0 zoom-in-95"
+            className="fixed z-[200] rounded-xl border border-slate-200 bg-white shadow-lg animate-in fade-in-0 zoom-in-95"
             style={{
                 top: dropdownPos.top,
                 left: dropdownPos.left,
@@ -142,16 +142,16 @@ export const SearchableSelect = ({ label, options, value, onChange, error, place
     ) : null;
 
     return (
-        <div className="space-y-2" ref={containerRef}>
-            <label className="text-sm font-medium leading-none">{label}</label>
+        <div className="space-y-1.5 w-full" ref={containerRef}>
+            {label && <label className="text-sm font-semibold text-foreground ml-1 whitespace-nowrap truncate block">{label}</label>}
             <div className="relative">
                 <div
                     ref={triggerRef}
                     className={cn(
-                        "flex w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm cursor-pointer transition-colors outline-none",
-                        isOpen ? 'border-primary ring-2 ring-ring ring-offset-2' : 'border-input',
+                        "flex w-full items-center justify-between rounded-xl border bg-background px-3 py-2 text-sm cursor-pointer transition-all hover:border-accent-foreground/50 outline-none",
+                        isOpen ? 'border-primary ring-2 ring-primary ring-offset-1' : 'border-input',
                         error && 'border-red-500',
-                        !className?.includes('h-') && "h-10",
+                        !className?.includes('h-') && "h-11",
                         className
                     )}
                     onClick={() => {

@@ -564,7 +564,7 @@ export default function AusfuehrungPage() {
                                                                 <div className="flex flex-col gap-1">
                                                                     {item.abteilung === 'Bau' ? (
                                                                         <select
-                                                                            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-2 py-1 text-[10px] font-black uppercase tracking-tight focus:ring-1 focus:ring-orange-500 cursor-pointer hover:border-orange-500 transition-all outline-none"
+                                                                            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 text-[10px] font-black uppercase tracking-tight focus:ring-1 focus:ring-orange-500 cursor-pointer hover:border-orange-500 transition-all outline-none"
                                                                             value={item.status}
                                                                             onChange={async (e) => {
                                                                                 const newStatus = e.target.value as any;
@@ -1089,7 +1089,7 @@ export default function AusfuehrungPage() {
                                                                     <div className="flex sm:flex-col items-center sm:items-end gap-2 shrink-0">
                                                                         <select
                                                                             className={cn(
-                                                                                "bg-white border rounded-md px-2 py-1 text-[10px] font-black uppercase tracking-tight focus:ring-1 focus:ring-orange-500 cursor-pointer hover:border-orange-500 transition-all outline-none",
+                                                                                "bg-white border rounded-lg px-2 py-1 text-[10px] font-black uppercase tracking-tight focus:ring-1 focus:ring-orange-500 cursor-pointer hover:border-orange-500 transition-all outline-none",
                                                                                 task.status === 'Offen' ? "border-amber-200 text-amber-700" :
                                                                                     task.status === 'In Arbeit' ? "border-blue-200 text-blue-700" :
                                                                                         task.status === 'Erledigt' ? "border-emerald-200 text-emerald-700" :

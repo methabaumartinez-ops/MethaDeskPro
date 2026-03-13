@@ -19,6 +19,7 @@ import { SubsystemService } from '@/lib/services/subsystemService';
 import { EmployeeService } from '@/lib/services/employeeService';
 import { SubunternehmerService } from '@/lib/services/subunternehmerService';
 import { LagerortService } from '@/lib/services/lagerortService';
+import { SupplierService } from '@/lib/services/supplierService';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { LagerortSelect } from '@/components/shared/LagerortSelect';
 import { ArrowLeft, Save, Calendar, UploadCloud, FileType, FileText, Download, X, Paperclip, PlusCircle, Layers, ClipboardList } from 'lucide-react';
@@ -80,6 +81,7 @@ const teilsystemSchema = z.object({
     status: z.string().min(1, 'Status ist erforderlich'),
     lagerortId: z.string().optional(),
     subunternehmerId: z.string().optional(),
+    unternehmerId: z.string().optional(),
 });
 
 type TeilsystemValues = z.infer<typeof teilsystemSchema>;
@@ -105,6 +107,8 @@ export default function TeilsystemErfassenPage() {
     const [selectedFileObj, setSelectedFileObj] = React.useState<File | null>(null);
     const [uploadedIfcUrl, setUploadedIfcUrl] = React.useState<string | null>(null);
     const [lagerorte, setLagerorte] = React.useState<any[]>([]);
+    const [allLieferanten, setAllLieferanten] = React.useState<any[]>([]);
+    const [selectedLieferantId, setSelectedLieferantId] = React.useState<string>('');
     /** Stores selected IFC positions/unterpos for import after TS creation */
     const [pendingIfcImport, setPendingIfcImport] = React.useState<any | null>(null);
 
@@ -122,17 +126,19 @@ export default function TeilsystemErfassenPage() {
     React.useEffect(() => {
         const load = async () => {
             try {
-                const [empData, subData, loData] = await Promise.all([
+                const [empData, subData, loData, liefData] = await Promise.all([
                     EmployeeService.getMitarbeiter(),
                     SubunternehmerService.getSubunternehmer(),
                     LagerortService.getLagerorte(projektId).catch((err) => {
                         console.error("Lagerorte fetch failed, degrading gracefully:", err);
                         return [];
-                    })
+                    }),
+                    SupplierService.getLieferanten()
                 ]);
                 setMitarbeiter(empData);
                 setSubunternehmerList(subData);
                 setLagerorte(loData || []);
+                setAllLieferanten(liefData || []);
             } catch (error) {
                 console.error("Failed to load data", error);
             } finally {
@@ -242,11 +248,11 @@ export default function TeilsystemErfassenPage() {
                 ...data,
                 bemerkung: finalBemerkung,
                 projektId,
-                eroeffnetAm: isoToGermanDate(data.eroeffnetAm),
-                montagetermin: isoToGermanDate(data.montagetermin),
+                eroeffnetAm: data.eroeffnetAm,
+                montagetermin: data.montagetermin || undefined,
                 montageterminProvisional: data.montagetermin ? true : undefined,
-                lieferfrist: isoToGermanDate(data.lieferfrist),
-                abgabePlaner: isoToGermanDate(data.abgabePlaner),
+                lieferfrist: data.lieferfrist || undefined,
+                abgabePlaner: data.abgabePlaner || undefined,
                 eroeffnetDurch: data.eroeffnetDurch,
                 subunternehmerId: data.subunternehmerId,
                 subunternehmerName: sub ? sub.name : undefined,
@@ -733,15 +739,6 @@ export default function TeilsystemErfassenPage() {
                                     </div>
                                     <div className="md:col-span-4">
                                         <Select
-                                            label="TS Status *"
-                                            options={statusOptions}
-                                            {...register('status')}
-                                            error={errors.status?.message}
-                                            className={cn('font-bold', getStatusColorClasses(watch('status')))}
-                                        />
-                                    </div>
-                                    <div className="md:col-span-4">
-                                        <Select
                                             label="Plan Status *"
                                             options={planStatusOptions}
                                             {...register('planStatus')}
@@ -749,9 +746,18 @@ export default function TeilsystemErfassenPage() {
                                             className={cn('font-bold', getStatusColorClasses(watch('planStatus')))}
                                         />
                                     </div>
+                                    <div className="md:col-span-4">
+                                        <Select
+                                            label="TS Status *"
+                                            options={statusOptions}
+                                            {...register('status')}
+                                            error={errors.status?.message}
+                                            className={cn('font-bold', getStatusColorClasses(watch('status')))}
+                                        />
+                                    </div>
 
                                     {/* Row 3: People & Warehouse */}
-                                    <div className="md:col-span-4">
+                                    <div className="md:col-span-3">
                                         <div className="space-y-1.5">
                                             <label className="text-sm font-semibold text-foreground ml-1">Eroeffnet durch *</label>
                                             <div className="flex h-10 w-full items-center rounded-xl border border-input bg-muted/50 px-3 py-2 text-sm font-bold text-foreground cursor-not-allowed">
@@ -760,7 +766,24 @@ export default function TeilsystemErfassenPage() {
                                             <input type="hidden" {...register('eroeffnetDurch')} />
                                         </div>
                                     </div>
-                                    <div className="md:col-span-4">
+                                    <div className="md:col-span-3">
+                                        <Controller
+                                            name="unternehmerId"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <SearchableSelect
+                                                    label="Unternehmer"
+                                                    options={[
+                                                        { label: 'Bitte waehlen...', value: '' },
+                                                        ...mitarbeiter.map(m => ({ label: `${m.vorname} ${m.nachname}`, value: m.id }))
+                                                    ]}
+                                                    value={field.value || ''}
+                                                    onChange={field.onChange}
+                                                />
+                                            )}
+                                        />
+                                    </div>
+                                    <div className="md:col-span-3">
                                         <Controller
                                             name="subunternehmerId"
                                             control={control}
@@ -768,22 +791,35 @@ export default function TeilsystemErfassenPage() {
                                                 <SearchableSelect
                                                     label="Subunternehmer"
                                                     options={[
-                                                        { label: 'Bitte wählen...', value: '' },
+                                                        { label: 'Bitte waehlen...', value: '' },
                                                         ...subunternehmerList.map(s => ({ label: s.name, value: s.id }))
                                                     ]}
-                                                    value={field.value}
+                                                    value={field.value || ''}
                                                     onChange={field.onChange}
                                                     error={errors.subunternehmerId?.message}
                                                 />
                                             )}
                                         />
                                     </div>
-                                    <div className="md:col-span-4">
+                                    <div className="md:col-span-3">
                                         <LagerortSelect
                                             projektId={projektId}
                                             lagerorte={lagerorte}
                                             onLagerortAdded={(newLagerort) => setLagerorte(prev => [...prev, newLagerort])}
                                             {...register('lagerortId')}
+                                        />
+                                    </div>
+                                    {/* Row 3b: Lieferant */}
+                                    <div className="md:col-span-6">
+                                        <SearchableSelect
+                                            label="Lieferant"
+                                            placeholder="Lieferant suchen..."
+                                            options={[
+                                                { label: 'Kein Lieferant', value: '' },
+                                                ...allLieferanten.map(l => ({ label: l.name, value: l.id }))
+                                            ]}
+                                            value={selectedLieferantId}
+                                            onChange={(val) => setSelectedLieferantId(val)}
                                         />
                                     </div>
 
@@ -825,8 +861,8 @@ export default function TeilsystemErfassenPage() {
                                         />
                                     </div>
 
-                                    {/* Row 5: Long Text */}
-                                    <div className="md:col-span-12 space-y-1.5">
+                                    {/* Row 5: Beschreibung + Bemerkung + WEMA Link (same row) */}
+                                    <div className="md:col-span-4 space-y-1.5">
                                         <label className="text-sm font-semibold text-foreground ml-1">Beschreibung</label>
                                         <textarea
                                             className="flex min-h-[80px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all hover:border-accent-foreground/30 shadow-sm"
@@ -835,7 +871,7 @@ export default function TeilsystemErfassenPage() {
                                         />
                                     </div>
 
-                                    <div className="md:col-span-12 space-y-1.5">
+                                    <div className="md:col-span-4 space-y-1.5">
                                         <label className="text-sm font-semibold text-foreground ml-1">Bemerkung</label>
                                         <textarea
                                             className="flex min-h-[80px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all hover:border-accent-foreground/30 shadow-sm"
@@ -845,9 +881,10 @@ export default function TeilsystemErfassenPage() {
                                     </div>
 
                                     {/* WEMA Link */}
-                                    <div className="md:col-span-12">
+                                    <div className="md:col-span-4 space-y-1.5">
+                                        <label className="text-sm font-semibold text-foreground ml-1">WEMA Link</label>
                                         <Input
-                                            label="WEMA Link"
+                                            label=""
                                             placeholder="https://wema.example.com/..."
                                             {...register('wemaLink')}
                                         />
@@ -855,10 +892,65 @@ export default function TeilsystemErfassenPage() {
                                 </div>
                             </CardContent>
                         </Card>
+
+                        {/* Lower Section: Positionen (full width) */}
+                        <Card className="shadow-xl border-none">
+                            <CardHeader className="bg-muted/30 border-b border-border py-4 px-6">
+                                <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                                    <Layers className="h-5 w-5 text-primary" />
+                                    Positionen & Teile
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                <div className="flex flex-col items-center justify-center py-14 gap-3 text-center">
+                                    <div className="rounded-full bg-muted p-4">
+                                        <Layers className="h-8 w-8 text-muted-foreground/40" />
+                                    </div>
+                                    <p className="text-sm font-semibold text-muted-foreground">
+                                        Positionen werden nach dem Speichern hinzugefuegt.
+                                    </p>
+                                    <p className="text-xs text-muted-foreground/60">
+                                        Speichern Sie zuerst das Teilsystem.
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+
                     </div>
 
-                    {/* Right Column: Uploads */}
-                    <div className="space-y-4 sticky top-6 mt-1 lg:mt-0">
+                    {/* Right Sidebar: Actions + Uploads */}
+                    <div className="space-y-4 sticky top-6 lg:row-start-1 lg:col-start-4 lg:row-span-3">
+                        {/* Action Buttons */}
+                        <div className="flex justify-between gap-3">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="h-9 px-6 font-bold border-2"
+                                onClick={async () => {
+                                    if (uploadedIfcUrl) {
+                                        fetch('/api/drive/delete', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ url: uploadedIfcUrl })
+                                        }).catch(e => console.error('Cleanup failed:', e));
+                                    }
+                                    router.push(`/${projektId}/teilsysteme`);
+                                }}
+                            >
+                                Abbrechen
+                            </Button>
+                            <Button type="submit" className="h-9 px-6 font-bold" disabled={isSubmitting}>
+                                {isSubmitting ? (
+                                    pendingIfcImport ? 'Speichern...' : 'Speichern...'
+                                ) : (
+                                    <span className="flex items-center gap-2">
+                                        <Save className="h-4 w-4" />
+                                        {pendingIfcImport ? `Speichern + ${pendingIfcImport.positionen.length} Pos.` : 'Speichern'}
+                                    </span>
+                                )}
+                            </Button>
+                        </div>
+
                         {/* IFC Upload Card */}
                         <Card className="shadow-none border-2 border-dashed border-border bg-muted/30 flex flex-col">
                             <CardHeader className="bg-transparent border-b-0 pb-0 pt-3 px-4">
@@ -985,37 +1077,31 @@ export default function TeilsystemErfassenPage() {
                                 </div>
                             )}
                         </Card>
+
+                        {/* Lieferanten — same style as Dokumente card */}
+                        <Card className="shadow-none border-2 border-dashed border-border bg-muted/30 flex flex-col">
+                            <CardHeader className="bg-transparent border-b-0 pb-0 pt-3 px-4">
+                                <CardTitle className="text-xs font-black text-foreground flex items-center gap-2">
+                                    <PlusCircle className="h-3.5 w-3.5 text-primary" />
+                                    Lieferanten
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-3">
+                                <SearchableSelect
+                                    label=""
+                                    placeholder="Lieferant suchen..."
+                                    options={[
+                                        { label: 'Kein Lieferant', value: '' },
+                                        ...allLieferanten.map(l => ({ label: l.name, value: l.id }))
+                                    ]}
+                                    value={selectedLieferantId}
+                                    onChange={(val) => setSelectedLieferantId(val)}
+                                />
+                            </CardContent>
+                        </Card>
                     </div>
                 </div>
 
-                {/* Bottom Action Row */}
-                <div className="flex justify-end gap-3 pt-6 border-t border-border">
-                    <Button 
-                        type="button" 
-                        variant="outline" 
-                        className="font-bold h-11 px-8"
-                        onClick={async () => {
-                            if (uploadedIfcUrl) {
-                                fetch('/api/drive/delete', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ url: uploadedIfcUrl })
-                                }).catch(e => console.error('Cleanup failed:', e));
-                            }
-                            router.push(`/${projektId}/teilsysteme`);
-                        }}
-                    >
-                        Abbrechen
-                    </Button>
-                    <Button type="submit" className="font-black px-12 h-11 text-sm shadow-xl shadow-primary/20 hover:scale-105 transition-all gap-2" disabled={isSubmitting}>
-                        <Save className="h-4 w-4" />
-                        {isSubmitting
-                            ? (pendingIfcImport ? 'Speichern & Importieren...' : 'Wird gespeichert...')
-                            : (pendingIfcImport
-                                ? `Speichern + ${pendingIfcImport.positionen.length} Pos. importieren`
-                                : 'Teilsystem speichern')}
-                    </Button>
-                </div>
             </form>
 
             {/* IFC Extracting/Importing overlay */}

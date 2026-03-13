@@ -15,8 +15,8 @@ import { SubPositionService } from '@/lib/services/subPositionService';
 import { LagerortService } from '@/lib/services/lagerortService';
 import { LagerortSelect } from '@/components/shared/LagerortSelect';
 import { Unterposition, Lagerort, Beschichtung, PlanStatus, ABTEILUNGEN_CONFIG } from '@/types';
-import { POS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses } from '@/lib/config/statusConfig';
-import { ArrowLeft, Save, UploadCloud, FileType, Paperclip, FileText, Loader2, X, Search, Plus, Loader, Trash2 } from 'lucide-react';
+import { POS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses, getAbteilungColorClasses } from '@/lib/config/statusConfig';
+import { ArrowLeft, Save, UploadCloud, FileType, Paperclip, FileText, Loader2, X, Search, Plus, Loader, Trash2, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { ProjectService } from '@/lib/services/projectService';
@@ -24,6 +24,7 @@ import { SupplierService } from '@/lib/services/supplierService';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
 import { Badge } from '@/components/ui/badge';
+import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
 
 const BESCHICHTUNGEN: Beschichtung[] = [
     'feuerverzinkt', 'pulverbeschichtet', 'nasslackiert', 'eloxiert', 'kunststoffbeschichtet', 'unbehandelt', 'andere'
@@ -44,6 +45,7 @@ const unterpositionSchema = z.object({
     einheit: z.string().min(1, 'Einheit ist erforderlich'),
     status: z.string().min(1, 'Status ist erforderlich'),
     planStatus: z.string().min(1, 'Plan Status ist erforderlich'),
+    abteilung: z.string().optional(),
     beschichtung: z.string().optional(),
     gewicht: z.coerce.number().optional(),
     lagerortId: z.string().optional(),
@@ -103,6 +105,7 @@ export default function UnterpositionEditPage() {
                         einheit: data.einheit,
                         status: data.status as any,
                         planStatus: data.planStatus || 'offen',
+                        abteilung: (data as any).abteilung || '',
                         beschichtung: data.beschichtung || '',
                         gewicht: data.gewicht,
                         lagerortId: data.lagerortId || '',
@@ -232,6 +235,7 @@ export default function UnterpositionEditPage() {
                 ...data,
                 status: data.status as any,
                 planStatus: data.planStatus as any,
+                abteilung: data.abteilung as any,
                 beschichtung: data.beschichtung as any,
                 ifcUrl: uploadedIfcUrl,
                 ifcFileName: selectedFileName || undefined
@@ -265,22 +269,25 @@ export default function UnterpositionEditPage() {
 
     return (
         <div className="w-full space-y-6 pb-8 animate-in fade-in duration-500">
-            <Link href={`/${projektId}/unterpositionen/${id}`} className="inline-flex items-center text-sm font-bold text-orange-600 hover:text-orange-700 transition-colors bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-200 shadow-sm mb-2">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Zurück zur Unterposition
-            </Link>
-
-            <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Unt.Pos bearbeiten</h1>
-            </div>
+            <ModuleActionBanner
+                icon={ClipboardList}
+                title="Unterposition bearbeiten"
+                showBackButton={true}
+                backHref={`/${projektId}/unterpositionen/${id}`}
+            >
+                {unterposition && (
+                    <span className="text-sm font-semibold text-white/60 truncate max-w-[220px]">{unterposition.name}</span>
+                )}
+            </ModuleActionBanner>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
                     {/* Left Column: Form Data */}
                     <Card className="lg:col-span-3 shadow-xl border-none">
-                        <CardHeader className="bg-muted/30 border-b py-3">
-                            <CardTitle className="text-base font-black uppercase tracking-wider text-muted-foreground">
-                                Unt.Pos-Informationen
+                        <CardHeader className="bg-muted/30 border-b border-border py-4 px-6">
+                            <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                                <ClipboardList className="h-5 w-5 text-primary" />
+                                Unterpositions-Informationen
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-6 space-y-6">
@@ -321,6 +328,15 @@ export default function UnterpositionEditPage() {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <Select
+                                    label="Abteilung"
+                                    options={[
+                                        { value: '', label: '— Bitte wählen —' },
+                                        ...ABTEILUNGEN_CONFIG.map(a => ({ value: a.name, label: a.name }))
+                                    ]}
+                                    {...register('abteilung')}
+                                    className={cn('h-11 font-bold', getAbteilungColorClasses(watch('abteilung')))}
+                                />
+                                <Select
                                     label="Beschichtung"
                                     options={[
                                         { value: '', label: '— Keine Beschichtung —' },
@@ -329,6 +345,8 @@ export default function UnterpositionEditPage() {
                                     {...register('beschichtung')}
                                     className="h-11"
                                 />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
                                 <LagerortSelect
                                     projektId={projektId}
                                     lagerorte={lagerorte}

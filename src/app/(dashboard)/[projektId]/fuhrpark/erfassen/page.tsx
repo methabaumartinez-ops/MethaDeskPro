@@ -147,29 +147,29 @@ export default function FahrzeugErfassenPage() {
             </div>
 
             <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
+                <CardHeader className="bg-muted/30 border-b border-border py-4 px-6">
+                    <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
                         <Car className="h-5 w-5 text-primary" />
                         Stammdaten
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     {/* Row 1: Basic Info */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <Input label="Bezeichnung *" placeholder="z.B. Scherenbühne" value={form.bezeichnung} onChange={e => update('bezeichnung', e.target.value)} />
                         <Select label="Kategorie *" options={KATEGORIE_OPTIONS} value={form.kategorie} onChange={e => update('kategorie', e.target.value)} />
                         <Input label="Inventar-Nr. *" placeholder="z.B. 4010 01" value={form.inventarnummer} onChange={e => update('inventarnummer', e.target.value)} />
                     </div>
 
                     {/* Row 2: Manufacturer */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <Input label="Fabrikat" placeholder="z.B. Genie" value={form.fabrikat} onChange={e => update('fabrikat', e.target.value)} />
                         <Input label="Typ" placeholder="z.B. GS-3246" value={form.typ} onChange={e => update('typ', e.target.value)} />
                         <Input label="Serien-Nr." placeholder="" value={form.seriennummer} onChange={e => update('seriennummer', e.target.value)} />
                     </div>
 
                     {/* Row 3: Appearance & ID */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <Input label="Farbe" placeholder="z.B. Blau" value={form.farbe} onChange={e => update('farbe', e.target.value)} />
                         <Input label="Kennzeichen" placeholder="z.B. TG 2265" value={form.kennzeichen} onChange={e => update('kennzeichen', e.target.value)} />
                         <Select label="Status" options={STATUS_OPTIONS} value={form.status} onChange={e => update('status', e.target.value)} />
@@ -179,12 +179,12 @@ export default function FahrzeugErfassenPage() {
                     <div className="border-t border-slate-200 dark:border-slate-800" />
 
                     {/* Row 4: Technical */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <Input label="Plattformhöhe / Ausladung" placeholder="z.B. 9.75m" value={form.plattformhoehe} onChange={e => update('plattformhoehe', e.target.value)} />
                         <Input label="Masse (LxBxH)" placeholder="z.B. 2.41x1.17x2.39" value={form.masse} onChange={e => update('masse', e.target.value)} />
                         <Input label="Leistung" placeholder="z.B. 29.5 kW" value={form.leistung} onChange={e => update('leistung', e.target.value)} />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <Input label="Gewicht" placeholder="z.B. 2812 kg" value={form.gewicht} onChange={e => update('gewicht', e.target.value)} />
                         <Input label="Nutzlast" placeholder="z.B. 310 kg" value={form.nutzlast} onChange={e => update('nutzlast', e.target.value)} />
                         <Select label="Antrieb" options={ANTRIEB_OPTIONS} value={form.antrieb} onChange={e => update('antrieb', e.target.value)} />
@@ -194,12 +194,12 @@ export default function FahrzeugErfassenPage() {
                     <div className="border-t border-slate-200 dark:border-slate-800" />
 
                     {/* Row 5: Dates & Maintenance */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <Input label="Baujahr" placeholder="z.B. 2008" type="number" value={form.baujahr} onChange={e => update('baujahr', e.target.value)} />
                         <Input label="Kaufjahr" placeholder="z.B. 2019" value={form.kaufjahr} onChange={e => update('kaufjahr', e.target.value)} />
                         <Input label="Geprüft bis" placeholder="z.B. 03.2025" value={form.geprueftBis} onChange={e => update('geprueftBis', e.target.value)} />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <Input label="Abgaswartung" placeholder="z.B. bis 03.2026" value={form.abgaswartung} onChange={e => update('abgaswartung', e.target.value)} />
                         <Input label="Spez. Hinweis" placeholder="z.B. Weissrad, Russpartikelfilter" value={form.spezHinweis} onChange={e => update('spezHinweis', e.target.value)} />
                         <Input label="Bemerkung" placeholder="Optional" value={form.bemerkung} onChange={e => update('bemerkung', e.target.value)} />
