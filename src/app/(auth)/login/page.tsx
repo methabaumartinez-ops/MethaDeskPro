@@ -16,7 +16,7 @@ import { Signature } from '@/components/shared/Signature';
 
 const loginSchema = z.object({
     email: z.string().email('Ungültige E-Mail-Adresse'),
-    password: z.string().min(5, 'Passwort muss mindestens 5 Zeichen lang sein'),
+    password: z.string().min(8, 'Mindestens 8 Zeichen, 1 Grossbuchstabe und 1 Sonderzeichen erforderlich'),
 });
 
 type LoginValues = z.infer<typeof loginSchema>;

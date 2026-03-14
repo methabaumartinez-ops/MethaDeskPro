@@ -448,6 +448,10 @@ export class IFCImportService {
             // FIX 3b: Positionsnummer → posNummer
             posNummer = methabauProps['Positionsnummer'] || '';
             bemerkung = methabauProps['Benennung 1'] || methabauProps['Bemerkung'] || '';
+            
+            // Append Source Info
+            bemerkung = bemerkung ? `${bemerkung} (Quelle: PSet METHABAU)` : '(Quelle: PSet METHABAU)';
+
             // FIX 3c: Gewicht from METHABAU directly
             if (methabauProps['Gewicht']) gewicht = parseFloat(methabauProps['Gewicht']) || undefined;
             // FIX 3d: Teileart
@@ -628,6 +632,9 @@ export class IFCImportService {
                     posNummer = methabauProps['Positionsnummer'] || '';
                     bemerkungPath = methabauProps['Bemerkung'] || '';
                     teileart = methabauProps['Teileart'] || '';
+                    
+                    // Append Source Info
+                    bemerkungPath = bemerkungPath ? `${bemerkungPath} (Quelle: PSet METHABAU)` : '(Quelle: PSet METHABAU)';
                     
                     // FIX 5: Gewicht directly from METHABAU
                     if (methabauProps['Gewicht']) weight = parseFloat(methabauProps['Gewicht']) || undefined;

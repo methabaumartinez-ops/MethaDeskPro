@@ -7,6 +7,7 @@ import { SubPositionService } from '@/lib/services/subPositionService';
 import { LagerortService } from '@/lib/services/lagerortService';
 import { Position, Unterposition, ItemStatus, Lagerort, ABTEILUNGEN_CONFIG } from '@/types';
 import { POS_ALLOWED_STATUSES, STATUS_UI_CONFIG, getStatusColorClasses, getAbteilungColorClasses } from '@/lib/config/statusConfig';
+import { getAllowedStatuses } from '@/lib/workflow/workflowEngine';
 import { cn } from '@/lib/utils';
 import { ChevronRight, ChevronDown, Plus, Save, Trash2, Loader2, Package, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,14 @@ const STATUS_OPTIONS = POS_ALLOWED_STATUSES.map(st => ({
     value: STATUS_UI_CONFIG[st].value,
     label: STATUS_UI_CONFIG[st].label,
 }));
+
+/** Returns status options filtered by department workflow rules */
+function getStatusOptionsForDept(abteilung: string | undefined): { value: string; label: string }[] {
+    const allowed = getAllowedStatuses(abteilung);
+    return allowed
+        .filter(st => STATUS_UI_CONFIG[st])
+        .map(st => ({ value: STATUS_UI_CONFIG[st].value, label: STATUS_UI_CONFIG[st].label }));
+}
 
 export function InlinePositionenEditor({ teilsystemId, projektId }: Props) {
     const [positionen, setPositionen] = useState<EditablePos[]>([]);
@@ -250,7 +259,7 @@ export function InlinePositionenEditor({ teilsystemId, projektId }: Props) {
                                             {ABTEILUNGEN_CONFIG.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
                                         </select>
                                         <select className={cn(selectBase, getStatusColorClasses(pos.status))} value={pos.status} onChange={e => updatePos(pos.id, 'status', e.target.value)}>
-                                            {STATUS_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                                            {(pos.abteilung ? getStatusOptionsForDept(pos.abteilung) : STATUS_OPTIONS).map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                                         </select>
                                         {/* Lagerort select */}
                                         <select
@@ -295,7 +304,7 @@ export function InlinePositionenEditor({ teilsystemId, projektId }: Props) {
                                                         {ABTEILUNGEN_CONFIG.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
                                                     </select>
                                                     <select className={cn(selectBase, "h-7 text-[10px]", getStatusColorClasses(upos.status))} value={upos.status} onChange={e => updateUPos(upos.id, 'status', e.target.value)}>
-                                                        {STATUS_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                                                        {(upos.abteilung ? getStatusOptionsForDept(upos.abteilung) : STATUS_OPTIONS).map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                                                     </select>
                                                     {/* Lagerort select */}
                                                     <select

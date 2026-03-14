@@ -2,9 +2,10 @@ import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/helpers/requireAuth';
 import { forceChangePassword, generateToken } from '@/lib/services/authService';
 import { z } from 'zod';
+import { passwordSchema } from '@/lib/validators/authValidators';
 
 const schema = z.object({
-    newPassword: z.string().min(8, 'Passwort muss mindestens 8 Zeichen lang sein'),
+    newPassword: passwordSchema,
 });
 
 export async function POST(req: Request) {

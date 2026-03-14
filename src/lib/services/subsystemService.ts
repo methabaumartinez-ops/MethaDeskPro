@@ -2,6 +2,7 @@ import { Teilsystem, Position } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 import { STATUS_DEFAULTS } from '@/lib/config/statusConfig';
 import { getKSFromAbteilung } from '@/lib/config/ksConfig';
+import { normalizeTeilsystemDates } from '@/lib/helpers/dateHelpers';
 
 export const SubsystemService = {
     async getTeilsysteme(projektId?: string, abteilungId?: string): Promise<Teilsystem[]> {
@@ -34,17 +35,19 @@ export const SubsystemService = {
     async createTeilsystem(item: Partial<Teilsystem>): Promise<Teilsystem> {
         // Enforce centralized defaults
         const defaultAbteilung = STATUS_DEFAULTS.TEILSYSTEM.abteilung(item.abteilung) as any;
-        const payload = { 
-            ...item, 
+        const payload = {
+            ...item,
             id: item.id || uuidv4(),
             status: item.status || STATUS_DEFAULTS.TEILSYSTEM.status,
             abteilung: defaultAbteilung,
             ks: getKSFromAbteilung(defaultAbteilung as string)
         };
+        // Defensive: normalize dates before sending to API
+        const safePayload = normalizeTeilsystemDates(payload);
         const res = await fetch('/api/teilsysteme', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(safePayload)
         });
         if (!res.ok) {
             const error = await res.json().catch(() => ({}));
@@ -59,10 +62,14 @@ export const SubsystemService = {
             payload.ks = getKSFromAbteilung(payload.abteilung as string);
         }
 
+        // Defensive: normalize any German DD.MM.YYYY dates to ISO YYYY-MM-DD
+        // before sending to PostgreSQL. This catches any stray format issues.
+        const safePayload = normalizeTeilsystemDates(payload as Record<string, any>);
+
         const res = await fetch(`/api/teilsysteme/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(safePayload)
         });
         if (!res.ok) {
             const error = await res.json().catch(() => ({}));

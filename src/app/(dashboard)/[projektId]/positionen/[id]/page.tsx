@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Position, Unterposition, Teilsystem, Lagerort, Mitarbeiter } from '@/types';
+import { Position, Teilsystem, Lagerort, Mitarbeiter } from '@/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Edit, Plus, FileSpreadsheet, ListTodo, Printer, Share2, ShieldCheck, X, Download, MapPin, BadgeDollarSign } from 'lucide-react';
+import { ArrowLeft, Edit, FileSpreadsheet, ListTodo, ShieldCheck, MapPin, BadgeDollarSign } from 'lucide-react';
+import { InlineUnterpositionenEditor } from '@/components/shared/InlineUnterpositionenEditor';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { cn, getAppUrl } from '@/lib/utils';
 import { getStatusBorderRing } from '@/lib/config/statusConfig';
@@ -16,14 +17,11 @@ import { QRCodeSection } from '@/components/shared/QRCodeSection';
 import { ItemQrModal } from '@/components/shared/ItemQrModal';
 import { ProjectService } from '@/lib/services/projectService';
 import { LagerortBadge } from '@/components/shared/LagerortBadge';
-import DokumentePanel from '@/components/shared/DokumentePanel';
 import { useSearchParams, useParams, useRouter, usePathname } from 'next/navigation';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { PositionService } from '@/lib/services/positionService';
 import { SubsystemService } from '@/lib/services/subsystemService';
-import { SubPositionService } from '@/lib/services/subPositionService';
 import { LagerortService } from '@/lib/services/lagerortService';
 import { useProjekt } from '@/lib/context/ProjektContext';
 
@@ -38,7 +36,7 @@ export default function PositionDetailPage() {
     const [position, setPosition] = useState<Position | null>(null);
     const [teilsystem, setTeilsystem] = useState<Teilsystem | null>(null);
     const [project, setProject] = useState<any>(null);
-    const [unterpositionen, setUnterpositionen] = useState<Unterposition[]>([]);
+    const [unterpositionenCount, setUnterpositionenCount] = useState<number>(0);
     const [loading, setLoading] = useState(true);
     const [showQrModal, setShowQrModal] = useState(false);
     const [lagerorte, setLagerorte] = useState<Lagerort[]>([]);
@@ -56,14 +54,12 @@ export default function PositionDetailPage() {
                     const pId = (params.projektId as string) || posData.projektId || '';
                     if (pId !== projektId) setProjektId(pId);
 
-                    const [subPosData, tsData, loData, projectData] = await Promise.all([
-                        SubPositionService.getUnterpositionen(id),
+                    const [tsData, loData, projectData] = await Promise.all([
                         SubsystemService.getTeilsystemById(posData.teilsystemId),
                         LagerortService.getLagerorte(pId),
                         ProjectService.getProjektById(pId)
                     ]);
                     setPosition(posData);
-                    setUnterpositionen(subPosData);
                     setTeilsystem(tsData);
                     setProject(projectData);
                     if (loData) setLagerorte(loData);
@@ -150,44 +146,21 @@ export default function PositionDetailPage() {
             {/* Banner Section (Matching Teilsystem Style) */}
             <div className="flex flex-col md:grid md:grid-cols-[1fr_auto_auto_1fr] items-center bg-card py-4 px-6 rounded-2xl shadow-sm border-2 border-border gap-6">
                 <div className="space-y-1 w-full text-center md:text-left">
-                    <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
-                        <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">TEILSYSTEM</span>
+                    {/* TS Number — prominent */}
+                    <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+                        <span className="text-xl font-black text-orange-600 tracking-tight select-none">TS:</span>
                         {teilsystem && (
-                            <Badge variant="outline" className="h-5 text-[10px] font-black border-primary/30 bg-primary/5 text-primary">
+                            <span className="text-xl font-black text-foreground tracking-tight select-none">
                                 {teilsystem.teilsystemNummer || ''}
-                            </Badge>
-                        )}
-                    </div>
-                    <span className="text-[10px] font-black text-orange-600 uppercase tracking-[0.2em]">POSITION</span>
-                    <div className="flex flex-col md:flex-row items-center md:items-center gap-2 md:gap-3 flex-wrap">
-                        <span className="text-3xl font-black text-foreground tracking-tight select-none">{position.posNummer || '—'}</span>
-                        <h1 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">{position.name}</h1>
-                        {!isReadOnly && mitarbeiter.length > 0 && (
-                            <div className="flex items-center gap-1.5 ml-0 md:ml-2">
-                                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest whitespace-nowrap">Zustaendig</span>
-                                <select
-                                    value={verantwortlicherId}
-                                    onChange={e => handleVerantwortlicherChange(e.target.value)}
-                                    disabled={savingVerantwortlicher}
-                                    className={cn(
-                                        'h-8 px-2 rounded-lg border-2 border-orange-200 bg-orange-50 text-orange-800 text-[11px] font-bold',
-                                        'focus:outline-none focus:ring-2 focus:ring-orange-400 transition-all',
-                                        savingVerantwortlicher && 'opacity-60 cursor-wait'
-                                    )}
-                                >
-                                    <option value="">— Nicht zugewiesen —</option>
-                                    {mitarbeiter.map(m => (
-                                        <option key={m.id} value={m.id}>{m.vorname} {m.nachname}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        )}
-                        {isReadOnly && position.verantwortlicherName && (
-                            <span className="text-sm font-bold text-orange-700 bg-orange-50 border border-orange-200 px-3 py-1 rounded-lg">
-                                {position.verantwortlicherName}
                             </span>
                         )}
                     </div>
+                    {/* Position Number + Name */}
+                    <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
+                        <span className="text-xl font-black text-orange-600 tracking-tight select-none">Position:</span>
+                        <span className="text-xl font-black text-foreground tracking-tight select-none">{position.posNummer || '—'}</span>
+                    </div>
+                    <h1 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">{position.name}</h1>
                 </div>
 
                 <div className="flex flex-col items-center gap-2 md:border-l border-border/50 md:pl-8 md:pr-4 h-16 justify-center">
@@ -224,8 +197,16 @@ export default function PositionDetailPage() {
                     </div>
                 </div>
 
+                {/* Abteilung + Status — parallel badges */}
                 <div className="text-center md:text-right flex flex-col items-center md:items-end gap-3 w-full">
-                    <StatusBadge status={position.status} className={cn('px-5 py-1.5 text-sm rounded-xl shadow-md border-b-4', getStatusBorderRing(position.status))} />
+                    <div className="flex items-center gap-2">
+                        {position.abteilung && (
+                            <Badge variant="outline" className={cn('px-5 py-1.5 text-sm rounded-xl shadow-md border-b-4 font-black uppercase tracking-wide border-slate-300 bg-slate-50 text-slate-700')}>
+                                {position.abteilung}
+                            </Badge>
+                        )}
+                        <StatusBadge status={position.status} className={cn('px-5 py-1.5 text-sm rounded-xl shadow-md border-b-4', getStatusBorderRing(position.status))} />
+                    </div>
                     {isReadOnly && (
                         <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase bg-muted px-2 py-1 rounded-md">
                             <ShieldCheck className="h-3.5 w-3.5 text-blue-500" />
@@ -265,6 +246,31 @@ export default function PositionDetailPage() {
                                     <Badge variant="outline" className="font-bold text-[9px] h-4 bg-orange-50 text-orange-700 border-orange-200">{position.beschichtung}</Badge>
                                 </div>
                             )}
+                            {/* ── Zustaendig (moved from header) ── */}
+                            <div className="px-4 py-2 flex items-center justify-between hover:bg-muted/5 transition-colors">
+                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight">Zustaendig</span>
+                                {!isReadOnly && mitarbeiter.length > 0 ? (
+                                    <select
+                                        value={verantwortlicherId}
+                                        onChange={e => handleVerantwortlicherChange(e.target.value)}
+                                        disabled={savingVerantwortlicher}
+                                        className={cn(
+                                            'h-7 px-2 rounded-lg border border-orange-200 bg-orange-50 text-orange-800 text-[11px] font-bold',
+                                            'focus:outline-none focus:ring-2 focus:ring-orange-400 transition-all',
+                                            savingVerantwortlicher && 'opacity-60 cursor-wait'
+                                        )}
+                                    >
+                                        <option value="">— Nicht zugewiesen —</option>
+                                        {mitarbeiter.map(m => (
+                                            <option key={m.id} value={m.id}>{m.vorname} {m.nachname}</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <span className="text-xs font-black text-foreground">
+                                        {position.verantwortlicherName || '—'}
+                                    </span>
+                                )}
+                            </div>
                             {/* ── METHABAU fields ── */}
                             {position.teileart && (
                                 <div className="px-4 py-2 flex items-center justify-between hover:bg-orange-50/50 transition-colors">
@@ -357,159 +363,25 @@ export default function PositionDetailPage() {
                 </Card>
             </div>
 
-            {/* Bottom: Unterpositionen (Full Width) */}
-
-            <Card className="shadow-lg border-2 border-border overflow-hidden bg-white dark:bg-card">
-                <CardHeader className="py-4 px-6 bg-muted border-b border-border flex flex-row items-center justify-between">
-                    <CardTitle className="text-lg font-black flex items-center gap-3">
+            {/* Bottom: Unterpositionen (Full Width) — Inline Editable */}
+            <Card className="shadow-xl border-none bg-white dark:bg-card">
+                <CardHeader className="bg-muted/30 border-b border-border py-3 px-6">
+                    <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
                         <ListTodo className="h-5 w-5 text-primary" />
                         Unterpositionen / Komponenten
                     </CardTitle>
-                    {(!isReadOnly && can('create')) && (
-                        <Link href={`/${projektId}/positionen/${id}/unterpositionen/erfassen`}>
-                            <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white font-bold h-9 px-6 rounded-lg shadow-md flex items-center gap-2 transition-all hover:scale-105">
-                                <Plus className="h-4 w-4" />
-                                <span>Hinzufügen</span>
-                            </Button>
-                        </Link>
-                    )}
                 </CardHeader>
-                <CardContent className="p-0">
-                    <div className="overflow-x-auto">
-                        <Table className="border-none">
-                            <TableHeader className="bg-white dark:bg-card">
-                                <TableRow className="border-b-2 border-border hover:bg-transparent">
-                                    <TableHead className="w-24 px-6 py-4 font-black text-foreground">Pos-Nr.</TableHead>
-                                    <TableHead className="px-6 py-4 font-black text-foreground">Bezeichnung</TableHead>
-                                    <TableHead className="w-32 px-6 py-4 font-black text-foreground">Menge</TableHead>
-                                    <TableHead className="w-32 px-6 py-4 font-black text-foreground">Status</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {unterpositionen.length > 0 ? (
-                                    unterpositionen.map((upos) => (
-                                        <TableRow key={upos.id} className="group hover:bg-muted transition-colors cursor-pointer border-b border-border/50" onClick={() => router.push(`/${projektId}/unterpositionen/${upos.id}`)}>
-                                            <TableCell className="px-6 py-4 font-black text-primary">{upos.posNummer || '—'}</TableCell>
-                                            <TableCell className="px-6 py-4 font-bold text-foreground">{upos.name}</TableCell>
-                                            <TableCell className="px-6 py-4 font-bold text-muted-foreground">
-                                                <Badge variant="outline" className="font-black border-slate-300 bg-slate-50">{upos.menge} {upos.einheit}</Badge>
-                                            </TableCell>
-                                            <TableCell className="px-6 py-4"><StatusBadge status={upos.status} /></TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={4} className="h-32 text-center">
-                                            <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground/50">
-                                                <FileSpreadsheet className="h-8 w-8" />
-                                                <p className="text-sm font-bold uppercase tracking-wider">Keine Unterpositionen vorhanden</p>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
+                <CardContent className="px-4 py-3">
+                    <InlineUnterpositionenEditor
+                        positionId={id}
+                        teilsystemId={position.teilsystemId}
+                        projektId={projektId}
+                        readonly={isReadOnly}
+                    />
                 </CardContent>
             </Card>
 
-            {/* MAIN CONTENT AREA: Details on the Left, Timeline/Docs on the Right */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-                {/* Left Side: Advanced IFC Metadata & IFC Details (5 cols) */}
-                <div className="lg:col-span-5 flex flex-col gap-6">
-                    <Card className="shadow-sm border-2 border-border overflow-hidden bg-white dark:bg-card h-full flex flex-col">
-                        <CardHeader className="py-2.5 px-4 bg-muted border-b border-border shrink-0">
-                            <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                <Badge variant="outline" className="text-[9px] h-4 border-orange-200 bg-orange-50 text-orange-700">IFC Extrakt</Badge>
-                                Technische Details
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-4 flex-1">
-                            <div className="divide-y divide-border">
-                                {/* Gewicht */}
-                                {position.gewicht != null && (
-                                    <div className="py-2 flex items-center justify-between">
-                                        <span className="text-[9px] font-black text-orange-600 uppercase tracking-tight">Gewicht</span>
-                                        <span className="text-xs font-black text-foreground">{position.gewicht} kg</span>
-                                    </div>
-                                )}
-                                {/* Werkstoff */}
-                                {position.materialProp && (
-                                    <div className="py-2 flex items-center justify-between">
-                                        <span className="text-[9px] font-black text-orange-600 uppercase tracking-tight">Werkstoff</span>
-                                        <span className="text-xs font-black text-foreground">{position.materialProp}</span>
-                                    </div>
-                                )}
-                                {/* Teileart */}
-                                {position.teileart && (
-                                    <div className="py-2 flex items-center justify-between">
-                                        <span className="text-[9px] font-black text-orange-600 uppercase tracking-tight">Teileart</span>
-                                        <Badge variant="outline" className="font-bold text-[9px] h-5 bg-orange-50 text-orange-700 border-orange-200">{position.teileart}</Badge>
-                                    </div>
-                                )}
-                                {/* IFC-Masse aus METHABAU (IFCPROPERTYSINGLEVALUE) */}
-                                {(position.ifcMeta as any)?.dimensions?.laenge != null && (
-                                    <div className="py-2 flex items-center justify-between">
-                                        <span className="text-[9px] font-black text-orange-600 uppercase tracking-tight">Laenge</span>
-                                        <span className="text-xs font-black text-foreground">{(position.ifcMeta as any).dimensions.laenge} mm</span>
-                                    </div>
-                                )}
-                                {(position.ifcMeta as any)?.dimensions?.breite != null && (
-                                    <div className="py-2 flex items-center justify-between">
-                                        <span className="text-[9px] font-black text-orange-600 uppercase tracking-tight">Breite</span>
-                                        <span className="text-xs font-black text-foreground">{(position.ifcMeta as any).dimensions.breite} mm</span>
-                                    </div>
-                                )}
-                                {(position.ifcMeta as any)?.dimensions?.hoehe != null && (
-                                    <div className="py-2 flex items-center justify-between">
-                                        <span className="text-[9px] font-black text-orange-600 uppercase tracking-tight">Hoehe</span>
-                                        <span className="text-xs font-black text-foreground">{(position.ifcMeta as any).dimensions.hoehe} mm</span>
-                                    </div>
-                                )}
-                                {(position.ifcMeta as any)?.dimensions?.blechdicke != null && (
-                                    <div className="py-2 flex items-center justify-between">
-                                        <span className="text-[9px] font-black text-orange-600 uppercase tracking-tight">Blechdicke</span>
-                                        <span className="text-xs font-black text-foreground">{(position.ifcMeta as any).dimensions.blechdicke} mm</span>
-                                    </div>
-                                )}
-                                {(position.ifcMeta as any)?.dimensions?.oberflaecheGesamt != null && (
-                                    <div className="py-2 flex items-center justify-between">
-                                        <span className="text-[9px] font-black text-orange-600 uppercase tracking-tight">Oberflaeche ges.</span>
-                                        <span className="text-xs font-black text-foreground">{(position.ifcMeta as any).dimensions.oberflaecheGesamt}</span>
-                                    </div>
-                                )}
-                                {/* Fallback: No IFC data at all */}
-                                {!position.gewicht && !position.materialProp && !position.teileart &&
-                                    !(position.ifcMeta as any)?.dimensions && (
-                                    <div className="py-8 text-center text-[10px] text-muted-foreground/60 italic">
-                                        Keine IFC-Daten vorhanden
-                                    </div>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
 
-                {/* Right Side: Timeline and Documents (7 cols) */}
-                <div className="lg:col-span-7 flex flex-col gap-6">
-                    <Card className="shadow-sm border-2 border-border overflow-hidden bg-white dark:bg-card">
-                        <CardHeader className="py-2.5 px-4 bg-muted border-b border-border">
-                            <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                <FileSpreadsheet className="h-3.5 w-3.5" />
-                                Dokumente
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                            <DokumentePanel
-                                entityId={id}
-                                entityType="position"
-                                projektId={projektId}
-                                readonly={isReadOnly}
-                            />
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
 
             {/* Position QR Modal */}
             <ItemQrModal
@@ -519,7 +391,7 @@ export default function PositionDetailPage() {
                 subtitle={`TS ${(teilsystem?.teilsystemNummer || '').replace(/^ts\s?/i, '')}`}
                 qrValue={`${getAppUrl()}/share/position/${position.id}`}
                 countLabel="Anzahl Unterpositionen"
-                count={unterpositionen.length}
+                count={unterpositionenCount}
                 filePrefix=""
                 id={position.id}
                 projectNumber={project?.projektnummer || activeProjekt?.projektnummer}

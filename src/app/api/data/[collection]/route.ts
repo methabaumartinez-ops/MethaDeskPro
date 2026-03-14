@@ -67,6 +67,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ collect
             id: body.id || uuidv4(),
         };
 
+        // ── Workflow creation rule for POS and UNTPOS ──────────────────
+        // Manual creation: abteilung = AVOR, status = offen
+        // System/import creation (?systemOverride=true): use client values
+        const isSystemOverride = new URL(req.url).searchParams.get('systemOverride') === 'true';
+        const WORKFLOW_COLLECTIONS = ['positionen', 'unterpositionen'];
+        if (WORKFLOW_COLLECTIONS.includes(collection) && !isSystemOverride) {
+            newItem.abteilung = 'AVOR';
+            newItem.status = 'offen';
+        }
+
         // Automatically derive KS from Abteilung for specific collections
         const KS_AWARE_COLLECTIONS = ['teilsysteme', 'kosten', 'ausfuehrung_tasks', 'tasks', 'fahrzeuge'];
         if (KS_AWARE_COLLECTIONS.includes(collection) && newItem.abteilung) {

@@ -120,13 +120,14 @@ export interface Projekt {
 
 export type ItemStatus =
   | 'offen'
-  | 'in_planung'   // NEW: TS opened by Planner/Baufuehrer, awaiting AVOR handoff
+  | 'in_planung'   // TS opened by Planner/Baufuehrer, awaiting AVOR handoff
   | 'in_arbeit'    // REPLACING in_produktion
   | 'in_produktion' // LEGACY (for backward comp)
   | 'bestellt'
   | 'fertig'
   | 'geliefert'
   | 'verbaut'
+  | 'bereit'       // TS aggregation: all children reached terminal state
   | 'nachbearbeitung' // REPLACING geaendert
   | 'geaendert'    // LEGACY
   | 'abgeschlossen';

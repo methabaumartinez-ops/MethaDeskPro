@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -8,11 +8,13 @@ import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { ShieldCheck, Eye, EyeOff, KeyRound } from 'lucide-react';
+import { ShieldCheck, Eye, EyeOff, KeyRound, CheckCircle, XCircle } from 'lucide-react';
 import { useProjekt } from '@/lib/context/ProjektContext';
+import { passwordSchema, PASSWORD_RULES, checkPasswordRules } from '@/lib/validators/authValidators';
+import type { RuleId } from '@/lib/validators/authValidators';
 
 const schema = z.object({
-    newPassword: z.string().min(8, 'Mindestens 8 Zeichen'),
+    newPassword: passwordSchema,
     confirm: z.string(),
 }).refine(d => d.newPassword === d.confirm, {
     message: 'Passwoerter stimmen nicht ueberein',
@@ -26,10 +28,17 @@ export default function ForceChangePasswordPage() {
     const { setCurrentUser } = useProjekt();
     const [serverError, setServerError] = useState<string | null>(null);
     const [showPw, setShowPw] = useState(false);
+    const [livePassword, setLivePassword] = useState('');
 
-    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({
+    const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<FormValues>({
         resolver: zodResolver(schema),
     });
+
+    const watchedPw = watch('newPassword', '');
+    useEffect(() => { setLivePassword(watchedPw || ''); }, [watchedPw]);
+
+    const ruleStatus = checkPasswordRules(livePassword);
+    const allRulesMet = Object.values(ruleStatus).every(Boolean);
 
     const onSubmit = async (data: FormValues) => {
         setServerError(null);
@@ -80,7 +89,7 @@ export default function ForceChangePasswordPage() {
                     <div className="mb-6 p-4 rounded-xl bg-orange-50 border border-orange-200 flex items-start gap-3">
                         <ShieldCheck className="h-5 w-5 text-orange-600 mt-0.5 shrink-0" />
                         <p className="text-sm text-orange-800 font-medium">
-                            Ihr Konto erfordert eine Passwortaenderung. Waehlen Sie ein sicheres Passwort mit mindestens 8 Zeichen.
+                            Ihr Konto erfordert eine Passwortaenderung. Waehlen Sie ein sicheres Passwort.
                         </p>
                     </div>
 
@@ -108,6 +117,23 @@ export default function ForceChangePasswordPage() {
                             }
                         />
 
+                        {livePassword.length > 0 && (
+                            <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 space-y-2">
+                                {PASSWORD_RULES.map((rule) => {
+                                    const met = ruleStatus[rule.id as RuleId];
+                                    return (
+                                        <div key={rule.id} className={`flex items-center gap-2 text-xs font-medium transition-colors ${met ? 'text-emerald-600' : 'text-slate-400'}`}>
+                                            {met
+                                                ? <CheckCircle className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
+                                                : <XCircle className="h-3.5 w-3.5 text-slate-300 flex-shrink-0" />
+                                            }
+                                            {rule.label}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+
                         <Input
                             label="Passwort bestaetigen"
                             type={showPw ? 'text' : 'password'}
@@ -119,7 +145,7 @@ export default function ForceChangePasswordPage() {
                         <Button
                             type="submit"
                             className="w-full h-12 text-base font-bold bg-orange-500 hover:bg-orange-600"
-                            disabled={isSubmitting}
+                            disabled={isSubmitting || !allRulesMet}
                         >
                             {isSubmitting ? 'Wird gespeichert...' : 'Passwort speichern & fortfahren'}
                         </Button>

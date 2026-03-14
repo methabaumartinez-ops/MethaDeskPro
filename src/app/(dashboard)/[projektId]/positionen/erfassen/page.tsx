@@ -199,8 +199,8 @@ export default function PositionErfassenPage() {
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
                     {/* Left Main Column */}
                     <div className="lg:col-span-3 space-y-6 min-w-0">
                         {/* Main Form Card */}
@@ -382,7 +382,7 @@ export default function PositionErfassenPage() {
                     </div>
 
                     {/* Right Sidebar: Actions + Uploads + Lieferanten */}
-                    <div className="space-y-4 sticky top-6 self-start">
+                    <div className="space-y-4 sticky top-6 lg:row-start-1 lg:col-start-4 lg:row-span-3">
                         {/* Action Buttons */}
                         <div className="flex justify-between gap-3">
                             <Link href={`/${projektId}/teilsysteme/${teilsystemId}`}>
@@ -419,9 +419,9 @@ export default function PositionErfassenPage() {
                                 </div>
                                 <h3 className="text-[11px] font-bold text-foreground mb-1">IFC hierher ziehen</h3>
                                 <p className="text-[9px] font-medium text-muted-foreground mb-3 text-center">Nur .ifc (Max. 200MB)</p>
-                                <Button type="button" size="sm" variant="outline" className="text-[10px] font-bold border-border h-7 px-3"
+                                <Button type="button" size="sm" variant="metha-orange" className="text-[10px] font-bold h-7 px-3"
                                     onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}>
-                                    Waehlen
+                                    Wählen
                                 </Button>
                                 <input type="file" className="hidden" ref={fileInputRef} accept=".ifc" onChange={handleFileChange} />
                                 {selectedFile && (
@@ -456,9 +456,9 @@ export default function PositionErfassenPage() {
                                 </div>
                                 <h3 className="text-[11px] font-bold text-foreground mb-1">Dateien hierher ziehen</h3>
                                 <p className="text-[9px] font-medium text-muted-foreground mb-3 text-center">pdf, jpg, png, heic</p>
-                                <Button type="button" size="sm" variant="outline" className="text-[10px] font-bold border-border h-7 px-3"
+                                <Button type="button" size="sm" variant="metha-orange" className="text-[10px] font-bold h-7 px-3"
                                     onClick={(e) => { e.stopPropagation(); docInputRef.current?.click(); }}>
-                                    Waehlen
+                                    Wählen
                                 </Button>
                                 <input type="file" className="hidden" ref={docInputRef}
                                     accept=".pdf,.jpg,.jpeg,.png,.heic,.doc,.docx,.xls,.xlsx" multiple onChange={handleDocFileChange} />

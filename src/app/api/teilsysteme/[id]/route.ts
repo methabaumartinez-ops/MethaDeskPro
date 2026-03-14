@@ -82,6 +82,17 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         }
 
         const updatedData: any = { ...existing, ...body, id };
+
+        // ── Section 8: TS Status Automation ──────────────────────────────
+        // When AVOR assigns the TS to another department (abteilung changes
+        // from AVOR/offen to a working department), auto-set status = 'in_arbeit'.
+        const abteilungChanged = body.abteilung && body.abteilung !== existing.abteilung;
+        const wasOffen = existing.status === 'offen';
+        const isAvorAssigning = abteilungChanged && body.abteilung !== 'AVOR' && body.abteilung !== 'Planung';
+        if (isAvorAssigning && wasOffen && !body.status) {
+            updatedData.status = 'in_arbeit';
+        }
+
         // Only auto-derive KS from Abteilung when the caller has NOT explicitly sent a KS value.
         // This preserves the user's manual selection from the dropdown.
         if (updatedData.abteilung !== undefined && (body.ks === undefined || body.ks === null)) {

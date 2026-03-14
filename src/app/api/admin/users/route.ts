@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/helpers/requireAuth';
 import { DatabaseService } from '@/lib/services/db';
 import { hashPassword } from '@/lib/services/authService';
+import { isPasswordValid } from '@/lib/validators/authValidators';
 import { v4 as uuidv4 } from 'uuid';
 import type { UserRole } from '@/types';
 
@@ -83,6 +84,14 @@ export async function POST(req: Request) {
 
         if (!body.email || !body.password) {
             return NextResponse.json({ error: 'E-Mail und Passwort sind erforderlich.' }, { status: 400 });
+        }
+
+        // Enforce global password policy
+        if (!isPasswordValid(body.password)) {
+            return NextResponse.json(
+                { error: 'Passwort muss mindestens 8 Zeichen, einen Grossbuchstaben, eine Zahl und ein Sonderzeichen enthalten.' },
+                { status: 400 }
+            );
         }
 
         // Check duplicate

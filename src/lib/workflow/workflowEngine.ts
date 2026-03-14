@@ -1,17 +1,25 @@
 /**
  * workflowEngine.ts
  * ─────────────────────────────────────────────────────────────────────────────
- * Centralized workflow/state-transition system for TS, Position and UntPos.
+ * Department-driven workflow system for TS, Position and UntPos.
  *
- * Business rules encoded here:
+ * Core principle: AVOR is the orchestrator.
+ *   - AVOR distributes items to departments.
+ *   - Each department works through its allowed statuses.
+ *   - When a department reaches its terminal status the item returns to AVOR.
+ *   - Final departments (Bau, Montage) do NOT return to AVOR.
+ *
+ * Business rules:
  *  1. New TS by Planner/Baufuehrer  → in_planung + Planung
- *  2. Plan finished → offen + AVOR
- *  3. AVOR assigns to department     → in_arbeit + <destAbteilung>
- *  4. Department finishes work       → fertig + AVOR
+ *  2. Plan finished                 → offen + AVOR
+ *  3. AVOR assigns to department    → item.abteilung = dest, status = offen
+ *  4. Department finishes work      → terminal status, handover to AVOR
+ *  5. Final depts (Bau, Montage)    → no AVOR return after terminal
+ *  6. Creation rule                 → abteilung = creator.abteilung, status = offen
  */
 
 import type { ItemStatus, UserRole } from '@/types';
-import { PLANNER_ROLES } from '@/lib/config/statusConfig';
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TYPES
@@ -20,31 +28,152 @@ import { PLANNER_ROLES } from '@/lib/config/statusConfig';
 export type EntityType = 'TEILSYSTEM' | 'POSITION' | 'UNTERPOSITION';
 
 export type WorkflowTransitionId =
-    | 'PLAN_FINISH'         // Planung → offen + AVOR
-    | 'AVOR_ASSIGN'         // AVOR assigns to destination dept → in_arbeit + dest
-    | 'DEPT_FINISH'         // Working dept finishes → fertig + AVOR
-    | 'REOPEN'              // Any → offen (admin override)
-    | 'NACHBEARBEITUNG';    // Any → nachbearbeitung (rework)
+    | 'PLAN_FINISH'
+    | 'AVOR_ASSIGN'
+    | 'DEPT_FINISH'
+    | 'REOPEN'
+    | 'NACHBEARBEITUNG';
 
 export interface WorkflowTransition {
     id: WorkflowTransitionId;
     label: string;
-    /** Status after the transition */
     targetStatus: ItemStatus;
-    /** Fixed target abteilung (null = provided dynamically, e.g. AVOR picks one) */
     targetAbteilung: string | null;
-    /** Roles allowed to trigger this transition */
     allowedRoles: UserRole[];
-    /** Source statuses from which this transition is valid (empty = any) */
     fromStatuses: ItemStatus[];
-    /** Whether the user must supply a destination Abteilung */
     requiresDestAbteilung: boolean;
-    /** Icon key for UI rendering */
     icon: 'arrow-right' | 'check' | 'rotate-ccw' | 'alert-triangle';
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TRANSITION CATALOG
+// DEPARTMENT WORKFLOW CONFIGURATION
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface DeptWorkflowDef {
+    /** Statuses this department is allowed to set */
+    allowed: ItemStatus[];
+    /** Statuses that represent completed work for this department */
+    terminal: ItemStatus[];
+    /** If true, items do NOT return to AVOR after terminal (e.g. Bau, Montage) */
+    isFinal: boolean;
+}
+
+/**
+ * Department workflow configuration matrix.
+ * Each department defines its allowed statuses, terminal states, and whether
+ * it is a "final" department (items don't return to AVOR).
+ */
+export const DEPT_WORKFLOW_CONFIG: Record<string, DeptWorkflowDef> = {
+    Planung: {
+        allowed: ['offen', 'in_arbeit', 'fertig'],
+        terminal: ['fertig'],
+        isFinal: false,
+    },
+    AVOR: {
+        allowed: ['offen', 'in_arbeit', 'bestellt', 'geliefert', 'fertig', 'nachbearbeitung'],
+        terminal: ['fertig', 'geliefert'],
+        isFinal: false,
+    },
+    Einkauf: {
+        allowed: ['offen', 'bestellt', 'geliefert', 'nachbearbeitung'],
+        terminal: ['geliefert'],
+        isFinal: false,
+    },
+    Blechabteilung: {
+        allowed: ['offen', 'in_arbeit', 'fertig'],
+        terminal: ['fertig'],
+        isFinal: false,
+    },
+    Schlosserei: {
+        allowed: ['offen', 'in_arbeit', 'fertig'],
+        terminal: ['fertig'],
+        isFinal: false,
+    },
+    Bau: {
+        allowed: ['offen', 'in_arbeit', 'verbaut', 'nachbearbeitung'],
+        terminal: ['verbaut'],
+        isFinal: true,
+    },
+    Montage: {
+        allowed: ['offen', 'in_arbeit', 'verbaut', 'nachbearbeitung'],
+        terminal: ['verbaut'],
+        isFinal: true,
+    },
+};
+
+/**
+ * Fallback config for departments not explicitly listed.
+ * Allows basic offen/in_arbeit/fertig cycle and returns to AVOR.
+ */
+const DEFAULT_DEPT_CONFIG: DeptWorkflowDef = {
+    allowed: ['offen', 'in_arbeit', 'fertig', 'nachbearbeitung'],
+    terminal: ['fertig'],
+    isFinal: false,
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DEPARTMENT WORKFLOW HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Resolves the DeptWorkflowDef for a given department name. */
+function resolveDeptConfig(abteilung: string | undefined | null): DeptWorkflowDef {
+    if (!abteilung) return DEFAULT_DEPT_CONFIG;
+    return DEPT_WORKFLOW_CONFIG[abteilung] ?? DEFAULT_DEPT_CONFIG;
+}
+
+/**
+ * Returns the list of statuses that a department is allowed to use.
+ * Used by the UI to filter status dropdowns.
+ */
+export function getAllowedStatuses(abteilung: string | undefined | null): ItemStatus[] {
+    return resolveDeptConfig(abteilung).allowed;
+}
+
+/**
+ * Returns true if the given status is a terminal state for the department.
+ * Terminal means the department considers its work done.
+ *
+ * IMPORTANT: Do NOT use `status === 'fertig'` directly.
+ * Always use this function — terminal varies by department.
+ */
+export function isTerminalStatus(
+    abteilung: string | undefined | null,
+    status: ItemStatus | string | undefined | null
+): boolean {
+    if (!status) return false;
+    const config = resolveDeptConfig(abteilung);
+    return config.terminal.includes(status as ItemStatus);
+}
+
+/**
+ * Determines the handover result when a department reaches a terminal status.
+ *
+ * - Non-final departments: returns { abteilung: 'AVOR', status: <currentStatus> }
+ * - Final departments (Bau, Montage): returns null (no handover)
+ */
+export function getHandoverResult(
+    abteilung: string | undefined | null,
+    status: ItemStatus | string
+): { abteilung: string; status: ItemStatus } | null {
+    const config = resolveDeptConfig(abteilung);
+    if (!config.terminal.includes(status as ItemStatus)) return null;
+    if (config.isFinal) return null;
+    return { abteilung: 'AVOR', status: status as ItemStatus };
+}
+
+/**
+ * Checks whether the given status is allowed for the department.
+ */
+export function isStatusAllowedForDept(
+    abteilung: string | undefined | null,
+    status: ItemStatus | string
+): boolean {
+    const config = resolveDeptConfig(abteilung);
+    return config.allowed.includes(status as ItemStatus);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TRANSITION CATALOG (kept for backward compat on TS-level UI)
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const WORKFLOW_TRANSITIONS: WorkflowTransition[] = [
@@ -61,10 +190,10 @@ export const WORKFLOW_TRANSITIONS: WorkflowTransition[] = [
     {
         id: 'AVOR_ASSIGN',
         label: 'An Abteilung uebergeben',
-        targetStatus: 'in_arbeit',
-        targetAbteilung: null,          // set dynamically by the user
+        targetStatus: 'offen',
+        targetAbteilung: null,
         allowedRoles: ['admin', 'projektleiter', 'bauprojektleiter', 'baufuhrer'],
-        fromStatuses: ['offen', 'in_planung', 'nachbearbeitung'],
+        fromStatuses: ['offen', 'in_planung', 'nachbearbeitung', 'bereit'],
         requiresDestAbteilung: true,
         icon: 'arrow-right',
     },
@@ -95,7 +224,7 @@ export const WORKFLOW_TRANSITIONS: WorkflowTransition[] = [
         targetStatus: 'offen',
         targetAbteilung: 'AVOR',
         allowedRoles: ['admin', 'projektleiter'],
-        fromStatuses: ['fertig', 'nachbearbeitung', 'abgeschlossen'],
+        fromStatuses: ['fertig', 'nachbearbeitung', 'abgeschlossen', 'bereit'],
         requiresDestAbteilung: false,
         icon: 'rotate-ccw',
     },
@@ -107,26 +236,39 @@ export const WORKFLOW_TRANSITIONS: WorkflowTransition[] = [
 
 /**
  * Returns the correct creation defaults (status + abteilung) based on the
- * creator's role. Implements rule #1.
+ * creator's role and department.
+ *
+ * Rules:
+ *  - TS by Planner → in_planung + Planung
+ *  - TS by other   → offen + creator.abteilung
+ *  - POS / UNTPOS  → offen + creator.abteilung
+ *  - System import with override → use provided values
  */
 export function getCreationDefaults(
     entityType: EntityType,
     creatorRole?: string | null,
-    creatorDepartment?: string | null
+    creatorDepartment?: string | null,
+    systemOverride?: { status?: ItemStatus; abteilung?: string }
 ): { status: ItemStatus; abteilung: string } {
+    // System/import override: use provided values directly
+    if (systemOverride) {
+        return {
+            status: systemOverride.status || 'offen',
+            abteilung: systemOverride.abteilung || creatorDepartment || 'AVOR',
+        };
+    }
+
     if (entityType === 'TEILSYSTEM') {
-        if (PLANNER_ROLES.includes(creatorRole as any)) {
-            return { status: 'in_planung', abteilung: 'Planung' };
-        }
         return { status: 'offen', abteilung: creatorDepartment || 'AVOR' };
     }
-    // For Position and UntPos, inherit offen / no dept by default
-    return { status: 'offen', abteilung: 'Sin Abteilung' };
+
+    // POS and UNTPOS: always offen + AVOR
+    return { status: 'offen', abteilung: 'AVOR' };
 }
 
 /**
  * Returns the list of available workflow transitions for a given entity state
- * and user role.
+ * and user role. Used for the TS-level transition buttons.
  */
 export function getAvailableTransitions(
     currentStatus: ItemStatus | string,

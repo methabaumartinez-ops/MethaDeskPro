@@ -456,12 +456,14 @@ export default function TeilsystemEditPage() {
             const updates: Partial<Teilsystem> = {
                 ...data,
                 projektId, // Add project id to avoid disappearing from lists
-                eroeffnetAm: isoToGermanDate(data.eroeffnetAm),
-                montagetermin: isoToGermanDate(data.montagetermin),
+                // Dates: keep in ISO format (YYYY-MM-DD) from the <input type="date"> elements.
+                // DO NOT convert to German DD.MM.YYYY — PostgreSQL rejects that format.
+                eroeffnetAm: data.eroeffnetAm || undefined,
+                montagetermin: data.montagetermin || undefined,
                 // When user explicitly edits montagetermin, mark it as confirmed (not provisional anymore)
                 montageterminProvisional: data.montagetermin ? false : undefined,
-                lieferfrist: isoToGermanDate(data.lieferfrist),
-                abgabePlaner: isoToGermanDate(data.abgabePlaner),
+                lieferfrist: data.lieferfrist || undefined,
+                abgabePlaner: data.abgabePlaner || undefined,
                 abteilung: data.abteilung as any,
                 planStatus: data.planStatus as any,
                 status: data.status as any,

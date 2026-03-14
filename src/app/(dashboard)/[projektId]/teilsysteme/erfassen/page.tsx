@@ -22,7 +22,8 @@ import { LagerortService } from '@/lib/services/lagerortService';
 import { SupplierService } from '@/lib/services/supplierService';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { LagerortSelect } from '@/components/shared/LagerortSelect';
-import { ArrowLeft, Save, Calendar, UploadCloud, FileType, FileText, Download, X, Paperclip, PlusCircle, Layers, ClipboardList } from 'lucide-react';
+import { ArrowLeft, Save, Calendar, UploadCloud, FileType, FileText, Download, X, Paperclip, PlusCircle, Layers, ClipboardList, ChevronDown, ChevronRight, Package } from 'lucide-react';
+import { BoxIcon } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { ModuleActionBanner } from '@/components/layout/ModuleActionBanner';
@@ -109,6 +110,8 @@ export default function TeilsystemErfassenPage() {
     const [lagerorte, setLagerorte] = React.useState<any[]>([]);
     const [allLieferanten, setAllLieferanten] = React.useState<any[]>([]);
     const [selectedLieferantId, setSelectedLieferantId] = React.useState<string>('');
+    /** Tracks which preview POS rows are expanded */
+    const [expandedPreviewPos, setExpandedPreviewPos] = React.useState<Set<string | number>>(new Set());
     /** Stores selected IFC positions/unterpos for import after TS creation */
     const [pendingIfcImport, setPendingIfcImport] = React.useState<any | null>(null);
 
@@ -684,8 +687,8 @@ export default function TeilsystemErfassenPage() {
                 </DialogContent>
             </Dialog>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
                     {/* Left Column: Form Data */}
                     <div className="lg:col-span-3 space-y-6">
                         <Card className="shadow-xl border-none">
@@ -697,7 +700,7 @@ export default function TeilsystemErfassenPage() {
                             </CardHeader>
                             <CardContent className="p-6">
                                 <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
-                                    {/* Row 1: System Identifiers & Name */}
+                                    {/* ── Row 1: System-Nummer · KS · Teilsystem Name (3 columns) ── */}
                                     <div className="md:col-span-2">
                                         <Input
                                             label="System-Nummer *"
@@ -718,7 +721,7 @@ export default function TeilsystemErfassenPage() {
                                             className={cn('font-bold', getKSSelectClasses(watch('ks')))}
                                         />
                                     </div>
-                                    <div className="md:col-span-9">
+                                    <div className="md:col-span-8">
                                         <Input
                                             label="Teilsystem Name *"
                                             placeholder="z.B. Stahlbau Halle A"
@@ -727,8 +730,8 @@ export default function TeilsystemErfassenPage() {
                                         />
                                     </div>
 
-                                    {/* Row 2: Department & Status */}
-                                    <div className="md:col-span-4">
+                                    {/* ── Row 2: Abteilung · Plan Status · TS Status · Eröffnet durch (4 columns) ── */}
+                                    <div className="md:col-span-3">
                                         <Select
                                             label="Abteilung *"
                                             options={abteilungOptions}
@@ -737,7 +740,7 @@ export default function TeilsystemErfassenPage() {
                                             className={cn('font-bold', getAbteilungColorClasses(watch('abteilung')))}
                                         />
                                     </div>
-                                    <div className="md:col-span-4">
+                                    <div className="md:col-span-3">
                                         <Select
                                             label="Plan Status *"
                                             options={planStatusOptions}
@@ -746,7 +749,7 @@ export default function TeilsystemErfassenPage() {
                                             className={cn('font-bold', getStatusColorClasses(watch('planStatus')))}
                                         />
                                     </div>
-                                    <div className="md:col-span-4">
+                                    <div className="md:col-span-3">
                                         <Select
                                             label="TS Status *"
                                             options={statusOptions}
@@ -755,8 +758,6 @@ export default function TeilsystemErfassenPage() {
                                             className={cn('font-bold', getStatusColorClasses(watch('status')))}
                                         />
                                     </div>
-
-                                    {/* Row 3: People & Warehouse */}
                                     <div className="md:col-span-3">
                                         <div className="space-y-1.5">
                                             <label className="text-sm font-semibold text-foreground ml-1">Eroeffnet durch *</label>
@@ -766,6 +767,46 @@ export default function TeilsystemErfassenPage() {
                                             <input type="hidden" {...register('eroeffnetDurch')} />
                                         </div>
                                     </div>
+
+                                    {/* ── Row 3: Eröffnet am · Abgabe Planer · Liefertermin · Montagetermin (4 columns) ── */}
+                                    <div className="md:col-span-3">
+                                        <DateInput
+                                            label="Eröffnet am *"
+                                            {...register('eroeffnetAm')}
+                                            error={errors.eroeffnetAm?.message}
+                                        />
+                                    </div>
+                                    <div className="md:col-span-3">
+                                        <DateInput
+                                            label="Abgabe Planer"
+                                            {...register('abgabePlaner')}
+                                            error={errors.abgabePlaner?.message}
+                                        />
+                                    </div>
+                                    <div className="md:col-span-3">
+                                        <DateInput
+                                            label="Liefertermin"
+                                            {...register('lieferfrist')}
+                                            error={errors.lieferfrist?.message}
+                                        />
+                                    </div>
+                                    <div className="md:col-span-3">
+                                        <Controller
+                                            name="montagetermin"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <ProvisionalDateInput
+                                                    label="Montagetermin"
+                                                    value={field.value || ''}
+                                                    onChange={field.onChange}
+                                                    onBlur={field.onBlur}
+                                                    name={field.name}
+                                                />
+                                            )}
+                                        />
+                                    </div>
+
+                                    {/* ── Row 4: Unternehmer · Subunternehmer · Lagerort (4 columns, last empty) ── */}
                                     <div className="md:col-span-3">
                                         <Controller
                                             name="unternehmerId"
@@ -809,59 +850,8 @@ export default function TeilsystemErfassenPage() {
                                             {...register('lagerortId')}
                                         />
                                     </div>
-                                    {/* Row 3b: Lieferant */}
-                                    <div className="md:col-span-6">
-                                        <SearchableSelect
-                                            label="Lieferant"
-                                            placeholder="Lieferant suchen..."
-                                            options={[
-                                                { label: 'Kein Lieferant', value: '' },
-                                                ...allLieferanten.map(l => ({ label: l.name, value: l.id }))
-                                            ]}
-                                            value={selectedLieferantId}
-                                            onChange={(val) => setSelectedLieferantId(val)}
-                                        />
-                                    </div>
 
-                                    {/* Row 4: Dates (Compact) */}
-                                    <div className="md:col-span-3">
-                                        <DateInput
-                                            label="Eröffnet am *"
-                                            {...register('eroeffnetAm')}
-                                            error={errors.eroeffnetAm?.message}
-                                        />
-                                    </div>
-                                    <div className="md:col-span-3">
-                                        <Controller
-                                            name="montagetermin"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <ProvisionalDateInput
-                                                    label="Montagetermin"
-                                                    value={field.value || ''}
-                                                    onChange={field.onChange}
-                                                    onBlur={field.onBlur}
-                                                    name={field.name}
-                                                />
-                                            )}
-                                        />
-                                    </div>
-                                    <div className="md:col-span-3">
-                                        <DateInput
-                                            label="Liefertermin"
-                                            {...register('lieferfrist')}
-                                            error={errors.lieferfrist?.message}
-                                        />
-                                    </div>
-                                    <div className="md:col-span-3">
-                                        <DateInput
-                                            label="Abgabe Planer"
-                                            {...register('abgabePlaner')}
-                                            error={errors.abgabePlaner?.message}
-                                        />
-                                    </div>
-
-                                    {/* Row 5: Beschreibung + Bemerkung + WEMA Link (same row) */}
+                                    {/* ── Row 5: Beschreibung · Bemerkung · WEMA Link (3 × col-span-4) ── */}
                                     <div className="md:col-span-4 space-y-1.5">
                                         <label className="text-sm font-semibold text-foreground ml-1">Beschreibung</label>
                                         <textarea
@@ -894,25 +884,138 @@ export default function TeilsystemErfassenPage() {
                         </Card>
 
                         {/* Lower Section: Positionen (full width) */}
-                        <Card className="shadow-xl border-none">
-                            <CardHeader className="bg-muted/30 border-b border-border py-4 px-6">
+                        <Card className={cn(
+                            'shadow-xl border-none',
+                            pendingIfcImport && 'border-l-4 border-l-orange-500'
+                        )}>
+                            <CardHeader className="bg-muted/30 border-b border-border py-4 px-6 flex flex-row items-center justify-between">
                                 <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
                                     <Layers className="h-5 w-5 text-primary" />
                                     Positionen & Teile
+                                    {pendingIfcImport && (
+                                        <span className="ml-2 text-[10px] font-black text-orange-600 bg-orange-50 border border-orange-300 px-2 py-0.5 uppercase tracking-wider">
+                                            Vorschau
+                                        </span>
+                                    )}
+                                    {pendingIfcImport && (
+                                        <span className="text-xs font-bold text-muted-foreground ml-1">
+                                            — {pendingIfcImport.positionen.length} Pos. · {pendingIfcImport.unterpositionen.length} Teile
+                                        </span>
+                                    )}
                                 </CardTitle>
+                                {pendingIfcImport && (
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 h-7 px-3"
+                                        onClick={() => setPendingIfcImport(null)}
+                                    >
+                                        <X className="h-3.5 w-3.5 mr-1" />
+                                        Verwerfen
+                                    </Button>
+                                )}
                             </CardHeader>
                             <CardContent className="p-0">
-                                <div className="flex flex-col items-center justify-center py-14 gap-3 text-center">
-                                    <div className="rounded-full bg-muted p-4">
-                                        <Layers className="h-8 w-8 text-muted-foreground/40" />
+                                {!pendingIfcImport ? (
+                                    /* Empty state — no IFC data yet */
+                                    <div className="flex flex-col items-center justify-center py-14 gap-3 text-center">
+                                        <div className="rounded-full bg-muted p-4">
+                                            <Layers className="h-8 w-8 text-muted-foreground/40" />
+                                        </div>
+                                        <p className="text-sm font-semibold text-muted-foreground">
+                                            Positionen werden nach dem Speichern hinzugefuegt.
+                                        </p>
+                                        <p className="text-xs text-muted-foreground/60">
+                                            Laden Sie ein IFC-Modell hoch oder speichern Sie zuerst das Teilsystem.
+                                        </p>
                                     </div>
-                                    <p className="text-sm font-semibold text-muted-foreground">
-                                        Positionen werden nach dem Speichern hinzugefuegt.
-                                    </p>
-                                    <p className="text-xs text-muted-foreground/60">
-                                        Speichern Sie zuerst das Teilsystem.
-                                    </p>
-                                </div>
+                                ) : (
+                                    /* IFC Preview table */
+                                    <div className="divide-y divide-border">
+                                        {pendingIfcImport.positionen.map((pos: any, idx: number) => {
+                                            const children = pendingIfcImport.unterpositionen.filter(
+                                                (u: any) => u.parentExpressID === pos.expressID
+                                            );
+                                            const isExpanded = expandedPreviewPos.has(pos.signature || pos.expressID);
+                                            return (
+                                                <div key={pos.signature || pos.expressID || idx}>
+                                                    {/* POS row */}
+                                                    <div className="flex items-center gap-3 px-5 py-3 hover:bg-orange-50/30 transition-colors">
+                                                        {/* Expand toggle */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const key = pos.signature || pos.expressID;
+                                                                setExpandedPreviewPos(prev => {
+                                                                    const next = new Set(prev);
+                                                                    next.has(key) ? next.delete(key) : next.add(key);
+                                                                    return next;
+                                                                });
+                                                            }}
+                                                            className="text-muted-foreground hover:text-orange-600 shrink-0 w-5"
+                                                            disabled={children.length === 0}
+                                                        >
+                                                            {children.length > 0
+                                                                ? (isExpanded
+                                                                    ? <ChevronDown className="h-4 w-4" />
+                                                                    : <ChevronRight className="h-4 w-4" />)
+                                                                : <span className="w-4" />
+                                                            }
+                                                        </button>
+
+                                                        <Package className="h-4 w-4 text-orange-500 shrink-0" />
+
+                                                        <div className="flex-1 min-w-0">
+                                                            <span className="text-sm font-bold text-foreground truncate block">
+                                                                {pos.name || 'Unbenannt'}
+                                                            </span>
+                                                        </div>
+
+                                                        {pos.posNummer && (
+                                                            <span className="text-[10px] font-bold text-muted-foreground border border-border px-1.5 py-0.5 rounded shrink-0">
+                                                                Pos. {pos.posNummer || pos.posNr}
+                                                            </span>
+                                                        )}
+                                                        {pos.weight != null && pos.weight > 0 && (
+                                                            <span className="text-[10px] font-bold text-muted-foreground shrink-0">
+                                                                {Number(pos.weight).toFixed(1)} kg
+                                                            </span>
+                                                        )}
+                                                        <span className="text-[10px] font-bold text-orange-600 shrink-0">
+                                                            {pos.menge || 1}×
+                                                        </span>
+                                                        {children.length > 0 && (
+                                                            <span className="text-[10px] text-muted-foreground shrink-0">
+                                                                ({children.length} Teile)
+                                                            </span>
+                                                        )}
+                                                    </div>
+
+                                                    {/* UNTPOS children */}
+                                                    {isExpanded && children.map((unt: any, uIdx: number) => (
+                                                        <div
+                                                            key={unt.signature || unt.expressID || uIdx}
+                                                            className="flex items-center gap-3 pl-14 pr-5 py-2 border-t border-border/40 bg-muted/20 hover:bg-muted/40 transition-colors"
+                                                        >
+                                                            <BoxIcon className="h-3 w-3 text-muted-foreground/60 shrink-0" />
+                                                            <span className="text-xs font-semibold text-foreground/80 truncate flex-1">
+                                                                {unt.name || 'Unbekannt'}
+                                                            </span>
+                                                            {unt.material && (
+                                                                <span className="text-[9px] font-bold text-muted-foreground shrink-0">{unt.material}</span>
+                                                            )}
+                                                            {unt.gewicht != null && unt.gewicht > 0 && (
+                                                                <span className="text-[9px] font-bold text-muted-foreground shrink-0">{Number(unt.gewicht).toFixed(1)} kg</span>
+                                                            )}
+                                                            <span className="text-[9px] font-bold text-orange-500 shrink-0">{unt.menge || 1}×</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
 
@@ -977,7 +1080,7 @@ export default function TeilsystemErfassenPage() {
                                 <p className="text-[9px] font-medium text-muted-foreground mb-3 text-center">
                                     Nur .ifc (Max. 200MB)
                                 </p>
-                                <Button type="button" size="sm" variant="outline" className="text-[10px] font-bold border-border h-7 px-3" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}>
+                                <Button type="button" size="sm" variant="metha-orange" className="text-[10px] font-bold h-7 px-3" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}>
                                     Wählen
                                 </Button>
                                 <input
@@ -1046,7 +1149,7 @@ export default function TeilsystemErfassenPage() {
                                 <p className="text-[9px] font-medium text-muted-foreground mb-3 text-center">
                                     pdf, jpg, png, heic
                                 </p>
-                                <Button type="button" size="sm" variant="outline" className="text-[10px] font-bold border-border h-7 px-3" onClick={(e) => { e.stopPropagation(); docInputRef.current?.click(); }}>
+                                <Button type="button" size="sm" variant="metha-orange" className="text-[10px] font-bold h-7 px-3" onClick={(e) => { e.stopPropagation(); docInputRef.current?.click(); }}>
                                     Wählen
                                 </Button>
                                 <input

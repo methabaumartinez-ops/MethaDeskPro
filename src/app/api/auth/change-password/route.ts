@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/services/authService';
 import { changePassword } from '@/lib/services/authService';
+import { isPasswordValid } from '@/lib/validators/authValidators';
 
 export async function POST(req: Request) {
     try {
@@ -26,9 +27,9 @@ export async function POST(req: Request) {
             );
         }
 
-        if (newPassword.length < 6) {
+        if (!isPasswordValid(newPassword)) {
             return NextResponse.json(
-                { error: 'Neues Passwort muss mindestens 6 Zeichen lang sein.' },
+                { error: 'Passwort muss mindestens 8 Zeichen, einen Grossbuchstaben, eine Zahl und ein Sonderzeichen enthalten.' },
                 { status: 400 }
             );
         }

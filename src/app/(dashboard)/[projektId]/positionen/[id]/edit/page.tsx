@@ -301,8 +301,8 @@ export default function PositionEditPage() {
                 </div>
             </ModuleActionBanner>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
                     {/* Left Column: Form Data */}
                     <Card className="lg:col-span-3 shadow-xl border-none">
                         <CardHeader className="bg-muted/30 border-b border-border py-4 px-6">
@@ -415,7 +415,7 @@ export default function PositionEditPage() {
                     </Card>
 
                     {/* Right Column: Actions + Uploads */}
-                    <div className="space-y-4 sticky top-6">
+                    <div className="space-y-4 sticky top-6 lg:row-start-1 lg:col-start-4 lg:row-span-3">
                         {/* Action Buttons — same size as Zurück button */}
                         <div className="flex justify-between gap-3">
                             <Link href={`/${projektId}/positionen/${id}`}>

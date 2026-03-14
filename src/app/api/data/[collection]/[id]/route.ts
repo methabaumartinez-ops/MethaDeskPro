@@ -45,7 +45,10 @@ const CHANGELOG_ENTITY_MAP: Record<string, 'teilsystem' | 'position' | 'unterpos
 };
 
 export async function PUT(req: Request, { params }: { params: Promise<{ collection: string, id: string }> }) {
-    const { user, error } = await requireAuth(['admin', 'projektleiter']);
+    const { user, error } = await requireAuth([
+        'admin', 'projektleiter', 'bauprojektleiter', 'baufuhrer',
+        'planer', 'werkhof', 'polier', 'produktion', 'mitarbeiter', 'monteur'
+    ]);
     if (error) return error;
 
     try {

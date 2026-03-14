@@ -287,9 +287,21 @@ export async function POST(req: NextRequest) {
         for (const [id, e] of elementsMap) {
             const tsPset = findPset(e.psets, PSET_TEILSYSTEM);
             if (tsPset) {
+                const nummer = getPsetProp(tsPset, "TEILSYSTEM");
+                let name = getPsetProp(tsPset, "Teilsystemname");
+
+                // Feature: Clean up duplicate TeilsystemNummer from Teilsystemname
+                // Highcad often exports "1121 Trägeraufsatz Rühlwand" when the TS is 1121
+                if (nummer && typeof name === 'string') {
+                    const prefixMatch = new RegExp(`^${nummer}\\s+`);
+                    if (prefixMatch.test(name)) {
+                        name = name.replace(prefixMatch, '').trim();
+                    }
+                }
+
                 tsInfo = {
-                    nummer: getPsetProp(tsPset, "TEILSYSTEM"),
-                    name: getPsetProp(tsPset, "Teilsystemname"),
+                    nummer: nummer,
+                    name: name,
                     building: getPsetProp(tsPset, "Gebäude"),
                     section: getPsetProp(tsPset, "Abschnitt"),
                     floor: getPsetProp(tsPset, "Geschoss"),

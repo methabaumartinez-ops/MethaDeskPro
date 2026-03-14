@@ -58,24 +58,17 @@ export async function POST(req: Request) {
     try {
         const body = await req.json();
 
-        // Apply workflow-driven defaults based on creator's role.
+        // Apply workflow-driven defaults based on creator's role and department.
         // Server enforces this regardless of what the client sends.
-        const workflowDefaults = getCreationDefaults('TEILSYSTEM', user?.role);
-
-        // Client may override abteilung explicitly (e.g., from URL param) — respect that.
-        // But status is always determined by the workflow if the user is a planner role.
-        const { PLANNER_ROLES } = await import('@/lib/config/statusConfig');
-        const isPlanner = PLANNER_ROLES.includes(user?.role as any);
+        const creatorDepartment = (user as any)?.abteilung || (user as any)?.department;
+        const workflowDefaults = getCreationDefaults('TEILSYSTEM', user?.role, creatorDepartment);
 
         const newItem = {
             ...body,
             id: body.id || uuidv4(),
-            // Enforce status from workflow when creator is a planner
-            status: isPlanner ? workflowDefaults.status : (body.status || workflowDefaults.status),
-            // Default abteilung to Planung for planners unless client explicitly sent one
-            abteilung: (isPlanner && !body.abteilung)
-                ? workflowDefaults.abteilung
-                : (body.abteilung || workflowDefaults.abteilung),
+            // Enforce status and abteilung rigidly from workflow defaults according to business rules
+            status: workflowDefaults.status,
+            abteilung: workflowDefaults.abteilung,
         };
 
         // Derive KS from the finalized abteilung — only if no explicit KS was sent by the client

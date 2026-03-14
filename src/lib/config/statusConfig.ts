@@ -11,15 +11,17 @@ export const TS_ALLOWED_STATUSES: ItemStatus[] = [
     'in_planung',
     'offen',
     'in_arbeit',
+    'bereit',
     'fertig',
     'nachbearbeitung'
 ];
 
 export const POS_ALLOWED_STATUSES: ItemStatus[] = [
-    'in_planung',
     'offen',
     'in_arbeit',
     'bestellt',
+    'geliefert',
+    'verbaut',
     'nachbearbeitung',
     'fertig'
 ];
@@ -148,6 +150,17 @@ export const STATUS_UI_CONFIG: Record<ItemStatus, StatusStyle> = {
         borderColor: 'border-violet-200 dark:border-violet-800',
     },
 
+    // ── Bereit → Cyan (TS aggregation readiness) ─────────────
+    bereit: {
+        value: 'bereit',
+        label: 'Bereit',
+        variant: 'teal',
+        iconColor: 'text-cyan-600',
+        bgColor: 'bg-cyan-100 dark:bg-cyan-900/30',
+        textColor: 'text-cyan-800 dark:text-cyan-400',
+        borderColor: 'border-cyan-200 dark:border-cyan-800',
+    },
+
     // ── Abgeschlossen → Dark slate ────────────────────────────
     abgeschlossen: {
         value: 'abgeschlossen',
@@ -206,6 +219,7 @@ const STATUS_ALIAS_MAP: Record<string, ItemStatus> = {
     'geliefert':        'geliefert',
     'bestellt':         'bestellt',
     'verbaut':          'verbaut',
+    'bereit':           'bereit',
     'abgeschlossen':    'abgeschlossen',
     'in_produktion':    'in_arbeit',
     'inproduktion':     'in_arbeit',
